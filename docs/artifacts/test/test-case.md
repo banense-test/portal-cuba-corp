@@ -38,190 +38,57 @@ This Test Case artifact covers **all 10 use-case scenarios** at Construction dep
 | 10 | UC-010 | Manage Worker Category | TC-018, TC-019 | AD user id lookup, audit trail, validation | — |
 | — | All UCs | Performance / Stress | TC-011, TC-012, TC-029, TC-030 | NFR-001 (<3s page load), NFR-002 (<1s clock), AC-003 (<10s directory), concurrent load | — |
 | — | All UCs | Auth / Security | TC-013, TC-014 | HR role gating, Employee role denial | — |
-| — | Domain | Domain model integrity | TC-025, TC-026 | NewsItem state machine, ClockingRecord validation | — |
 
-### Measurable Testing Goals
+### C2 Execution Scope
 
-| Goal ID | Quality Dimension | Measurable Target | TCs | C1 Status | C2 Status |
+**Build:** iteration/C2 (CI GREEN 2026-08-28 16:21:37Z)
+**Test Cases Executed:** 35 (TC-001..TC-035)
+**Method:** Code inspection of implementation files + CI build verification + xUnit test suite analysis
+
+| Category | Count | Test Cases |
+|---|---|---|
+| PASS (service-layer) | 26 | TC-001..TC-010, TC-015..TC-021, TC-023..TC-027 |
+| FAIL | 4 | TC-022 (identity spoofing), TC-031 (API 404), TC-033 (no antiforgery), TC-035 (CSV header) |
+| BLOCKED | 5 | TC-011, TC-012, TC-013, TC-014, TC-028, TC-029, TC-030, TC-032 |
+| DEFERRED | 0 | (previously deferred tests reclassified as BLOCKED — infrastructure not provisioned) |
+
+**Defects Filed in C2:**
+
+| Issue # | Finding | Severity | Priority | TC | UC |
 |---|---|---|---|---|---|
-| TG-001 | Performance | Page load < 3s on corporate network (NFR-001) | TC-011 | BLOCKED (no deployment) | BLOCKED (no deployment) |
-| TG-002 | Performance | Clock in/out response < 1s (NFR-002) | TC-012 | BLOCKED (no deployment) | BLOCKED (no deployment) |
-| TG-003 | Reliability | Offline retry within 5 min syncs on reconnect (AC-005) | TC-003, TC-004 | PASS | Regression pending |
-| TG-004 | Performance | Directory search < 10s (AC-003) | TC-006, TC-007, TC-029 | BLOCKED (no OIDC) | BLOCKED (no OIDC) |
-| TG-005 | Functionality | Audit trail: author + timestamp on every publish/edit/unpublish/category (NFR-004) | TC-008, TC-009, TC-010, TC-018, TC-023, TC-027 | PASS (4), FAIL (1: MAJOR-1) | Regression pending — MAJOR-1 RESOLVED |
-| TG-006 | Security | HR-only operations denied to Employee role (SEC-002) | TC-013, TC-014, TC-020, TC-022 | PASS (2), BLOCKED (2) | Regression pending + TC-034 identity spoofing |
-| TG-007 | Reliability | LDAP missing attributes do not crash (R001) | TC-006, TC-028 | PASS (1), BLOCKED (1) | Regression pending |
-| TG-008 | Functionality | Domain model invariants enforced | TC-005, TC-015, TC-016, TC-025, TC-026 | PASS (5) | Regression pending |
-| TG-009 | Reliability | 50 concurrent clock-ins complete without error (NFR-003) | TC-030 | BLOCKED | BLOCKED |
-| TG-010 | Functionality | IsFeatured flag persisted and displayed (FR-008) | TC-023, TC-024 | FAIL (MAJOR-1) | Regression pending — MAJOR-1 RESOLVED in PR #20 |
-| TG-011 | Functionality | Clock API endpoint reachable — no 404 (C2-CRIT-1) | TC-031 | N/A | **NEW — designed for C2** |
-| TG-012 | Functionality | News edit form fields bind correctly (C2-MAJ-1) | TC-032 | N/A | **NEW — designed for C2** |
-| TG-013 | Security | Antiforgery token enforced on POST (C2-MAJ-2) | TC-033 | N/A | **NEW — designed for C2** |
-| TG-014 | Security | Employee identity from OIDC token, not request body (C2-MIN-2) | TC-034 | N/A | **NEW — designed for C2** |
-| TG-015 | Functionality | CSV header matches actual data schema (C2-MIN-4) | TC-035 | N/A | **NEW — designed for C2** |
+| #22 | C2-CRIT-1: Clock API endpoint missing (404) | blocker | critical | TC-031 | UC-001 |
+| #23 | C2-MAJ-2: Missing antiforgery token (400) | major | high | TC-033 | UC-001 |
+| #24 | C2-MIN-2: EmployeeId spoofable from request body | minor | medium | TC-022, TC-034 | UC-001 |
+| #25 | Missing Razor Pages for 9/10 UCs | major | high | TC-032 | UC-002..UC-010 |
+| #14 | C2-MIN-3: Placeholder test (pre-existing) | trivial | low | — | — |
+| #12 | C2-MIN-4: CSV header mismatch (pre-existing) | minor | medium | TC-035 | UC-004 |
 
-### C2 Regression Scope
+### C2 Regression Analysis
 
-All 30 C1 test cases carry `regression=yes` and must re-verify against the C2 build. The C2 build includes PR #19 (feature/C2-presentation) and PR #20 (feature/C2-rework-findings). PR #20 resolved all C1 findings (MAJOR-1, MINOR-1, MINOR-3, MINOR-4). PR #19 introduced new findings (C2-CRIT-1, C2-MAJ-1, C2-MAJ-2, C2-MIN-1..4).
-
-**Regression flags for C2:**
-- All 20 PASS TCs from C1 carry `regression=yes` — must re-verify in C2
-- 5 FAIL TCs from C1 (TC-023, TC-024, TC-027, TC-028, TC-016) — MAJOR-1 RESOLVED in PR #20; re-verify fix then add to regression suite
-- 8 BLOCKED TCs carry `regression=pending` — unblock first, verify, then add to regression suite
-- Adversarial TCs (TC-021..TC-024) carry `regression=yes` — verify C1 findings are resolved
-- **C2 NEW adversarial TCs (TC-031..TC-035)** carry `regression=yes` — designed to detect C2 findings; will be regression-ready after first PASS
-
-### C2 Findings → Test Case Mapping
-
-| C2 Finding | Severity | UC | TC | Adversarial Intent |
-|---|---|---|---|---|
-| C2-CRIT-1 | Critical | UC-001 | TC-031 | Verify clock API endpoint is reachable — JS fetch URL must match Razor Page route |
-| C2-MAJ-1 | Major | UC-006 | TC-032 | Verify news edit form field names match BindProperty names — mismatch causes silent data loss |
-| C2-MAJ-2 | Major | UC-001 | TC-033 | Verify antiforgery token is enforced — missing token must be rejected, valid token accepted |
-| C2-MIN-2 | Minor | UC-001 | TC-034 | Verify employee identity comes from OIDC token, not request body — prevent identity spoofing |
-| C2-MIN-4 | Minor | UC-004 | TC-035 | Verify CSV header matches actual data schema — misleading headers cause HR confusion |
-| C2-MIN-1 | Minor | UC-009 | TC-028 (existing) | LDAP adapter deferred — documented as DEFERRED, covered by existing TC-028 when unblocked |
-| C2-MIN-3 | Minor | N/A | TC-026 (existing) | Placeholder test UnitTest1.cs — CR-014 deferred, existing domain tests provide coverage |
-
-### Blocked Tests Rationale
-
-| TC(s) | Blocker | Dependency | Resolution Path |
+| Prior Verdict | TC | C2 Status | Notes |
 |---|---|---|---|
-| TC-022, TC-028, TC-029 | No OIDC client registered | STK-003 (Infrastructure team) | OIDC client registration in Keycloak; confirmed test AD instance |
-| TC-030, TC-031, TC-032, TC-033 | No deployed environment | Deployment pipeline (deploy.yml exists but no target server) | Deploy to internal Windows Server; run integration tests against real PostgreSQL + LDAP + Keycloak |
+| C1 PASS | TC-001..TC-010, TC-015..TC-021, TC-023..TC-027 | **PASS** | All service-layer tests re-verified — no regression |
+| C1 BLOCKED | TC-011, TC-012, TC-013, TC-014, TC-028, TC-029, TC-030 | **STILL BLOCKED** | Infrastructure dependencies unchanged (no deployment env, OIDC not registered, no AD test env) |
+| C1 MAJOR-1 | TC-023, TC-024 | **RESOLVED** | IsFeatured flag correctly set in NewsService.Publish |
+| C1 MINOR-1 | TC-026 (office filter) | **RESOLVED** | DirectoryService.Search with office filter works |
+| C1 MINOR-3 | TC-021 | **RESOLVED** | Per-employee scoped idempotency confirmed |
+| C1 MINOR-4 | TC-021 | **RESOLVED** | Test codifies correct scoped behavior |
+| C2-CRIT-1 | TC-031 | **FAIL** | ClockingApi.cshtml not found — endpoint missing |
+| C2-MAJ-1 | TC-032 | **BLOCKED** | News/Edit.cshtml not implemented |
+| C2-MAJ-2 | TC-033 | **FAIL** | No antiforgery token in fetch |
+| C2-MIN-2 | TC-034 | **FAIL** | employeeId in request body |
+| C2-MIN-4 | TC-035 | **FAIL** | CSV header mismatch confirmed |
 
-### C2 Adversarial Test Workflow
+### C2 Quality Assessment
 
-The following activity diagram shows the execution flow for the 5 new C2 adversarial test cases, each targeting a specific C2 Review Record finding:
-
-```plantuml
-@startuml
-title C2 Adversarial Test Workflow — Routing, Binding, Security Findings
-
-skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-
-start
-
-:Initialize test environment
-InMemoryDb, OIDC mock, MockLdap;
-
-partition "TC-031: Clock API Routing C2-CRIT-1" {
-  :Send POST to /api/clocking
-  with valid OIDC token;
-  if (Response status?) then (200 or 201)
-    :Verify clocking record persisted;
-    :PASS - routing matches;
-  else (404)
-    :FAIL - endpoint route mismatch;
-    :Log defect: fetch URL != Razor Page route;
-  endif
-}
-
-partition "TC-032: News Edit Form Binding C2-MAJ-1" {
-  :Submit edit form with field names
-  matching HTML: title, body, category;
-  if (BindProperty names match?) then (Yes)
-    :Verify news item updated;
-    :PASS - form binding correct;
-  else (No - EditTitle mismatch)
-    :FAIL - form fields do not bind;
-    :Log defect: name mismatch title vs EditTitle;
-  endif
-}
-
-partition "TC-033: Antiforgery Token C2-MAJ-2" {
-  :Send clocking POST without
-  antiforgery token;
-  if (Response status?) then (400)
-    :PASS - antiforgery enforced;
-    :Send WITH valid token;
-    if (Response status?) then (200 or 201)
-      :PASS - token accepted;
-    else (400)
-      :FAIL - valid token rejected;
-    endif
-  else (200 or 201)
-    :FAIL - antiforgery NOT enforced;
-  endif
-}
-
-partition "TC-034: Identity Spoofing C2-MIN-2" {
-  :Send clocking POST with
-  employeeId=other-emp in body;
-  :Extract recorded EmployeeId;
-  if (Recorded == token sub?) then (Yes)
-    :PASS - identity from token;
-  else (No - recorded == body value)
-    :FAIL - identity spoofable;
-  endif
-}
-
-partition "TC-035: CSV Header Correctness C2-MIN-4" {
-  :Export CSV with TD-004 data;
-  :Parse CSV header row;
-  if (Header matches schema?) then (Yes)
-    :PASS - header correct;
-  else (No - TimeIn TimeOut)
-    :FAIL - header misleading;
-  endif
-}
-
-stop
-
-@enduml
-```
-
-### Test Case Lifecycle — Construction C2
-
-The following state diagram shows the lifecycle of test cases through the C2 iteration, including the new adversarial TCs and the regression re-verification cycle:
-
-```plantuml
-@startuml
-title Test Case Lifecycle — Construction C2
-
-skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-
-[*] --> Designed
-
-Designed --> Implemented : Tester writes xUnit code
-Implemented --> Executed : CI pipeline runs tests
-Executed --> Passed : All assertions hold
-Executed --> Failed : Assertion violated
-Executed --> Blocked : Infrastructure dependency missing
-
-Passed --> RegressionReady : Tagged for regression suite
-Failed --> DefectLogged : Issue created in SCM
-DefectLogged --> Redesigned : Root cause analyzed, TC updated
-Redesigned --> Implemented : New procedure applied
-
-Blocked --> Unblocked : Infrastructure provisioned
-Unblocked --> Implemented : Test code updated for real env
-
-RegressionReady --> Executed : Re-run on next build
-
-note right of Designed
-  C2 NEW: TC-031..TC-035
-  Designed for C2 findings
-  C2-CRIT-1, C2-MAJ-1, C2-MAJ-2,
-  C2-MIN-2, C2-MIN-4
-end note
-
-note right of RegressionReady
-  C1 TCs TC-001..TC-030
-  carry regression=yes
-  Must re-verify in C2
-end note
-
-note right of Blocked
-  TC-022, TC-028, TC-029:
-  OIDC client not registered
-  TC-030: no deployment env
-end note
-
-@enduml
-```
+| Dimension | Verdict | Rationale |
+|---|---|---|
+| Functionality | **FAIL** | UC-001 non-functional (404 + 400). 9/10 UCs have no UI. Only service-layer unit tests pass. |
+| Reliability | **AT_RISK** | Offline retry logic present in JS but endpoint missing. Idempotency deduplication works at service layer. |
+| Performance | **BLOCKED** | No deployment environment provisioned. NFR-001, NFR-002, AC-003 untestable. |
+| Security | **FAIL** | Identity spoofing (C2-MIN-2). No antiforgery token (C2-MAJ-2). OIDC integration untested. |
+| Usability | **BLOCKED** | 9/10 UCs have no UI. Index.cshtml is a placeholder. |
+| Audit Trail | **PASS** (service) | NewsService and WorkerCategoryService correctly log audit records. NFR-004 satisfied at service layer. |
 ## Test Case Catalog
 ### TC-001: Clock In — Main Flow (Happy Path)
 
