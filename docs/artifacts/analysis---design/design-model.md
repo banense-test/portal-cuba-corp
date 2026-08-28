@@ -3,10 +3,10 @@
 |---|---|
 | Phase | Elaboration |
 | Status | Draft |
-| Milestone Target | End of Elaboration |
+| Milestone Target | End of Elaboration (LCA) |
 | Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
-| Contributors | User-Interface Designer (Boundary Classes and Navigation Map, UI Classes, UI Patterns) |
+| Contributors | Designer (Analysis Classes, Use-Case Realizations, Design Classes, Interface Contracts, State Machines — M1/M2 resolution); User-Interface Designer (Boundary Classes and Navigation Map, UI Classes, UI Patterns) |
 ## Design Overview
 | Field | Value |
 |---|---|
