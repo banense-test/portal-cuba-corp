@@ -48,12 +48,12 @@ jobs:
       - name: Regenerate solution from src/ and tests/
         run: |
           rm -f *.sln
-          dotnet new sln --name PortalCubaCorp
-          find src tests -name '*.csproj' -print0 | xargs -0 -r dotnet sln PortalCubaCorp.sln add
+          dotnet new sln
+          find src tests -name '*.csproj' -exec dotnet sln add {} +
       - name: Restore dependencies
-        run: dotnet restore PortalCubaCorp.sln
+        run: dotnet restore
       - name: Build
-        run: dotnet build PortalCubaCorp.sln --no-restore --configuration Release
+        run: dotnet build --no-restore --configuration Release
 
   test:
     name: Test
@@ -68,9 +68,9 @@ jobs:
       - name: Regenerate solution from src/ and tests/
         run: |
           rm -f *.sln
-          dotnet new sln --name PortalCubaCorp
-          find src tests -name '*.csproj' -print0 | xargs -0 -r dotnet sln PortalCubaCorp.sln add
+          dotnet new sln
+          find src tests -name '*.csproj' -exec dotnet sln add {} +
       - name: Restore dependencies
-        run: dotnet restore PortalCubaCorp.sln
+        run: dotnet restore
       - name: Test
-        run: dotnet test PortalCubaCorp.sln --no-restore --configuration Release --logger trx --results-directory ./TestResults
+        run: dotnet test --no-restore --configuration Release --logger trx --results-directory ./TestResults
