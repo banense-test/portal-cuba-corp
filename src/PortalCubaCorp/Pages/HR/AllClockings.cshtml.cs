@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using PortalCubaCorp.Application;
 using PortalCubaCorp.Domain;
@@ -7,8 +6,9 @@ using PortalCubaCorp.Domain;
 namespace PortalCubaCorp.Pages.HR;
 
 /// <summary>
-/// All clockings page model (V003) — UC-003 view all employee clockings + UC-004 CSV export.
+/// All clockings page model (V003) — UC-003 view all employee clockings.
 /// HR-only access. Shows all employees' clockings for a selected month.
+/// CSV export is handled by ExportModel (UC-004).
 /// </summary>
 [Authorize(Roles = "hr")]
 public class AllClockingsModel : PageModel
@@ -31,28 +31,5 @@ public class AllClockingsModel : PageModel
         Month = month ?? now.Month;
         var range = DateRange.ForMonth(Year, Month);
         Clockings = _clockingService.GetAllClockings(range);
-    }
-}
-
-/// <summary>
-/// CSV export handler — UC-004 export monthly clocking report.
-/// Returns a CSV file download.
-/// </summary>
-[Authorize(Roles = "hr")]
-public class ExportModel : PageModel
-{
-    private readonly IClockingService _clockingService;
-
-    public ExportModel(IClockingService clockingService)
-    {
-        _clockingService = clockingService;
-    }
-
-    public IActionResult OnGet(int year, int month)
-    {
-        var range = DateRange.ForMonth(year, month);
-        var stream = _clockingService.ExportCsv(range);
-        var fileName = $"clockings-{year}-{month:D2}.csv";
-        return File(stream, "text/csv", fileName);
     }
 }
