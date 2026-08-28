@@ -11,7 +11,6 @@
 | Review Type | LCO Milestone Review — Technical Lens |
 
 ## Review Scope and Criteria
-
 ### Artifacts Reviewed (8)
 
 | # | Artifact | Discipline | Phase | Status |
@@ -25,6 +24,13 @@
 | 7 | Iteration Plan | Project Management | Inception | Draft |
 | 8 | Test Evaluation Summary | Test | Inception | Draft |
 
+### Review Lenses Applied
+
+| Lens | Reviewer | Verdict | Findings |
+|---|---|---|---|
+| Technical (PM Discipline) | Reviewer | APPROVED | 2 Info (non-blocking) |
+| Business Modeling | Business Reviewer | BR-OK-INACTIVE | 0 (discipline not applicable per DC §4) |
+
 ### LCO Exit Criteria Applied
 
 This review applies the **feasibility and acceptability** lens per RUP Project Approval / Planning review point. The LCO exit criteria checklist:
@@ -37,11 +43,11 @@ This review applies the **feasibility and acceptability** lens per RUP Project A
 6. **DC Baseline Conformance** — Does the Development Case comply with the IARI baseline (no role redefinition, no ownership reassignment, no CORE omissions, no out-of-universe artifacts)?
 7. **Optional Trigger Justification** — Are all NOT-TRIGGERED optional artifacts correctly justified against their §5.2 conditions?
 8. **Traceability completeness** — Do all artifacts carry traceability tables linking to upstream declared elements?
+9. **Business Modeling applicability (BR lens)** — Is the DC §4 business-process-led classification correct? Are BM artifacts expected? (Result: not business-process-led, BM correctly inactive)
 
 ### SCM State
 
 No open pull requests found. No CI build status to verify (Inception phase — no implementation code per RUP Ch.4).
-
 ## Findings
 ### Compliance Matrix
 
