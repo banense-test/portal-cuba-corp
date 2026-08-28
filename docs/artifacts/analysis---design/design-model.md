@@ -12,12 +12,12 @@
 ## Design Overview
 | Field | Value |
 |---|---|
-| Phase | Elaboration |
+| Phase | Construction |
 | Status | Draft |
-| Milestone Target | End of Elaboration (LCA) |
-| Iteration | 2 (Cycle 1) |
+| Milestone Target | End-of-Construction |
+| Iteration | 1 (Cycle 1) |
 | Date | 2026-08-28 |
-| Contributors | Designer (Analysis Classes, Use-Case Realizations, Design Classes, Interface Contracts, State Machines); User-Interface Designer (UI View/Controller Classes, UI Patterns, Boundary Classes and Navigation Map) |
+| Contributors | Designer (Analysis Classes, Use-Case Realizations, Design Classes, Interface Contracts, State Machines, Testability); User-Interface Designer (UI View/Controller Classes, UI Patterns, Boundary Classes and Navigation Map); Database Designer (Persistent Data Classes) |
 
 ### Technology Stack Alignment
 
@@ -38,7 +38,8 @@ The design follows a three-layer architecture as defined in the SAD Logical View
 |---|---|---|---|
 | Presentation | Portal.UI | MainPageModel, ClockingPageModel, AllClockingsModel, PublishNewsModel, EditNewsModel, NewsManagementModel, DirectorySearchModel, WorkerCategoryModel | (Razor Page Models — see UI View/Controller Classes section) |
 | Application Services | Portal.Services | ClockingService, NewsService, DirectoryService, WorkerCategoryService, AuditInterceptor | IClockingService, INewsService, IDirectoryService, IWorkerCategoryService, IAuditLogger |
-| Infrastructure | Portal.Infrastructure | LdapGateway, PersistenceGateway, ClockingRepository, NewsRepository, CategoryRepository, AuditRepository | ILdapGateway, IPersistence |
+| Infrastructure | Portal.Infrastructure | LdapGateway, PersistenceGateway, PortalDbContext, LdapSettings, LdapConnectionPool | ILdapGateway, IPersistence |
+| Domain | Portal.Domain | ClockingRecord, NewsItem, WorkerCategory, AuditRecord, DirectoryEntry, DateRange, ClockingResult, LdapSearchResult, ClockType, ClockStatus, NewsCategory, NewsStatus, AuditAction | (no interfaces — value objects and enums) |
 
 ### Design Mechanism Resolution (Three-Level Chain)
 
@@ -57,6 +58,17 @@ The design follows a three-layer architecture as defined in the SAD Logical View
 |---|---|---|
 | M1 — IAuditLogger signature mismatch | `Log()` → `LogAudit()` (avoids .NET `ILogger.Log()` collision) | Interface Contracts (INT-005), Use-Case Realizations (SEQ-005/006/007/010), Design Overview |
 | M2 — IPersistence transaction API mismatch | Removed `BeginTransaction()`/`CommitTransaction()`; added `ExecuteInTransactionAsync(Func<Task> action)` callback pattern | Interface Contracts (INT-007), Use-Case Realizations (SEQ-005/006/007/010), Design Overview |
+
+### Construction C1 — Design Completion Summary
+
+| Added Element | Section | Purpose |
+|---|---|---|
+| Portal.Services class diagram | Design Packages and Classes | Full method signatures for CLS-001–005 + INT-001–005 |
+| Portal.Infrastructure class diagram | Design Packages and Classes | Full method signatures for CLS-006–010 + INT-006–007 |
+| Portal.Domain class diagram | Design Packages and Classes | Full attributes for CLS-011–023 (enums, entities, value objects) |
+| Subsystem interface dependency diagram | Design Packages and Classes | Component-level view showing all interface dependencies |
+| NewsItem state machine | Capsules, Protocols and Signals | 3-state lifecycle (Draft → Published → Unpublished) with audit mapping |
+| Testability entry points | Capsules, Protocols and Signals | 10 DI seams with test replacement strategies and observable state |
 ## Domain Model
 Analysis classes identify the boundary, control, and entity stereotypes for each architecturally significant use case. These are the bridge from the Use-Case Model to design classes — each analysis class will be refined into one or more design classes in the Design Packages and Classes section.
 
