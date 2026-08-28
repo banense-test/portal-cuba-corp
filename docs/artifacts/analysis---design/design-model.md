@@ -2113,9 +2113,7 @@ title HR Dashboard — Wireframe
 ```
 
 ## Capsules, Protocols and Signals
-
-> Placeholder — Designer owns this section. Not applicable for Razor Pages architecture (no capsules/signals in this technology stack).
-
+Not applicable for this technology stack. The portal is a Razor Pages monolith on .NET 10 — no capsules, protocols, or signals are used. All communication is synchronous HTTP request/response within a single process.
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
