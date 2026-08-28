@@ -1,0 +1,51 @@
+@page
+@model PortalCubaCorp.Pages.HR.NewsManagementModel
+@{
+    ViewData["Title"] = "News Management";
+}
+
+<div class="card">
+    <h2 class="card-title">News Management</h2>
+    <div class="mb-md">
+        <a href="/HR/PublishNews" class="btn btn-primary">Publish New News Item</a>
+    </div>
+
+    @if (!Model.AllNews.Any())
+    {
+        <p class="text-muted">No news items yet.</p>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.AllNews)
+                {
+                    <tr>
+                        <td>@item.Title</td>
+                        <td><span class="category-chip">@item.Category</span></td>
+                        <td>@item.Status</td>
+                        <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>
+                            <a href="/HR/EditNews?id=@item.Id" class="btn btn-secondary btn-sm">Edit</a>
+                            @if (item.Status == NewsStatus.Published)
+                            {
+                                <form method="post" asp-page-handler="Unpublish" asp-route-id="@item.Id" style="display:inline">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Unpublish this news item? The record will be preserved.')">Unpublish</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

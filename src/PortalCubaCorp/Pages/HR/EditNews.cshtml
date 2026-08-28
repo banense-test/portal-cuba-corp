@@ -1,0 +1,50 @@
+@page
+@model PortalCubaCorp.Pages.HR.EditNewsModel
+@{
+    ViewData["Title"] = "Edit News";
+}
+
+<div class="card">
+    <h2 class="card-title">Edit News</h2>
+    @if (Model.Message != null)
+    {
+        <div class="alert alert-success">@Model.Message</div>
+    }
+    @if (Model.NewsItem == null)
+    {
+        <div class="alert alert-error">News item not found.</div>
+        <a href="/HR/NewsManagement" class="btn btn-secondary">Back to News Management</a>
+    }
+    else
+    {
+        <form method="post">
+            <input type="hidden" name="id" value="@Model.NewsItem.Id" />
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" value="@Model.NewsItem.Title" class="form-control" required maxlength="500" />
+            </div>
+            <div class="form-group">
+                <label for="body">Body</label>
+                <textarea id="body" name="body" class="form-control" required>@Model.NewsItem.Body</textarea>
+            </div>
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category" name="category" class="form-control">
+                    @foreach (var cat in Model.Categories)
+                    {
+                        @if (cat == Model.NewsItem.Category)
+                        {
+                            <option value="@cat" selected>@cat</option>
+                        }
+                        else
+                        {
+                            <option value="@cat">@cat</option>
+                        }
+                    }
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="/HR/NewsManagement" class="btn btn-secondary">Cancel</a>
+        </form>
+    }
+</div>

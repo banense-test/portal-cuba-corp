@@ -1,0 +1,39 @@
+@page
+@model PortalCubaCorp.Pages.HR.PublishNewsModel
+@{
+    ViewData["Title"] = "Publish News";
+}
+
+<div class="card">
+    <h2 class="card-title">Publish News</h2>
+    @if (Model.Message != null)
+    {
+        <div class="alert alert-success">@Model.Message</div>
+    }
+    <form method="post">
+        <div class="form-group">
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title" class="form-control" required maxlength="500" />
+        </div>
+        <div class="form-group">
+            <label for="body">Body</label>
+            <textarea id="body" name="body" class="form-control" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category" name="category" class="form-control">
+                @foreach (var cat in Model.Categories)
+                {
+                    <option value="@cat">@cat</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="isFeatured" value="true" /> Featured (banner at top)
+            </label>
+        </div>
+        <button type="submit" class="btn btn-primary">Publish</button>
+        <a href="/HR/NewsManagement" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>

@@ -1,0 +1,50 @@
+@page
+@model PortalCubaCorp.Pages.HR.AllClockingsModel
+@{
+    ViewData["Title"] = "All Clockings";
+}
+
+<div class="card">
+    <h2 class="card-title">All Employee Clockings</h2>
+    <form method="get" class="flex-row mb-md">
+        <div class="form-group" style="flex:1">
+            <label for="year">Year</label>
+            <input type="number" name="year" value="@Model.Year" class="form-control" />
+        </div>
+        <div class="form-group" style="flex:1">
+            <label for="month">Month</label>
+            <input type="number" name="month" value="@Model.Month" min="1" max="12" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-primary" style="align-self:flex-end">Filter</button>
+        <a href="/HR/AllClockings/Export?year=@Model.Year&month=@Model.Month" class="btn btn-secondary" style="align-self:flex-end">Export CSV</a>
+    </form>
+
+    @if (!Model.Clockings.Any())
+    {
+        <p class="text-muted">No clocking records found for @Model.Year-@Model.Month.ToString("D2").</p>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Direction</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var record in Model.Clockings)
+                {
+                    <tr>
+                        <td>@record.EmployeeId</td>
+                        <td>@record.Timestamp.ToString("yyyy-MM-dd")</td>
+                        <td>@record.Timestamp.ToString("HH:mm:ss")</td>
+                        <td>@(record.Type == ClockType.In ? "IN" : "OUT")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

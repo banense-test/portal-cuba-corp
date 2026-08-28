@@ -1,0 +1,76 @@
+@page
+@model PortalCubaCorp.Pages.HR.WorkerCategoryModel
+@{
+    ViewData["Title"] = "Worker Categories";
+}
+
+<div class="card">
+    <h2 class="card-title">Manage Worker Categories</h2>
+    <p class="text-muted">Assign a worker category to an AD user. Only AD user ID and category are stored (CON-009).</p>
+
+    <div class="mb-md">
+        <form method="get" class="flex-row">
+            <input type="text" name="searchQuery" value="@Model.SearchQuery" placeholder="Search AD user by name..." class="search-box" style="flex:1" />
+            <button type="submit" class="btn btn-primary">Search AD</button>
+        </form>
+    </div>
+
+    @if (Model.SearchResults.Any())
+    {
+        <table class="directory-table">
+            <thead>
+                <tr>
+                    <th>AD User ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entry in Model.SearchResults)
+                {
+                    <tr>
+                        <td>@entry.AdUserId</td>
+                        <td>@entry.DisplayName</td>
+                        <td>@entry.Department</td>
+                        <td>
+                            <form method="post" asp-page-handler="Assign" style="display:inline-flex; gap:4px; align-items:center;">
+                                <input type="hidden" name="adUserId" value="@entry.AdUserId" />
+                                <input type="text" name="category" placeholder="Category" class="form-control" style="width:120px" required />
+                                <button type="submit" class="btn btn-primary btn-sm">Assign</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="card">
+    <h2 class="card-title">Assigned Categories</h2>
+    @if (!Model.Categories.Any())
+    {
+        <p class="text-muted">No worker categories assigned yet.</p>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>AD User ID</th>
+                    <th>Category</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var wc in Model.Categories)
+            {
+                    <tr>
+                        <td>@wc.AdUserId</td>
+                        <td>@wc.Category</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
