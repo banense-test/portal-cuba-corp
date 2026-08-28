@@ -51,9 +51,189 @@ The design follows a three-layer architecture as defined in the SAD Logical View
 | Offline Retry | Client-side localStorage + POST retry with idempotency key; 5-min window; server accepts client timestamp | clocking-retry.js + IClockingService idempotencyKey param | COMP-002 |
 | CSV Export | Streaming response; HR-only; date-range filtered | IClockingService.ExportCsv returns Stream → Razor Page writes to Response.Body | COMP-002 |
 ## Domain Model
+Analysis classes identify the boundary, control, and entity stereotypes for each architecturally significant use case. These are the bridge from the Use-Case Model to design classes — each analysis class will be refined into one or more design classes in the Design Packages and Classes section.
 
-> Placeholder — Designer owns this section. Will be populated with domain class diagram and entity relationships.
+### Analysis Class Catalog
 
+| ID | Name | Stereotype | UC | Responsibility | SAD Component |
+|---|---|---|---|---|---|
+| ACL-001 | ClockingUI | <<boundary>> | UC-001 | Display clock in/out button; capture timestamp; show confirmation; manage localStorage retry | COMP-002 |
+| ACL-002 | ClockingController | <<control>> | UC-001, UC-002, UC-003, UC-004 | Record clocking with idempotency; get current status; get history; get all clockings; export CSV | COMP-002 |
+| ACL-003 | ClockingRecord | <<entity>> | UC-001 | Persist clocking entry: employeeId, timestamp, clockType, idempotencyKey | COMP-006 |
+| ACL-004 | DirectorySearchUI | <<boundary>> | UC-009 | Display search form; display results; warn about missing AD attributes | COMP-001 |
+| ACL-005 | DirectoryController | <<control>> | UC-009 | Search AD via LDAP; map LDAP attributes to DirectoryEntry; handle missing attributes (R001) | COMP-001, COMP-005 |
+| ACL-006 | DirectoryEntry | <<entity>> | UC-009 | Value object: name, jobTitle, department, office, email, extension — projected from AD at read time | COMP-005 |
+| ACL-007 | NewsUI | <<boundary>> | UC-005, UC-006, UC-007 | Display publish/edit forms; display news list; confirm unpublish | COMP-003 |
+| ACL-008 | NewsController | <<control>> | UC-005, UC-006, UC-007 | Publish, edit, unpublish news; integrate audit trail; list published and all | COMP-003, COMP-008 |
+| ACL-009 | NewsItem | <<entity>> | UC-005, UC-006, UC-007, UC-008 | News content: title, body, category, status, createdBy, createdAt, isFeatured | COMP-006 |
+| ACL-010 | AuditRecord | <<entity>> | UC-005, UC-006, UC-007, UC-010 | Append-only audit: entityType, entityId, action, author, timestamp | COMP-008 |
+| ACL-011 | CategoryUI | <<boundary>> | UC-010 | Display category list; display assign form; show confirmation | COMP-004 |
+| ACL-012 | CategoryController | <<control>> | UC-010 | Assign category; list categories; lookup AD user | COMP-004, COMP-005 |
+| ACL-013 | WorkerCategory | <<entity>> | UC-010 | AD user id → category link (two columns, nothing else) | COMP-006 |
+| ACL-014 | NewsFeedUI | <<boundary>> | UC-008 | Display news feed; filter by category; display featured banners | COMP-003 |
+| ACL-015 | NewsFeedController | <<control>> | UC-008 | Get published news; get featured news | COMP-003 |
+
+### Analysis Class Diagram
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Analysis Classes (Elaboration)
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "UC-001: Clock In / Clock Out" {
+  class "ClockingUI" as ACL001 <<boundary>> {
+    + displayClockButton(status)
+    + captureTimestamp()
+    + showConfirmation(record)
+    + storeLocalForRetry(data)
+    + retryPost()
+  }
+  class "ClockingController" as ACL002 <<control>> {
+    + recordClocking(empId, timestamp, type, idempotencyKey)
+    + getCurrentStatus(empId)
+    + getHistory(empId, month)
+    + getAllClockings(month)
+    + exportCsv(month)
+  }
+  class "ClockingRecord" as ACL003 <<entity>> {
+    + employeeId : string
+    + timestamp : DateTime
+    + clockType : ClockType
+    + idempotencyKey : string
+  }
+}
+
+package "UC-009: Search Employee Directory" {
+  class "DirectorySearchUI" as ACL004 <<boundary>> {
+    + displaySearchForm()
+    + displayResults(entries)
+    + displayMissingAttrWarning()
+  }
+  class "DirectoryController" as ACL005 <<control>> {
+    + search(query) : List<DirectoryEntry>
+    + mapLdapAttributes(entry) : DirectoryEntry
+  }
+  class "DirectoryEntry" as ACL006 <<entity>> {
+    + name : string
+    + jobTitle : string
+    + department : string
+    + office : string
+    + email : string
+    + extension : string
+  }
+}
+
+package "UC-005/006/007: News Lifecycle" {
+  class "NewsUI" as ACL007 <<boundary>> {
+    + displayPublishForm()
+    + displayEditForm(item)
+    + displayNewsList(items)
+    + confirmUnpublish(id)
+  }
+  class "NewsController" as ACL008 <<control>> {
+    + publish(title, body, category, authorId)
+    + edit(id, title, body, category, authorId)
+    + unpublish(id, authorId)
+    + listPublished()
+    + listAll()
+  }
+  class "NewsItem" as ACL009 <<entity>> {
+    + id : Guid
+    + title : string
+    + body : string
+    + category : NewsCategory
+    + status : NewsStatus
+    + createdBy : string
+    + createdAt : DateTime
+    + isFeatured : bool
+  }
+  class "AuditRecord" as ACL010 <<entity>> {
+    + entityType : string
+    + entityId : Guid
+    + action : AuditAction
+    + author : string
+    + timestamp : DateTime
+  }
+}
+
+package "UC-010: Manage Worker Category" {
+  class "CategoryUI" as ACL011 <<boundary>> {
+    + displayCategoryList()
+    + displayAssignForm()
+    + showConfirmation()
+  }
+  class "CategoryController" as ACL012 <<control>> {
+    + assignCategory(adUserId, category, authorId)
+    + listCategories()
+    + lookupAdUser(query)
+  }
+  class "WorkerCategory" as ACL013 <<entity>> {
+    + adUserId : string
+    + category : string
+  }
+}
+
+package "UC-008: Read and Filter News" {
+  class "NewsFeedUI" as ACL014 <<boundary>> {
+    + displayNewsFeed(items)
+    + filterByCategory(cat)
+    + displayFeatured(items)
+  }
+  class "NewsFeedController" as ACL015 <<control>> {
+    + getPublishedNews(category?)
+    + getFeaturedNews()
+  }
+}
+
+ACL001 --> ACL002
+ACL002 --> ACL003
+ACL004 --> ACL005
+ACL005 --> ACL006
+ACL007 --> ACL008
+ACL008 --> ACL009
+ACL008 --> ACL010
+ACL011 --> ACL012
+ACL012 --> ACL013
+ACL014 --> ACL015
+ACL015 --> ACL009
+
+note right of ACL005
+  R001: LDAP attribute
+  consistency risk —
+  fallback to "N/A" for
+  missing fields
+end note
+
+note right of ACL002
+  AC-005: offline retry
+  via localStorage +
+  idempotency key
+  NFR-002: <1s response
+end note
+
+note right of ACL008
+  NFR-004: audit trail
+  for publish/edit/unpublish
+  AuditRecord is append-only
+end note
+
+@enduml
+```
+
+### Design Mechanism Resolution Summary
+
+Each analysis mechanism from Inception is resolved to a design mechanism (pattern + properties). Implementation mechanisms are specified only where the stakeholder declared the technology.
+
+| Analysis Mechanism | Design Mechanism | Properties | Implementation (where declared) |
+|---|---|---|---|
+| Persistence | Repository + Unit of Work (EF Core DbContext) | Transactional; unique index on clockings.idempotency_key; append-only audit_records | EF Core 10 + Npgsql (CON-001, CON-003) |
+| LDAP Directory Access | Gateway (read-only) | Connection pooling; attribute mapping with fallback; no writes to AD | Novell.Directory.Ldap.NETStandard (CON-005) |
+| Authentication | OIDC Client | Token validation; role extraction from claims; no local user store | Keycloak existing (CON-004) |
+| Audit Trail | Interceptor (same transaction) | Append-only; author from OIDC token; timestamp from server; never hard-delete news | EF Core SaveInterceptor (CON-001) |
+| Offline Retry | localStorage + POST Retry | 5-min window; idempotency key prevents duplicates; server accepts client timestamp; clocking only | clocking-retry.js (CON-002) |
+| CSV Export | Streaming Response | HR-only; date-range filtered; streaming to Response.Body | .NET 10 FileStreamResult (CON-001) |
 ## Use-Case Realizations
 
 > Placeholder — Designer owns this section. Will be populated with use-case realizations (sequence diagrams, collaboration diagrams) for each UC.
