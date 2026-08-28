@@ -43,7 +43,7 @@ public class NewsService : INewsService
         _persistence.SaveNewsItem(item);
 
         // Audit trail (NFR-004)
-        _auditLogger.Log("NEWS_ITEM", item.Id.ToString(), AuditAction.Publish, authorId, now);
+        _auditLogger.LogAudit("NEWS_ITEM", item.Id.ToString(), AuditAction.Publish, authorId, now);
 
         return item;
     }
@@ -61,7 +61,7 @@ public class NewsService : INewsService
         var updated = _persistence.UpdateNewsItem(id, title, body, category);
 
         // Audit trail (NFR-004)
-        _auditLogger.Log("NEWS_ITEM", id.ToString(), AuditAction.Edit, authorId, DateTime.UtcNow);
+        _auditLogger.LogAudit("NEWS_ITEM", id.ToString(), AuditAction.Edit, authorId, DateTime.UtcNow);
 
         return updated;
     }
@@ -75,7 +75,7 @@ public class NewsService : INewsService
         var updated = _persistence.UpdateNewsStatus(id, NewsStatus.Unpublished);
 
         // Audit trail (NFR-004)
-        _auditLogger.Log("NEWS_ITEM", id.ToString(), AuditAction.Unpublish, authorId, DateTime.UtcNow);
+        _auditLogger.LogAudit("NEWS_ITEM", id.ToString(), AuditAction.Unpublish, authorId, DateTime.UtcNow);
 
         return updated;
     }

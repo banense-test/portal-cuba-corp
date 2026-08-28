@@ -16,7 +16,7 @@ public class AuditInterceptor : IAuditLogger
         _persistence = persistence;
     }
 
-    public void Log(string entityType, string entityId, AuditAction action, string author, DateTime timestamp)
+    public void LogAudit(string entityType, string entityId, AuditAction action, string author, DateTime timestamp)
     {
         var record = new AuditRecord
         {
