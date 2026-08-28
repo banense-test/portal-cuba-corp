@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Moq;
 using PortalCubaCorp.Application;
 using PortalCubaCorp.Domain;
 using PortalCubaCorp.Pages;
 using PortalCubaCorp.Pages.HR;
+using System.Security.Claims;
 using Xunit;
 
 namespace PortalCubaCorp.Tests;
@@ -20,7 +22,6 @@ public class PresentationTests
     [Fact]
     public void IndexModel_OnGet_PopulatesNewsAndStatus()
     {
-        // Arrange
         var clockingSvc = new Mock<IClockingService>();
         clockingSvc.Setup(s => s.GetCurrentStatus(It.IsAny<string>())).Returns(ClockStatus.ClockedOut);
         var newsSvc = new Mock<INewsService>();
@@ -34,10 +35,8 @@ public class PresentationTests
         var model = new IndexModel(clockingSvc.Object, newsSvc.Object);
         SetupUser(model, "emp123");
 
-        // Act
         model.OnGet(null);
 
-        // Assert
         Assert.Equal(ClockStatus.ClockedOut, model.CurrentStatus);
         Assert.Single(model.News);
         Assert.Empty(model.FeaturedNews);
@@ -46,7 +45,6 @@ public class PresentationTests
     [Fact]
     public void IndexModel_OnGet_WithCategory_FiltersNews()
     {
-        // Arrange
         var clockingSvc = new Mock<IClockingService>();
         clockingSvc.Setup(s => s.GetCurrentStatus(It.IsAny<string>())).Returns(ClockStatus.ClockedIn);
         var newsSvc = new Mock<INewsService>();
@@ -59,10 +57,8 @@ public class PresentationTests
         var model = new IndexModel(clockingSvc.Object, newsSvc.Object);
         SetupUser(model, "emp123");
 
-        // Act
         model.OnGet(NewsCategory.HR);
 
-        // Assert
         Assert.Equal(NewsCategory.HR, model.SelectedCategory);
         Assert.Single(model.News);
         Assert.Equal("HR News", model.News[0].Title);
@@ -217,7 +213,7 @@ public class PresentationTests
         var model = new PublishNewsModel(newsSvc.Object);
         SetupUser(model, "hr-user-1");
 
-        var result = model.OnPost("Test", "Body", NewsCategory.HR, false);
+        model.OnPost("Test", "Body", NewsCategory.HR, false);
 
         newsSvc.Verify(s => s.Publish("Test", "Body", NewsCategory.HR, "hr-user-1"), Times.Once);
         Assert.NotNull(model.Message);
@@ -320,7 +316,7 @@ public class PresentationTests
         model.OnPostUnpublish(id);
 
         newsSvc.Verify(s => s.Unpublish(id, "hr-user-1"), Times.Once);
-        newsSvc.Verify(s => s.ListAll(), Times.Exactly(2)); // OnGet + refresh after unpublish
+        newsSvc.Verify(s => s.ListAll(), Times.Exactly(2));
     }
 
     // --- WorkerCategoryModel (V008) — UC-010 ---
@@ -378,15 +374,12 @@ public class PresentationTests
 
     // --- Helper: setup user claims on PageModel ---
 
-    private static void SetupUser(Microsoft.AspNetCore.Mvc.RazorPages.PageModel model, string userId)
+    private static void SetupUser(PageModel model, string userId)
     {
-        var claims = new[]
-        {
-            new System.Security.Claims.Claim("sub", userId)
-        };
-        var identity = new System.Security.Claims.ClaimsIdentity(claims, "Test");
-        var principal = new System.Security.Claims.ClaimsPrincipal(identity);
-        model.PageContext = new Microsoft.AspNetCore.Mvc.RazorPages.PageContext
+        var claims = new[] { new Claim("sub", userId) };
+        var identity = new ClaimsIdentity(claims, "Test");
+        var principal = new ClaimsPrincipal(identity);
+        model.PageContext = new PageContext
         {
             HttpContext = new DefaultHttpContext { User = principal }
         };
