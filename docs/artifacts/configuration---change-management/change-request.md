@@ -248,108 +248,55 @@ stop
 | #17 | CR-017 | UC-001, CON-004 | Local | Medium priority — dead code cleanup, related to #24 |
 | #18 | CR-018 | CR-011 dependency | Local | Low priority — test behavior codification, resolved by #11 completion |
 ## Decisions and Status
+### CCB Decisions — Construction C2 (2026-08-28)
 
-### CCB Decisions — Construction C1 (2026-08-28)
+| Issue # | CR | Decision | Rationale | CCB Members | Executor |
+|---|---|---|---|---|---|
+| #22 | C2-CRIT-1 | **APPROVED** | Critical blocker — UC-001 non-functional (404). Must fix in C2 rework. | CCM (chair) | implementer |
+| #23 | C2-MAJ-2 | **APPROVED** | High priority — UC-001 POST rejected with 400. Must fix in C2 rework. | CCM (chair) | implementer |
+| #24 | C2-MIN-2 | **APPROVED** | Security defect — identity must come from OIDC token (CON-004), not client. Approved despite medium priority due to security implications. | CCM (chair) | implementer |
+| #25 | — | **APPROVED** | High priority — 9 of 10 UCs have no UI. Largest gap in C2 deliverable. Must implement in C2 rework. | CCM (chair) | implementer |
+| #26 | — | **APPROVED** | Critical blocker — C2 baseline cannot close without Architect sign-off on PR #21. Process gate. | CCM (chair) | software-architect |
+| #27 | C2-MAJ-1 | **APPROVED** | High priority — UC-006 non-functional (form binding mismatch). Must fix in C2 rework. | CCM (chair) | implementer |
 
-| CR | Decision | Rationale | CCB Members |
-|---|---|---|---|
-| CR-001 | APPROVED | Highest-exposure risk (R001, exposure=9). Architect concurred. PoC must execute in C1. | CCM, Architect |
-| CR-002 | APPROVED | AC-005 acceptance criterion. Architect concurred. Design validation required in C1. | CCM, Architect |
-| CR-003 | DEFERRED | Medium priority. Capacity allocated to high/critical CRs. Re-evaluate next iteration. | CCM, PM |
-| CR-006 | APPROVED (prior) | Critical blocker — all 20 test cases blocked. Carried forward from Elaboration. | CCM, Architect |
-| CR-010 | APPROVED | MAJOR-1 finding blocks PR #8 merge. FR-008 non-functional. Must fix in C1. | CCM |
-| CR-011 | APPROVED | High priority — potential data loss. Simple fix. Must fix in C1. | CCM |
-| CR-012 | DEFERRED | Medium priority, non-blocking. Next iteration. | CCM |
-| CR-013 | DEFERRED | Medium priority, non-blocking. Next iteration. | CCM |
-| CR-014 | DEFERRED | Low priority, trivial. Next iteration. | CCM |
-| CR-015 | DEFERRED | Medium priority, non-blocking. Next iteration. | CCM |
-| CR-016 | APPROVED | Blocker — Construction baseline cannot proceed without Architect approval on PR #9. | CCM, Architect |
-| CR-017 | DEFERRED | Medium priority, non-blocking. Next iteration. | CCM |
-| CR-018 | DEFERRED | Low priority, depends on CR-011. Next iteration. | CCM |
+### Completed CRs — Closure Record
 
-### CR Lifecycle Activity
-
-```plantuml
-@startuml CR_Lifecycle_Activity
-title CR Lifecycle Activity — Construction C1 (2026-08-28)
-
-skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-
-start
-
-:Discover: 12 open issues
-from SCM;
-
-:Ingest: Promote #15, #16 to CRs
-(label: change-request + cr:logged)
-Create #17, #18 from Review Record
-findings MINOR-2, MINOR-4;
-
-:Triage: Classify all 13 CRs
-along 4 axes (priority, severity,
-nature, impact)
-Normalize #1, #2 architect label;
-
-:Architect Gate: #1, #2 already
-concurred (architect-concurred)
-No CRs parked;
-
-:CCB Decision;
-if (Priority high/critical\n& fits C1 capacity?) then (yes)
-  :APPROVE (5 CRs)
-  #1 -> assigned:software-architect
-  #2 -> assigned:software-architect
-  #10 -> assigned:implementer
-  #11 -> assigned:implementer
-  #16 -> assigned:software-architect;
-else (no)
-  :DEFER (7 CRs)
-  #3, #12, #13, #14, #15,
-  #17, #18 -> next iteration;
-endif
-
-:Verify & Close: Check approved
-CRs for merged PRs
-PR #4 closed (merge unconfirmed)
-PR #8, #9 still open
-No CRs closeable this iteration;
-
-:Metrics: 13 total CRs
-6 approved (46%)
-7 deferred (54%)
-0 rejected
-0 completed
-Closure rate: 0% (first C1 cycle);
-
-stop
-
-@enduml
-```
-
-### Verification Status
-
-| Approved CR | Linked PR | PR State | Merge Status | CR Closure |
+| Issue # | CR | Closure Date | Verified Via | Closure Rationale |
 |---|---|---|---|---|
-| CR-006 (#6) | PR #4 | closed | Unconfirmed | Open — cannot verify merge |
-| CR-001 (#1) | None | — | — | Open — implementation not started |
-| CR-002 (#2) | None | — | — | Open — implementation not started |
-| CR-010 (#10) | None | — | — | Open — implementation not started |
-| CR-011 (#11) | None | — | — | Open — implementation not started |
-| CR-016 (#16) | None | — | — | Open — awaiting Architect action |
+| #6 | CR-006 | 2026-08-28 | PR #4 closed/merged | Architectural prototype on main; all 20 test cases unblocked |
+| #10 | CR-010 | 2026-08-28 | PR #20 closed/merged; Review Record MAJOR-1 RESOLVED | IsFeatured flag fully implemented across NewsService, PersistenceGateway, and UI |
+| #11 | CR-011 | 2026-08-28 | PR #20 closed/merged; Review Record MINOR-3 RESOLVED | Idempotency key scoped per employee with composite unique index |
+
+### Carried-Forward Approved CRs (no PRs yet)
+
+| Issue # | CR | State | Executor | Notes |
+|---|---|---|---|---|
+| #1 | CR-001 | cr:approved | software-architect | LDAP PoC — architect-concurred, awaiting implementation |
+| #2 | CR-002 | cr:approved | software-architect | Offline Retry — architect-concurred, awaiting implementation |
 
 ### Deferred CRs — Next Iteration Pickup
 
-The following 7 CRs are deferred to the next Construction iteration. They retain `cr:deferred-next-iteration` and will be re-evaluated by the CCB:
+| Issue # | CR | Priority | Notes |
+|---|---|---|---|
+| #3 | CR-003 | medium | Audit trail validation — pick up in integration testing |
+| #12 | CR-012 | medium | CSV export format — minor formatting fix |
+| #13 | CR-013 | medium | Test assertion fix — not blocking |
+| #14 | CR-014 | low | Placeholder test — cleanup |
+| #15 | CR-015 | medium | Naming violation — convention fix |
+| #17 | CR-017 | medium | Dead code DTO — related to #24 resolution |
+| #18 | CR-018 | low | Test codifies bug — resolved by #11 completion; may close next iteration |
 
-1. **CR-003** (#3) — Audit trail validation (NFR-004) — medium priority
-2. **CR-012** (#12) — CSV export format — medium priority
-3. **CR-013** (#13) — Test assertion mismatch — medium priority
-4. **CR-014** (#14) — Placeholder test — low priority
-5. **CR-015** (#15) — Naming violation — medium priority
-6. **CR-017** (#17) — Dead code DTO field — medium priority
-7. **CR-018** (#18) — Test codifies bug — low priority (depends on CR-011)
+### Process Health Metrics
 
+| Metric | C1 | C2 | Trend |
+|---|---|---|---|
+| Total CRs | 13 | 18 (+5) | ↑ Volume increasing (expected in Construction) |
+| Approved | 6 | 11 (+5) | ↑ Approval rate steady |
+| Completed | 0 | 3 (+3) | ↑ Closure rate improving from 0% |
+| Deferred | 7 | 7 (0) | → Stable backlog |
+| Rejected | 0 | 0 | → No invalid CRs |
+| Closure Rate | 0% | 27% | ↑ First closures — process working |
+| Avg Age (approved, no PR) | N/A | 2 iterations (#1, #2) | ⚠ Architectural CRs aging — need PRs |
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
