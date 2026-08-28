@@ -891,6 +891,63 @@ end note
 ## Interface Contracts
 All subsystem boundaries are defined by interfaces. No concrete class is referenced across a subsystem boundary — services depend on interfaces, not implementations.
 
+### Iteration 2 — M1/M2 Resolution
+
+Two Major findings from the E1 PR Code Review (M1: IAuditLogger signature mismatch, M2: IPersistence transaction API mismatch) are resolved below. The implementation diverged from the Design Model for valid .NET 10 / EF Core idiomatic reasons. Per the lesson learned ("Design Model must be updated when implementation diverges for good reason — silent divergence is always a finding"), the Design Model is updated to match the implementation's valid choices.
+
+| Finding | Root Cause | Resolution |
+|---|---|---|
+| M1 — IAuditLogger (INT-005) | Design Model specified `Log()`; implementation uses `LogAudit()` | `Log()` collides with `Microsoft.Extensions.Logging.ILogger.Log()` in .NET 10. `LogAudit()` is the correct idiom. Design Model updated to `LogAudit`. |
+| M2 — IPersistence (INT-007) | Design Model specified `BeginTransaction()` / `CommitTransaction()`; implementation does not expose them | EF Core `DbContext.Database.BeginTransaction()` already provides transaction management. Re-exposing via `IPersistence` is redundant. Replaced with `ExecuteInTransactionAsync(Func<Task> action)` — callback pattern that wraps EF Core transaction, keeps `IPersistence` mockable, and hides `DbContext` from services. |
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Interface Contracts (INT-005 + INT-007 Corrected, Iteration 2)
+
+skinparam classAttributeIconSize 0
+
+interface "IAuditLogger\n(INT-005)" as INT005 {
+  + LogAudit(entityType: string, entityId: Guid, action: AuditAction, author: string, timestamp: DateTime) : void
+}
+
+interface "IPersistence\n(INT-007)" as INT007 {
+  + GetClockingsByEmployee(empId: string, range: DateRange) : List<ClockingRecord>
+  + GetAllClockingsForMonth(range: DateRange) : List<ClockingRecord>
+  + InsertClocking(record: ClockingRecord) : ClockingRecord
+  + FindByIdempotencyKey(key: string) : ClockingRecord?
+  + GetNewsItem(id: Guid) : NewsItem?
+  + SaveNewsItem(item: NewsItem) : NewsItem
+  + UpdateNewsItem(id: Guid, title: string, body: string, category: NewsCategory) : NewsItem
+  + UpdateNewsStatus(id: Guid, status: NewsStatus) : NewsItem
+  + GetPublishedNews(category: NewsCategory?) : List<NewsItem>
+  + GetFeaturedNews() : List<NewsItem>
+  + GetAllNewsItems() : List<NewsItem>
+  + UpsertWorkerCategory(adUserId: string, category: string) : WorkerCategory
+  + GetAllWorkerCategories() : List<WorkerCategory>
+  + InsertAuditRecord(record: AuditRecord) : void
+  + ExecuteInTransactionAsync(action: Func<Task>) : Task
+}
+
+note right of INT005
+  M1 RESOLVED: Renamed Log() to LogAudit()
+  to avoid collision with
+  Microsoft.Extensions.Logging.ILogger.Log()
+  in .NET 10.
+end note
+
+note right of INT007
+  M2 RESOLVED: Removed BeginTransaction()
+  and CommitTransaction() — redundant with
+  EF Core DbContext.Database.BeginTransaction().
+  Replaced with ExecuteInTransactionAsync(callback):
+  services pass a delegate, IPersistence wraps it
+  in a DB transaction. Aligns with EF Core idioms
+  and keeps IPersistence testable via mock.
+end note
+
+@enduml
+```
+
 ### INT-001: IClockingService (COMP-002)
 
 | Operation | Signature | Precondition | Postcondition |
@@ -927,11 +984,13 @@ All subsystem boundaries are defined by interfaces. No concrete class is referen
 | ListCategories | `List<WorkerCategory> ListCategories()` | Caller has HR role | Returns all worker category records from local DB |
 | LookupAdUser | `List<DirectoryEntry> LookupAdUser(string query)` | Caller has HR role | Returns DirectoryEntry list from AD matching query (for HR to find AD user id before assigning category) |
 
-### INT-005: IAuditLogger (COMP-008)
+### INT-005: IAuditLogger (COMP-008) — M1 RESOLVED (Iteration 2)
+
+> **M1 Resolution:** Method renamed from `Log()` to `LogAudit()` to avoid collision with `Microsoft.Extensions.Logging.ILogger.Log()` in .NET 10. The implementation's divergence was valid — the Design Model is updated to match.
 
 | Operation | Signature | Precondition | Postcondition |
 |---|---|---|---|
-| Log | `void Log(string entityType, Guid entityId, AuditAction action, string author, DateTime timestamp)` | Called within an active DB transaction | AuditRecord inserted into audit_records table (append-only, never updated or deleted) |
+| LogAudit | `void LogAudit(string entityType, Guid entityId, AuditAction action, string author, DateTime timestamp)` | Called within an active DB transaction (via `IPersistence.ExecuteInTransactionAsync`) | AuditRecord inserted into audit_records table (append-only, never updated or deleted) |
 
 ### INT-006: ILdapGateway (COMP-005)
 
@@ -941,14 +1000,16 @@ All subsystem boundaries are defined by interfaces. No concrete class is referen
 | GetEntryByUserId | `LdapSearchResult? GetEntryByUserId(string adUserId)` | adUserId non-empty | Returns LDAP entry for user or null if not found |
 | ResolveNames | `Dictionary<string, string> ResolveNames(List<string> adUserIds)` | adUserIds non-empty list | Returns mapping of adUserId → display name from AD cn attribute |
 
-### INT-007: IPersistence (COMP-006)
+### INT-007: IPersistence (COMP-006) — M2 RESOLVED (Iteration 2)
+
+> **M2 Resolution:** Removed `BeginTransaction()` / `CommitTransaction()` — redundant with EF Core `DbContext.Database.BeginTransaction()`. Replaced with `ExecuteInTransactionAsync(Func<Task> action)` callback pattern: services pass a delegate, `IPersistence` wraps it in a DB transaction. This aligns with EF Core idioms, keeps `IPersistence` mockable in tests, and hides `DbContext` from the application layer.
 
 | Operation | Signature | Precondition | Postcondition |
 |---|---|---|---|
 | GetClockingsByEmployee | `List<ClockingRecord> GetClockingsByEmployee(string empId, DateRange range)` | empId non-empty | Returns clockings for employee within range |
 | GetAllClockingsForMonth | `List<ClockingRecord> GetAllClockingsForMonth(DateRange range)` | — | Returns all clockings within range |
 | InsertClocking | `ClockingRecord InsertClocking(ClockingRecord record)` | record.IdempotencyKey is unique | Inserts and returns saved record; unique constraint enforced by DB index |
-| FindByImpotencyKey | `ClockingRecord? FindByImpotencyKey(string key)` | key non-empty | Returns existing record or null |
+| FindByIdempotencyKey | `ClockingRecord? FindByIdempotencyKey(string key)` | key non-empty | Returns existing record or null |
 | GetNewsItem | `NewsItem? GetNewsItem(Guid id)` | — | Returns NewsItem or null |
 | SaveNewsItem | `NewsItem SaveNewsItem(NewsItem item)` | item non-null | Inserts new NewsItem, returns with generated Id |
 | UpdateNewsItem | `NewsItem UpdateNewsItem(Guid id, string title, string body, NewsCategory category)` | NewsItem with id exists | Updates title/body/category; does NOT change status |
@@ -959,8 +1020,7 @@ All subsystem boundaries are defined by interfaces. No concrete class is referen
 | UpsertWorkerCategory | `WorkerCategory UpsertWorkerCategory(string adUserId, string category)` | adUserId non-empty | Inserts or updates worker_categories row (2 columns only per CON-009) |
 | GetAllWorkerCategories | `List<WorkerCategory> GetAllWorkerCategories()` | — | Returns all worker category records |
 | InsertAuditRecord | `void InsertAuditRecord(AuditRecord record)` | Called within active transaction | Appends audit record (never updated or deleted) |
-| BeginTransaction | `IDbTransaction BeginTransaction()` | — | Begins a new DB transaction |
-| CommitTransaction | `void CommitTransaction()` | Transaction is active | Commits the current transaction |
+| ExecuteInTransactionAsync | `Task ExecuteInTransactionAsync(Func<Task> action)` | — | Wraps `action` in a DB transaction via EF Core `DbContext.Database.BeginTransactionAsync()`; commits on success, rolls back on exception |
 ## Persistent Data Classes
 > **Contributed by:** Database Designer (Analysis & Design Discipline)
 > **Persistence Engine:** PostgreSQL (CON-003 — declared by stakeholder)
