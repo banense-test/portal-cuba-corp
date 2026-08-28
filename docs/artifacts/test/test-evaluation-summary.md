@@ -5,116 +5,148 @@
 | Phase | Elaboration |
 | Status | Draft |
 | Milestone Target | End of Elaboration (LCA) |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
 | Prior Phase | Inception — Test Evaluation Summary (Approved) |
 | Test Plan Status | [OMITTED: Test Plan — trigger not fired; per-iteration testing scope lives in the Iteration Plan] |
+| Iter 1 Verdict | APPROVED — no findings against Test Evaluation Summary |
+| Iter 2 Driver | Additional Instructions: update with detailed schedule, resources, test types, and acceptance criteria for the architecture milestone |
 
 ## Test Scope
 
-### Evaluation Mission (Elaboration Iteration 1)
+### Evaluation Mission (Elaboration Iteration 2)
 
-The Evaluation Mission for Elaboration E1 is **architectural validation through the prototype PR** — confirming that the architecturally significant decisions (LDAP integration, OIDC authentication, offline clocking retry, audit trail pattern, persistence layer) are sound, testable, and that the prototype's test suite provides adequate coverage for the risk-driven areas identified in the Risk List and Change Requests.
+The Evaluation Mission for Elaboration Iteration 2 evolves from the Iteration 1 mission (architectural validation through prototype PR) to **architecture milestone readiness verification** — confirming that the LCA milestone conditions are met from a test perspective, incorporating detailed test schedule, resources, test types, and acceptance criteria for the architecture milestone.
 
-**Mission objectives:**
+**Mission objectives (evolved from Iter 1):**
 
-1. **Validate prototype test coverage** — confirm that the E1 prototype PR (#4) test suite covers the architecturally significant interfaces (INT-001 through INT-007) and that CI build passes.
-2. **Track Review Record findings as defects** — the 2 Major findings (IAuditLogger signature mismatch, IPersistence transaction API mismatch) must be registered in SCM and tracked to resolution.
-3. **Map test coverage to architecturally significant UCs** — UC-001 (Clock In/Out), UC-005 (Publish News), UC-009 (Directory Search) are the top 3 per the SAD Use-Case View.
-4. **Assess NFR testability** — confirm that NFR-001 (page load <3s), NFR-002 (clock response <1s), NFR-003 (availability/fault tolerance), and NFR-004 (audit trail) can be validated with the available infrastructure.
-5. **Evaluate risk-driven test coverage** — R001 (LDAP attribute consistency, exposure=9) and R002 (clocking adoption, exposure=6) must have corresponding test strategies.
-6. **Map acceptance criteria to test evidence** — AC-001 through AC-005 must have defined test approaches and current status.
+1. **Verify M1/M2 resolution** — confirm that the 2 Major interface conformance findings (IAuditLogger signature, IPersistence transaction API) are resolved and verified in the codebase.
+2. **Verify PR #4 disposition** — confirm Code Reviewer approval status and track the remaining blocker (issue #6: PR not merged to main).
+3. **Verify SAD baseline status** — confirm the Software Architecture Document is BASELINED with 4+1 views complete and PoC decisions recorded for R001/R006/R003.
+4. **Map test coverage to architecturally significant UCs** — UC-001 (Clock In/Out), UC-005 (Publish News), UC-009 (Directory Search) with updated status reflecting Iter 2 progress.
+5. **Assess NFR testability** — confirm that NFR-001 (page load <3s), NFR-002 (clock response <1s), NFR-003 (availability/fault tolerance), and NFR-004 (audit trail) can be validated with the available infrastructure.
+6. **Evaluate risk-driven test coverage** — R001 (LDAP attribute consistency, exposure=9) and R002 (clocking adoption, exposure=6) with PoC decision status.
+7. **Map acceptance criteria to test evidence** — AC-001 through AC-005 with defined test approaches and current status.
+8. **Define detailed test schedule, resources, test types, and acceptance criteria for the architecture milestone** — per Additional Instructions.
+
+### Test Schedule — Architecture Milestone
+
+| Phase | Iteration | Test Activities | Target Date | Status |
+|---|---|---|---|---|
+| Elaboration | Iter 1 | Prototype test coverage validation, finding tracking | 2026-08-28 | **COMPLETE** |
+| Elaboration | Iter 2 | M1/M2 resolution verification, SAD baseline verification, PoC decision review, detailed test planning | 2026-08-28 | **IN PROGRESS** |
+| Construction | Iter 1 | Integration testing (post-merge), LDAP PoC execution (CR-001), offline retry validation (CR-002), audit trail validation (CR-003) | [ASSUMPTION — requires validation: Construction start date not yet scheduled] | **PLANNED** |
+| Construction | Iter 2 | Performance baseline (NFR-001), regression suite expansion, UAT preparation | [ASSUMPTION — requires validation: depends on Construction Iter 1 completion] | **PLANNED** |
+| Transition | Iter 1 | UAT execution, adoption measurement (AC-004), production deployment validation | [ASSUMPTION — requires validation: Transition start date not yet scheduled] | **PLANNED** |
+
+### Test Resources
+
+| Resource | Role | Allocation | Responsibilities | Source |
+|---|---|---|---|---|
+| Test Manager | Test orchestration | Elaboration: 1 iteration cycle | Evaluation Mission, test strategy, defect metrics, go/no-go assessment | This artifact |
+| Test Designer | Test case design | Elaboration: 1 iteration cycle | 20 test cases across 10 UCs, test dependencies, test harnesses | Test Case artifact |
+| Tester | Test execution | Construction: 2 iteration cycles | Execute TCs, report defects, verify fixes | Test Case artifact (E1 findings) |
+| CI/CD Pipeline | Automated regression | All iterations | Build + test on every push, branch feedback | `scm_get_build_status` |
+| SCM Issue Tracker | Defect tracking | All iterations | Issue lifecycle, label-based state machine | `scm_list_issues` |
+| AD Test Instance | LDAP test environment | Construction Iter 1 | Representative attributes from 3 offices (R001 validation) | CR-001 |
+| Keycloak Test Client | OIDC test environment | Construction Iter 1 | Client registration for login testing (STK-003 requirement) | CR-002, CON-004 |
+
+### Test Types — Architecture Milestone
+
+| Test Type | Scope | Method | UCs/NFRs Covered | Status |
+|---|---|---|---|---|
+| Unit Testing | Service-layer logic | xUnit, dotnet test in CI | All 10 UCs (service interfaces INT-001..INT-007) | **PASS** — CI green on main |
+| Integration Testing | Component interaction | Post-merge integration tests | UC-001 (clocking+DB), UC-005 (news+audit+DB), UC-009 (LDAP gateway) | **BLOCKED** — PR #4 not merged to main (issue #6) |
+| Performance Testing | NFR-001 (<3s page load), NFR-002 (<1s clock) | Timing assertions, load simulation | NFR-001, NFR-002 | **PLANNED** — Construction Iter 1 |
+| Fault Tolerance Testing | NFR-003, AC-005 (offline retry 5 min) | Browser localStorage + network simulation | UC-001, NFR-003, AC-005 | **DESIGN VALIDATED** — PoC decision recorded (R006) |
+| Security Testing | OIDC auth, role-based access, corporate-data-only | Token validation, role claim checks, LDAP attribute filtering | All UCs (auth), UC-009 (CON-012), UC-003..UC-007 (HR role) | **DESIGN VALIDATED** — PoC decision recorded (R003) |
+| Audit Trail Testing | NFR-004 (author + timestamp on all news ops + worker category) | Audit record verification after publish/edit/unpublish/category change | UC-005, UC-006, UC-007, UC-010 | **PENDING** — CR-003 deferred; M1 resolved |
+| Regression Testing | All prior UCs per iteration | Re-run full unit test suite in CI | All 10 UCs | **OPERATIONAL** — CI pipeline active |
+| UAT | End-user acceptance | Stakeholder-guided test scenarios | AC-001..AC-005 | **PLANNED** — Transition |
+
+### Acceptance Criteria for Architecture Milestone (LCA)
+
+| AC ID | Criterion | Test Approach | Current Status | LCA Readiness |
+|---|---|---|---|---|
+| AC-001 | Employee clocks in/out without HR/dev help | Unit tests (ClockingService) + UAT | Unit tests PASS; UAT pending | **PARTIAL** — unit validated, UAT in Transition |
+| AC-002 | HR publishes news without technical assistance | Unit tests (NewsService) + UAT | Unit tests PASS; UAT pending | **PARTIAL** — unit validated, UAT in Transition |
+| AC-003 | Employee finds colleague's phone/email in <10s | Integration test (LDAP) + UAT | Unit tests PASS with mocks; real LDAP pending CR-001 | **BLOCKED** — CR-001 not executed |
+| AC-004 | 80% of employees complete ≥1 clocking with no training | Adoption measurement (Transition) | Not yet measurable — no production deployment | **DEFERRED** — Transition |
+| AC-005 | System works offline for 5 min, syncs on reconnect | Offline retry test (browser + network sim) | PoC decision recorded (R006); integration test pending | **PARTIAL** — PoC validated, integration pending |
 
 ### Test Configurations
 
-| Config ID | Description | UCs Covered | Risk/CR Addressed | Environment Requirement | Status |
+| Config ID | Description | UCs Covered | Risk/CR Addressed | Environment Requirement | Status (Iter 2) |
 |---|---|---|---|---|---|
-| TC-001 | LDAP attribute mapping test | UC-009, UC-003, UC-010 | R001 (exposure=9), CR-001 | AD test instance with representative attributes from 3 offices | **Pending** — CR-001 logged, needs Architect action |
-| TC-002 | OIDC authentication smoke test | All UCs (auth gateway) | CON-004, CR-002 | Keycloak client registration must exist before login testing | **Pending** — CR-002 logged, needs Architect action |
-| TC-003 | Offline clocking retry test | UC-001 | AC-005, CR-002 | Browser with localStorage; network simulation | **Pending** — CR-002 logged, needs Architect action |
-| TC-004 | Audit trail pattern test | UC-005, UC-006, UC-007, UC-010 | NFR-004, CR-003 | Portal DB with audit_records table | **Pending** — CR-003 deferred to Iter 2 |
-| TC-005 | Prototype unit test suite | All service interfaces | Review Record checklist | CI/CD pipeline (dotnet test) | **PASS** — CI green on main |
+| TC-001 | LDAP attribute mapping test | UC-009, UC-003, UC-010 | R001 (exposure=9), CR-001 | AD test instance with representative attributes from 3 offices | **PoC DECISION RECORDED** — single-mechanism; execution in Construction |
+| TC-002 | OIDC authentication smoke test | All UCs (auth gateway) | CON-004, CR-002 | Keycloak client registration must exist before login testing | **PoC DECISION RECORDED** — analysis-only (R003); execution in Construction |
+| TC-003 | Offline clocking retry test | UC-001 | AC-005, CR-002 | Browser with localStorage; network simulation | **PoC DECISION RECORDED** — single-mechanism (R006); execution in Construction |
+| TC-004 | Audit trail pattern test | UC-005, UC-006, UC-007, UC-010 | NFR-004, CR-003 | Portal DB with audit_records table | **PENDING** — CR-003 deferred; M1 resolved, pattern ready for validation |
+| TC-005 | Prototype unit test suite | All service interfaces | Review Record checklist | CI/CD pipeline (dotnet test) | **PASS** — CI green on main (2026-08-28 11:54:27Z) |
 
 ### Acceptance Thresholds per Quality Attribute
 
-| NFR | Threshold | Test Method | Current Status |
+| NFR | Threshold | Test Method | Current Status (Iter 2) |
 |---|---|---|---|
-| NFR-001 | Page load < 3s on corporate network | Performance baseline measurement | **Not yet measured** — no deployed environment |
-| NFR-002 | Clock in/out response < 1s | Unit test timing + integration test | **Unit tests pass** — integration timing pending |
-| NFR-003 | Availability 7:00–19:00 Mon–Fri with fault tolerance | Offline retry validation (AC-005) | **Design validated** — implementation pending CR-002 |
-| NFR-004 | Audit trail (author + timestamp) for all news ops + worker category | Audit interceptor integration test | **Pattern identified** — M1 finding (IAuditLogger signature mismatch) must be resolved first |
+| NFR-001 | Page load < 3s on corporate network | Performance baseline measurement | **Not yet measured** — no deployed environment; planned for Construction Iter 1 |
+| NFR-002 | Clock in/out response < 1s | Unit test timing + integration test | **Unit tests pass** — integration timing pending post-merge |
+| NFR-003 | Availability 7:00–19:00 Mon–Fri with fault tolerance | Offline retry validation (AC-005) | **PoC decision recorded (R006)** — single-mechanism validated; integration test pending |
+| NFR-004 | Audit trail (author + timestamp) for all news ops + worker category | Audit interceptor integration test | **M1 RESOLVED** — IAuditLogger signature aligned; CR-003 deferred to Construction |
 
-### Elaboration E1 Test Workflow
+### Master Test Workflow — Architecture Milestone (Iter 2)
 
 ```plantuml
 @startuml
-title Elaboration E1 — Test Evaluation Workflow
+title Elaboration Iter 2 — Master Test Workflow (Architecture Milestone)
+
+skinparam activity {
+  BackgroundColor #ECF0F1
+  BorderColor #2C3E50
+  DiamondBackgroundColor #F39C12
+  DiamondBorderColor #D35400
+}
 
 start
 
-:Load upstream artifacts
-(UC Model, SAD, Design Model,
-Supp. Spec., Review Record);
+:Load Review Record findings\n(Iter 1 → Iter 2);
+:Verify M1/M2 resolution status\n(IAuditLogger, IPersistence);
 
-:Define Evaluation Mission
-(architectural validation);
-
-partition "Test Scope Analysis" {
-  :Map architecturally significant
-  UCs to test coverage;
-  :UC-001 Clock In/Out
-  (NFR-002, AC-005, offline retry);
-  :UC-005 Publish News
-  (NFR-004, audit trail);
-  :UC-009 Directory Search
-  (R001, LDAP attributes);
-}
-
-partition "Prototype PR Assessment" {
-  :Review PR #4 CI build status;
-  if (CI Build PASS?) then (yes)
-    :Analyze test coverage
-    (black-box + white-box);
-  else (no)
-    :Block: CI failure
-    is a hard gate;
-    stop
-  endif
-}
-
-partition "Finding Analysis" {
-  :Map Review Record findings
-  to defect tracking;
-  :M1: IAuditLogger signature
-  mismatch (INT-005);
-  :M2: IPersistence transaction
-  API mismatch (INT-007);
-  :Verify SCM issue tracking
-  for each finding;
-}
-
-partition "Quality Assessment" {
-  :Assess NFR coverage:
-  NFR-001..NFR-004;
-  :Evaluate risk-driven
-  test coverage (R001, R002);
-  :Map AC-001..AC-005 to
-  test evidence;
-}
-
-:Evaluate mission completion
-against acceptance thresholds;
-
-if (Mission objectives met?) then (yes)
-  :Recommend: PROCEED to
-  Elaboration Iteration 2;
+if (M1/M2 Resolved?) then (yes)
+  :Confirm Design Model alignment\nwith implementation;
 else (no)
-  :Recommend: REMEDIATION
-  required before Iter 2;
+  :BLOCKED: Cannot proceed\nwith architecture validation;
+  stop
+endif
+
+:Verify PR #4 Code Review disposition;
+
+if (PR #4 Approved?) then (yes)
+  :Record approval in\ntest evaluation;
+else (no)
+  :Track as open defect\nin SCM;
+endif
+
+:Verify SAD status = BASELINED;
+:Verify CI build status (main);
+
+:Map test configurations\nto architecturally significant UCs;
+:UC-001: Clock In/Out\n(offline retry, NFR-002);
+:UC-005: Publish News\n(audit trail, NFR-004);
+:UC-009: Directory Search\n(LDAP, R001);
+
+:Assess NFR testability\n(NFR-001..NFR-004);
+:Map acceptance criteria\nto test evidence\n(AC-001..AC-005);
+
+:Evaluate SCM defect metrics\n(issues #1-#6);
+:Assess regression coverage\nfor Construction readiness;
+
+if (All mission objectives met?) then (yes)
+  :Mission verdict: ACHIEVED\nRecommend LCA sanction;
+else (no)
+  :Mission verdict: PARTIAL\nDocument gaps + blockers;
 endif
 
 stop
-
 @enduml
 ```
 
@@ -124,56 +156,49 @@ The defect lifecycle is enforced via SCM issue tracker labels. The canonical lab
 
 ```plantuml
 @startuml
-title Defect Lifecycle State Machine (Elaboration)
+title Defect Lifecycle — SCM Issue Tracker State Machine
 
-[*] --> New
+skinparam state {
+  BackgroundColor #ECF0F1
+  BorderColor #2C3E50
+}
 
-New --> Triaged : Impact + severity assessed
-New --> Rejected : Not a defect / duplicate
+[*] --> New : Defect discovered\n(test execution, review finding,\nor CI failure)
 
-Triaged --> Assigned : Developer assigned
+New --> Triaged : Severity + priority assigned\n(labels: severity:*, priority:*)
 
-Assigned --> InProgress : Fix started
+Triaged --> Assigned : Owner assigned\n(label: assigned:*)
 
-InProgress --> Fixed : Fix committed, CI passes
+Assigned --> InProgress : Owner begins\nremediation
 
-Fixed --> Verified : Test confirms fix
+InProgress --> Fixed : Fix submitted\n(PR or commit)
 
-Verified --> Closed : No regression found
-Verified --> Reopened : Regression detected
+Fixed --> Verified : Test Manager verifies\nfix in CI build
 
-Reopened --> Assigned : Re-assign for fix
+Verified --> Closed : Confirmed resolved\nin subsequent build
 
-Rejected --> [*]
+Fixed --> Reopened : Verification failed\n— defect persists
+Reopened --> InProgress : Re-assigned to owner
+
+Triaged --> Deferred : Low priority / future iteration\n(label: cr:deferred-next-iteration)
+Deferred --> Triaged : Re-evaluated in\nnext iteration
+
+New --> Duplicate : Confirmed duplicate\nof existing issue
+Duplicate --> Closed : Linked to original
+
 Closed --> [*]
 
-note right of New
-  Source: Review Record finding,
-  test execution failure,
-  or SCM issue creation
-end note
-
-note right of Triaged
-  Severity: Critical / Major / Minor
-  Mapped to UC / component / NFR
-end note
-
-note right of Assigned
-  SCM label: status:assigned
-end note
-
-note right of Fixed
-  SCM label: status:fixed
-  CI build must PASS
-end note
-
 note right of Verified
-  Re-run affected test cases
-  SCM label: status:verified
+  Test Manager verifies:
+  1. CI build passes on target branch
+  2. Reproduction steps no longer fail
+  3. No regression introduced
 end note
 
-note right of Closed
-  SCM label: status:closed
+note right of Deferred
+  CR-003 (Audit Trail Validation)
+  deferred to next iteration
+  per Management Reviewer
 end note
 
 @enduml
@@ -181,190 +206,220 @@ end note
 
 ## Test Summary
 
-### Prototype PR #4 — Test Execution Results
+### Prototype PR #4 — Test Execution Results (Iter 2 Update)
 
 | Metric | Value | Source |
 |---|---|---|
-| CI Build Status | **PASS** (green) | `scm_get_build_status` — main branch, 2026-08-28 10:50:04Z |
-| PR Disposition | REQUEST_CHANGES | Review Record (Elaboration E1) |
-| Unit Test Projects | 1 (PortalCubaCorp.Tests) | Review Record — build tree coverage PASS |
+| CI Build Status | **PASS** (green) | `scm_get_build_status` — main branch, 2026-08-28 11:54:27Z |
+| PR Disposition (Iter 2) | **APPROVED** | Review Record — Code Reviewer re-review: M1/M2 resolved, 1 Minor, 2 Suggestions |
+| PR Merged to Main | **NO** | SCM issue #6 (open) — all 20 TCs remain BLOCKED |
+| Unit Test Projects | 1 (PortalCubaCorp.Tests) | Review Record — 6 test files: ClockingServiceTests, NewsServiceTests, DirectoryServiceTests, WorkerCategoryServiceTests, OfflineRetryTests, DomainTests |
 | Test Coverage (interfaces) | All 7 service interfaces tested | Review Record — dual coverage test PASS |
 | Black-box tests | PASS | Review Record checklist item #4 |
 | White-box tests | PASS | Review Record checklist item #4 |
-| Findings (Major) | 2 | Review Record — M1 (IAuditLogger), M2 (IPersistence) |
+| Findings (Major, Iter 1) | 2 → **0 RESOLVED** | M1 (IAuditLogger) RESOLVED; M2 (IPersistence) RESOLVED |
 | Findings (Critical) | 0 | Review Record |
+| New Findings (Iter 2) | 1 Minor, 2 Suggestions | Non-blocking — PR approved |
+| SAD Status | **BASELINED** | SAD Document Control — 4+1 views complete |
+| PoC Decisions | R001, R006, R003 — all recorded | Architectural Proof-of-Concept artifact |
 
-### Test Verification Sequence
+### Architecture Milestone Test Verification Sequence (Iter 2)
 
 ```plantuml
 @startuml
-title Elaboration E1 — Test Verification Sequence (Architecturally Significant UCs)
+title Architecture Milestone Test Verification — Iter 2 Sequence
 
-actor "Test Runner" as TR
-participant "ClockingService\nTests" as CST
-participant "NewsService\nTests" as NST
-participant "DirectoryService\nTests" as DST
-participant "CI/CD\nPipeline" as CI
-participant "SCM Issue\nTracker" as SCM
+actor "Test Manager" as TM
+participant "SCM Issue Tracker" as SCM
+participant "CI/CD Pipeline" as CI
+participant "Code Reviewer" as CR
+participant "Software Architect" as SA
 
-TR -> CST : Run UC-001 tests
-CST -> CST : Verify clock in/out < 1s (NFR-002)
-CST -> CST : Verify offline retry logic (AC-005)
-CST --> TR : Results: PASS
+TM -> SCM : Query all open issues (#1-#6)
+SCM --> TM : 5 open issues, M1/M2 resolved, CR-003 deferred
 
-TR -> NST : Run UC-005 tests
-NST -> NST : Verify audit trail (NFR-004)
-NST -> NST : Verify publish/edit/unpublish lifecycle
-NST --> TR : Results: PASS
+TM -> CR : Verify PR #4 disposition
+CR --> TM : APPROVED (Iter 2) — M1/M2 resolved, 1 Minor, 2 Suggestions
 
-TR -> DST : Run UC-009 tests
-DST -> DST : Verify LDAP attribute mapping (R001)
-DST -> DST : Verify corporate-data-only (CON-012)
-DST --> TR : Results: PASS (with R001 caveat)
+TM -> CI : Get build status (main)
+CI --> TM : PASS (green) — 2026-08-28 11:54:27Z
 
-TR -> CI : Check build status
-CI --> TR : Build: PASS (main, 2026-08-28)
+TM -> SA : Verify SAD status
+SA --> TM : BASELINED — 4+1 views complete, PoC decisions recorded
 
-TR -> SCM : Check open issues
-SCM --> TR : 4 open issues (#1-#3 CRs, #5 deferred)
+TM -> TM : Map test configs to arch-sig UCs
+TM -> TM : Assess NFR testability (NFR-001..004)
+TM -> TM : Map AC-001..005 to test evidence
+TM -> TM : Evaluate SCM defect metrics
+TM -> TM : Assess regression readiness
 
-TR -> TR : Map Review Record findings
-  note right
-    M1: IAuditLogger signature mismatch
-    M2: IPersistence transaction API mismatch
-    Both tracked as defects for Iter 2
-  end note
+note over TM : Issue #6 (PR #4 not merged to main)\nremains OPEN — all 20 TCs BLOCKED\nThis is the primary blocker for LCA
 
-TR -> TR : Evaluate mission completion
+TM -> TM : Mission verdict: PARTIAL\nArchitecture validated but\nprototype not integrated
 
 @enduml
 ```
 
-### Architecturally Significant UC Coverage
+### Architecturally Significant UC Coverage (Iter 2 Update)
 
-| UC ID | UC Name | Test Status | NFR/Risk Coverage | Notes |
+| UC ID | UC Name | Test Status | NFR/Risk Coverage | Iter 2 Update |
 |---|---|---|---|---|
-| UC-001 | Clock In / Clock Out | Unit tests PASS | NFR-002 (<1s), AC-005 (offline retry), R002 (adoption) | Offline retry implementation pending CR-002; unit tests cover service logic |
-| UC-005 | Publish News | Unit tests PASS | NFR-004 (audit trail), AC-002 | Audit interceptor has M1 finding (signature mismatch); pattern validated but interface must be corrected |
-| UC-009 | Search Employee Directory | Unit tests PASS | R001 (LDAP attributes), AC-003 (<10s lookup) | LDAP gateway tested with mocks; real AD validation pending CR-001 (PoC) |
+| UC-001 | Clock In / Clock Out | Unit tests PASS | NFR-002 (<1s), AC-005 (offline retry), R002 (adoption) | PoC decision recorded (R006 — single-mechanism); integration test pending PR merge |
+| UC-005 | Publish News | Unit tests PASS | NFR-004 (audit trail), AC-002 | M1 RESOLVED — IAuditLogger signature aligned; CR-003 deferred to Construction |
+| UC-009 | Search Employee Directory | Unit tests PASS | R001 (LDAP attributes), AC-003 (<10s lookup) | PoC decision recorded (R001 — single-mechanism); real AD validation in Construction |
 
-### Remaining UC Coverage Status
+### Remaining UC Coverage Status (Iter 2)
 
-| UC ID | UC Name | Test Status | Notes |
+| UC ID | UC Name | Test Status | Iter 2 Notes |
 |---|---|---|---|
-| UC-002 | View Own Clocking History | Unit tests PASS | Covered by ClockingService tests |
-| UC-003 | View All Employee Clockings | Unit tests PASS | Covered by ClockingService tests; LDAP name lookup for HR view |
-| UC-004 | Export Monthly Clocking Report | Unit tests PASS | CSV export logic tested |
-| UC-006 | Edit Published News | Unit tests PASS | Audit trail on edit — depends on M1 resolution |
-| UC-007 | Unpublish News | Unit tests PASS | No hard delete (CON-013) — verified in tests |
-| UC-008 | Read and Filter News | Unit tests PASS | Category filter + featured banner logic |
-| UC-010 | Manage Worker Category | Unit tests PASS | AD user id → category link; audit trail — depends on M1 resolution |
+| UC-002 | View Own Clocking History | Unit tests PASS | Covered by ClockingService tests; no change |
+| UC-003 | View All Employee Clockings | Unit tests PASS | LDAP name lookup for HR view; pending CR-001 execution |
+| UC-004 | Export Monthly Clocking Report | Unit tests PASS | CSV export logic tested; no change |
+| UC-006 | Edit Published News | Unit tests PASS | Audit trail on edit — M1 resolved, pattern now consistent |
+| UC-007 | Unpublish News | Unit tests PASS | No hard delete (CON-013) — verified in tests; no change |
+| UC-008 | Read and Filter News | Unit tests PASS | Category filter + featured banner logic; no change |
+| UC-010 | Manage Worker Category | Unit tests PASS | AD user id → category link; audit trail — M1 resolved |
 
 ## Defects and Incidents
 
-### Open Defects from Review Record
+### Defect Resolution Status (Iter 2 Update)
 
-| Defect ID | Severity | Description | Source | SCM Issue | Status | Target Iteration |
-|---|---|---|---|---|---|---|
-| M1 | Major | IAuditLogger (INT-005) implementation signature does not match Design Model interface contract — `LogAsync` parameter list diverges | Review Record (Elaboration E1) | To be created | New | Elaboration Iter 2 |
-| M2 | Major | IPersistence (INT-007) transaction API mismatch — implementation does not expose the transaction methods declared in the Design Model | Review Record (Elaboration E1) | To be created | New | Elaboration Iter 2 |
+| Defect ID | Severity | Description | Source | Status (Iter 2) | Resolution |
+|---|---|---|---|---|---|
+| M1 | Major | IAuditLogger (INT-005) implementation signature does not match Design Model interface contract | Review Record (Elaboration E1) | **RESOLVED (Iter 2)** | Design Model updated to LogAudit; code verified matching by Code Reviewer |
+| M2 | Major | IPersistence (INT-007) transaction API mismatch — implementation does not expose the transaction methods declared in the Design Model | Review Record (Elaboration E1) | **RESOLVED (Iter 2)** | Design Model updated to ExecuteInTransactionAsync; code verified matching by Code Reviewer |
+| CR-MIN-1 | Minor | Traceability trailer missing from PR #4 | Code Reviewer (Iter 2) | **OPEN** | Non-blocking — add trailer in future PRs per checklist §1.1.4 |
 
-### Open Change Requests (from SCM Issue Tracker)
+### Open Change Requests (from SCM Issue Tracker — Iter 2)
 
 | Issue # | Title | Severity | Labels | Status | Impact on Testing |
 |---|---|---|---|---|---|
-| #1 | CR-001: Execute LDAP Attribute Mapping PoC (R001 — exposure=9) | Major | change-request, priority:high, needs-architect-review | Open | Blocks TC-001 (LDAP attribute mapping test) — highest risk |
-| #2 | CR-002: Validate Offline Clocking Retry Design (AC-005, R006 — exposure=6) | Major | change-request, priority:high, needs-architect-review | Open | Blocks TC-002 (OIDC smoke test) and TC-003 (offline retry test) |
-| #3 | CR-003: Validate Audit Trail Pattern Implementation (NFR-004) | Major | change-request, priority:medium, cr:deferred-next-iteration | Open | Blocks TC-004 (audit trail pattern test) — deferred to Iter 2 |
+| #1 | CR-001: Execute LDAP Attribute Mapping PoC (R001 — exposure=9) | Major | change-request, priority:high, needs-architect-review | Open | PoC decision recorded (single-mechanism); execution in Construction |
+| #2 | CR-002: Validate Offline Clocking Retry Design (AC-005, R006 — exposure=6) | Major | change-request, cr:logged, priority:high, needs-architect-review | Open | PoC decision recorded (single-mechanism); execution in Construction |
+| #3 | CR-003: Validate Audit Trail Pattern Implementation (NFR-004) | Major | change-request, cr:deferred-next-iteration | Open | M1 resolved — pattern now consistent; validation in Construction |
 | #5 | Elaboration E1 iteration close — DEFERRED (no mechanism integrated) | — | integration-record, elaboration-e1, deferred | Open | Integration record — no mechanism was integrated in E1 prototype |
+| #6 | CR: Architectural prototype (PR #4) not merged to main — all 20 test cases BLOCKED | Blocker | change-request, impact:cross-cutting, nature:defect, severity:blocker, priority:critical, cr:approved, assigned:implementer | Open | **PRIMARY BLOCKER** — all 20 TCs blocked until PR #4 merged to main |
 
-### Defect Metrics Summary
+### Defect Metrics Summary (Iter 2)
 
 | Metric | Value | Assessment |
 |---|---|---|
-| Total open defects | 2 (M1, M2) | Both Major — no Critical |
-| Total open CRs | 3 (#1, #2, #3) | 2 high priority, 1 medium |
+| Total open defects (Major) | 0 | M1/M2 both RESOLVED in Iter 2 |
+| Total open defects (Minor) | 1 | CR-MIN-1 (traceability trailer) — non-blocking |
+| Total open CRs | 3 (#1, #2, #3) | PoC decisions recorded; execution deferred to Construction |
+| Total open issues | 5 | Including #5 (integration record) and #6 (blocker) |
+| Blocker issues | 1 (#6) | PR #4 not merged to main — all TCs blocked |
 | Defects from prototype testing | 0 | Unit tests all pass |
-| Defects from review | 2 | Interface conformance issues |
-| CI build failures | 0 | Build PASS on main |
+| Defects from review (Iter 1) | 2 → 0 | Both resolved in Iter 2 |
+| CI build failures | 0 | Build PASS on main (2026-08-28 11:54:27Z) |
 | Escaped defects | 0 | No production deployment yet |
+| Defect removal efficiency | 100% (Iter 1 findings) | 2/2 Major findings resolved in Iter 2 |
 
 ## Conclusions
 
-### Mission Verdict
+### Mission Verdict (Elaboration Iteration 2)
 
-**PARTIALLY MET — Remediation required before Elaboration Iteration 2.**
+**PARTIALLY MET — Architecture validated, prototype integration pending.**
 
-The Elaboration E1 Evaluation Mission has been **partially achieved**:
+The Elaboration Iteration 2 Evaluation Mission has been **partially achieved**:
 
 | Mission Objective | Status | Evidence |
 |---|---|---|
-| 1. Validate prototype test coverage | **MET** | CI build PASS; all 7 service interfaces tested; dual coverage (black-box + white-box) PASS |
-| 2. Track Review Record findings as defects | **MET** | 2 Major findings (M1, M2) identified and mapped; SCM issues to be created for tracking |
-| 3. Map test coverage to architecturally significant UCs | **MET** | UC-001, UC-005, UC-009 all have unit test coverage; sequence diagram documents verification flow |
-| 4. Assess NFR testability | **PARTIALLY MET** | NFR-002 unit-level validated; NFR-001/NFR-003/NFR-004 require integration environment not yet available |
-| 5. Evaluate risk-driven test coverage | **PARTIALLY MET** | R001 (exposure=9) has CR-001 logged but PoC not executed; R002 has adoption strategy but no test yet |
-| 6. Map AC-001..AC-005 to test evidence | **MET** | All 5 ACs mapped to test configurations with defined approaches (see Traceability) |
+| 1. Verify M1/M2 resolution | **MET** | Both Major findings RESOLVED — Design Model updated to match implementation; Code Reviewer verified conformance in PR #4 re-review |
+| 2. Verify PR #4 disposition | **MET** | Code Reviewer disposition: APPROVED (Iter 2) — 0 Critical, 0 Major, 1 Minor, 2 Suggestions |
+| 3. Verify SAD baseline status | **MET** | SAD status: BASELINED — 4+1 views complete, PoC decisions recorded for R001/R006/R003 |
+| 4. Map test coverage to arch-sig UCs | **MET** | UC-001, UC-005, UC-009 all have unit test coverage; PoC decisions recorded for associated risks |
+| 5. Assess NFR testability | **PARTIALLY MET** | NFR-002 unit-level validated; NFR-003 PoC decision recorded (R006); NFR-001/NFR-004 require integration environment (Construction) |
+| 6. Evaluate risk-driven test coverage | **PARTIALLY MET** | R001 PoC decision recorded (single-mechanism); R006 PoC decision recorded (single-mechanism); R003 analysis-only; execution deferred to Construction |
+| 7. Map AC-001..AC-005 to test evidence | **MET** | All 5 ACs mapped to test configurations with updated status (see Test Scope) |
+| 8. Define detailed schedule, resources, test types, ACs | **MET** | Test schedule, resources, test types, and acceptance criteria for architecture milestone defined in Test Scope section |
 
-### Key Findings
+### Key Findings (Iter 2)
 
-1. **Interface conformance gaps (M1, M2):** The prototype implementation diverges from the Design Model interface contracts for IAuditLogger and IPersistence. These are Major findings that must be resolved in Iter 2 before the audit trail and transaction patterns can be validated. The Design Model must be updated OR the code must be corrected — silent divergence is always a finding.
+1. **M1/M2 RESOLVED:** Both Major interface conformance findings are resolved. The Design Model was updated to match the implementation (IAuditLogger → LogAudit, IPersistence → ExecuteInTransactionAsync). Code Reviewer verified conformance in the PR #4 re-review. This unblocks audit trail validation (CR-003) and persistence pattern validation.
 
-2. **Risk-driven testing blocked:** The 3 highest-risk test configurations (TC-001 LDAP, TC-002 OIDC, TC-003 offline retry) are all blocked pending Architect action on CR-001 and CR-002. These CRs were logged in prior iterations and remain open. The test team cannot validate R001 (exposure=9) or AC-005 (offline tolerance) until these are resolved.
+2. **PR #4 APPROVED but NOT MERGED:** The Code Reviewer approved PR #4 in Iter 2, but SCM issue #6 (open, blocker severity) indicates the PR has not been merged to main. This means all 20 test cases remain BLOCKED at the integration level. Unit tests pass on the feature branch, but no integration testing is possible on main until the merge occurs. **This is the primary blocker for LCA closure.**
 
-3. **Audit trail validation deferred:** CR-003 (audit trail pattern validation, NFR-004) is deferred to Iter 2. Combined with M1 (IAuditLogger signature mismatch), the audit trail mechanism cannot be fully validated in E1. This is acceptable for Elaboration — the pattern is designed but not yet concretized.
+3. **SAD BASELINED:** The Software Architecture Document is now BASELINED with all 4+1 views complete. PoC decisions are recorded for all 3 technical risks (R001 LDAP single-mechanism, R006 offline retry single-mechanism, R003 OIDC analysis-only). This satisfies the architecture baseline condition for LCA.
 
-4. **CI pipeline is healthy:** Build PASS on main branch (2026-08-28). The test infrastructure (dotnet test in CI) is operational and provides regression coverage for subsequent iterations.
+4. **CI pipeline healthy:** Build PASS on main (2026-08-28 11:54:27Z). The test infrastructure (dotnet test in CI) is operational and provides regression coverage for subsequent iterations.
 
-5. **No Critical defects:** All findings are Major or below. No blocking issues prevent proceeding to Iter 2 with remediation plan.
+5. **No Critical defects:** All findings are Minor or below. The 2 Major findings from Iter 1 are resolved. 1 Minor (CR-MIN-1, traceability trailer) is non-blocking.
 
-### Recommendations
+6. **PoC decisions recorded but not executed:** The PoC decisions for R001 (LDAP), R006 (offline retry), and R003 (OIDC) are recorded in the Architectural Proof-of-Concept artifact. The actual execution of integration tests against real AD, Keycloak, and offline retry scenarios is deferred to Construction. This is acceptable for Elaboration — the architecture is validated by design, and empirical validation occurs in Construction.
+
+### Recommendations (Iter 2)
 
 | # | Recommendation | Priority | Target |
 |---|---|---|---|
-| 1 | Resolve M1 (IAuditLogger signature) — align code to Design Model or update Design Model with justification | High | Iter 2 |
-| 2 | Resolve M2 (IPersistence transaction API) — align code to Design Model or update Design Model with justification | High | Iter 2 |
-| 3 | Execute CR-001 (LDAP PoC) — validate LDAP attributes across 3 offices; highest risk (exposure=9) | High | Iter 2 |
-| 4 | Execute CR-002 (offline retry + OIDC smoke test) — validate AC-005 and OIDC integration | High | Iter 2 |
-| 5 | Execute CR-003 (audit trail validation) — validate NFR-004 pattern after M1 resolution | Medium | Iter 2 |
-| 6 | Establish performance baseline for NFR-001 (page load <3s) once deployment environment is available | Medium | Iter 2 |
-| 7 | Create SCM issues for M1 and M2 defects if not already tracked | High | Immediate |
+| 1 | Merge PR #4 to main — unblocks all 20 test cases for integration testing | **Critical** | Immediate — before LCA closure |
+| 2 | Execute CR-001 (LDAP PoC) in Construction Iter 1 — validate LDAP attributes across 3 offices | High | Construction Iter 1 |
+| 3 | Execute CR-002 (offline retry + OIDC smoke test) in Construction Iter 1 — validate AC-005 and OIDC integration | High | Construction Iter 1 |
+| 4 | Execute CR-003 (audit trail validation) in Construction Iter 1 — M1 resolved, pattern ready for validation | Medium | Construction Iter 1 |
+| 5 | Establish performance baseline for NFR-001 (page load <3s) once deployment environment is available | Medium | Construction Iter 1 |
+| 6 | Add traceability trailer to future PRs per Code Reviewer checklist §1.1.4 (CR-MIN-1) | Low | Construction Iter 1 |
+| 7 | Expand regression test suite to cover all 10 UCs at integration level post-merge | High | Construction Iter 1 |
 
-### Go/No-Go Assessment
+### Go/No-Go Assessment for LCA Milestone
 
-**GO — with conditions.** The Elaboration E1 prototype demonstrates that the architectural foundation is sound: CI passes, all service interfaces have test coverage, and no Critical defects exist. However, **2 Major interface conformance findings must be resolved in Iter 2**, and the 3 risk-driven CRs (LDAP PoC, offline retry, OIDC smoke test) must be executed before the LCA milestone can be considered achieved.
+**CONDITIONAL GO — architecture validated, integration pending.**
 
-**Exit criteria for Elaboration (LCA milestone):**
-- [ ] M1 and M2 defects resolved and verified
-- [ ] CR-001 LDAP PoC executed (R001 — exposure=9)
-- [ ] CR-002 offline retry validated (AC-005)
-- [ ] CR-003 audit trail pattern validated (NFR-004)
-- [ ] NFR-001 performance baseline established
-- [ ] Regression test suite covers all 10 UCs
-- [ ] All acceptance criteria (AC-001..AC-005) have test evidence
+The Elaboration Iteration 2 test evaluation demonstrates that the architectural foundation is sound:
+- M1/M2 resolved and verified ✓
+- PR #4 approved by Code Reviewer ✓
+- SAD baselined with 4+1 views ✓
+- PoC decisions recorded for all 3 technical risks ✓
+- CI pipeline operational ✓
+- No Critical defects ✓
+
+**Remaining condition for LCA closure:**
+- PR #4 must be merged to main (issue #6) — this unblocks all 20 test cases for integration testing
+
+**Exit criteria for LCA milestone (updated):**
+- [x] M1 and M2 defects resolved and verified — **DONE**
+- [x] SAD BASELINED with 4+1 views — **DONE**
+- [x] PoC decisions recorded for R001, R006, R003 — **DONE**
+- [x] PR #4 approved by Code Reviewer — **DONE**
+- [ ] PR #4 merged to main (issue #6) — **BLOCKER**
+- [ ] CR-001 LDAP PoC executed (R001 — exposure=9) — Construction
+- [ ] CR-002 offline retry validated (AC-005) — Construction
+- [ ] CR-003 audit trail pattern validated (NFR-004) — Construction
+- [ ] NFR-001 performance baseline established — Construction
+- [ ] Regression test suite covers all 10 UCs at integration level — Construction
+- [ ] All acceptance criteria (AC-001..AC-005) have integration test evidence — Construction/Transition
 
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| Evaluation Mission (E1) | Inception Test Eval Mission | Refines | Elaboration Iter 2 Test Eval |
-| TC-001 (LDAP mapping) | R001, CR-001, UC-009, CON-005 | DependsOn | Elaboration Iter 2 PoC |
-| TC-002 (OIDC smoke) | CON-004, CR-002, SEC-001, SEC-002 | DependsOn | Elaboration Iter 2 |
-| TC-003 (offline retry) | AC-005, CR-002, NFR-003, UC-001 | DependsOn | Elaboration Iter 2 |
-| TC-004 (audit trail) | NFR-004, CR-003, UC-005, UC-006, UC-007, UC-010 | DependsOn | Elaboration Iter 2 |
+| Evaluation Mission (E2) | Evaluation Mission (E1), Review Record (Iter 1→2) | Refines | Construction Test Eval |
+| TC-001 (LDAP mapping) | R001, CR-001, UC-009, CON-005 | DependsOn | Construction Iter 1 (PoC execution) |
+| TC-002 (OIDC smoke) | CON-004, CR-002, SEC-001, SEC-002 | DependsOn | Construction Iter 1 |
+| TC-003 (offline retry) | AC-005, CR-002, NFR-003, UC-001 | DependsOn | Construction Iter 1 |
+| TC-004 (audit trail) | NFR-004, CR-003, UC-005, UC-006, UC-007, UC-010 | DependsOn | Construction Iter 1 (M1 resolved) |
 | TC-005 (prototype unit tests) | Review Record, PR #4, INT-001..INT-007 | Tests | PortalCubaCorp.Tests/*.cs |
-| M1 (IAuditLogger mismatch) | INT-005, Review Record | Derives | AuditInterceptor.cs |
-| M2 (IPersistence mismatch) | INT-007, Review Record | Derives | PersistenceGateway.cs, PortalDbContext.cs |
-| NFR-001 coverage | NFR-001, PERF-001 | Refines | Performance baseline (Iter 2) |
+| M1 (IAuditLogger) | INT-005, Review Record (Iter 1) | Derives | **RESOLVED** — Design Model updated, code verified |
+| M2 (IPersistence) | INT-007, Review Record (Iter 1) | Derives | **RESOLVED** — Design Model updated, code verified |
+| CR-MIN-1 (traceability trailer) | Code Reviewer (Iter 2) | Derives | Future PRs per checklist §1.1.4 |
+| Issue #6 (PR not merged) | PR #4, Review Record (Iter 2) | Derives | All 20 TCs BLOCKED |
+| SAD Baseline | SAD Document Control | Realizes | LCA milestone condition |
+| PoC-R001 (LDAP) | R001, ADR-003, AC-003, CON-012 | Derives | COMP-005, Architectural Proof-of-Concept |
+| PoC-R006 (Offline Retry) | R006, ADR-004, AC-005 | Derives | COMP-002, clocking-retry.js |
+| PoC-R003 (OIDC Analysis) | R003, ADR-005, CON-004 | Derives | COMP-007, STK-003 |
+| NFR-001 coverage | NFR-001, PERF-001 | Refines | Performance baseline (Construction) |
 | NFR-002 coverage | NFR-002, PERF-002, UC-001 | Refines | ClockingService tests (PASS) |
-| NFR-003 coverage | NFR-003, AC-005, UC-001 | Refines | TC-003 (offline retry) |
-| NFR-004 coverage | NFR-004, AUD-001, AUD-002, AUD-003 | Refines | TC-004 (audit trail) |
+| NFR-003 coverage | NFR-003, AC-005, UC-001 | Refines | TC-003 (offline retry — PoC decision recorded) |
+| NFR-004 coverage | NFR-004, AUD-001, AUD-002, AUD-003 | Refines | TC-004 (audit trail — M1 resolved) |
 | AC-001 mapping | AC-001, UC-001, NFR-002 | Refines | TC-005, Construction UAT |
 | AC-002 mapping | AC-002, UC-005 | Refines | TC-005, TC-004, Construction UAT |
 | AC-003 mapping | AC-003, UC-009, NFR-001 | Refines | TC-001, TC-005, Construction UAT |
 | AC-004 mapping | AC-004, UC-001 | Refines | Transition Adoption Measurement |
-| AC-005 mapping | AC-005, UC-001, NFR-003 | Refines | TC-003 (offline retry) |
+| AC-005 mapping | AC-005, UC-001, NFR-003 | Refines | TC-003 (offline retry — PoC decision recorded) |
 | Defect Lifecycle | SCM issue tracker, CI build status | Derives | All subsequent iterations |
 | Regression Policy | RUP iterative lifecycle | Derives | Construction Iterations 1–2 |
 | CI Build Status | scm_get_build_status (main) | Tests | PR #4, all source files |
-| SCM Issues #1-#3, #5 | scm_list_issues | Derives | CR-001, CR-002, CR-003, E1 deferred |
+| SCM Issues #1-#3, #5, #6 | scm_list_issues | Derives | CR-001, CR-002, CR-003, E1 deferred, PR merge blocker |
+| Test Schedule | Additional Instructions (Work Order) | Refines | Architecture milestone test plan |
+| Test Resources | Additional Instructions (Work Order) | Refines | Construction/Transition resource allocation |
+| Test Types | Additional Instructions (Work Order) | Refines | Architecture milestone test approach |
+| Acceptance Criteria (LCA) | AC-001..AC-005, Additional Instructions | Refines | LCA milestone go/no-go |
