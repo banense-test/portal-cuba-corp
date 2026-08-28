@@ -2291,7 +2291,78 @@ title Primary Screen: Worker Categories (HR)
 | UC-009 | Critical (directory + R001) | Activity (swimlanes) | ✅ | Main + A1 |
 | UC-010 | Critical (category + audit) | Activity (swimlanes) | ✅ | Main + A1, A2 |
 ## Capsules, Protocols and Signals
-Not applicable for this technology stack. The portal is a Razor Pages monolith on .NET 10 — no capsules, protocols, or signals are used. All communication is synchronous HTTP request/response within a single process.
+### NewsItem Lifecycle State Machine (CLS-017)
+
+The NewsItem entity has three lifecycle states governed by CON-013 (no hard delete) and NFR-004 (audit trail). Every transition is audited via `IAuditLogger.LogAudit()` within `IPersistence.ExecuteInTransactionAsync()`.
+
+```plantuml
+@startuml
+title Portal Cuba Corp — NewsItem Lifecycle State Machine (CLS-017)
+
+skinparam classAttributeIconSize 0
+
+[*] --> Draft : NewsService.PublishNews()
+
+Draft --> Published : PublishNews()\n(authorId, timestamp)
+Published --> Published : EditNews()\n(authorId, timestamp)\n[updates UpdatedBy/UpdatedAt]
+Published --> Unpublished : UnpublishNews()\n(authorId, timestamp)
+Unpublished --> Published : PublishNews()\n(re-publish allowed)
+
+note right of Draft
+  Initial state when created.
+  Transition to Published is
+  immediate (no approval workflow).
+  Audit: NewsPublished action.
+end note
+
+note right of Published
+  Visible to employees in news feed.
+  Editable by HR (UC-006).
+  Audit: NewsEdited on each edit.
+  CON-013: never hard-deleted.
+end note
+
+note right of Unpublished
+  Hidden from employee news feed.
+  Record preserved for audit trail
+  (CON-013, NFR-004).
+  Can be re-published by HR.
+  Audit: NewsUnpublished action.
+end note
+
+@enduml
+```
+
+### State Transition Audit Mapping
+
+| From State | To State | Trigger | Audit Action (CLS-015) | UC |
+|---|---|---|---|---|
+| (new) | Draft | PublishNews() | NewsPublished | UC-005 |
+| Draft | Published | (immediate) | — | UC-005 |
+| Published | Published | EditNews() | NewsEdited | UC-006 |
+| Published | Unpublished | UnpublishNews() | NewsUnpublished | UC-007 |
+| Unpublished | Published | PublishNews() (re-publish) | NewsPublished | UC-005 |
+
+> **CON-013 enforcement:** No transition leads to a "Deleted" state. The Unpublished state is terminal unless HR explicitly re-publishes. The record remains in the `news_items` table indefinitely.
+
+### Testability Entry Points
+
+The design exposes dependency injection seams and observable state at every layer boundary, enabling unit tests without external dependencies (PostgreSQL, Active Directory, Keycloak).
+
+| DI Seam | Interface | Test Replacement | Observable State |
+|---|---|---|---|
+| ClockingService → Persistence | INT-007 (IPersistence) | In-memory EF Core DbContext or mock IPersistence | ClockingRecord.IdempotencyKey uniqueness; ClockingResult.IsDuplicate flag |
+| ClockingService → LDAP | INT-006 (ILdapGateway) | Mock returning preset LdapSearchResult | Employee name resolution in clocking list |
+| NewsService → Persistence | INT-007 (IPersistence) | In-memory EF Core DbContext | NewsItem.Status transitions; NewsItem.UpdatedBy/UpdatedAt |
+| NewsService → Audit | INT-005 (IAuditLogger) | Spy recording LogAudit calls | AuditAction enum; entityType; entityId; author; timestamp |
+| DirectoryService → LDAP | INT-006 (ILdapGateway) | Mock returning LdapSearchResult with missing attributes | DirectoryEntry fields show "N/A" for missing attributes (R001) |
+| WorkerCategoryService → Persistence | INT-007 (IPersistence) | In-memory EF Core DbContext | WorkerCategory upsert (INSERT ... ON CONFLICT UPDATE) |
+| WorkerCategoryService → LDAP | INT-006 (ILdapGateway) | Mock returning preset DirectoryEntry | AD user lookup for category assignment |
+| WorkerCategoryService → Audit | INT-005 (IAuditLogger) | Spy recording LogAudit calls | AuditAction.CategoryChanged; entityId = adUserId |
+| PersistenceGateway → DbContext | CLS-008 (PortalDbContext) | EF Core in-memory provider | DbSet<Clockings/NewsItems/WorkerCategories/AuditRecords> queryable state |
+| LdapGateway → Connection Pool | CLS-010 (LdapConnectionPool) | Mock ILdapConnection | Search filter construction; connection acquire/release |
+
+> **Test harness pattern:** Register mock implementations in `IServiceCollection` during test setup. All services accept dependencies via constructor injection — no service locator, no static state. The `ExecuteInTransactionAsync` callback pattern allows tests to verify transactional behavior by asserting that audit records are only persisted when the business operation succeeds.
 ## Traceability
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
