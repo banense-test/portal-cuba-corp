@@ -344,12 +344,18 @@ end note
 @enduml
 ```
 ## Resolutions and Actions
-
 ### Prior Finding Closure (Technical Lens — Iter 2)
 
 | Finding | Artifact | Resolution | Evidence |
 |---|---|---|---|
 | F1 (Minor) | Test Case | **RESOLVED** via `resolve_artifact_finding` | Test Case Document Control: "Iter 2 Finding Resolved — Traceability table TD-NNN prefix entries removed"; Traceability section note confirms removal |
+
+### Prior Finding Closure (Management Reviewer Lens — Iter 2)
+
+| Finding | Artifact | Resolution | Evidence |
+|---|---|---|---|
+| MR-F1 (Major) | Risk List | **RESOLVED** via `resolve_artifact_finding` (Iter 2) | PoC decisions recorded in Architectural Proof-of-Concept artifact; Risk List R001 MITIGATED (single-mechanism CONFIRMED), R006 MITIGATED (single-mechanism confirmed), R003 MONITORING (mock auth contingency active); SAD BASELINED |
+| MR-F2 (Minor) | Iteration Plan | **RESOLVED** via `resolve_artifact_finding` (Iter 2) | Narrative corrected from "6 iterations" to "7 iterations across 4 phases" matching roadmap table (2+2+2+1=7) |
 
 ### Cross-Lens Finding Status (Iter 2)
 
@@ -357,10 +363,22 @@ end note
 |---|---|---|---|
 | M1 (Major) | Code Reviewer | RESOLVED | IAuditLogger signature aligned between SAD and Design Model |
 | M2 (Major) | Code Reviewer | RESOLVED | IPersistence transaction API aligned between SAD and Design Model |
-| MR-F1 (Major) | Management Reviewer | RESOLVED | PoC decisions recorded; risk statuses updated |
-| MR-F2 (Minor) | Management Reviewer | RESOLVED | Iteration count corrected 6→7 |
+| MR-F1 (Major) | Management Reviewer | RESOLVED | PoC decisions recorded; risk statuses updated; resolve_artifact_finding executed |
+| MR-F2 (Minor) | Management Reviewer | RESOLVED | Iteration count corrected 6 to 7; resolve_artifact_finding executed |
 | CR-MIN-1 (Minor) | Code Reviewer | OPEN (non-blocking) | Traceability trailer in test files — deferred to Construction |
 
+### Management Reviewer — LCA Conditions from Iter 1 (Verification)
+
+| # | Condition (from Iter 1 Conditional verdict) | Status (Iter 2) | Evidence |
+|---|---|---|---|
+| 1 | R001 PoC results confirmed | **MET** | PoC artifact: single-mechanism CONFIRMED; Risk List R001=MITIGATED |
+| 2 | R006 PoC results confirmed | **MET** | PoC artifact: single-mechanism confirmed; Risk List R006=MITIGATED |
+| 3 | M1/M2 interface mismatches resolved | **MET** | Code Reviewer Iter 2: APPROVED; PR #4 M1/M2 resolved; Design Model INT-005/INT-007 aligned with SAD |
+| 4 | Architecture status changed from DRAFT to BASELINED | **MET** | SAD Document Control: Status=BASELINED |
+| 5 | MR-F1 risk evidence gap resolved | **MET** | resolve_artifact_finding executed; PoC decisions recorded |
+| 6 | MR-F2 iteration count corrected | **MET** | resolve_artifact_finding executed; narrative corrected 6 to 7 |
+| 7 | F1 TD-NNN prefix resolved | **MET** | Technical Lens Iter 2: F1 RESOLVED via resolve_artifact_finding |
+| 8 | Stakeholder sanction obtained | **MET** | STK-001: "Yes, everything looks very promising. We can move on to the construction phase." |
 ## Disposition
 ### Per-Artifact Verdicts (Technical Lens — Iter 2)
 
