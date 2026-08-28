@@ -474,7 +474,6 @@ stop
 @enduml
 ```
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | Development Case (this artifact) | IARI DC Baseline | Refines | All project artifacts (governance) |
@@ -493,3 +492,9 @@ stop
 | UC Model (10 UCs detailed) | FR-001..FR-010 | Refines | SAD (Use-Case View), Design Model, TestDesigner |
 | STK-003 dependency (test AD/OIDC) | STK-003, R001 | DependsOn | Architectural PoC execution, login testing |
 | Inception actuals (measured) | Closed Inception phase | Derives | Elaboration budget-boxing (Iteration Plan) |
+| F1 finding (TD-NNN prefix) | Review Record §Findings (F1, Minor) | Derives | ID Convention Declaration in Guidelines and Procedures (TC-NNN canonical) |
+| Process Improvement Notes (5 lessons) | Iteration Assessment §Lessons Learned | Derives | Guidelines and Procedures §Process Improvement Notes |
+| Elaboration Iter 1 cost (2.78× Inception) | Iteration Assessment (measured) | Derives | Measurement Policy (budget-boxing guidance) |
+| Interface conformance rule | Iteration Assessment lesson 2 | Derives | Guidelines and Procedures §Process Improvement Notes (#2) |
+| Evidence-based risk retirement | Iteration Assessment lesson 3 | Derives | Guidelines and Procedures §Process Improvement Notes (#3) |
+| All-findings-resolved constraint | STK-001 directive (LCA consultation) | Derives | Guidelines and Procedures §Process Improvement Notes (#4) |
