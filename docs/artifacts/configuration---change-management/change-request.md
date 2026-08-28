@@ -1,15 +1,15 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Construction |
 | Status | Active |
-| Milestone Target | End-of-Construction |
-| Iteration | 1 (Cycle 1) |
+| Milestone Target | End-of-Construction (IOC) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
 | CCB Composition | Change Control Manager (chair), Software Architect (for architectural CRs), Project Manager (for business CRs) |
 | Source of Truth | SCM Issues — labels are the authoritative CR state; this artifact is the narrative audit ledger |
-
+| Prior Iteration | Construction C1 — 13 CRs, 6 approved, 7 deferred, 0 complete |
+| This Iteration | 5 new CRs registered, 6 approved, 3 completed, 7 deferred (carried) |
 ## Change Request Log
 
 ### Portfolio Summary
