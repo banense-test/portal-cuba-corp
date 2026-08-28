@@ -258,9 +258,9 @@ Each analysis mechanism from Inception is resolved to a design mechanism (patter
 | Offline Retry | localStorage + POST Retry | 5-min window; idempotency key prevents duplicates; server accepts client timestamp; clocking only | clocking-retry.js (CON-002) |
 | CSV Export | Streaming Response | HR-only; date-range filtered; streaming to Response.Body | .NET 10 FileStreamResult (CON-001) |
 ## Use-Case Realizations
-Each architecturally significant use case is realized as a collaboration of design objects. Sequence diagrams show the message flow between boundary (UI), control (service), and entity (repository) objects for each UC's main flow and key alternative flows.
+Each architecturally significant use case is realized as a collaboration of design objects. Sequence diagrams show the message flow between boundary (UI), control (service), and entity (repository) objects for each UC's main flow and key alternative/error flows.
 
-> **Iteration 2 — M1/M2 Corrections Applied:** Sequence diagrams SEQ-005, SEQ-006, SEQ-007, and SEQ-010 updated to use `LogAudit()` (M1 fix) and `ExecuteInTransactionAsync()` (M2 fix) instead of the previous `Log()` / `BeginTransaction()` / `CommitTransaction()` calls.
+> **Construction C2 — Implementation Alignment:** All sequence diagrams updated to reflect actual implementation method names (Publish, Edit, Unpublish, GetById, ListAll, GetAllClockings, Search, AssignCategory, LookupAdUser). Error paths and validation failures shown explicitly. `isFeatured` parameter included in UC-005/006 (CR-010). `ExecuteInTransactionAsync` shown as design intent — implementation pending.
 
 ### Realization Index
 
@@ -281,11 +281,11 @@ Each architecturally significant use case is realized as a collaboration of desi
 
 ```plantuml
 @startuml
-title UC-001: Clock In / Clock Out (Architecturally Significant — AC-005, NFR-002)
+title UC-001: Clock In / Clock Out (Construction C2 — Aligned with Implementation)
 
 actor Employee as EMP
 participant "Clocking UI\n+ clocking-retry.js" as UI
-participant "ClockingService\n(COMP-002)" as SVC
+participant "ClockingService\n(CLS-001, COMP-002)" as SVC
 participant "PersistenceGateway\n(COMP-006)" as DB
 database "PostgreSQL" as PG
 
@@ -293,45 +293,67 @@ EMP -> UI : Press Clock In/Out button
 UI -> UI : Capture timestamp +\ngenerate idempotency key (UUID)
 
 alt Network available (normal path)
-  UI -> SVC : POST /api/clocking\n{employeeId, timestamp, type,\nidempotencyKey}
-  SVC -> DB : FindByIdempotencyKey(idempotencyKey)
-  DB -> PG : SELECT WHERE\nidempotency_key = ?
-  
-  alt Duplicate key
-    PG --> DB : Existing record found
-    DB --> SVC : Existing ClockingRecord
-    SVC --> UI : 200 OK (existing record,\nIsDuplicate=true)
-  else New key
-    PG --> DB : No match
+  UI -> SVC : RecordClocking(employeeId,\n  timestamp, type, idempotencyKey)
+
+  SVC -> SVC : Validate employeeId and\n  idempotencyKey non-empty
+
+  alt Validation fails
+    SVC --> UI : ClockingResult.Fail(msg)
+    UI --> EMP : Show error
+  end
+
+  SVC -> DB : FindByIdempotencyKey(key)
+  DB -> PG : SELECT WHERE\n  idempotency_key = ?
+
+  alt Duplicate key found
+    PG --> DB : Existing record
+    DB --> SVC : ClockingRecord
+    SVC --> UI : ClockingResult.Duplicate(record)
+    UI --> EMP : "Already clocked"\n  (same result as original)
+  else New entry
+    PG --> DB : null
     DB --> SVC : null
     SVC -> DB : InsertClocking(record)
     DB -> PG : INSERT INTO clockings
     PG --> DB : Saved
     DB --> SVC : ClockingRecord
-    SVC --> UI : 200 OK (new record,\nIsDuplicate=false)
+    SVC --> UI : ClockingResult.Ok(record)
+    UI --> EMP : Show confirmation\n  (time + direction)
   end
-  UI --> EMP : Show confirmation\n(timestamp + type)
-else Network down (AC-005 offline retry)
-  UI -> UI : Store in localStorage\n{idempotencyKey, timestamp, type}
-  UI --> EMP : Show "Will retry" message
-  loop Retry every 30s (up to 5 min)
-    UI -> SVC : POST /api/clocking (retry)
-    alt Network back
-      SVC --> UI : 200 OK
+
+else Network down (AC-005 offline)
+  UI -> UI : Store in localStorage:\n  {employeeId, timestamp, type,\n  idempotencyKey}
+  UI -> UI : Start retry timer
+
+  alt Network restored within 5 min
+    UI -> SVC : POST /api/clocking\n      (same payload)
+    SVC -> DB : FindByIdempotencyKey(key)
+    DB -> PG : SELECT
+    alt Duplicate (already synced)
+      SVC --> UI : ClockingResult.Duplicate
+      UI -> UI : Clear localStorage
+      UI --> EMP : "Already clocked"
+    else New
+      SVC -> DB : InsertClocking(record)
+      DB -> PG : INSERT
+      SVC --> UI : ClockingResult.Ok
       UI -> UI : Clear localStorage
       UI --> EMP : Show confirmation
-    else Still down
-      UI -> UI : Keep in localStorage
     end
+  else 5 min elapsed
+    UI -> UI : Stop retry
+    UI --> EMP : "Could not sync —\n  please contact HR"
   end
 end
 
-note right of UI
-  AC-005: 5-min offline tolerance
-  via localStorage + idempotency key.
-  NFR-002: <1s response on network.
-  Idempotency key prevents duplicates
-  when retry succeeds after delay.
+note right of SVC
+  C2 UPDATE: Method name
+  RecordClocking (unchanged).
+  Returns ClockingResult with
+  Ok/Duplicate/Fail factory methods.
+  Server-side validation for empty
+  employeeId and idempotencyKey
+  (MINOR-3 fix, CR-011).
 end note
 
 @enduml
@@ -341,22 +363,38 @@ end note
 
 ```plantuml
 @startuml
-title UC-002: View Own Clocking History
+title UC-002: View Own Clocking History (Construction C2)
 
 actor Employee as EMP
-participant "Clocking History UI\n(V002)" as UI
-participant "ClockingService\n(COMP-002)" as SVC
+participant "ClockingPage UI\n(V002)" as UI
+participant "ClockingService\n(CLS-001, COMP-002)" as SVC
 participant "PersistenceGateway\n(COMP-006)" as DB
 database "PostgreSQL" as PG
 
-EMP -> UI : Navigate to clocking history
-UI -> SVC : GetHistory(employeeId, currentMonth)
-SVC -> DB : GetClockingsByEmployee(empId, month)
-DB -> PG : SELECT * FROM clockings\nWHERE employee_id = ?\nAND timestamp BETWEEN ? AND ?\nORDER BY timestamp DESC
-PG --> DB : ClockingRecord[]
+EMP -> UI : Navigate to "My Clockings"
+UI -> SVC : GetCurrentStatus(employeeId)
+SVC -> DB : GetClockingsByEmployee(\n  employeeId, currentMonthRange)
+DB -> PG : SELECT FROM clockings\n  WHERE employee_id = ?\n  AND timestamp BETWEEN ? AND ?\n  ORDER BY timestamp DESC
+PG --> DB : List<ClockingRecord>
 DB --> SVC : List<ClockingRecord>
-SVC --> UI : Clocking history list
-UI --> EMP : Display history table\n(date, time, direction)
+SVC -> SVC : Determine status from\n  most recent record
+SVC --> UI : ClockStatus (In/Out)
+
+UI -> SVC : GetHistory(employeeId,\n  currentMonthRange)
+SVC -> DB : GetClockingsByEmployee(\n  employeeId, monthRange)
+DB -> PG : SELECT
+PG --> DB : List<ClockingRecord>
+DB --> SVC : List<ClockingRecord>
+SVC --> UI : List<ClockingRecord>
+UI --> EMP : Show clocking history\ntable for current month
+
+note right of SVC
+  C2: Method names aligned.
+  GetCurrentStatus derives from
+  most recent ClockingRecord.Type.
+  DateRange.ForMonth used for
+  current month filtering.
+end note
 
 @enduml
 ```
@@ -365,37 +403,32 @@ UI --> EMP : Display history table\n(date, time, direction)
 
 ```plantuml
 @startuml
-title UC-003: View All Employee Clockings (LDAP Name Resolution)
+title UC-003: View All Employee Clockings (Construction C2)
 
 actor "HR Admin" as HR
-participant "All Clockings UI\n(V003)" as UI
-participant "ClockingService\n(COMP-002)" as SVC
+participant "AllClockings UI\n(V003)" as UI
+participant "ClockingService\n(CLS-001, COMP-002)" as SVC
 participant "PersistenceGateway\n(COMP-006)" as DB
-participant "LdapGateway\n(COMP-005)" as LDAP
 database "PostgreSQL" as PG
-database "Active Directory" as AD
 
-HR -> UI : Select month + click View
-UI -> SVC : GetAllClockings(month)
-SVC -> DB : GetAllClockingsForMonth(month)
-DB -> PG : SELECT * FROM clockings\nWHERE timestamp BETWEEN ? AND ?
-PG --> DB : ClockingRecord[]
+HR -> UI : Navigate to "All Clockings"
+HR -> UI : Select month filter
+UI -> SVC : GetAllClockings(monthRange)
+SVC -> DB : GetAllClockingsForMonth(\n  monthRange)
+DB -> PG : SELECT FROM clockings\n  WHERE timestamp BETWEEN ? AND ?\n  ORDER BY employee_id, timestamp
+PG --> DB : List<ClockingRecord>
 DB --> SVC : List<ClockingRecord>
+SVC --> UI : List<ClockingRecord>
+UI --> HR : Show all employees'\nclockings for selected month
 
-SVC -> SVC : Extract unique employeeIds\nfrom clocking records
-SVC -> LDAP : ResolveNames(employeeIds)
-LDAP -> AD : LDAP search by uid
-AD --> LDAP : cn attribute values
-LDAP --> SVC : Dictionary<adUserId, displayName>
-
-SVC -> SVC : Join clockings with display names
-SVC --> UI : List with employee names
-UI --> HR : Display all clockings table\n(name, date, time, direction)
-
-note right of LDAP
-  CON-009: Employee names read
-  from AD at read time — no local
-  copy of employee data.
+note right of SVC
+  C2: GetAllClockings (was
+  GetAllClockingsForMonth in INT-001).
+  IPersistence method retains
+  GetAllClockingsForMonth name.
+  Employee names resolved from
+  OIDC token subject — no LDAP
+  call in current implementation.
 end note
 
 @enduml
@@ -405,169 +438,218 @@ end note
 
 ```plantuml
 @startuml
-title UC-004: Export Monthly Clocking Report (Streaming CSV)
+title UC-004: Export Monthly Clocking Report (Construction C2)
 
 actor "HR Admin" as HR
-participant "All Clockings UI\n(V003)" as UI
-participant "ClockingService\n(COMP-002)" as SVC
+participant "AllClockings UI\n(V003)" as UI
+participant "ClockingService\n(CLS-001, COMP-002)" as SVC
 participant "PersistenceGateway\n(COMP-006)" as DB
-participant "LdapGateway\n(COMP-005)" as LDAP
 database "PostgreSQL" as PG
 
-HR -> UI : Select month + click Export CSV
-UI -> SVC : ExportCsv(month)
-SVC -> DB : GetAllClockingsForMonth(month)
-DB -> PG : SELECT * FROM clockings\nWHERE timestamp BETWEEN ? AND ?
-PG --> DB : ClockingRecord[]
+HR -> UI : Click "Export CSV"
+UI -> SVC : ExportCsv(monthRange)
+SVC -> DB : GetAllClockingsForMonth(\n  monthRange)
+DB -> PG : SELECT FROM clockings\n  WHERE timestamp BETWEEN ? AND ?
+PG --> DB : List<ClockingRecord>
 DB --> SVC : List<ClockingRecord>
 
-SVC -> LDAP : ResolveNames(employeeIds)
-LDAP --> SVC : Dictionary<adUserId, displayName>
-
-SVC -> SVC : Build CSV stream\n(header + rows)
-SVC --> UI : Stream (CSV)
-UI --> HR : File download (clockings_YYYYMM.csv)
+SVC -> SVC : Group by EmployeeId,\n  order by timestamp
+SVC -> SVC : Write CSV:\n  "Employee,Date,TimeIn,TimeOut,Direction"
+loop For each clocking record
+  SVC -> SVC : Format row:\n  {employeeId},\n  {yyyy-MM-dd},\n  {HH:mm:ss},\n  {direction}
+end
+SVC --> UI : Stream (CSV content)
+UI -> HR : Browser downloads CSV file
 
 note right of SVC
-  PERF-004: Streaming response
-  via IClockingService.ExportCsv
-  returns Stream — Razor Page writes
-  to Response.Body.
+  C2: ExportCsv returns Stream.
+  CSV header: Employee,Date,
+  TimeIn,TimeOut,Direction.
+  CR-012 (deferred): TimeOut
+  column currently empty —
+  pairing logic not implemented.
+  PERF-004: Streaming response.
 end note
 
 @enduml
 ```
 
-### SEQ-005: UC-005 — Publish News (M1/M2 Corrected)
+### SEQ-005: UC-005 — Publish News
 
 ```plantuml
 @startuml
-title UC-005: Publish News (M1/M2 Corrected — LogAudit + ExecuteInTransactionAsync)
+title UC-005: Publish News (Construction C2 — Aligned with Implementation)
 
 actor "HR Admin" as HR
-participant "Publish News UI\n(V004)" as UI
-participant "NewsService\n(COMP-003)" as SVC
+participant "PublishNews UI\n(V004)" as UI
+participant "NewsService\n(CLS-002, COMP-003)" as SVC
 participant "PersistenceGateway\n(COMP-006)" as DB
-participant "AuditInterceptor\n(COMP-008)" as AUDIT
+participant "AuditInterceptor\n(CLS-005, COMP-008)" as AUDIT
 database "PostgreSQL" as PG
 
-HR -> UI : Fill title, body, category\n+ click Publish
-UI -> SVC : Publish(title, body, category, authorId)
+HR -> UI : Fill form (title, body,\ncategory, isFeatured checkbox)
+UI -> UI : Validate fields client-side
 
-SVC -> DB : ExecuteInTransactionAsync(action)
-DB -> PG : BEGIN TRANSACTION
+alt Validation fails
+  UI --> HR : Show validation errors
+end
 
-SVC -> DB : SaveNewsItem(newsItem)
+UI -> SVC : Publish(title, body, category,\nauthorId, isFeatured)
+
+SVC -> SVC : Validate title/body\nnon-empty
+
+alt Invalid input
+  SVC --> UI : ArgumentException
+  UI --> HR : Show error message
+end
+
+SVC -> SVC : Create NewsItem {\n  Title, Body, Category,\n  Status=Published, IsFeatured,\n  AuthorId, CreatedAt=now,\n  UpdatedAt=now\n}
+
+SVC -> DB : SaveNewsItem(item)
 DB -> PG : INSERT INTO news_items
-PG --> DB : NewsItem saved (id generated)
+PG --> DB : Saved (with generated Id)
 DB --> SVC : NewsItem with Id
 
-SVC -> AUDIT : LogAudit(entityType="NEWS_ITEM",\nentityId=newsItem.Id,\naction=Publish,\nauthor=authorId,\ntimestamp=serverNow)
-AUDIT -> DB : InsertAuditRecord(auditRecord)
+SVC -> AUDIT : LogAudit(\n  entityType="NEWS_ITEM",\n  entityId=item.Id.ToString(),\n  action=AuditAction.Publish,\n  author=authorId,\n  timestamp=now)
+AUDIT -> DB : InsertAuditRecord(record)
 DB -> PG : INSERT INTO audit_records
 PG --> DB : Saved
 
-DB -> PG : COMMIT
-DB --> SVC : Transaction complete
-
-SVC --> UI : 200 OK (published news item)
-UI --> HR : Show confirmation: "News published"
-
-note right of AUDIT
-  M1 FIX: LogAudit() replaces Log()
-  M2 FIX: ExecuteInTransactionAsync(callback)
-  wraps the entire operation in one
-  DB transaction. Audit record is in
-  the same transaction as the news item.
-end note
-
-@enduml
-```
-
-### SEQ-006: UC-006 — Edit Published News (M1/M2 Corrected)
-
-```plantuml
-@startuml
-title UC-006: Edit Published News (M1/M2 Corrected — LogAudit + ExecuteInTransactionAsync)
-
-actor "HR Admin" as HR
-participant "Edit News UI\n(V005)" as UI
-participant "NewsService\n(COMP-003)" as SVC
-participant "PersistenceGateway\n(COMP-006)" as DB
-participant "AuditInterceptor\n(COMP-008)" as AUDIT
-database "PostgreSQL" as PG
-
-HR -> UI : Edit title/body/category\n+ click Save
-UI -> SVC : Edit(id, title, body, category, authorId)
-
-SVC -> DB : ExecuteInTransactionAsync(action)
-DB -> PG : BEGIN TRANSACTION
-
-SVC -> DB : UpdateNewsItem(id, title, body, category)
-DB -> PG : UPDATE news_items SET ...\nWHERE id = ?
-PG --> DB : Updated
-DB --> SVC : NewsItem updated
-
-SVC -> AUDIT : LogAudit(entityType="NEWS_ITEM",\nentityId=id,\naction=Edit,\nauthor=authorId,\ntimestamp=serverNow)
-AUDIT -> DB : InsertAuditRecord(auditRecord)
-DB -> PG : INSERT INTO audit_records
-PG --> DB : Saved
-
-DB -> PG : COMMIT
-DB --> SVC : Transaction complete
-
-SVC --> UI : 200 OK (updated news item)
-UI --> HR : Show confirmation: "News updated"
-
-note right of AUDIT
-  Edit is audited exactly like
-  the original publication (NFR-004).
-  NewsItem updated in place —
-  NOT deleted/recreated.
-end note
-
-@enduml
-```
-
-### SEQ-007: UC-007 — Unpublish News (M1/M2 Corrected)
-
-```plantuml
-@startuml
-title UC-007: Unpublish News (M1/M2 Corrected — LogAudit + ExecuteInTransactionAsync)
-
-actor "HR Admin" as HR
-participant "News Management UI\n(V006)" as UI
-participant "NewsService\n(COMP-003)" as SVC
-participant "PersistenceGateway\n(COMP-006)" as DB
-participant "AuditInterceptor\n(COMP-008)" as AUDIT
-database "PostgreSQL" as PG
-
-HR -> UI : Click Unpublish on news item
-UI -> SVC : Unpublish(id, authorId)
-
-SVC -> DB : ExecuteInTransactionAsync(action)
-DB -> PG : BEGIN TRANSACTION
-
-SVC -> DB : UpdateNewsStatus(id, NewsStatus.Unpublished)
-DB -> PG : UPDATE news_items SET status='Unpublished'\nWHERE id = ?
-PG --> DB : Updated
-DB --> SVC : NewsItem (status=Unpublished)
-
-SVC -> AUDIT : LogAudit(entityType="NEWS_ITEM",\nentityId=id,\naction=Unpublish,\nauthor=authorId,\ntimestamp=serverNow)
-AUDIT -> DB : InsertAuditRecord(auditRecord)
-DB -> PG : INSERT INTO audit_records
-PG --> DB : Saved
-
-DB -> PG : COMMIT
-DB --> SVC : Transaction complete
-
-SVC --> UI : 200 OK (unpublished news item)
-UI --> HR : Show confirmation: "News unpublished"
+SVC --> UI : NewsItem published
+UI --> HR : Show confirmation +\nredirect to news management
 
 note right of SVC
-  CON-013: Record is NOT deleted.
-  Status changes to Unpublished.
-  Audit trail preserved.
+  C2 UPDATE: Method name Publish()
+  (was PublishNews). isFeatured param
+  included (CR-010, MAJOR-1 fix).
+  Audit via LogAudit (M1 fix).
+  TODO: Wrap SaveNewsItem + audit in
+  ExecuteInTransactionAsync (M2 design
+  correct, implementation pending).
+end note
+
+@enduml
+```
+
+### SEQ-006: UC-006 — Edit Published News
+
+```plantuml
+@startuml
+title UC-006: Edit Published News (Construction C2 — Aligned with Implementation)
+
+actor "HR Admin" as HR
+participant "EditNews UI\n(V005)" as UI
+participant "NewsService\n(CLS-002, COMP-003)" as SVC
+participant "PersistenceGateway\n(COMP-006)" as DB
+participant "AuditInterceptor\n(CLS-005, COMP-008)" as AUDIT
+database "PostgreSQL" as PG
+
+HR -> UI : Select news item to edit
+UI -> SVC : GetById(id)
+SVC -> DB : GetNewsItem(id)
+DB -> PG : SELECT FROM news_items\nWHERE id = ?
+PG --> DB : NewsItem
+DB --> SVC : NewsItem
+SVC --> UI : Pre-populate form\n(title, body, category, isFeatured)
+
+HR -> UI : Edit fields + submit
+UI -> SVC : Edit(id, title, body,\ncategory, authorId, isFeatured)
+
+SVC -> SVC : Validate title/body\nnon-empty
+
+alt Invalid input
+  SVC --> UI : ArgumentException
+  UI --> HR : Show error
+end
+
+SVC -> DB : GetNewsItem(id)
+DB -> PG : SELECT
+PG --> DB : Existing item
+DB --> SVC : Existing item
+
+alt NewsItem not found
+  SVC --> UI : InvalidOperationException
+  UI --> HR : Show "not found" error
+end
+
+SVC -> DB : UpdateNewsItem(id, title,\nbody, category)
+DB -> PG : UPDATE news_items SET ...\nWHERE id = ?
+PG --> DB : Updated
+DB --> SVC : Updated NewsItem
+
+SVC -> AUDIT : LogAudit(\n  entityType="NEWS_ITEM",\n  entityId=id.ToString(),\n  action=AuditAction.Edit,\n  author=authorId,\n  timestamp=now)
+AUDIT -> DB : InsertAuditRecord(record)
+DB -> PG : INSERT INTO audit_records
+PG --> DB : Saved
+
+SVC --> UI : Updated NewsItem
+UI --> HR : Show confirmation
+
+note right of SVC
+  C2 UPDATE: Method name Edit()
+  (was EditNews). isFeatured param
+  included (CR-010).
+  Audit: AuditAction.Edit.
+  TODO: Wrap update + audit in
+  ExecuteInTransactionAsync.
+end note
+
+@enduml
+```
+
+### SEQ-007: UC-007 — Unpublish News
+
+```plantuml
+@startuml
+title UC-007: Unpublish News (Construction C2 — Aligned with Implementation)
+
+actor "HR Admin" as HR
+participant "NewsMgmt UI\n(V006)" as UI
+participant "NewsService\n(CLS-002, COMP-003)" as SVC
+participant "PersistenceGateway\n(COMP-006)" as DB
+participant "AuditInterceptor\n(CLS-005, COMP-008)" as AUDIT
+database "PostgreSQL" as PG
+
+HR -> UI : Click "Unpublish" on\na news item
+UI -> UI : Show confirmation dialog
+
+alt HR confirms
+  UI -> SVC : Unpublish(id, authorId)
+
+  SVC -> DB : GetNewsItem(id)
+  DB -> PG : SELECT FROM news_items
+  PG --> DB : NewsItem
+  DB --> SVC : NewsItem
+
+  alt NewsItem not found
+    SVC --> UI : InvalidOperationException
+    UI --> HR : Show "not found" error
+  end
+
+  SVC -> DB : UpdateNewsStatus(id,\n  NewsStatus.Unpublished)
+  DB -> PG : UPDATE news_items SET\n  status='Unpublished'\n  WHERE id = ?
+  PG --> DB : Updated
+  DB --> SVC : Updated NewsItem
+
+  SVC -> AUDIT : LogAudit(\n    entityType="NEWS_ITEM",\n    entityId=id.ToString(),\n    action=AuditAction.Unpublish,\n    author=authorId,\n    timestamp=now)
+  AUDIT -> DB : InsertAuditRecord(record)
+  DB -> PG : INSERT INTO audit_records
+  PG --> DB : Saved
+
+  SVC --> UI : Unpublished NewsItem
+  UI --> HR : Show confirmation\n(item hidden, record preserved)
+else HR cancels
+  UI --> HR : Return to news list
+end
+
+note right of SVC
+  C2 UPDATE: Method name Unpublish()
+  (was UnpublishNews).
+  CON-013: Record preserved, NOT deleted.
+  Status set to Unpublished only.
+  Audit: AuditAction.Unpublish.
+  TODO: Wrap status update + audit in
+  ExecuteInTransactionAsync.
 end note
 
 @enduml
@@ -577,40 +659,52 @@ end note
 
 ```plantuml
 @startuml
-title UC-008: Read and Filter News
+title UC-008: Read and Filter News (Construction C2)
 
 actor Employee as EMP
-participant "Main Page UI\n(V001)" as UI
-participant "NewsService\n(COMP-003)" as SVC
+participant "MainPage UI\n(V001)" as UI
+participant "NewsService\n(CLS-002, COMP-003)" as SVC
 participant "PersistenceGateway\n(COMP-006)" as DB
 database "PostgreSQL" as PG
 
-EMP -> UI : Load main page
+== Load News Feed ==
+
+EMP -> UI : Navigate to main page
 UI -> SVC : GetFeaturedNews()
 SVC -> DB : GetFeaturedNews()
-DB -> PG : SELECT * FROM news_items\nWHERE status='Published' AND is_featured=true\nORDER BY created_at DESC
-PG --> DB : NewsItem[]
+DB -> PG : SELECT FROM news_items\n  WHERE status='Published'\n  AND is_featured = true\n  ORDER BY created_at DESC
+PG --> DB : List<NewsItem>
 DB --> SVC : List<NewsItem>
-SVC --> UI : Featured news list
+SVC --> UI : Featured news items
 
 UI -> SVC : GetPublishedNews(null)
 SVC -> DB : GetPublishedNews(null)
-DB -> PG : SELECT * FROM news_items\nWHERE status='Published'\nORDER BY created_at DESC
-PG --> DB : NewsItem[]
+DB -> PG : SELECT FROM news_items\n  WHERE status='Published'\n  ORDER BY created_at DESC
+PG --> DB : List<NewsItem>
 DB --> SVC : List<NewsItem>
 SVC --> UI : All published news
-UI --> EMP : Display main page\n(featured banners + news list)
+UI --> EMP : Show featured banners\nat top + news feed below
 
-alt Employee filters by category
-  EMP -> UI : Select category filter
-  UI -> SVC : GetPublishedNews(category)
-  SVC -> DB : GetPublishedNews(category)
-  DB -> PG : SELECT * FROM news_items\nWHERE status='Published' AND category=?\nORDER BY created_at DESC
-  PG --> DB : NewsItem[]
-  DB --> SVC : List<NewsItem>
-  SVC --> UI : Filtered news list
-  UI --> EMP : Display filtered list
-end
+== Filter by Category ==
+
+EMP -> UI : Select category filter\n(General, HR, IT, Events)
+UI -> SVC : GetPublishedNews(category)
+SVC -> DB : GetPublishedNews(category)
+DB -> PG : SELECT FROM news_items\n  WHERE status='Published'\n  AND category = ?\n  ORDER BY created_at DESC
+PG --> DB : List<NewsItem>
+DB --> SVC : List<NewsItem>
+SVC --> UI : Filtered news items
+UI --> EMP : Show filtered news feed
+
+note right of SVC
+  C2: GetFeaturedNews queries
+  is_featured=true AND
+  status='Published' (FR-008).
+  CR-010: isFeatured now settable
+  in Publish/Edit — featured banner
+  functional once Implementer
+  applies CR-010 fix.
+end note
 
 @enduml
 ```
@@ -619,98 +713,117 @@ end
 
 ```plantuml
 @startuml
-title UC-009: Search Employee Directory (R001 — LDAP Attribute Risk)
+title UC-009: Search Employee Directory (Construction C2 — Aligned with Implementation)
 
 actor Employee as EMP
-participant "Directory Search UI\n(V007)" as UI
-participant "DirectoryService\n(COMP-001)" as SVC
-participant "LdapGateway\n(COMP-005)" as LDAP
-database "Active Directory" as AD
+participant "DirectorySearch UI\n(V007)" as UI
+participant "DirectoryService\n(CLS-003, COMP-001)" as SVC
+participant "LdapGateway\n(CLS-006, COMP-005)" as LDAP
+database "Active Directory\n(LDAP)" as AD
 
 EMP -> UI : Enter search query\n(name, department, or office)
 UI -> SVC : Search(query)
-SVC -> LDAP : SearchEntries(filter:\n(cn=*query* OR department=*query*\n OR office=*query*))
-LDAP -> AD : LDAP search
-AD --> LDAP : LdapEntry[]
 
-LDAP -> LDAP : Map attributes:\n  cn -> name\n  title -> jobTitle\n  department -> department\n  physicalDeliveryOfficeName -> office\n  mail -> email\n  telephoneNumber -> extension
-
-alt All attributes present
-  LDAP --> SVC : List<DirectoryEntry>\n(all fields populated)
-else Some attributes missing (R001)
-  LDAP -> LDAP : Replace missing fields\nwith "N/A"
-  LDAP --> SVC : List<DirectoryEntry>\n(missing fields = "N/A")
+alt Empty query
+  SVC --> UI : Empty list
+  UI --> EMP : Show "enter search term"
 end
 
-SVC --> UI : List<DirectoryEntry>
-UI --> EMP : Display directory results\n(name, title, dept, office, email, extension)
+SVC -> SVC : EscapeLdapFilter(query)
+SVC -> LDAP : SearchEntries(filter)
+LDAP -> AD : LDAP search\n(|(cn=*query*)\n(department=*query*)\n(physicalDeliveryOfficeName=*query*))
 
-note right of LDAP
-  R001: LDAP attributes may not
-  be filled consistently across
-  3 offices. Fallback to "N/A"
-  for missing fields.
-  CON-012: Corporate data only —
-  no private personal information.
-  CON-010: Read-only — no writes to AD.
+alt AD returns results
+  AD --> LDAP : Matching entries
+  LDAP --> SVC : List<LdapSearchResult>
+  SVC -> SVC : Map each result via\n  DirectoryEntry.FromLdapAttributes\n  (missing attrs → "N/A", R001)
+  SVC --> UI : List<DirectoryEntry>
+  UI --> EMP : Show results table:\n  name, title, dept, office,\n  email, extension
+else No results
+  AD --> LDAP : Empty
+  LDAP --> SVC : Empty list
+  SVC --> UI : Empty list
+  UI --> EMP : "No colleagues found"
+end
+
+alt LDAP connection error
+  LDAP --> SVC : Exception
+  SVC --> UI : Error
+  UI --> EMP : "Directory unavailable,\n  please try later"
+end
+
+note right of SVC
+  C2 UPDATE: Method name Search()
+  (unchanged). EscapeLdapFilter is
+  private helper. R001 fallback:
+  missing AD attributes → "N/A"
+  via FromLdapAttributes factory.
+  Corporate data only (CON-012).
 end note
 
 @enduml
 ```
 
-### SEQ-010: UC-010 — Manage Worker Category (M1/M2 Corrected)
+### SEQ-010: UC-010 — Manage Worker Category
 
 ```plantuml
 @startuml
-title UC-010: Manage Worker Category (M1/M2 Corrected — LogAudit + ExecuteInTransactionAsync)
+title UC-010: Manage Worker Category (Construction C2 — Aligned with Implementation)
 
 actor "HR Admin" as HR
-participant "Worker Category UI\n(V008)" as UI
-participant "WorkerCategoryService\n(COMP-004)" as SVC
+participant "WorkerCategory UI\n(V008)" as UI
+participant "WorkerCategoryService\n(CLS-004, COMP-004)" as SVC
+participant "LdapGateway\n(CLS-006, COMP-005)" as LDAP
 participant "PersistenceGateway\n(COMP-006)" as DB
-participant "AuditInterceptor\n(COMP-008)" as AUDIT
-participant "LdapGateway\n(COMP-005)" as LDAP
+participant "AuditInterceptor\n(CLS-005, COMP-008)" as AUDIT
 database "PostgreSQL" as PG
-database "Active Directory" as AD
+database "Active Directory\n(LDAP)" as AD
 
-HR -> UI : Search by name
+== AD User Lookup ==
+
+HR -> UI : Search for employee
 UI -> SVC : LookupAdUser(query)
-SVC -> LDAP : SearchEntries(filter: cn=*query*)
-LDAP -> AD : LDAP search
-AD --> LDAP : LdapEntry[]
-LDAP --> SVC : List<DirectoryEntry>
+SVC -> SVC : EscapeLdapFilter(query)
+SVC -> LDAP : SearchEntries(filter)
+LDAP -> AD : LDAP search\n(|(cn=*query*)\n(sAMAccountName=*query*))
+AD --> LDAP : Matching entries
+LDAP --> SVC : List<LdapSearchResult>
+SVC -> SVC : Map to DirectoryEntry\nvia FromLdapAttributes\n(missing → "N/A")
 SVC --> UI : Employee list
 UI --> HR : Show matching employees
 
+== Category Assignment ==
+
 HR -> UI : Select employee + category
-UI -> SVC : AssignCategory(adUserId, category, authorId)
+UI -> SVC : AssignCategory(adUserId,\ncategory, authorId)
 
-SVC -> DB : ExecuteInTransactionAsync(action)
-DB -> PG : BEGIN TRANSACTION
+SVC -> SVC : Validate adUserId and\ncategory non-empty
 
-SVC -> DB : UpsertWorkerCategory(adUserId, category)
-DB -> PG : INSERT ... ON CONFLICT UPDATE\nworker_categories
+alt Invalid input
+  SVC --> UI : ArgumentException
+  UI --> HR : Show error
+end
+
+SVC -> DB : UpsertWorkerCategory(\n  adUserId, category)
+DB -> PG : INSERT ... ON CONFLICT\n  (ad_user_id) DO UPDATE\n  SET category = ?
 PG --> DB : Saved
-DB --> SVC : WorkerCategory saved
+DB --> SVC : WorkerCategory
 
-SVC -> AUDIT : LogAudit(entityType="WORKER_CATEGORY",\nentityId=adUserId,\naction=CategoryChanged,\nauthor=authorId,\ntimestamp=serverNow)
-AUDIT -> DB : InsertAuditRecord(auditRecord)
+SVC -> AUDIT : LogAudit(\n  entityType="WORKER_CATEGORY",\n  entityId=adUserId,\n  action=AuditAction.CategoryChanged,\n  author=authorId,\n  timestamp=now)
+AUDIT -> DB : InsertAuditRecord(record)
 DB -> PG : INSERT INTO audit_records
 PG --> DB : Saved
-
-DB -> PG : COMMIT
-DB --> SVC : Transaction complete
 
 SVC --> UI : Category updated
 UI --> HR : Show confirmation
 
-note right of AUDIT
-  M1 FIX: LogAudit() replaces Log()
-  M2 FIX: ExecuteInTransactionAsync(callback)
-  replaces BeginTransaction()/CommitTransaction()
-  Audit pattern: same as UC-005/006/007.
-  Author from OIDC token.
-  Append-only audit_records table.
+note right of SVC
+  C2 UPDATE: Method names aligned
+  with implementation.
+  Audit: AuditAction.CategoryChanged.
+  entityId is string (adUserId), not Guid.
+  TODO: Wrap upsert + audit in
+  ExecuteInTransactionAsync.
 end note
 
 @enduml
