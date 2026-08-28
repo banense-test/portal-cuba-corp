@@ -549,7 +549,7 @@ No findings are overdue. All 5 open findings have assigned owners and deadlines 
 | Artifact | Verdict | Rationale |
 |---|---|---|
 | Software Architecture Document | **APPROVED** | All 4+1 views baselined, 8 components interface-based, 5 ADRs, 3 sequence diagrams, NFRs addressed, traceability complete |
-| Design Model | **APPROVED** | UC realizations for top-3 arch-sig UCs, full interface signatures, volatility encapsulated, state machines, DB tables, UI classes |
+| Design Model | **APPROVED** | UC realizations for top-3 arch-sig UCs, full interface signatures, volatility encapsulated, state machines, DB tables, UI classes. M1/M2 resolved in Iter 2 — LogAudit and ExecuteInTransactionAsync match implementation. |
 | Use-Case Model | **APPROVED** | 10 UCs 1:1 with 10 FRs, each cites Source: FR-NNN, no phantom/cross-cutting/multi-actor-split UCs |
 | Supplementary Specification | **APPROVED** | NFRs quantified, FURPS+ complete, cross-cutting mechanisms in SuppSpec with <<include>> |
 | Development Case | **APPROVED** | No baseline violations, optional triggers correctly justified (PoC fired for R001, others correctly not fired) |
@@ -566,26 +566,26 @@ No findings are overdue. All 5 open findings have assigned owners and deadlines 
 
 | Lens | Role | Executed? | Verdict |
 |---|---|---|---|
-| Technical | Reviewer | EXECUTED | APPROVED — 0 Critical, 0 Major (artifact-level), 1 Minor |
-| Business | BusinessReviewer | EXECUTED | APPROVED — 0 findings (Business Modeling INACTIVE) |
-| Management | ManagementReviewer | EXECUTED | CONDITIONAL — 0 Critical, 1 Major (Risk List), 1 Minor (Iteration Plan) |
-| Code | CodeReviewer | EXECUTED (prior — PR #4) | REQUEST_CHANGES — 2 Major (M1, M2 implementation divergences) |
+| Technical | Reviewer | EXECUTED (Iter 1) | APPROVED — 0 Critical, 0 Major (artifact-level), 1 Minor |
+| Business | BusinessReviewer | EXECUTED (Iter 1) | APPROVED — 0 findings (Business Modeling INACTIVE) |
+| Management | ManagementReviewer | EXECUTED (Iter 1) | CONDITIONAL — 0 Critical, 1 Major (Risk List), 1 Minor (Iteration Plan) |
+| Code | CodeReviewer | EXECUTED (Iter 1 → Iter 2) | **Iter 1: REQUEST_CHANGES** (2 Major M1/M2) → **Iter 2: APPROVED** (M1/M2 resolved, 0 Critical, 0 Major, 1 Minor, 2 Suggestions) |
 
-**Consolidated Finding Summary:**
+**Consolidated Finding Summary (Iteration 2 Update):**
 
-| Severity | Count | Artifacts | Lenses |
-|---|---|---|---|
-| Critical | 0 | — | — |
-| Major | 3 | PR #4 (M1, M2), Risk List (MR-F1) | Code Reviewer (2), Management Reviewer (1) |
-| Minor | 2 | Test Case (F1), Iteration Plan (MR-F2) | Reviewer (1), Management Reviewer (1) |
-| Info | 0 | — | — |
-| **Total Open** | **5** | | |
+| Severity | Count (Open) | Count (Resolved) | Artifacts | Lenses |
+|---|---|---|---|---|
+| Critical | 0 | 0 | — | — |
+| Major | 1 | 2 | Risk List (MR-F1 — open); PR #4 M1/M2 (resolved) | Management Reviewer (1 open); Code Reviewer (2 resolved) |
+| Minor | 3 | 0 | Test Case (F1), Iteration Plan (MR-F2), PR #4 (CR-MIN-1) | Reviewer (1), Management Reviewer (1), Code Reviewer (1) |
+| Suggestion | 2 | 0 | PR #4 (CR-SUG-1, CR-SUG-2) | Code Reviewer (2) |
+| **Total Open** | **6** (1 Major, 3 Minor, 2 Suggestion) | **2 resolved** | | |
 
 **Technical Lens (Reviewer): APPROVED — Architecture baseline technically sound.**
 
 The Elaboration artifact set is technically sound:
 - **0 Critical findings** — no blockers
-- **0 Major findings** (at the artifact level) — the 2 Major findings from the Code Reviewer are implementation-level defects in PR #4, not defects in the Design Model or SAD artifacts themselves
+- **0 Major findings** (at the artifact level) — the 2 Major findings from the Code Reviewer were implementation-level defects in PR #4, now resolved in Iter 2
 - **1 Minor finding** (TD-NNN prefix in Test Case) — non-blocking, recommended for Iter 2 resolution
 - All 12 artifacts reviewed with 100% coverage
 
@@ -599,41 +599,58 @@ The Management Reviewer verdict is CONDITIONAL with 8 conditions that must be me
 
 1. R001 PoC results confirmed (LDAP attribute consistency across 3 offices)
 2. R006 PoC results confirmed (offline retry mechanism for AC-005)
-3. M1/M2 interface mismatches resolved (IAuditLogger + IPersistence alignment)
-4. Architecture status changed from DRAFT to BASELINED
+3. ~~M1/M2 interface mismatches resolved (IAuditLogger + IPersistence alignment)~~ **✅ RESOLVED (Iter 2)** — Design Model updated, code verified conformant
+4. Architecture status changed from DRAFT to BASELINED — **✅ SAD now BASELINED**
 5. R003 OIDC registration confirmed with STK-003 or mock auth contingency activated
-6. PR #4 merged after M1/M2 fixes
+6. ~~PR #4 merged after M1/M2 fixes~~ **✅ PR #4 APPROVED (Iter 2)** — ready for integration
 7. MR-F2 iteration count corrected in Iteration Plan
 8. F1 TD-NNN prefix resolved in Test Case (declare in Dev Case or replace)
 
-**Code Lens (CodeReviewer): REQUEST_CHANGES — 2 Major implementation divergences.**
+**Code Lens (CodeReviewer): APPROVED (Iteration 2) — M1/M2 resolved, PR #4 cleared for integration.**
 
-The Code Reviewer reviewed PR #4 (Elaboration E1: Architectural Infrastructure Prototype) and issued REQUEST_CHANGES for 2 Major implementation divergences (M1: IAuditLogger, M2: IPersistence). These must be fixed before the PR can be merged. The Design Model interfaces are correct; the implementation must be aligned to them.
+The Code Reviewer re-reviewed PR #4 in Elaboration Iteration 2 and verified:
+- **M1 RESOLVED:** IAuditLogger uses `LogAudit()` — matches updated Design Model INT-005. The method name avoids collision with `Microsoft.Extensions.Logging.ILogger.Log()` in .NET 10.
+- **M2 RESOLVED:** IPersistence uses `ExecuteInTransactionAsync(Func<Task> action)` callback pattern — matches updated Design Model INT-007. Replaces redundant `BeginTransaction()`/`CommitTransaction()` with EF Core idiomatic transaction wrapping.
+- **CI Build: PASS (green)** — feature/E1-architectural-infrastructure, completed 2026-08-28 12:06:22Z
+- **Design Model Conformance:** All 8 interfaces (INT-001..INT-007), all class names, and package structure match the updated Design Model
+- **Dual Coverage:** 6 test files with 50+ test cases covering both black-box contracts and white-box execution paths
+- **Constraint Conformance:** CON-009 (2-col worker_categories), CON-012 (corporate data only), CON-013 (no hard delete), NFR-004 (audit trail), AC-005 (idempotency + client timestamp) — all verified
+- **R001 Fallback:** Missing LDAP attributes default to "N/A" with full test coverage
 
-**Terminal verdict for PR #4: REQUEST_CHANGES** — the 2 Major findings (M1, M2) must be resolved before the architecture baseline can be integrated. The PR stays open and converges in Elaboration Iteration 2.
+**Terminal verdict for PR #4: APPROVED** — zero Critical, zero Major findings. M1/M2 from Iteration 1 fully resolved. 1 Minor (traceability trailer — non-blocking) and 2 Suggestions (test double improvements — non-blocking). PR #4 is cleared for integration by the Integrator.
 
 ### Stakeholder Sanction
 
-**STAKEHOLDER SANCTION: REFUSED**
+**STAKEHOLDER SANCTION: REFUSED (Iter 1)**
 
 STK-001 (Laura Gómez, HR Director — project sponsor) was consulted and refused sanction to advance:
 
 > "We need to iterate again. There are issues to mitigate, pull requests to close, and findings to address, even if they're minor. We need to be clear before we can move on to elaboration."
 
-This sanction refusal is consistent with the open findings: 3 Major findings (2 implementation divergences + 1 risk evidence gap) and 2 Minor findings remain unresolved. The stakeholder demands ALL findings be resolved before sanction — per the established project preference.
+This sanction refusal was consistent with the open findings at Iter 1: 3 Major findings (2 implementation divergences + 1 risk evidence gap) and 2 Minor findings remained unresolved. The stakeholder demands ALL findings be resolved before sanction — per the established project preference.
+
+**Iteration 2 Code Reviewer Progress:** M1/M2 resolved, PR #4 approved. Remaining open findings (MR-F1, F1, MR-F2) are owned by other lenses and must be resolved before stakeholder re-consultation.
 
 ### Milestone Decision
 
-**LCA Milestone: NOT ACHIEVED — Auto-iterate to Elaboration Iteration 2**
+**LCA Milestone: NOT YET ACHIEVED — Elaboration Iteration 2 in progress**
 
-This is Elaboration Iteration 1 of 2. The LCA gate is not yet reached. The consolidated verdict across all executed lenses is:
+This is Elaboration Iteration 2 of 2. The LCA gate conditions are partially met:
 
-- **0 Critical** — no blockers requiring stakeholder escalation
-- **3 Major** — all open, all assigned with owners and deadlines for Iter 2
-- **2 Minor** — all open, all assigned with owners and deadlines for Iter 2
-- **Stakeholder sanction: REFUSED** — consistent with open findings
+**Conditions Met (Iter 2):**
+- ✅ Condition 3: M1/M2 interface mismatches resolved
+- ✅ Condition 4: SAD status changed to BASELINED
+- ✅ Condition 6: PR #4 approved (ready for integration)
+- ✅ Code Reviewer lens: APPROVED with 0 Critical, 0 Major
 
-The project must auto-iterate to Elaboration Iteration 2 to resolve all open findings, execute PoCs, merge PR #4, and re-consult the stakeholder for LCA sanction.
+**Conditions Still Open:**
+- ❌ Condition 1: R001 PoC results confirmed
+- ❌ Condition 2: R006 PoC results confirmed
+- ❌ Condition 5: R003 OIDC registration confirmed
+- ❌ Condition 7: MR-F2 iteration count corrected
+- ❌ Condition 8: F1 TD-NNN prefix resolved
+
+The project must complete the remaining conditions and re-consult the stakeholder for LCA sanction.
 
 ### SCM Issues Status
 
@@ -642,8 +659,8 @@ The project must auto-iterate to Elaboration Iteration 2 to resolve all open fin
 | #1 | CR-001: LDAP PoC (R001) | Open | needs-architect-review — Elaboration Iter 2 |
 | #2 | CR-002: Offline retry PoC (R006) | Open | needs-architect-review — Elaboration Iter 2 |
 | #3 | CR-003: Audit trail validation | Open | cr:deferred-next-iteration |
-| #5 | E1 iteration close — DEFERRED | Open | No mechanism integrated yet |
-| #6 | CR-006: Prototype not merged | Open | All TCs BLOCKED — resolves when PR #4 merges |
+| #5 | E1 iteration close — DEFERRED | Open | PR #4 approved — ready for integration |
+| #6 | CR-006: Prototype not merged | Open | PR #4 APPROVED — resolves when Integrator merges |
 ## Traceability
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
