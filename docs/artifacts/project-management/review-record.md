@@ -189,7 +189,6 @@ object "Review Record" as RR {
 ```
 
 ## Findings
-
 ### Prior Findings (Code Reviewer — E1 PR Review)
 
 The Code Reviewer reviewed PR #4 and recorded 2 Major findings (implementation divergences from the Design Model). These are implementation-level defects, not artifact-level defects — the Design Model interfaces are correct; the implementation code in PR #4 diverges from them.
@@ -204,6 +203,93 @@ The Code Reviewer reviewed PR #4 and recorded 2 Major findings (implementation d
 | # | Severity | Artifact | Finding | Recommendation | Verdict |
 |---|---|---|---|---|---|
 | F1 | Minor | Test Case | The Test Case traceability table uses "TD-NNN" as an element ID prefix (TD-008, TD-009, TD-011) for Test Dependencies. This prefix is not listed in the standard ID conventions table. The prior finding on the Test Evaluation Summary for the same prefix was resolved by replacing TD-NNN with TC-NNN, but the Test Case artifact still uses TD-NNN. Unlike the Test Evaluation Summary entries (which were test configurations mislabeled as dependencies), these TD entries represent genuine Test Dependencies — a concept distinct from Test Cases. Replacing with TC-NNN would be semantically incorrect. | Either (a) declare "TD" (Test Dependency) as a project-specific element type in the Development Case's tool assessment section, noting it as a test-planning concept that doesn't map to any existing standard ID type, or (b) replace TD-NNN with inline descriptive names consistent with the other test dependency entries in the same table (e.g., "LdapGatewayStub", "OIDC Mock Token Provider"). Option (a) is preferred since Test Dependency is a meaningful concept in test planning. | Approved |
+
+### Business Modeling Discipline (Business Reviewer — LCA Business Lens)
+
+**Verdict: [BR-OK-INACTIVE] — Discipline NOT APPLICABLE per DC §4**
+
+#### DC §4 Classification Assessment
+
+| Field | Value |
+|---|---|
+| Classification Source | `get_dc_classification` — Process Engineer, Elaboration re-evaluation |
+| `isBusinessProcessLed` | `false` |
+| Criteria Triggered | None — all DC §4 criteria evaluated, none triggered |
+| Classification Date | 2026-08-28T10:48:45Z |
+| Inception Verdict | INACTIVE (sustained) |
+| Elaboration Verdict | INACTIVE (sustained) |
+
+#### Rationale
+
+The stakeholder declared 10 system-level functional requirements (FR-001 through FR-010) describing specific portal features — clock in/out, news management, employee directory, worker category management. These are **system feature specifications**, not business process models. The Use-Case Model (Elaboration baseline) contains system-level use cases (UC-001 through UC-010) with system actors (Employee, HR Administrator, Active Directory, Keycloak) — not business actors, business workers, or business entities.
+
+The business processes (clocking, news publishing, directory lookup) are already defined and stable within the organization. The portal **digitizes** them; it does not **redesign** them. No business process reengineering, workflow optimization, or organizational change modeling is in scope.
+
+#### Artifact Inventory — BM Section Coverage Check
+
+| Artifact | BM Sections Present? | Assessment |
+|---|---|---|
+| Use-Case Model | No BUCs, no business workers, no business entities, no business realizations | ✅ Correct — system-level UC model only, as expected for non-BPL project |
+| Vision | No business process models, no organizational models | ✅ Correct — system vision with feature-level scope |
+| Supplementary Specification | No business rules section (rules are system-level constraints: SEC, AUD, PERF) | ✅ Correct — system NFRs, not business rules |
+| Glossary | Not produced (no specialist vocabulary trigger) | ✅ Correct — no BM vocabulary to define |
+
+#### Prior BR Findings Reconciliation
+
+| Artifact | Prior BR Findings | Open (resolution==null) | Disposition |
+|---|---|---|---|
+| Use-Case Model | 0 | 0 | N/A — no BR findings to reconcile |
+| Vision | 2 (both from other lenses: Reviewer idx=0, ManagementReviewer idx=1) | 0 | N/A — not BR findings; both already resolved in Inception |
+| Supplementary Specification | 0 | 0 | N/A — no BR findings to reconcile |
+
+No prior BusinessReviewer findings exist on any artifact. No resolves needed.
+
+#### Coverage Diagram
+
+```plantuml
+@startuml
+title Business Modeling Discipline — DC §4 Classification Status
+
+skinparam rectangleBorderColor #4a90d9
+skinparam noteBorderColor #999999
+
+rectangle "DC §4 Business-Process-Led Classification" as DC {
+  rectangle "isBusinessProcessLed = FALSE" as BPL #LightGray
+  rectangle "Criteria Triggered: NONE" as CR #LightGray
+}
+
+rectangle "Business Modeling Discipline" as BM {
+  rectangle "INACTIVE" as INACT #Salmon
+}
+
+rectangle "Business Reviewer Verdict" as BRV {
+  rectangle "BR-OK-INACTIVE" as VERDICT #LightGreen
+}
+
+DC --> BM : governs
+BM --> BRV : reviewer assessment
+
+note bottom of INACT
+  Rationale: Stakeholder declared 10 system-level FRs
+  (FR-001..FR-010) describing portal features, not business
+  process models. No BPR, workflow optimization, or
+  organizational change modeling in scope.
+  Portal digitizes existing stable HR processes.
+end note
+
+note bottom of VERDICT
+  BM discipline correctly INACTIVE.
+  No findings, no recommendations.
+  LCA milestone may proceed without BM contributions.
+  Inception INACTIVE verdict sustained.
+end note
+
+@enduml
+```
+
+#### Conclusion
+
+Business Modeling discipline remains correctly **INACTIVE**. No findings, no recommendations. The LCA milestone may proceed without BM contributions. The Inception INACTIVE verdict is sustained through Elaboration.
 
 ### Defect Distribution
 
@@ -272,11 +358,11 @@ note bottom of MI
   Overall LCA Disposition: APPROVED
   0 Critical, 0 Major, 1 Minor (non-blocking)
   PR #4: REQUEST_CHANGES (Code Reviewer — 2 Major impl divergences)
+  Business Modeling: INACTIVE (BR-OK-INACTIVE)
 end note
 
 @enduml
 ```
-
 ## Resolutions and Actions
 
 ### Prior Findings Reconciliation
