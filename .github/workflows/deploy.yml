@@ -1,64 +1,25 @@
-# Portal Cuba Corp — Deployment Workflow Skeleton
-# Inception baseline: structure only, steps filled in during Elaboration/Construction
-# Deployment target: internal Windows Server (CON-006), single node
-
+# Deployment workflow skeleton — Portal Cuba Corp
+# To be filled in during Construction/Transition phases
 name: Deploy
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Target environment'
-        required: true
-        default: 'production'
-        type: choice
-        options:
-          - production
-
-env:
-  DOTNET_VERSION: '10.0.x'
-  PROJECT_NAME: 'PortalCubaCorp'
 
 jobs:
   build:
-    name: Build
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup .NET
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      - name: Restore dependencies
-        run: dotnet restore
+          dotnet-version: '10.0.x'
       - name: Build
-        run: dotnet build --configuration Release --no-restore
-      - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal
-      - name: Publish
-        run: dotnet publish --configuration Release --no-build --output ./publish
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: portal-deployable
-          path: ./publish
-
-  deploy:
-    name: Deploy to Windows Server
-    needs: build
-    runs-on: windows-latest
-    environment: production
-    steps:
-      # TODO: Fill in during Elaboration/Construction
-      # - Download artifact
-      # - Backup current deployment folder
-      # - Stop application pool (IIS / Kestrel service)
-      # - Copy new build to target server (via WinRM / OpenSSH)
-      # - Run smoke tests (clock in, news, directory)
-      # - If smoke tests fail: restore backup, restart app pool, notify STK-003
-      # - If smoke tests pass: start application pool, verify portal accessible
-      - name: Placeholder — deployment steps TBD
-        run: echo "Deployment steps to be defined in Elaboration/Construction"
+        run: dotnet build --configuration Release
+      - name: Test
+        run: dotnet test --configuration Release
+      # TODO: Add publish and deploy steps in Construction/Transition
