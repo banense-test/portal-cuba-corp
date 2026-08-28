@@ -6,7 +6,7 @@
 | Milestone Target | End of Elaboration (LCA) |
 | Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
-| Author | Test Designer (Test Discipline) — Test Cases; Tester (Test Discipline) — E1 Findings |
+| Author | Test Designer (Test Discipline) — Test Cases; Tester (Test Discipline) — E1/Iter 2 Findings |
 | Prior Phase | Inception — Test Evaluation Summary (Approved) |
 | E1 Execution Date | 2026-08-28 |
 | E1 Build ID | CI run 2026-08-28 10:50:54Z (main) |
@@ -16,6 +16,15 @@
 | E1 Defects Logged | 1 (CR-006: Architectural prototype not merged to main — all TCs blocked) |
 | Iter 2 Update | PR #4 **APPROVED** by Code Reviewer (M1/M2 resolved, 0 Critical, 0 Major, 1 Minor non-blocking). TCs transition from BLOCKED → READY pending merge to main. 6 test files reviewed: ClockingServiceTests, NewsServiceTests, DirectoryServiceTests, WorkerCategoryServiceTests, OfflineRetryTests, DomainTests. |
 | Iter 2 Finding Resolved | Traceability table TD-NNN prefix entries removed (Minor finding from Review Record Iter 1). |
+| Iter 2 Execution Date | 2026-08-28 |
+| Iter 2 Build ID (main) | CI run 2026-08-28 11:54:27Z (main) — PASS (green), scaffold only |
+| Iter 2 Feature Branch | feature/E1-architectural-infrastructure — full prototype with 6 test files |
+| Iter 2 Smoke Test | PASS — CI green on main; but main contains only Inception scaffold (no prototype code) |
+| Iter 2 Code-Level Evaluation | 75 tests across 6 files reviewed against feature branch implementation — ALL PASS at code-review level |
+| Iter 2 Execution Verdict | BLOCKED — PR #4 approved but NOT merged to main; tests cannot execute on main; CR-006 remains OPEN |
+| Iter 2 Defects Logged | 0 new (CR-006 from Iter 1 still open — same blocker persists) |
+| Iter 2 M1 Status | RESOLVED — IAuditLogger.LogAudit() signature matches between interface and implementation |
+| Iter 2 M2 Status | RESOLVED — IPersistence.ExecuteInTransactionAsync() callback pattern matches between interface and implementation |
 ## Test Scope
 ### Architecturally Significant Use Cases Under Test
 
