@@ -102,7 +102,6 @@ end note
 | UC-010 | Manage Worker Category | FR-010 | HR Administrator | Must | Medium | No | Detailed |
 
 ## Use-Case Specifications
-
 ### UC-001: Clock In / Clock Out — DETAILED
 
 | Field | Value |
@@ -137,47 +136,109 @@ end note
 @startuml
 title UC-001: Clock In / Clock Out — Activity Diagram
 
+|Employee|
 start
-:Employee navigates to portal main page;
-:System retrieves current clocking status
-from database (employee id from OIDC token);
+:Opens portal main page;
+|Portal API|
+:Validate OIDC token;
+:Query current clocking status\nfrom PostgreSQL;
+|Employee|
 if (Currently clocked in?) then (yes)
   :Display "Clock Out" button;
 else (no)
   :Display "Clock In" button;
 endif
-:Employee presses button;
-:Client records timestamp and generates
-idempotency key in localStorage;
-:Client sends POST with timestamp
-and idempotency key;
-if (Network available?) then (yes)
-  :Server records clocking entry in PostgreSQL;
-  :Server returns confirmation with time;
-  :Employee sees confirmation;
-else (no — A1: offline retry)
-  :Client stores press in localStorage;
-  :Client retries POST for up to 5 minutes;
-  if (Network restored within 5 min?) then (yes)
-    :Server accepts client timestamp;
-    :Server checks idempotency key;
-    if (Key already exists? — A3) then (yes)
-      :Server returns original confirmation;
-    else (no)
-      :Server records clocking entry;
-      :Server returns confirmation;
-    endif
-    :Employee sees confirmation;
-  else (no — A2)
-    :Client stops retrying;
-    :Display "Clocking not recorded — report to HR";
+:Presses button;
+|Browser (Razor Page)|
+:Record timestamp +\ngenerate idempotency key\nin localStorage;
+:Send POST /api/clocking\n{timestamp, idempotencyKey, direction};
+|Portal API|
+if (Network available?) then (yes — Main Flow)
+  :Insert clocking record in PostgreSQL;
+  :Return confirmation with recorded time;
+  |Browser (Razor Page)|
+  :Display "Clocked {in/out} at HH:MM:SS";
+  |Employee|
+  :Sees confirmation;
+else (no — A1: Offline Retry)
+  |Browser (Razor Page)|
+  :Store pending request in localStorage;
+  :Display "Saving clocking...\nWill retry automatically";
+  repeat
+    :Retry POST /api/clocking;
+  repeat while (Network still down?\nAND < 5 minutes?) is (yes)
+  -> no;
+  if (Network restored?) then (yes)
+    |Portal API|
+    :Insert clocking record in PostgreSQL;
+    :Return confirmation;
+    |Browser (Razor Page)|
+    :Display "Clocked {in/out} at HH:MM:SS";
+  else (no — A2: 5-min timeout)
+    :Display "Clocking not recorded —\nreport to HR";
   endif
 endif
 stop
 @enduml
 ```
 
----
+**Sequence Diagram (Key Realization — Main + Offline Retry + Idempotency):**
+
+```plantuml
+@startuml
+title UC-001: Clock In/Out — Sequence Diagram (Main + Offline Retry)
+
+actor "Employee" as EMP
+participant "Browser\n(Razor Page)" as UI
+participant "Portal API\n(.NET 10)" as API
+database "PostgreSQL" as DB
+
+== Main Flow (Online) ==
+EMP -> UI : Opens portal main page
+UI -> API : GET /api/clocking/status (with OIDC token)
+API -> API : Validate OIDC token
+API -> DB : Query current clocking status
+DB --> API : Status: not clocked in
+API --> UI : Display "Clock In" button
+EMP -> UI : Presses "Clock In"
+UI -> UI : Record timestamp +\ngenerate idempotency key\n(localStorage)
+UI -> API : POST /api/clocking {timestamp, idempotencyKey, direction:in}
+API -> DB : INSERT clocking record\n(employeeId, timestamp, direction,\nidempotencyKey)
+DB --> API : Insert confirmed
+API --> UI : Confirmation with recorded time
+UI --> EMP : "Clocked in at HH:MM:SS"
+
+== Alternative Flow A1: Network Error (Offline Retry) ==
+EMP -> UI : Presses "Clock Out"
+UI -> UI : Record timestamp +\ngenerate idempotency key\n(localStorage)
+UI -> API : POST /api/clocking {timestamp, idempotencyKey, direction:out}
+API -x UI : Network error (timeout/5xx)
+UI -> UI : Store pending request in localStorage\nStart retry timer (up to 5 min)
+UI --> EMP : "Saving clocking...\nWill retry automatically"
+loop Every 30s for up to 5 minutes
+  UI -> API : Retry POST /api/clocking
+  alt Network restored
+    API -> DB : INSERT clocking record
+    DB --> API : Insert confirmed
+    API --> UI : Confirmation
+    UI --> EMP : "Clocked out at HH:MM:SS"
+  else Still offline
+    API -x UI : Network error
+  end
+end
+
+== Alternative Flow A2: 5-Minute Timeout ==
+UI --> EMP : "Clocking not recorded —\nreport to HR"
+
+== Alternative Flow A3: Duplicate POST (Idempotency) ==
+UI -> API : POST /api/clocking {timestamp, idempotencyKey}
+API -> DB : Check idempotencyKey exists
+DB --> API : Key already exists
+API --> UI : Return original confirmation\n(no duplicate created)
+UI --> EMP : "Clocked out at HH:MM:SS"
+
+@enduml
+```
 
 ### UC-002: View Own Clocking History — DETAILED
 
@@ -185,20 +246,20 @@ stop
 |---|---|
 | Source | FR-002 |
 | Primary Actor | Employee (ACT-001) |
-| Trigger | Employee selects "My Clockings" from the portal navigation |
+| Trigger | Employee selects "My Clocking History" |
 | Preconditions | Employee is authenticated via Keycloak OIDC |
 | Postconditions | Employee's clocking history for the current month is displayed |
 | MoSCoW | Must |
 | Volatility | Low |
 
 **Main Flow:**
-1. Employee navigates to the "My Clockings" page.
-2. System retrieves the employee id from the OIDC token.
-3. System queries clocking records for the current month (employee id, date range = month-to-date).
-4. System displays the clocking history table: date, time, direction (in/out).
+1. Employee navigates to "My Clocking History" page.
+2. System queries the database for the employee's clocking records for the current month.
+3. System displays the clocking history in a table (date, time in, time out).
+4. Employee reviews their history.
 
 **Alternative Flows:**
-- **A1: No clockings recorded this month:** System displays "No clockings recorded this month."
+- **A1: No clocking records for current month:** System displays "No clocking records for this month yet."
 
 **Activity Diagram:**
 
@@ -206,24 +267,23 @@ stop
 @startuml
 title UC-002: View Own Clocking History — Activity Diagram
 
+|Employee|
 start
-:Employee navigates to "My Clockings" page;
-:System retrieves employee id from OIDC token;
-:System queries clocking records
-for current month (employee id,
-date range = month-to-date);
+:Navigate to "My Clocking History";
+|Portal API|
+:Validate OIDC token;
+:Query clocking records for\nauthenticated employee id\n(current month);
 if (Records found?) then (yes)
-  :Display clocking history table:
-  date, time, direction (in/out);
-else (no)
-  :Display "No clockings recorded
-  this month";
+  :Return clocking history\n(date, time in, time out);
+  |Employee|
+  :View clocking history table;
+else (no — A1)
+  |Employee|
+  :See "No clocking records\nfor this month yet";
 endif
 stop
 @enduml
 ```
-
----
 
 ### UC-003: View All Employee Clockings — DETAILED
 
@@ -231,22 +291,21 @@ stop
 |---|---|
 | Source | FR-003 |
 | Primary Actor | HR Administrator (ACT-002) |
-| Trigger | HR Administrator selects "All Clockings" from the portal navigation |
-| Preconditions | HR Administrator is authenticated via Keycloak OIDC with HR role |
-| Postconditions | All employees' clocking records for the current month are displayed |
+| Trigger | HR selects "All Employee Clockings" |
+| Preconditions | HR Administrator is authenticated with HR role via Keycloak OIDC |
+| Postconditions | All employees' clockings are displayed with employee names resolved from AD |
 | MoSCoW | Must |
 | Volatility | Low |
 
 **Main Flow:**
-1. HR Administrator navigates to the "All Clockings" page.
-2. System verifies HR role from OIDC token claims.
-3. System queries all clocking records for the current month (all employees).
-4. System resolves employee names from AD via LDAP at read time using the employee id on each record (CON-009: no local copy of employee data).
-5. System displays the clocking table: employee name, date, time, direction (in/out).
+1. HR Administrator navigates to "All Employee Clockings" page.
+2. System verifies HR role from OIDC token.
+3. System queries the database for all clocking records.
+4. System resolves employee names from Active Directory via LDAP (using employee id from clocking records).
+5. System displays clockings in a table (employee name, date, time in, time out).
 
 **Alternative Flows:**
-- **A1: No clockings recorded this month:** System displays "No clockings recorded this month."
-- **A2: AD unavailable during name resolution:** System displays clocking records with employee id instead of name and shows a warning "AD unavailable — showing employee IDs instead of names."
+- **A1: AD unavailable for name resolution:** System displays employee id instead of name and shows a warning "AD unavailable — showing employee IDs."
 
 **Activity Diagram:**
 
@@ -254,32 +313,27 @@ stop
 @startuml
 title UC-003: View All Employee Clockings — Activity Diagram
 
+|HR Administrator|
 start
-:HR Administrator navigates to
-"All Clockings" page;
-:System verifies HR role from OIDC token;
-:System queries all clocking records
-for current month (all employees);
-if (Records found?) then (yes)
-  :System resolves employee names
-  from AD via LDAP at read time;
-  if (AD available?) then (yes)
-    :Display clocking table:
-    employee name, date, time, direction;
-  else (no — A2)
-    :Display clocking table with
-    employee id instead of name;
-    :Show warning "AD unavailable";
-  endif
+:Navigate to "All Employee Clockings";
+|Portal API|
+:Validate OIDC token;
+:Verify HR role in token claims;
+:Query all clocking records\nfrom PostgreSQL;
+:Resolve employee names\nfrom AD via LDAP;
+if (AD available?) then (yes — Main Flow)
+  :Display clockings table\n(employee name, date, time in, time out);
+  |HR Administrator|
+  :Review all employee clockings;
 else (no — A1)
-  :Display "No clockings recorded
-  this month";
+  :Display employee IDs instead of names;
+  :Show warning "AD unavailable —\nshowing employee IDs";
+  |HR Administrator|
+  :Review clockings with IDs;
 endif
 stop
 @enduml
 ```
-
----
 
 ### UC-004: Export Monthly Clocking Report — DETAILED
 
@@ -287,24 +341,23 @@ stop
 |---|---|
 | Source | FR-004 |
 | Primary Actor | HR Administrator (ACT-002) |
-| Trigger | HR Administrator selects "Export Monthly Report" |
-| Preconditions | HR Administrator is authenticated via Keycloak OIDC with HR role |
-| Postconditions | CSV file containing all clocking records for the selected month is downloaded |
+| Trigger | HR selects "Export Monthly Report" |
+| Preconditions | HR Administrator is authenticated with HR role; clocking data exists for the selected month |
+| Postconditions | CSV file is downloaded to the HR Administrator's machine |
 | MoSCoW | Must |
 | Volatility | Low |
 
 **Main Flow:**
-1. HR Administrator selects "Export Monthly Report."
-2. System verifies HR role from OIDC token claims.
-3. HR selects the target month and year.
-4. System queries all clocking records for the selected month (all employees).
-5. System resolves employee names from AD via LDAP at read time (CON-009).
-6. System generates a CSV file with columns: employee id, employee name, date, clock-in time, clock-out time.
-7. Browser downloads the CSV file.
+1. HR Administrator selects month and clicks "Export CSV."
+2. System queries the database for all clocking records for the selected month.
+3. System resolves employee names from AD via LDAP.
+4. System generates a CSV file (RFC 4180 compliant) with columns: employee name, employee id, date, time in, time out.
+5. System sends the CSV file as a download response.
+6. HR Administrator receives the CSV file.
 
 **Alternative Flows:**
-- **A1: No clockings found for selected month:** System displays "No clockings found for selected month."
-- **A2: AD unavailable during name resolution:** CSV is generated with employee id only; a note column indicates "name unavailable."
+- **A1: No clocking data for selected month:** System displays "No clocking data for the selected month."
+- **A2: AD unavailable during export:** System exports with employee IDs instead of names and includes a note in the CSV header.
 
 **Activity Diagram:**
 
@@ -312,53 +365,55 @@ stop
 @startuml
 title UC-004: Export Monthly Clocking Report — Activity Diagram
 
+|HR Administrator|
 start
-:HR Administrator selects
-"Export Monthly Report";
-:System verifies HR role from OIDC token;
-:HR selects month and year;
-:System queries all clocking records
-for selected month (all employees);
+:Select month;
+:Click "Export CSV";
+|Portal API|
+:Validate OIDC token;
+:Verify HR role;
+:Query all clocking records\nfor selected month;
 if (Records found?) then (yes)
-  :System resolves employee names
-  from AD via LDAP at read time;
-  :System generates CSV file:
-  employee id, employee name,
-  date, clock-in time, clock-out time;
-  :Browser downloads CSV file;
-else (no)
-  :Display "No clockings found
-  for selected month";
+  :Resolve employee names\nfrom AD via LDAP;
+  if (AD available?) then (yes)
+    :Generate CSV (RFC 4180)\nwith employee names;
+  else (no — A2)
+    :Generate CSV with employee IDs\n+ note in header;
+  endif
+  :Send CSV file as download;
+  |HR Administrator|
+  :Receive CSV file;
+else (no — A1)
+  |HR Administrator|
+  :See "No clocking data for\nthe selected month";
 endif
 stop
 @enduml
 ```
 
----
-
 ### UC-005: Publish News — DETAILED
 
 | Field | Value |
 |---|---|
-| Source | FR-005 |
+| Source | FR-005, NFR-004 |
 | Primary Actor | HR Administrator (ACT-002) |
-| Trigger | HR Administrator selects "Publish News" |
-| Preconditions | HR Administrator is authenticated via Keycloak OIDC with HR role |
-| Postconditions | News item persisted with status = Published; audit record created (author identity + timestamp, action = Published) |
+| Trigger | HR selects "Publish News" |
+| Preconditions | HR Administrator is authenticated with HR role via Keycloak OIDC |
+| Postconditions | News item is published and visible to employees; audit record created (author + timestamp) |
 | MoSCoW | Must |
 | Volatility | Medium |
 
 **Main Flow:**
-1. HR Administrator selects "Publish News."
-2. System verifies HR role from OIDC token claims.
-3. HR enters news details: title, body, category (General, HR, IT, Events), date.
-4. System validates required fields (title, body, category, date are non-empty).
-5. System persists the news item in PostgreSQL with status = Published.
-6. System creates an audit record: author identity (from OIDC token), timestamp, action = Published (NFR-004, AUD-001).
+1. HR Administrator navigates to "Publish News" page.
+2. System displays a form with fields: title, body, date, category (General, HR, IT, Events), featured flag.
+3. HR Administrator fills in the form and clicks "Publish."
+4. System validates the form (title and body are required).
+5. System persists the news item in PostgreSQL with status=published.
+6. System creates an audit record: author identity (from OIDC token), timestamp, action=published.
 7. System displays "News published successfully."
 
 **Alternative Flows:**
-- **A1: Validation errors:** System displays validation errors. HR corrects and resubmits.
+- **A1: Validation error (missing title or body):** System displays validation error and does not persist.
 
 **Activity Diagram:**
 
@@ -366,54 +421,56 @@ stop
 @startuml
 title UC-005: Publish News — Activity Diagram
 
+|HR Administrator|
 start
-:HR Administrator selects
-"Publish News";
-:System verifies HR role from OIDC token;
-:HR enters news details:
-title, body, category, date;
-:System validates required fields;
-if (All fields valid?) then (yes)
-  :System persists news item
-  with status = Published;
-  :System creates audit record:
-  author identity from OIDC token,
-  timestamp, action = Published;
-  :Display "News published successfully";
-else (no)
-  :Display validation errors;
-  :HR corrects and resubmits;
+:Navigate to "Publish News";
+|Portal API|
+:Validate OIDC token;
+:Verify HR role;
+:Display news form\n(title, body, date, category,\nfeatured flag);
+|HR Administrator|
+:Fill in form;
+:Click "Publish";
+|Portal API|
+:Validate form\n(title + body required);
+if (Valid?) then (yes — Main Flow)
+  :Persist news item in PostgreSQL\n(status=published);
+  :Create audit record\n(author from OIDC token,\ntimestamp, action=published);
+  |HR Administrator|
+  :See "News published successfully";
+else (no — A1)
+  |HR Administrator|
+  :See validation error;
 endif
 stop
 @enduml
 ```
 
----
-
 ### UC-006: Edit Published News — DETAILED
 
 | Field | Value |
 |---|---|
-| Source | FR-006 |
+| Source | FR-006, NFR-004 |
 | Primary Actor | HR Administrator (ACT-002) |
-| Trigger | HR Administrator selects a published news item to edit |
-| Preconditions | HR Administrator is authenticated via Keycloak OIDC with HR role; news item exists and is published |
-| Postconditions | News item updated in database; audit record created (author identity + timestamp, action = Edited) |
+| Trigger | HR selects a published news item to edit |
+| Preconditions | HR Administrator is authenticated with HR role; news item exists and is published |
+| Postconditions | News item is updated; audit record created (author + timestamp) |
 | MoSCoW | Must |
 | Volatility | Medium |
 
 **Main Flow:**
-1. HR Administrator selects a published news item to edit.
-2. System verifies HR role from OIDC token claims.
-3. System loads the news item details (title, body, category, date).
-4. HR modifies one or more fields (title, body, category, date).
-5. System validates required fields.
-6. System updates the news item in the database.
-7. System creates an audit record: author identity (from OIDC token), timestamp, action = Edited (NFR-004, AUD-001).
-8. System displays "News updated successfully."
+1. HR Administrator navigates to the news management list.
+2. System displays all news items (published and unpublished).
+3. HR Administrator selects a published news item and clicks "Edit."
+4. System displays the edit form pre-populated with current values.
+5. HR Administrator modifies fields and clicks "Save."
+6. System validates the form.
+7. System updates the news item in PostgreSQL.
+8. System creates an audit record: author identity, timestamp, action=edited.
+9. System displays "News updated successfully."
 
 **Alternative Flows:**
-- **A1: Validation errors:** System displays validation errors. HR corrects and resubmits.
+- **A1: Validation error:** System displays validation error and does not update.
 
 **Activity Diagram:**
 
@@ -421,51 +478,58 @@ stop
 @startuml
 title UC-006: Edit Published News — Activity Diagram
 
+|HR Administrator|
 start
-:HR Administrator selects
-a published news item to edit;
-:System verifies HR role from OIDC token;
-:System loads news item details;
-:HR modifies title, body, category, or date;
-:System validates required fields;
-if (All fields valid?) then (yes)
-  :System updates news item in database;
-  :System creates audit record:
-  author identity from OIDC token,
-  timestamp, action = Edited;
-  :Display "News updated successfully";
-else (no)
-  :Display validation errors;
-  :HR corrects and resubmits;
+:Navigate to news management list;
+|Portal API|
+:Validate OIDC token;
+:Verify HR role;
+:Display all news items\n(published + unpublished);
+|HR Administrator|
+:Select news item;
+:Click "Edit";
+|Portal API|
+:Display edit form\n(pre-populated with current values);
+|HR Administrator|
+:Modify fields;
+:Click "Save";
+|Portal API|
+:Validate form;
+if (Valid?) then (yes — Main Flow)
+  :Update news item in PostgreSQL;
+  :Create audit record\n(author, timestamp, action=edited);
+  |HR Administrator|
+  :See "News updated successfully";
+else (no — A1)
+  |HR Administrator|
+  :See validation error;
 endif
 stop
 @enduml
 ```
 
----
-
 ### UC-007: Unpublish News — DETAILED
 
 | Field | Value |
 |---|---|
-| Source | FR-007 |
+| Source | FR-007, CON-013, NFR-004 |
 | Primary Actor | HR Administrator (ACT-002) |
-| Trigger | HR Administrator selects a published news item and clicks "Unpublish" |
-| Preconditions | HR Administrator is authenticated via Keycloak OIDC with HR role; news item exists and is published |
-| Postconditions | News item status set to Unpublished (NOT deleted — CON-013); audit record created (author identity + timestamp, action = Unpublished); employees no longer see the item |
+| Trigger | HR selects a published news item to unpublish |
+| Preconditions | HR Administrator is authenticated with HR role; news item is published |
+| Postconditions | News item status changed to unpublished (hidden from employees, record preserved); audit record created |
 | MoSCoW | Must |
 | Volatility | Low |
 
 **Main Flow:**
-1. HR Administrator selects a published news item.
-2. System verifies HR role from OIDC token claims.
-3. HR clicks "Unpublish."
-4. System sets the news item status to Unpublished (CON-013: record is NOT deleted — it stays in the database for audit trail traceability).
-5. System creates an audit record: author identity (from OIDC token), timestamp, action = Unpublished (NFR-004, AUD-001).
+1. HR Administrator navigates to the news management list.
+2. System displays all news items.
+3. HR Administrator selects a published news item and clicks "Unpublish."
+4. System changes the news item status to unpublished in PostgreSQL (record is NOT deleted — CON-013).
+5. System creates an audit record: author identity, timestamp, action=unpublished.
 6. System displays "News unpublished successfully."
 
 **Alternative Flows:**
-- (none — this is a single-action use case with no conditional branches)
+- **A1: News item already unpublished:** System displays "This news item is already unpublished."
 
 **Activity Diagram:**
 
@@ -473,21 +537,29 @@ stop
 @startuml
 title UC-007: Unpublish News — Activity Diagram
 
+|HR Administrator|
 start
-:HR Administrator selects
-a published news item;
-:System verifies HR role from OIDC token;
-:HR clicks "Unpublish";
-:System sets news item status = Unpublished;
-:System creates audit record:
-author identity from OIDC token,
-timestamp, action = Unpublished;
-:Display "News unpublished successfully";
+:Navigate to news management list;
+|Portal API|
+:Validate OIDC token;
+:Verify HR role;
+:Display all news items;
+|HR Administrator|
+:Select published news item;
+:Click "Unpublish";
+|Portal API|
+if (Item currently published?) then (yes — Main Flow)
+  :Change status to unpublished\n(record NOT deleted — CON-013);
+  :Create audit record\n(author, timestamp, action=unpublished);
+  |HR Administrator|
+  :See "News unpublished successfully";
+else (no — A1)
+  |HR Administrator|
+  :See "This news item is\nalready unpublished";
+endif
 stop
 @enduml
 ```
-
----
 
 ### UC-008: Read and Filter News — DETAILED
 
@@ -495,25 +567,23 @@ stop
 |---|---|
 | Source | FR-008 |
 | Primary Actor | Employee (ACT-001) |
-| Trigger | Employee navigates to the portal main page |
+| Trigger | Employee opens the portal main page |
 | Preconditions | Employee is authenticated via Keycloak OIDC |
-| Postconditions | Published news items displayed sorted by date descending; featured news shown with banners at top |
+| Postconditions | News items are displayed, sorted by date, with optional category filter and featured banners |
 | MoSCoW | Must |
 | Volatility | Medium |
 
 **Main Flow:**
 1. Employee navigates to the portal main page.
-2. System retrieves published news items sorted by date descending.
-3. System retrieves featured news items (banner flag = true).
-4. If featured news exists, system displays featured news banners at the top.
-5. System displays the news list below the banners.
-6. Employee may select a category filter (General, HR, IT, Events).
-7. System filters the news list by the selected category and displays the filtered results.
+2. System queries the database for published news items.
+3. System displays featured news items with a banner at the top.
+4. System displays remaining news items sorted by date (newest first).
+5. Employee can select a category filter (General, HR, IT, Events).
+6. System filters the displayed news items by the selected category.
 
 **Alternative Flows:**
-- **A1: No featured news:** System displays the normal news list only (no banners).
-- **A2: No published news:** System displays "No news available."
-- **A3: No news in selected category:** System displays "No news in this category."
+- **A1: No published news items:** System displays "No news items available."
+- **A2: No news items in selected category:** System displays "No news items in this category."
 
 **Activity Diagram:**
 
@@ -521,58 +591,64 @@ stop
 @startuml
 title UC-008: Read and Filter News — Activity Diagram
 
+|Employee|
 start
-:Employee navigates to portal main page;
-:System retrieves published news items
-sorted by date descending;
-:System retrieves featured news items
-(banner flag = true);
-if (Featured news exists?) then (yes)
-  :Display featured news banners at top;
-else (no — A1)
-  :Display normal news list only;
-endif
-:Display news list below banners;
-if (Employee selects category filter?) then (yes)
-  :System filters news by selected category
-  (General, HR, IT, Events);
-  if (Filtered results exist?) then (yes)
-    :Display filtered news list;
-  else (no — A3)
-    :Display "No news in this category";
+:Navigate to portal main page;
+|Portal API|
+:Validate OIDC token;
+:Query published news items\nfrom PostgreSQL;
+if (News items found?) then (yes)
+  :Display featured news\nwith banner at top;
+  :Display remaining news\nsorted by date (newest first);
+  |Employee|
+  :Browse news;
+  if (Selects category filter?) then (yes)
+    |Portal API|
+    :Filter by selected category\n(General, HR, IT, Events);
+    if (Items in category?) then (yes)
+      |Employee|
+      :View filtered news;
+    else (no — A2)
+      |Employee|
+      :See "No news items\nin this category";
+    endif
+  else (no)
+    |Employee|
+    :View all news;
   endif
-else (no)
-  :Display all published news;
+else (no — A1)
+  |Employee|
+  :See "No news items available";
 endif
 stop
 @enduml
 ```
 
----
-
 ### UC-009: Search Employee Directory — DETAILED
 
 | Field | Value |
 |---|---|
-| Source | FR-009 |
+| Source | FR-009, CON-005, CON-012 |
 | Primary Actor | Employee (ACT-001) |
 | Trigger | Employee enters a search term in the directory search field |
 | Preconditions | Employee is authenticated via Keycloak OIDC |
-| Postconditions | Matching employee records displayed with corporate data only (name, job title, department, office, email, extension) |
+| Postconditions | Matching employee entries are displayed with corporate data only |
 | MoSCoW | Must |
-| Volatility | High |
+| Volatility | High (R001: LDAP attribute consistency risk) |
 
 **Main Flow:**
-1. Employee enters a search term (name, department, or office) in the directory search field.
-2. System queries Active Directory via LDAP using the search term (CON-005: AD is the system of record).
-3. System retrieves matching employee records with corporate attributes only: name, job title, department, office, email, extension (CON-012: no private personal information).
-4. System displays the search results as a list of employee entries.
-5. Employee views the desired colleague's contact information.
+1. Employee navigates to the "Directory" page.
+2. System displays a search field.
+3. Employee enters a search term (name, department, or office).
+4. System queries Active Directory via LDAP with the search term.
+5. AD returns matching entries with corporate attributes (name, job title, department, office, email, extension).
+6. System displays the results in a list.
+7. Employee reviews the results.
 
 **Alternative Flows:**
-- **A1: No matching results:** System displays "No employees found matching your search."
-- **A2: AD unavailable (LDAP error):** System displays "Directory unavailable" (R001: LDAP attributes may be inconsistent across 3 offices — if job title or extension is empty in AD, the directory shows gaps, not a portal bug. CON-010: fix in AD, not portal.)
-- **A3: Partial AD attributes:** Some fields (e.g., extension) are empty in AD for certain employees. System displays the available fields and leaves empty fields blank — no error.
+- **A1: AD unavailable:** System displays "Directory unavailable — please try again later."
+- **A2: Partial LDAP attributes (R001):** Some entries have missing attributes (e.g., extension phone not filled). System displays "Not available" for missing fields instead of hiding the entry.
+- **A3: No results found:** System displays "No colleagues found matching your search."
 
 **Activity Diagram:**
 
@@ -580,62 +656,105 @@ stop
 @startuml
 title UC-009: Search Employee Directory — Activity Diagram
 
+|Employee|
 start
-:Employee enters search term
-(name, department, or office);
-:System queries AD via LDAP
-using search term;
+:Navigate to "Directory" page;
+|Portal API|
+:Validate OIDC token;
+:Display search field;
+|Employee|
+:Enter search term\n(name, department, or office);
+|Portal API|
+:Query AD via LDAP\nwith search term;
 if (AD available?) then (yes)
-  if (Matching records found?) then (yes)
-    :System retrieves corporate attributes:
-    name, job title, department,
-    office, email, extension;
-    :Display search results list;
-  else (no — A1)
-    :Display "No employees found
-    matching your search";
+  if (Results found?) then (yes)
+    :Map LDAP attributes to DTO\n(name, jobTitle, department,\noffice, email, extension);
+    if (All attributes present?) then (yes — Main Flow)
+      :Display full results;
+      |Employee|
+      :Review colleague information;
+    else (no — A2: Partial attrs)
+      :Display results with\n"Not available" for\nmissing fields;
+      |Employee|
+      :Review results with gaps;
+    endif
+  else (no — A3)
+    |Employee|
+    :See "No colleagues found\nmatching your search";
   endif
-else (no — A2)
-  :Display "Directory unavailable";
+else (no — A1)
+  |Employee|
+  :See "Directory unavailable —\nplease try again later";
 endif
 stop
-
-note right
-  R001: LDAP attributes may be
-  inconsistent across 3 offices.
-  If job title or extension is
-  empty in AD, the directory
-  shows gaps — not a portal bug.
-  CON-010: fix in AD, not portal.
-end note
-
 @enduml
 ```
 
----
+**Sequence Diagram (Key Realization — with AD degradation):**
+
+```plantuml
+@startuml
+title UC-009: Search Employee Directory — Sequence Diagram (with AD degradation)
+
+actor "Employee" as EMP
+participant "Browser\n(Razor Page)" as UI
+participant "Portal API\n(.NET 10)" as API
+participant "Active Directory\n(LDAP)" as AD
+
+== Main Flow ==
+EMP -> UI : Enters search term\n(name, department, or office)
+UI -> API : GET /api/directory/search?q={term}\n(with OIDC token)
+API -> API : Validate OIDC token
+API -> AD : LDAP search(filter={term})\nattrs: cn, title, department,\nphysicalDeliveryOfficeName, mail, telephoneNumber
+AD --> API : Matching entries\n(corporate attributes only)
+API -> API : Map LDAP attributes to\nDTO {name, jobTitle, department,\noffice, email, extension}
+API --> UI : Search results (list)
+UI --> EMP : Display results\n(name, title, dept, office, email, ext)
+
+== Alternative Flow A1: AD Unavailable (Graceful Degradation) ==
+EMP -> UI : Enters search term
+UI -> API : GET /api/directory/search?q={term}
+API -> API : Validate OIDC token
+API -> AD : LDAP search(filter={term})
+AD -x API : Connection failed / timeout
+API -> API : Catch LDAP exception\nLog error
+API --> UI : HTTP 503 "Directory unavailable"
+UI --> EMP : "Directory unavailable —\nplease try again later"
+
+== Alternative Flow A2: Partial LDAP Attributes (R001) ==
+EMP -> UI : Enters search term
+UI -> API : GET /api/directory/search?q={term}
+API -> AD : LDAP search(filter={term})
+AD --> API : Entry found but\nsome attrs empty (e.g.,\ntelephoneNumber missing)
+API -> API : Map available attrs\nMissing fields = "Not available"
+API --> UI : Results with gaps
+UI --> EMP : Display results\n(some fields show "Not available")
+
+@enduml
+```
 
 ### UC-010: Manage Worker Category — DETAILED
 
 | Field | Value |
 |---|---|
-| Source | FR-010 |
+| Source | FR-010, CON-009, NFR-004 |
 | Primary Actor | HR Administrator (ACT-002) |
-| Trigger | HR Administrator selects "Manage Worker Categories" |
-| Preconditions | HR Administrator is authenticated via Keycloak OIDC with HR role |
-| Postconditions | Worker category link (AD user id → category) created/updated in local table; audit record created (author identity + timestamp, action = CategoryChanged) |
+| Trigger | HR selects "Manage Worker Categories" |
+| Preconditions | HR Administrator is authenticated with HR role via Keycloak OIDC |
+| Postconditions | Worker category link (AD user id → category) is created or updated; audit record created |
 | MoSCoW | Must |
 | Volatility | Medium |
 
 **Main Flow:**
-1. HR Administrator selects "Manage Worker Categories."
-2. System verifies HR role from OIDC token claims.
+1. HR Administrator navigates to "Manage Worker Categories" page.
+2. System verifies HR role from OIDC token.
 3. System displays current worker category assignments (AD user id, category).
 4. HR selects an employee (looks up AD user id via LDAP).
 5. System confirms the employee exists in AD.
-6. HR assigns or updates the worker category.
+6. HR assigns or updates the category.
 7. System validates the category value.
-8. System persists the worker category link (AD user id, category) in the local table (CON-009: local table holds only two columns — AD user id and category. No employee data copied).
-9. System creates an audit record: author identity (from OIDC token), timestamp, action = CategoryChanged (NFR-004, AUD-002).
+8. System persists the worker category link (AD user id, category) in the local table.
+9. System creates an audit record: author identity from OIDC token, timestamp, action=CategoryChanged.
 10. System displays "Category updated successfully."
 
 **Alternative Flows:**
@@ -675,7 +794,6 @@ endif
 stop
 @enduml
 ```
-
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
