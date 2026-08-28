@@ -681,10 +681,10 @@ The LDAP stub (LdapGatewayStub implementing INT-006/ILdapGateway) must be config
 |---|---|---|---|
 | TC-001 | UC-001 (main flow) | Tests | ClockingService.cs, ClockingServiceTests.cs |
 | TC-002 | UC-001 (main flow) | Tests | ClockingService.cs, ClockingServiceTests.cs |
-| TC-003 | UC-001 (A1), AC-005, NFR-003 | Tests | ClockingService.cs, clocking-retry.js |
-| TC-004 | UC-001 (A2), AC-005 | Tests | clocking-retry.js |
+| TC-003 | UC-001 (A1), AC-005, NFR-003 | Tests | ClockingService.cs, clocking-retry.js, OfflineRetryTests.cs |
+| TC-004 | UC-001 (A2), AC-005 | Tests | clocking-retry.js, OfflineRetryTests.cs |
 | TC-005 | UC-001 (A3) | Tests | ClockingService.cs, ClockingServiceTests.cs |
-| TC-006 | UC-009, R001, SUP-003 | Tests | DirectoryService.cs, DirectoryServiceTests.cs, LdapGatewayStub |
+| TC-006 | UC-009, R001, SUP-003 | Tests | DirectoryService.cs, DirectoryServiceTests.cs, DomainTests.cs |
 | TC-007 | UC-009, CON-012, SEC-004 | Tests | DirectoryService.cs, DirectoryServiceTests.cs |
 | TC-008 | UC-005, NFR-004, AUD-001 | Tests | NewsService.cs, NewsServiceTests.cs, AuditInterceptor.cs |
 | TC-009 | UC-007, CON-013, AUD-003 | Tests | NewsService.cs, NewsServiceTests.cs |
@@ -697,8 +697,8 @@ The LDAP stub (LdapGatewayStub implementing INT-006/ILdapGateway) must be config
 | TC-016 | UC-004, FR-004 | Tests | ClockingService.cs, ClockingServiceTests.cs |
 | TC-017 | UC-008, FR-008 | Tests | NewsService.cs, NewsServiceTests.cs |
 | TC-018 | UC-010, NFR-004, AUD-002 | Tests | WorkerCategoryService.cs, WorkerCategoryServiceTests.cs |
-| TC-019 | UC-010 (A1) | Tests | WorkerCategoryService.cs, LdapGatewayStub |
-| TC-020 | UC-003, SEC-002, CON-005 | Tests | ClockingService.cs, LdapGatewayStub, OIDC mock |
+| TC-019 | UC-010 (A1) | Tests | WorkerCategoryService.cs, WorkerCategoryServiceTests.cs, MockLdapGateway |
+| TC-020 | UC-003, SEC-002, CON-005 | Tests | ClockingService.cs, MockLdapGateway, OIDC mock |
 | TG-001 | NFR-001 | Refines | TC-011 |
 | TG-002 | NFR-002 | Refines | TC-012 |
 | TG-003 | AC-005, NFR-003 | Refines | TC-003, TC-004 |
@@ -707,12 +707,13 @@ The LDAP stub (LdapGatewayStub implementing INT-006/ILdapGateway) must be config
 | TG-006 | SEC-002 | Refines | TC-013, TC-014, TC-020 |
 | TG-007 | R001, SUP-003 | Refines | TC-006 |
 | TG-008 | UC-001 A3 | Refines | TC-005 |
-| LdapGatewayStub | INT-006, COMP-005 | Implements | TC-006, TC-007, TC-019, TC-020 |
+| InMemoryPersistence | INT-007, COMP-006 | Implements | TC-001..TC-005, TC-008..TC-010, TC-015..TC-019 |
+| MockLdapGateway | INT-006, COMP-005 | Implements | TC-006, TC-007, TC-019, TC-020 |
+| InMemoryAuditLogger | INT-005, COMP-008 | Implements | TC-008, TC-009, TC-010, TC-018 |
 | OIDC Mock Token Provider | COMP-007, SEC-002 | Implements | TC-013, TC-014, TC-020 |
-| InMemoryDb | INT-007, COMP-006 | Implements | TC-001..TC-005, TC-008..TC-010, TC-015..TC-019 |
 | Clocking Client Test Harness | AC-005, clocking-retry.js | Implements | TC-003, TC-004 |
-| AuditRecordChecker | NFR-004, AUD-001..AUD-003 | Verifies | TC-008, TC-009, TC-010, TC-018 |
-| E1 Findings | Review Record (M1, M2), PR #4 | Derives | CR-006 |
-| E1 Smoke Test | CI build (main) | Tests | All TCs (BLOCKED) |
+| Iter 2 Code-Level Evaluation | PR #4, Review Record (M1/M2) | Derives | All 20 TCs (75 tests, ALL PASS at code-review level) |
+| Iter 2 Smoke Test | CI build (main) | Tests | All TCs (BLOCKED — prototype not on main) |
+| CR-006 (issue #6) | PR #4 not merged | Derives | All 20 TCs (BLOCKED for execution) |
 
 **Note:** Test data sets (TD-001 through TD-011) are cataloged in the Test Data section and consumed by the test cases listed above. They are not independent traceable elements and have been removed from this traceability table per the Review Record iteration 1 finding (Traceability: FAIL — TD-NNN prefix).
