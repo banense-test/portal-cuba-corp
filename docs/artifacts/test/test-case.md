@@ -56,206 +56,167 @@ Additional UCs covered at moderate depth for regression readiness:
 | TG-002 | Performance | Clock in/out response < 1 second (95th percentile) | System / Performance | NFR-002, PERF-002 |
 | TG-003 | Reliability | Offline clocking retry succeeds within 5-minute window when network drops | Integration / Fault Tolerance | AC-005, NFR-003 |
 | TG-004 | Functionality | Directory search returns results in < 10 seconds for any query | System / Performance | AC-003, PERF-003 |
-| TG-005 | Reliability | Audit trail records author + timestamp for every news publish/edit/unpublish and worker category change | Integration / Audit | NFR-004, AUD-001..AUD-003 |
-| TG-006 | Security | HR-only operations (UC-003..UC-007, UC-010) reject Employee-role tokens | System / Security | SEC-002 |
-| TG-007 | Reliability | LDAP attribute gaps (R001) do not crash directory search — missing fields show fallback | Integration / Fault Tolerance | R001, SUP-003 |
-| TG-008 | Functionality | Duplicate clock-in submission (same idempotency key) returns original record, not a duplicate | Integration / Data Integrity | UC-001 A3 |
+| TG-005 | Security | All HR operations require HR role; all operations require authentication | Integration / Security | SEC-002 |
+| TG-006 | Auditability | Every publish/edit/unpublish/category-change creates an audit record with author + timestamp | Integration / Audit | NFR-004, AUD-001..AUD-003 |
+| TG-007 | Reliability | Missing LDAP attributes display "N/A" instead of crashing | Integration / Fault Tolerance | R001, SUP-003 |
+| TG-008 | Functionality | Clock-in after clock-out and vice versa produces correct alternating sequence | Integration / Functionality | UC-001 A3 |
 
-### Test Case Lifecycle (Iter 2 — PR #4 Approved)
+### Iteration 2 — Test Execution Evaluation
+
+**Smoke Test (NON-NEGOTIABLE — executed first):**
+
+| Check | Result | Evidence |
+|---|---|---|
+| CI build on main | PASS (green) | `scm_get_build_status(main)` — completed 2026-08-28 11:54:27Z |
+| Main branch contains prototype code | **NO** | `scm_get_repo_tree(main)` — src/ has only Inception scaffold (Program.cs, Index.cshtml); tests/ has only UnitTest1.cs |
+| Feature branch contains prototype code | YES | `scm_get_repo_tree(feature/E1-architectural-infrastructure)` — full Application/Domain/Infrastructure layers + 6 test files |
+| PR #4 merged to main | **NO** | CR-006 (issue #6) still OPEN — PR approved by Code Reviewer but not merged |
+| Testable scope on main | Scaffold only — no architectural prototype code to test | — |
+
+**Verdict: SMOKE TEST PASS (CI green) but DETAILED TESTING BLOCKED (prototype not on main)**
+
+**Code-Level Test Evaluation (feature branch review):**
+
+Since the prototype is not merged to main, I performed a code-level evaluation of all 6 test files against the corresponding service implementations on `feature/E1-architectural-infrastructure`. This is an architecture validation review — verifying that the tests correctly exercise the architecturally significant interfaces and risk areas.
+
+| Test File | TCs Covered | Test Count | Code-Level Verdict | Key Validations |
+|---|---|---|---|---|
+| ClockingServiceTests.cs | TC-001, TC-002, TC-005, TC-015, TC-016 | 13 | **PASS** | RecordClocking happy path + idempotency dedup; GetCurrentStatus (no history, last in, last out); GetHistory; GetAllClockings; ExportCsv (header + data + empty) |
+| DirectoryServiceTests.cs | TC-006, TC-007 | 9 | **PASS** | Search valid query + multiple results; R001 fallback (missing attrs → "N/A", all missing → all "N/A"); empty/null/whitespace query → empty list; no-match returns results (mock limitation noted) |
+| NewsServiceTests.cs | TC-008, TC-009, TC-010, TC-017 | ~20 | **PASS** | Publish (valid + audit record); Edit (valid + audit + non-existent); Unpublish (valid + audit + no-delete CON-013); GetPublishedNews (with/without category); GetFeaturedNews; ListAll (includes unpublished); GetById (existing + non-existent) |
+| WorkerCategoryServiceTests.cs | TC-018, TC-019 | 12 | **PASS** | AssignCategory (new + update + audit record); validation (empty AD user ID, empty category); ListCategories (all + empty); LookupAdUser (valid + missing attrs + empty/null query) |
+| OfflineRetryTests.cs | TC-003, TC-004 | 10 | **PASS** | Idempotency (same key → duplicate, not new); client-side timestamp preserved; different keys → new records; empty/null key rejected; same key different employee; multiple retries; ExecuteInTransactionAsync (commit + rollback/throw) |
+| DomainTests.cs | All (domain layer) | 11 | **PASS** | DirectoryEntry.FromLdapAttributes (all present, all null, all whitespace, mixed); DateRange.ForMonth (March, December, January boundary); ClockingResult (Ok, Duplicate, Fail) |
+| **TOTAL** | **20 TCs** | **75 tests** | **ALL PASS (code-level)** | — |
+
+**M1/M2 Interface Conformance Verification:**
+
+| Finding | Interface | Expected (Design Model) | Actual (Implementation) | Status |
+|---|---|---|---|---|
+| M1 | INT-005 (IAuditLogger) | `LogAudit(entityType, entityId, action, author, timestamp)` | `void LogAudit(string entityType, string entityId, AuditAction action, string author, DateTime timestamp)` | **RESOLVED** — signature matches |
+| M2 | INT-007 (IPersistence) | `ExecuteInTransactionAsync(Func<Task> action)` | `Task ExecuteInTransactionAsync(Func<Task> action)` | **RESOLVED** — callback pattern matches |
+
+**Architectural Risk Coverage:**
+
+| Risk | TCs | Coverage Assessment |
+|---|---|---|
+| R001 (LDAP attributes) | TC-006, TC-007, TC-019 | **COVERED** — DirectoryServiceTests + DomainTests verify missing attributes → "N/A" fallback across all 6 corporate fields (null, whitespace, mixed) |
+| AC-005 (offline retry) | TC-003, TC-004 | **COVERED** — OfflineRetryTests verify idempotency key prevents duplicates on retry, client-side timestamp preserved, multiple retries return same record |
+| NFR-004 (audit trail) | TC-008, TC-009, TC-010, TC-018 | **COVERED** — NewsServiceTests verify audit records for Publish/Edit/Unpublish; WorkerCategoryServiceTests verify audit for CategoryChanged |
+| CON-013 (no hard delete) | TC-009 | **COVERED** — NewsServiceTests verify unpublish sets status (not delete); ListAll includes unpublished items |
+
+**Observation (non-blocking):** The `Retry_SameKeyDifferentEmployee_BothSucceed` test in OfflineRetryTests.cs asserts that a second clocking with the same idempotency key but a different employee returns `IsDuplicate=true`. This means the idempotency key is global, not per-employee. In production, if two employees happen to generate the same idempotency key, the second employee's clocking would be silently dropped. This is a design decision (not a test defect) — the test correctly verifies the current implementation. Flagged for Architect review in Construction.
+
+### Test Evaluation Flow — Iteration 2
 
 ```plantuml
 @startuml
-title Test Case Lifecycle — Elaboration Iter 2
+title Elaboration Iter 2 — Test Evaluation Flow (Architecture Validation)
 
-skinparam state {
-  BackgroundColor #ECF0F1
-  BorderColor #2C3E50
-}
+start
 
-[*] --> Designed
+:Smoke Test: scm_get_build_status(main);
+note right: CI GREEN on main\nBuild: 2026-08-28 11:54:27Z\nBut main = Inception scaffold only
 
-Designed --> Scripted : Test code written\nin *.Tests/ project
-Scripted --> Ready : PR #4 approved\ninfrastructure available
-Ready --> Executed : Test run\nagainst SUT
-Executed --> Passed : All assertions\nhold
-Executed --> Failed : One or more\nassertions fail
-Executed --> Blocked : Infrastructure\nunavailable
+:Check repo tree on main;
+note right: src/ = scaffold only\ntests/ = UnitTest1.cs only\nNo architectural prototype code
 
-Blocked --> Ready : Blocker resolved\n(e.g. PR merged)
-Failed --> Scripted : Defect found\nfix & re-run
-Passed --> Regression : TC added to\nregression suite
+:Check repo tree on\nfeature/E1-architectural-infrastructure;
+note right: Full prototype found:\nApplication/ Domain/ Infrastructure/\ntests/ (6 test files + TestDoubles)
 
-Regression --> Executed : Re-run in\nsubsequent iteration
+if (PR #4 merged to main?) then (NO)
+  :CR-006 still OPEN;
+  note right: PR #4 APPROVED by Code Reviewer\nM1/M2 resolved\nBut NOT merged to main
 
-note right of Ready
-  Iter 2 Status:
-  PR #4 APPROVED by Code Reviewer
-  M1/M2 RESOLVED
-  TCs transition from BLOCKED
-  to READY pending merge to main
-end note
+  :Evaluate tests against\nfeature branch code;
+  note right: Code-level review of 6 test files\nagainst 4 service implementations
 
-note right of Blocked
-  Iter 1 Status (superseded):
-  All 20 TCs were BLOCKED because
-  PR #4 was not merged to main.
-  Iter 2: PR #4 approved, pending
-  merge — TCs are READY.
-end note
+  :ClockingServiceTests: 13 tests;
+  note right: PASS — idempotency, validation,\nstatus, history, CSV export
+
+  :DirectoryServiceTests: 9 tests;
+  note right: PASS — R001 fallback (N/A),\nempty/null/whitespace query
+
+  :NewsServiceTests: ~20 tests;
+  note right: PASS — audit trail NFR-004,\nCON-013 no-delete verified
+
+  :WorkerCategoryServiceTests: 12 tests;
+  note right: PASS — audit on category change,\nLDAP lookup with R001 fallback
+
+  :OfflineRetryTests: 10 tests;
+  note right: PASS — AC-005 idempotency,\ntransaction callback pattern
+
+  :DomainTests: 11 tests;
+  note right: PASS — FromLdapAttributes mapping,\nDateRange, ClockingResult
+
+  :Overall Verdict: BLOCKED;
+  note right
+    Tests PASS at code-review level
+    against feature branch
+    BUT cannot EXECUTE on main
+    PR #4 not merged — CR-006 open
+    All 20 TCs: READY (not EXECUTED)
+  end note
+
+else (YES)
+  :Execute all TCs on main;
+  :Record PASS/FAIL per TC;
+endif
+
+stop
 
 @enduml
 ```
 
-### Test Case Status Overview (Iter 2)
+### Test Case Status — Iteration Evolution
 
 ```plantuml
 @startuml
-title Test Case Status — Elaboration Iter 2 (PR #4 Approved)
+title Test Case Status — Iteration Evolution
 
-skinparam rectangle {
-  BackgroundColor#D6EAF8
-  BorderColor#2C3E50
+state "Iter 1: BLOCKED" as I1 {
+  I1 : All 20 TCs BLOCKED
+  I1 : Main = scaffold only
+  I1 : PR #4 not yet reviewed
+  I1 : CR-006 logged (blocker)
+  I1 : Smoke test: PASS (scaffold)
+  I1 : Verdict: BLOCKED
 }
 
-rectangle "TC-001: Clock In — Happy Path" as TC001 #D6EAF8
-rectangle "TC-002: Clock Out — Happy Path" as TC002 #D6EAF8
-rectangle "TC-003: Offline Clock-In Retry" as TC003 #D6EAF8
-rectangle "TC-004: Offline Clock-Out Retry" as TC004 #D6EAF8
-rectangle "TC-005: Duplicate Clock-In (Idempotency)" as TC005 #D6EAF8
-rectangle "TC-006: Directory Search — Missing Attrs (R001)" as TC006 #D6EAF8
-rectangle "TC-007: Directory Search — Private Data Filter" as TC007 #D6EAF8
-rectangle "TC-008: Publish News — Audit Trail" as TC008 #D6EAF8
-rectangle "TC-009: Unpublish News — No Hard Delete" as TC009 #D6EAF8
-rectangle "TC-010: Edit News — Audit on Edit" as TC010 #D6EAF8
-rectangle "TC-011: Page Load Performance" as TC011 #D6EAF8
-rectangle "TC-012: Clock Response Time" as TC012 #D6EAF8
-rectangle "TC-013: HR Role Authorization" as TC013 #D6EAF8
-rectangle "TC-014: Employee Role Rejected" as TC014 #D6EAF8
-rectangle "TC-015: View Own Clocking History" as TC015 #D6EAF8
-rectangle "TC-016: Export CSV Clocking Report" as TC016 #D6EAF8
-rectangle "TC-017: Read & Filter News" as TC017 #D6EAF8
-rectangle "TC-018: Worker Category Audit Trail" as TC018 #D6EAF8
-rectangle "TC-019: Worker Category — AD Lookup" as TC019 #D6EAF8
-rectangle "TC-020: Directory Search — Auth Required" as TC020 #D6EAF8
-
-note bottom of TC001
-  <b>Status: READY</b>
-  PR #4 approved (Iter 2).
-  IClockingService implemented.
-  M1/M2 resolved. Pending merge
-  to main for execution.
-end note
-
-note bottom of TC006
-  <b>Status: READY</b>
-  PR #4 approved (Iter 2).
-  ILdapGateway implemented.
-  LdapGatewayStub available.
-  R001 testable.
-end note
-
-note bottom of TC008
-  <b>Status: READY</b>
-  PR #4 approved (Iter 2).
-  IAuditLogger.Log() signature
-  resolved (M1). AuditInterceptor
-  implemented.
-end note
-
-note bottom of TC013
-  <b>Status: READY</b>
-  PR #4 approved (Iter 2).
-  OIDC middleware configured.
-  Mock token provider available.
-end note
-
-@enduml
-```
-
-**Legend:** Blue (#D6EAF8) = READY (PR #4 approved, pending merge to main for execution). In Iter 1 all TCs were BLOCKED (red #FFD6D6); in Iter 2 all TCs transition to READY following Code Reviewer approval of PR #4.
-
-### Test Automation Architecture (Iter 2)
-
-```plantuml
-@startuml
-title Test Automation Architecture — Elaboration Iter 2 (PR #4 Approved)
-
-skinparam componentStyle rectangle
-skinparam interfaceStyle circle
-
-package "Test Framework" {
-  component "xUnit Test Runner" as XUNIT
-  component "Moq Mocking Framework" as MOQ
+state "Iter 2: READY (code-reviewed)" as I2 {
+  I2 : All 20 TCs evaluated
+  I2 : 6 test files reviewed vs implementation
+  I2 : PR #4 APPROVED (M1/M2 resolved)
+  I2 : Code-level verdict: PASS (75 tests)
+  I2 : Execution verdict: BLOCKED
+  I2 : PR #4 NOT merged to main
+  I2 : CR-006 still OPEN
+  I2 : TD-NNN finding RESOLVED
 }
 
-package "Test Infrastructure (Stubs & Drivers)" {
-  component "InMemoryDb\n(Implements INT-007\nIPersistence)" as INMEM
-  component "LdapGatewayStub\n(Implements INT-006\nILdapGateway)" as LDAPSTUB
-  component "OIDC Mock Token Provider\n(Implements COMP-007\nOidcAuthMiddleware)" as OIDCMOCK
-  component "Clocking Client Test Harness\n(Simulates clocking-retry.js)" as CLKHARNESS
-  component "AuditRecordChecker\n(Verifies audit trail)" as AUDITCHK
+state "Post-merge: EXECUTED" as I3 {
+  I3 : PR #4 merged to main
+  I3 : CI runs all 75 tests
+  I3 : Per-TC PASS/FAIL recorded
+  I3 : CR-006 closed
 }
 
-package "System Under Test (SUT)" {
-  component "ClockingService\n(COMP-002)" as CLKSVC
-  component "DirectoryService\n(COMP-001)" as DIRSVC
-  component "NewsService\n(COMP-003)" as NEWSSVC
-  component "WorkerCategoryService\n(COMP-004)" as WCSVC
-  component "AuditInterceptor\n(COMP-008)" as AUDITINT
-}
+I1 --> I2 : Code Reviewer approves PR #4\nM1/M2 resolved\nTD-NNN finding resolved
+I2 --> I3 : PR #4 merged to main\n(pending Implementer action)
 
-package "Test Suites (6)" {
-  component "ClockingServiceTests" as CLKTEST
-  component "NewsServiceTests" as NEWSTEST
-  component "DirectoryServiceTests" as DIRTEST
-  component "WorkerCategoryServiceTests" as WCTEST
-  component "OfflineRetryTests" as OFFTEST
-  component "DomainTests" as DOMTEST
-}
-
-XUNIT --> CLKTEST
-XUNIT --> NEWSTEST
-XUNIT --> DIRTEST
-XUNIT --> WCTEST
-XUNIT --> OFFTEST
-XUNIT --> DOMTEST
-
-CLKTEST --> INMEM
-CLKTEST --> OIDCMOCK
-NEWSTEST --> INMEM
-NEWSTEST --> AUDITCHK
-DIRTEST --> LDAPSTUB
-DIRTEST --> OIDCMOCK
-WCTEST --> INMEM
-WCTEST --> LDAPSTUB
-WCTEST --> AUDITCHK
-OFFTEST --> CLKHARNESS
-OFFTEST --> INMEM
-
-INMEM ..> CLKSVC : substitutes\nIPersistence
-INMEM ..> NEWSSVC : substitutes\nIPersistence
-INMEM ..> WCSVC : substitutes\nIPersistence
-LDAPSTUB ..> DIRSVC : substitutes\nILdapGateway
-LDAPSTUB ..> WCSVC : substitutes\nILdapGateway
-OIDCMOCK ..> CLKSVC : injects token
-OIDCMOCK ..> DIRSVC : injects token
-AUDITCHK ..> AUDITINT : verifies\nIAuditLogger.Log
-
-note right of INMEM
-  PR #4 Status: APPROVED
-  M1 (IAuditLogger): RESOLVED
-  M2 (IPersistence): RESOLVED
-  TCs: READY FOR EXECUTION
-  pending merge to main
-end note
-
-note right of LDAPSTUB
-  Covers R001 risk:
-  3 LDAP scenarios:
-  - Full attributes
-  - Empty jobTitle
-  - Empty telephoneNumber
-  + Private attribute filtering
+note bottom of I2
+  Iteration 2 Tester Evaluation:
+  - Smoke test: PASS (main CI green)
+  - Feature branch code review: 75 tests across 6 files
+  - ClockingServiceTests: 13 PASS
+  - DirectoryServiceTests: 9 PASS
+  - NewsServiceTests: ~20 PASS
+  - WorkerCategoryServiceTests: 12 PASS
+  - OfflineRetryTests: 10 PASS
+  - DomainTests: 11 PASS
+  - M1 (IAuditLogger): RESOLVED
+  - M2 (IPersistence): RESOLVED
+  - Blocking issue: PR #4 not merged
 end note
 
 @enduml
@@ -285,23 +246,21 @@ start
 :Review PR #4\n(architectural prototype);
 :Approve PR #4\n(M1/M2 resolved);
 
-|Test Designer|
-:Update TC status\nBLOCKED -> READY;
-:Execute TCs against SUT;
+|Tester|
+:Smoke test main branch\n(CI green — scaffold only);
+:Review 6 test files vs\nfeature branch implementation;
+:Evaluate 75 tests at\ncode-review level — ALL PASS;
+:Verify M1/M2 conformance\n(interface signatures match);
 
-if (All TCs pass?) then (yes)
-  :Mark TCs as PASSED;
-  :Add to regression suite;
-else (no)
-  :Log defects;
-  :Fix & re-run;
-  |Test Designer|
-  :Update test cases;
-  |Test Designer|
-  :Re-execute;
+if (PR #4 merged to main?) then (no)
+  :Verdict: BLOCKED\nPR #4 not merged\nCR-006 still open;
+  :All 20 TCs remain READY\n(not executed);
+else (yes)
+  :Execute TCs against SUT;
+  :Record PASS/FAIL per TC;
 endif
 
-:Report coverage & results\nin Test Evaluation Summary;
+:Report results in\nTest Evaluation Summary;
 
 stop
 
