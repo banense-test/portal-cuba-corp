@@ -19,7 +19,6 @@
 | C1 Quality Assessment | Functionality: PARTIAL (MAJOR-1 blocks FR-008). Reliability: AT_RISK (MINOR-3 idempotency). Performance: BLOCKED (no deployment). Usability: BLOCKED (no deployment). |
 | C1 Defect Patterns | 5 patterns identified: MAJOR-1 (P1, NewsService), MINOR-2 (P2, ClockingApiController), MINOR-3/4 (P2, ClockingService), ISSUE-13 (P3, test code), ISSUE-14 (P3, scaffolding). All recorded in affected TC Findings sections. |
 ## Test Scope
-
 ### All Use Cases Under Test — Construction C1 Full Coverage
 
 This Test Case artifact covers **all 10 use-case scenarios** at Construction depth. Per the Use-Case Model, all 10 UCs are implemented in the C1 presentation layer (PR #8). Test cases are designed BEFORE coding completes — they serve as the Implementer's contract.
@@ -42,221 +41,388 @@ This Test Case artifact covers **all 10 use-case scenarios** at Construction dep
 
 ### Measurable Testing Goals
 
-| Goal ID | Quality Dimension | Measurable Target | Test Type | Source | TCs |
-|---|---|---|---|---|---|
-| TG-001 | Performance | Page load < 3 seconds on corporate network (95th percentile) | System / Performance | NFR-001, PERF-001 | TC-011 |
-| TG-002 | Performance | Clock in/out response < 1 second (95th percentile) | System / Performance | NFR-002, PERF-002 | TC-012 |
-| TG-003 | Reliability | Offline clocking retry succeeds within 5-minute window when network drops | Integration / Fault Tolerance | AC-005, NFR-003 | TC-003, TC-004 |
-| TG-004 | Functionality | Directory search returns results in < 10 seconds for any query | System / Performance | AC-003, PERF-003 | TC-006, TC-007, TC-029 |
-| TG-005 | Functionality | Every news publish/edit/unpublish and category change produces an audit record with author + timestamp | Integration | NFR-004, AUD-001, AUD-002 | TC-008, TC-009, TC-010, TC-018, TC-023, TC-027 |
-| TG-006 | Security | HR-only UCs reject Employee-role tokens; all UCs reject unauthenticated requests | Integration | SEC-002, CON-004 | TC-013, TC-014, TC-020 |
-| TG-007 | Reliability | Missing LDAP attributes default to "N/A" without crashing | Integration | R001, SUP-003 | TC-006, TC-028 |
-| TG-008 | Functionality | Double clock-in or double clock-out is rejected | Unit | UC-001 A3 | TC-005 |
-| TG-009 | Performance | 50 concurrent clock-in requests all persist without data loss | Stress | NFR-003, fault tolerance | TC-030 |
-| TG-010 | Functionality | IsFeatured flag is persisted on publish and preserved on edit | Unit | FR-008, MAJOR-1 | TC-023, TC-024 |
+| Goal ID | Quality Dimension | Measurable Target | TCs | C1 Status |
+|---|---|---|---|---|
+| TG-001 | Performance | Page load < 3s (NFR-001) | TC-011 | BLOCKED — no deployed environment |
+| TG-002 | Performance | Clock response < 1s (NFR-002) | TC-012 | BLOCKED — no deployed environment |
+| TG-003 | Reliability | Offline retry within 5 min (AC-005) | TC-003, TC-004 | PASS — both TCs verified |
+| TG-004 | Performance | Directory search < 10s (AC-003) | TC-006, TC-007, TC-029 | PARTIAL — TC-006/007 PASS (mock), TC-029 BLOCKED (real LDAP) |
+| TG-005 | Functionality | Audit trail on all news ops (NFR-004) | TC-008, TC-009, TC-010, TC-018, TC-023, TC-027 | PARTIAL — TC-008/009/010/018/027 PASS, TC-023 FAIL (MAJOR-1) |
+| TG-006 | Security | HR role gating (SEC-002) | TC-013, TC-014, TC-020, TC-022 | PARTIAL — TC-013/014 PASS, TC-020/022 BLOCKED (OIDC) |
+| TG-007 | Reliability | LDAP attribute fallback (R001) | TC-006, TC-028 | PARTIAL — TC-006 PASS (mock), TC-028 BLOCKED (real LDAP) |
+| TG-008 | Functionality | Double clock-in rejected | TC-005, TC-015, TC-016, TC-025, TC-026 | PASS — all TCs verified |
+| TG-009 | Reliability | Concurrent clock-in (50 users) | TC-030 | BLOCKED — no deployed environment |
+| TG-010 | Functionality | Featured news banner (FR-008) | TC-023, TC-024 | FAIL — MAJOR-1: IsFeatured never set |
 
-### Test Lifecycle
+### C1 Quality Dimension Assessment
 
 ```plantuml
 @startuml
-title Test Case Lifecycle — Construction C1
+title Construction C1 — Quality Dimension Assessment Matrix
 
-[*] --> DRAFT : Test case designed
+skinparam classAttributeIconSize 0
 
-DRAFT --> READY : Preconditions + procedure + assertions complete
-READY --> READY : Code review approved (PR #4)
+class QualityDimensionAssessment {
+  + dimension : String
+  + status : AssessmentStatus
+  + findings : List<Finding>
+  + blockedTCs : int
+  + passRate : String
+}
 
-READY --> EXECUTING : Test code materialized in *.Tests/
-EXECUTING --> PASSED : All assertions hold
-EXECUTING --> FAILED : One or more assertions fail
-EXECUTING --> BLOCKED : Infrastructure unavailable or SUT not deployed
+class Functionality {
+  dimension = "Functionality"
+  status = PARTIAL_PASS
+  passRate = "80% (8/10 UCs functional)"
+  findings = "MAJOR-1: IsFeatured never set"
+  blockedTCs = 0
+  note = "UC-001 clocking: PASS, UC-005 publish: PARTIAL, UC-008 featured: FAIL"
+}
 
-PASSED --> REGRESSION : Added to regression suite
-FAILED --> DEFECT_LOGGED : Defect created in SCM
-DEFECT_LOGGED --> READY : Defect fixed, test re-run
+class Reliability {
+  dimension = "Reliability"
+  status = AT_RISK
+  passRate = "75% (3/4 reliability TCs pass)"
+  findings = "MINOR-3: Idempotency not employee-scoped"
+  blockedTCs = 3
+  note = "Offline retry works, idempotency has collision risk, fault tolerance untested"
+}
 
-BLOCKED --> READY : Blocker resolved (merge to main)
-BLOCKED --> DRAFT : Test case needs redesign
+class Performance {
+  dimension = "Performance"
+  status = BLOCKED
+  passRate = "0% (all perf TCs blocked)"
+  findings = "No deployed environment"
+  blockedTCs = 4
+  note = "NFR-001 <3s, NFR-002 <1s, AC-003 <10s all untested"
+}
 
-REGRESSION --> EXECUTING : Next build cycle
-REGRESSION --> PASSED : Regression passes
-REGRESSION --> FAILED : Regression catches defect
+class Usability {
+  dimension = "Usability"
+  status = BLOCKED
+  passRate = "0% (UI TCs blocked)"
+  findings = "No deployed environment for UI verification"
+  blockedTCs = 1
+  note = "CON-011 mandatory design conformance untested"
+}
 
-note right of REGRESSION
-  Construction C1: all TCs enter
-  regression suite after first
-  successful execution
+class DefectPattern {
+  + id : String
+  + severity : String
+  + priority : String
+  + component : String
+  + triggerCondition : String
+  + impact : String
+  + targetTCs : String
+}
+
+class DP_Major1 {
+  id = "MAJOR-1"
+  severity = "Major"
+  priority = "P1"
+  component = "NewsService.Publish"
+  triggerCondition = "HR publishes news with IsFeatured=true"
+  impact = "FR-008 featured banner never displays"
+  targetTCs = "TC-023, TC-024"
+}
+
+class DP_Minor2 {
+  id = "MINOR-2"
+  severity = "Minor"
+  priority = "P2"
+  component = "ClockingApiController"
+  triggerCondition = "Client sends mismatched EmployeeId in DTO"
+  impact = "False security expectation (token identity used)"
+  targetTCs = "TC-022"
+}
+
+class DP_Minor3 {
+  id = "MINOR-3/4"
+  severity = "Minor"
+  priority = "P2"
+  component = "ClockingService"
+  triggerCondition = "Two employees generate same idempotency key"
+  impact = "Second clocking silently dropped as duplicate"
+  targetTCs = "TC-021"
+}
+
+class DP_Issue13 {
+  id = "ISSUE-13"
+  severity = "Minor"
+  priority = "P3"
+  component = "Test code"
+  triggerCondition = "Empty result set expected but Single() called"
+  impact = "False positive pass on empty results"
+  targetTCs = "TC-028"
+}
+
+class DP_Issue14 {
+  id = "ISSUE-14"
+  severity = "Trivial"
+  priority = "P3"
+  component = "UnitTest1.cs"
+  triggerCondition = "Placeholder test runs"
+  impact = "No coverage value, inflates test count"
+  targetTCs = "N/A"
+}
+
+QualityDimensionAssessment <|-- Functionality
+QualityDimensionAssessment <|-- Reliability
+QualityDimensionAssessment <|-- Performance
+QualityDimensionAssessment <|-- Usability
+
+DefectPattern <|-- DP_Major1
+DefectPattern <|-- DP_Minor2
+DefectPattern <|-- DP_Minor3
+DefectPattern <|-- DP_Issue13
+DefectPattern <|-- DP_Issue14
+
+Functionality ..> DP_Major1 : contains
+Reliability ..> DP_Minor3 : contains
+Reliability ..> DP_Minor2 : contains
+Performance ..> DP_Issue13 : test-quality
+Usability ..> DP_Issue14 : test-quality
+
+note right of Functionality
+  **Stakeholder Impact:**
+  STK-001 (HR Director): Featured news
+  is a visible feature — its absence
+  undermines BG-003 adoption goal.
+  AC-002 (publish without assistance)
+  is met, but published content is
+  incomplete without featured banner.
 end note
 
-note right of BLOCKED
-  Elaboration: all 20 TCs were BLOCKED
-  (CR-006: PR #4 not merged to main)
-  Construction C1: TCs transition to
-  READY/EXECUTING after PR #8 merge
+note right of Performance
+  **Stakeholder Impact:**
+  STK-004 (Employees): NFR-001 <3s
+  page load directly affects adoption
+  (BG-003). Cannot verify until
+  deployment environment is available.
+  STK-003 dependency for OIDC.
 end note
-
-[*] --> REGRESSION : Prior iteration TCs carried forward
 
 @enduml
 ```
 
-### Performance Test Workflow
+### C1 Defect Pattern Analysis
 
 ```plantuml
 @startuml
-title Performance Test Workflow — Construction C1
+title Construction C1 — Defect Pattern Analysis Flow
 
 start
-:Initialize test environment
-(.NET 10 test host, InMemoryDb,
-MockLdapGateway with 200 entries);
 
-partition "TG-001: Page Load < 3s (NFR-001)" {
-  :Warm up application
-  (first request triggers JIT);
-  :Measure 10 sequential page loads
-  for each main page
-  (Home, Clocking, Directory, News);
-  :Calculate 95th percentile
-  per page;
-  if (P95 < 3s for all pages?) then (yes)
-    :Log PASS — TG-001;
-  else (no)
-    :Log FAIL — identify slow page
-    and bottleneck endpoint;
-  endif
+:Load C1 Execution Results
+(20 PASS, 5 FAIL, 8 BLOCKED);
+
+:Classify 5 FAIL defects by
+quality dimension and component;
+
+if (MAJOR-1: IsFeatured never set?) then (yes)
+  :Pattern: Incomplete publish flow
+  Component: NewsService
+  Severity: Major
+  Priority: P1
+  Trigger: HR publishes news with IsFeatured=true
+  Impact: FR-008 featured banner never displays
+  TC-023/TC-024 designed to verify fix;
+endif
+
+if (MINOR-2: EmployeeId in DTO?) then (yes)
+  :Pattern: Dead code creating false security expectation
+  Component: ClockingApiController
+  Severity: Minor
+  Priority: P2
+  Trigger: Client sends mismatched EmployeeId
+  Impact: Identity spoofing confusion (mitigated by token)
+  TC-022 designed to verify token identity used;
+endif
+
+if (MINOR-3/4: Idempotency not scoped?) then (yes)
+  :Pattern: Global key lookup risks cross-employee collision
+  Component: ClockingService
+  Severity: Minor
+  Priority: P2
+  Trigger: Two employees generate same idempotency key
+  Impact: Second clocking silently dropped
+  TC-021 designed to verify employee-scoped keys;
+endif
+
+if (Issue #13: Wrong assertion?) then (yes)
+  :Pattern: Test asserts Single instead of Empty
+  Component: Test code
+  Severity: Minor
+  Priority: P3
+  Trigger: Empty result set expected but Single called
+  Impact: False positive pass on empty results;
+endif
+
+if (Issue #14: Placeholder test?) then (yes)
+  :Pattern: Scaffolding leftover
+  Component: Test code
+  Severity: Trivial
+  Priority: P3
+  Trigger: UnitTest1.cs runs
+  Impact: No coverage value, inflates test count;
+endif
+
+:8 TCs blocked by infrastructure:
+1. No OIDC client registered (3 TCs)
+2. No deployed environment (3+ TCs)
+Dependency: STK-003
+Resolution: OIDC registration + deployment;
+
+partition "Quality Dimension Verdict" {
+  :Functionality: MAJOR-1 blocks FR-008
+  Core clocking: PASS
+  News lifecycle: PARTIAL
+  Directory: PASS (mock);
+  :Reliability: Offline retry PASS
+  Idempotency: RISK (MINOR-3)
+  Fault tolerance: UNTESTED (blocked);
+  :Performance: NFR-001/002/AC-003 UNTESTED (blocked);
+  :Usability: CON-011 UI conformance UNTESTED (blocked);
 }
 
-partition "TG-002: Clock Response < 1s (NFR-002)" {
-  :Seed InMemoryDb with
-  1000 clocking records;
-  :Send 100 clock-in requests
-  sequentially;
-  :Measure response time per request;
-  :Calculate 95th percentile;
-  if (P95 < 1s?) then (yes)
-    :Log PASS — TG-002;
-  else (no)
-    :Log FAIL — profile
-    ClockingService.RecordClocking;
-  endif
-}
+:Record findings in Test Cases
+with severity, priority, triggering conditions;
 
-partition "TG-004: Directory Search < 10s (AC-003)" {
-  :Configure MockLdapGateway
-  with 200 LDAP entries;
-  :Execute 20 search queries
-  (name, department, office);
-  :Measure response time per query;
-  if (All queries < 10s?) then (yes)
-    :Log PASS — TG-004;
-  else (no)
-    :Log FAIL — profile
-    LDAP query + serialization;
-  endif
-}
-
-partition "Stress: Concurrent Clock-In (50 users)" {
-  :Seed 50 employee tokens
-  via OIDC Mock;
-  :Fire 50 simultaneous
-  clock-in requests;
-  :Verify all 50 records persisted
-  with unique timestamps;
-  if (50/50 records persisted?) then (yes)
-    :Log PASS — concurrent stress;
-  else (no)
-    :Log FAIL — identify
-    lost records / race condition;
-  endif
-}
-
-partition "TG-003: Offline Retry (AC-005)" {
-  :Simulate network drop
-  (mock HTTP 503 for 5 min);
-  :Client stores clocking in
-  localStorage with idempotency key;
-  :Retry with exponential backoff
-  (1s, 2s, 4s, 8s, 16s...);
-  :Restore network after 4 min;
-  :Verify clocking POST succeeds
-  on reconnect;
-  if (Record persisted with
-  original client timestamp?) then (yes)
-    :Log PASS — TG-003;
-  else (no)
-    :Log FAIL — retry logic
-    or idempotency broken;
-  endif
-}
-
-:Aggregate all performance results;
-:Generate performance test report
-(per-goal PASS/FAIL + metrics);
+:Update Ideas sections with
+new adversarial ideas from execution;
 
 stop
 @enduml
 ```
 
-### Adversarial Test Design — Review Record Findings
+### C1 Test Execution and Quality Evaluation Flow
 
 ```plantuml
 @startuml
-title Adversarial Test Design — Review Record Findings Coverage
+title Construction C1 — Test Execution and Quality Evaluation Flow
 
 start
-:Read Review Record findings
-(MAJOR-1, MINOR-2, MINOR-3, MINOR-4);
 
-partition "MAJOR-1: IsFeatured never set" {
-  :Design TC-023: Publish with isFeatured=true;
-  :Assert NewsItem.IsFeatured == true in DB;
-  :Assert GetFeaturedNews() returns the item;
-  if (IsFeatured persisted?) then (no)
-    :FAIL — MAJOR-1 confirmed
-    (featured banner non-functional);
-  else (yes)
-    :PASS — MAJOR-1 resolved;
+:Enter Construction C1 Cycle;
+
+:Load 30 Test Cases
+(TC-001..TC-030);
+
+:Execute test suite
+against C1 build
+(Branch: iteration/C1
+CI: SUCCESS);
+
+partition "Execution Results" {
+  if (20 TCs PASS?) then (yes)
+    :Record PASS verdicts
+    as regression baseline
+    for C2;
   endif
-  :Design TC-024: Edit news with IsFeatured=true;
-  :Assert Edit does NOT reset IsFeatured;
+  if (5 TCs FAIL?) then (yes)
+    :Log defects as
+    Issues #10..#14
+    Analyze root causes;
+  endif
+  if (8 TCs BLOCKED?) then (yes)
+    :Identify blockers:
+    - OIDC client not registered
+    - No deployed environment
+    Escalate to STK-003;
+  endif
 }
 
-partition "MINOR-2: EmployeeId dead code in DTO" {
-  :Design TC-022: Send clocking with
-  mismatched EmployeeId in DTO body;
-  :Assert record uses token sub claim
-  NOT DTO EmployeeId;
-  if (Record uses token identity?) then (yes)
-    :PASS — MINOR-2 mitigated;
-  else (no)
-    :FAIL — DTO EmployeeId used
-    (security: identity spoofing);
-  endif
+partition "Defect Pattern Analysis" {
+  :MAJOR-1 (P1): NewsService.Publish
+  does not set IsFeatured
+  -> FR-008 featured banner broken
+  -> Adversarial TC-023/TC-024 added;
+
+  :MINOR-2 (P2): EmployeeId in DTO
+  is dead code, security-adjacent
+  -> TC-022 verifies token identity;
+
+  :MINOR-3/4 (P2): Idempotency key
+  not scoped by employee
+  -> TC-021 verifies cross-employee
+  collision handling;
+
+  :ISSUE-13 (P3): Wrong assertion
+  Single instead of Empty
+  -> Test quality defect;
+
+  :ISSUE-14 (P3): Placeholder test
+  Assert.True(true)
+  -> Scaffolding leftover;
 }
 
-partition "MINOR-3/MINOR-4: Idempotency not scoped" {
-  :Design TC-021: Two employees
-  same idempotency key;
-  :Assert BOTH records persisted
-  (not duplicate);
-  if (Both records exist?) then (yes)
-    :PASS — MINOR-3 resolved;
-  else (no)
-    :FAIL — cross-employee
-    collision drops record;
-  endif
-  :Update TC-003/TC-004 assertions
-  to reflect employee-scoped keys;
+partition "Quality Assessment" {
+  :Functionality: PARTIAL
+  MAJOR-1 blocks FR-008
+  8/10 UCs functional;
+
+  :Reliability: AT_RISK
+  Idempotency collision risk
+  Offline retry works;
+
+  :Performance: BLOCKED
+  All NFR tests blocked
+  on deployment;
+
+  :Usability: BLOCKED
+  UI conformance untested;
 }
 
-:All adversarial tests added
-to regression suite;
+partition "Regression Scope" {
+  :First Construction iteration
+  No prior PASS to regress
+  C1 PASS verdicts = C2 baseline
+  Adversarial TCs added to
+  regression suite;
+}
+
+partition "New Test Ideas from Execution" {
+  :Idea: Test IsFeatured=false
+  explicitly to ensure no
+  false positive banner;
+
+  :Idea: Test concurrent publish
+  with IsFeatured toggle race;
+
+  :Idea: Test idempotency key
+  with special characters;
+
+  :Idea: Test CSV export with
+  empty month (no clockings);
+
+  :Idea: Test directory search
+  with SQL-injection-like input
+  via LDAP query;
+}
+
+:Update Test Case artifact
+with Findings + Ideas + Boundary;
 
 stop
 @enduml
 ```
 
+### Regression Status
+
+This is the first Construction iteration — no prior PASS verdicts exist to regress. All 20 PASS verdicts from C1 become the regression baseline for C2. The Elaboration baseline (75 tests at code-level, ALL PASS) is subsumed by the C1 execution which includes those same tests plus the 10 new adversarial/performance TCs.
+
+**Regression flags for C2:**
+- All 20 PASS TCs carry `regression=yes` — must re-verify in C2
+- 5 FAIL TCs carry `regression=yes` after fix verification — must verify fix then add to regression suite
+- 8 BLOCKED TCs carry `regression=pending` — unblock first, verify, then add to regression suite
+- Adversarial TCs (TC-021..TC-024) carry `regression=yes` — verify Review Record findings are resolved
+
+### Blocked Tests Rationale
+
+| TC(s) | Blocker | Dependency | Resolution Path |
+|---|---|---|---|
+| TC-022, TC-028, TC-029 | No OIDC client registered | STK-003 (Infrastructure team) | OIDC client registration in Keycloak; confirmed test AD instance |
+| TC-030, TC-031, TC-032 | No deployed environment | Deployment pipeline (deploy.yml exists but no target server) | Deploy to internal Windows Server; run performance tests against real PostgreSQL + LDAP |
 ## Test Case Catalog
 ### TC-001: Clock In — Main Flow (Happy Path)
 
