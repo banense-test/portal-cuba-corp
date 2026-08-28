@@ -400,7 +400,6 @@ end note
 | PR #9 terminal decision | APPROVED (review 5052524021) |
 
 ## Disposition
-
 ### Iteration Acceptance: PARTIALLY MET
 
 **Document Artifacts: APPROVED** — All 8 document artifacts (Design Model, Test Case, SAD, Use-Case Model, Supplementary Specification, User Documentation, Change Request, prior Review Record) pass their type-specific checklists with zero findings. The Elaboration baseline is preserved and extended correctly for Construction.
@@ -408,6 +407,8 @@ end note
 **Code (PR #8): NEEDS REWORK** — 1 Major finding (MAJOR-1: IsFeatured not implemented, blocks FR-008) and 4 Minor findings persist from the prior review. The PR has not been updated since the initial review. Per stakeholder requirement, ALL findings must be resolved before sanction.
 
 **PR #9 (Integration Record): APPROVED** — Documentation only, accurately records iteration outcome.
+
+**Business Modeling Lens (Business Reviewer): PRESERVED** — BM discipline is INACTIVE per DC §4 (`business-process-led = false`). No BM artifacts exist in the project. No BM deltas in Construction C1. Zero prior BR findings to reconcile. Zero new BR findings to record. The Elaboration baseline stands. System UCs trace directly to declared FR-001..FR-010 — no derivation bridge assessment required.
 
 **Overall Disposition: ACCEPT-WITH-CHANGES**
 
@@ -417,6 +418,7 @@ The Construction C1 iteration is partially met:
 - ✅ Test Case artifact documents execution results honestly (20 PASS, 5 FAIL, 8 BLOCKED)
 - ✅ Change Request log is complete (13 CRs, 6 approved, 7 deferred)
 - ✅ Integration record (PR #9) is approved
+- ✅ BR Lens: BM INACTIVE, baseline PRESERVED, zero findings
 - ❌ PR #8 has 1 Major + 4 Minor unresolved findings blocking merge
 - ❌ No feature code merged into iteration/C1 this cycle
 - ❌ FR-008 (featured news) is non-functional due to MAJOR-1
@@ -426,7 +428,6 @@ The Construction C1 iteration is partially met:
 2. Reviewer re-reviews PR #8
 3. Integrator merges approved PR #8 into iteration/C1
 4. Integrator merges iteration/C1 into main via PR #9
-
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
