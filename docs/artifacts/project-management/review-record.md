@@ -673,7 +673,6 @@ The Code Reviewer has already issued **REQUEST_CHANGES** on PR #4 for 2 Major im
 | #5 | E1 iteration close — DEFERRED | Open | No mechanism integrated yet |
 | #6 | CR-006: Prototype not merged | Open | All TCs BLOCKED — resolves when PR #4 merges |
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | SAD (4+1 views) | CON-001..CON-006, ADR-001..ADR-005 | Derives | Design Model, Implementation Model, TestDesigner |
@@ -690,3 +689,7 @@ The Code Reviewer has already issued **REQUEST_CHANGES** on PR #4 for 2 Major im
 | M1 (IAuditLogger mismatch) | INT-005, COMP-008, NFR-004 | Tests | PR #4 AuditInterceptor.cs |
 | M2 (IPersistence mismatch) | INT-007, COMP-006, CON-003 | Tests | PR #4 PersistenceGateway.cs |
 | F1 (TD-NNN prefix) | Test Case traceability table | Refines | Development Case (tool assessment) |
+| MR-F1 (iteration count) | Iteration Plan coarse roadmap | Refines | Iteration Plan (correction) |
+| MR-F2 (PoC results pending) | R001, R006, R003 (Risk List) | Derives | Elaboration Iter 2 PoC execution |
+| Stakeholder sanction (REFUSED) | STK-001 answer (LCA consultation) | Refines | LCA Milestone Decision (CONDITIONAL) |
+| LCA Conditions (1-8) | MR-F1, MR-F2, M1, M2, R001, R003, R006, SAD status | Derives | Elaboration Iter 2 objectives |
