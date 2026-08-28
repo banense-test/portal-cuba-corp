@@ -1,16 +1,15 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Elaboration |
-| Status | Draft |
+| Status | BASELINED |
 | Milestone Target | End of Elaboration (LCA) |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
-| Review Findings | No findings target this artifact from Inception LCO review — all prior findings resolved |
-| Version Policy | Reconciled — .NET 10 pinned by enterprise policy; all NuGet packages at latest stable (verified Elaboration Iter 1) |
+| Review Findings | MR-F1 (Major) — PoC decisions for R001/R006/R003 recorded; M1/M2 (Major) — SAD interface specs verified consistent with Design Model INT-005/INT-007; Implementer to align code |
+| Version Policy | Reconciled — .NET 10 pinned by enterprise policy; all NuGet packages at latest stable (verified Elaboration Iter 1, unchanged Iter 2) |
 | Prior Phase | Inception candidate architecture — evolved to Elaboration baseline |
-
+| PoC Decisions | R001: single-mechanism; R006: single-mechanism; R003: analysis-only (see Architectural Proof-of-Concept artifact) |
 ## Architectural Representation
 
 This document presents the **architectural baseline** for Portal Cuba Corp — evolved from the Inception candidate to a full 4+1 view model per RUP Elaboration requirements. All five views are now addressed with UML diagrams.
