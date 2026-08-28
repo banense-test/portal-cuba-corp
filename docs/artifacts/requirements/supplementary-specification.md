@@ -95,7 +95,8 @@ end note
 |---|---|---|---|
 | REL-001 | System available during extended working hours: Monday–Friday 7:00–19:00 | NFR-003 | Low |
 | REL-002 | Fault tolerance within the corporate network — 24/7 not required | NFR-003 | Low |
-| REL-003 | [SCOPE_QUESTION — AC-005 offline tolerance] AC-005 states the system "works temporarily offline: if the network drops for 5 minutes, the data syncs once it is back." This conflicts with CON-002 (Razor Pages, server-rendered) and the declared exclusion of "sync job / reconciliation / conflict resolution." A server-rendered app cannot function during a network outage. This may mean server-side fault tolerance (the server stays up during brief partitions), not client-side offline operation. **Stakeholder decision required — see REQUIRES_USER_INPUT.** | AC-005 | High |
+| REL-003 | AC-005 offline tolerance (resolved): Server-side fault tolerance plus one bounded client-side mechanism for clocking only. The clocking button keeps the press in the browser (localStorage) and retries its POST for up to 5 minutes. The server accepts the timestamp the client sends — the moment the employee pressed — and rejects duplicates by an idempotency key. This is a page-level script on an already-rendered Razor page (CON-002 stands — no SPA, no client-side router). This is not the excluded sync work: the scope-out forbids synchronising copies of employee data, not retrying one POST. One action, one queue, one entity — nothing to reconcile. Everything else stays offline-dead: directory and news show a "no connection" message when the network is down. No PWA, no service worker, no client cache of anything else. Beyond 5 minutes the employee reports the clocking to HR. | AC-005 | Low |
+| REL-004 | Idempotency key on clocking POST prevents duplicate records when the client retries after a network interruption | AC-005 | Medium |
 
 ## Performance
 
@@ -167,7 +168,8 @@ end note
 | USA-006 | AC-002 | Refines | UC-005 |
 | REL-001 | NFR-003 | Refines | All UCs |
 | REL-002 | NFR-003 | Refines | All UCs |
-| REL-003 | AC-005 | Refines | All UCs |
+| REL-003 | AC-005 | Refines | UC-001 (offline retry) |
+| REL-004 | AC-005 | Refines | UC-001 (idempotency key) |
 | PERF-001 | NFR-001 | Refines | All UCs |
 | PERF-002 | NFR-002 | Refines | UC-001 |
 | PERF-003 | AC-003, FR-009 | Refines | UC-009 |
