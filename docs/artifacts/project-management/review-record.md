@@ -46,7 +46,6 @@ The following table defines all 7 RUP review types with their triggering workflo
 | 10 | Stakeholder sanction | RUP LCO gate | **PENDING** — Stakeholder refused sanction in iteration 1; iteration 2 resolves all findings; re-evaluation required |
 
 ## Findings
-
 ### Iteration 1 Findings (Technical Reviewer Lens)
 
 | ID | Artifact | Severity | Finding | Recommendation | Verdict | Status (Iter 2) |
@@ -63,6 +62,77 @@ The following table defines all 7 RUP review types with their triggering workflo
 | ID | Artifact | Severity | Finding | Recommendation | Verdict | Status (Iter 2) |
 |---|---|---|---|---|---|---|
 | F1 | Vision | Minor | Vision traceability table uses "FEAT-NNN" prefix — non-standard IDs compromise automated RTM generation | Replace with "REQ-NNN" prefix | NeedsRework | **PENDING** — Management Reviewer lens to verify |
+
+### Iteration 2 Findings (Business Reviewer Lens)
+
+**Verdict: [BR-OK-INACTIVE] — Discipline NOT APPLICABLE per DC §4**
+
+DC §4 trigger evaluation: project does not exhibit business-process-led characteristics. No ERP / BPM / workflow-redesign / M&A signals found in Vision. No Business Use Cases / Workers / Entities sections present in Use-Case Model. No business-domain specialist terms in Glossary (Glossary artifact not produced — no specialist vocabulary trigger).
+
+Conclusion: BPA + BR are correctly INACTIVE for this engagement. No findings, no recommendations. Downstream reviewers (MR, RC) may treat the BM discipline as out-of-scope for the LCO milestone.
+
+```plantuml
+@startuml
+title Business Modeling Discipline — Coverage Assessment (Inception Iter 2)
+
+skinparam noteBackgroundColor #F5F5F5
+skinparam rectangleBackgroundColor #E8F5E9
+skinparam rectangleBorderColor #2E7D32
+
+rectangle "Business Modeling Discipline Status" as BM {
+  note top of BM
+    **Verdict: BR-OK-INACTIVE**
+    
+    DC §4 Classification: business-process-led = FALSE
+    Process Engineer rationale: software-system-led project;
+    stakeholder declared FR-001..FR-010 and CON-001..CON-013
+    directly specifying the system to build. No business process
+    modeling, reengineering, or optimization declared.
+  end note
+  
+  rectangle "BPL Signal Check" as BPL {
+    note top of BPL
+      | Signal Source | Detected? |
+      | ERP implementation | NO |
+      | BPM / workflow redesign | NO |
+      | M&A integration | NO |
+      | Business process reengineering | NO |
+      | Organizational restructuring | NO |
+    end note
+  }
+  
+  rectangle "BM Section Coverage" as COV {
+    note top of COV
+      | Artifact | BM Sections Found |
+      | Vision | 0 — system goals only |
+      | Use-Case Model | 0 — system UCs only |
+      | Glossary | N/A — artifact not produced |
+      | Supplementary Spec | 0 — system NFRs only |
+    end note
+  }
+  
+  rectangle "Prior BR Findings" as FIND {
+    note top of FIND
+      | Artifact | BR Findings (open) |
+      | Review Record | 0 |
+      | Use-Case Model | 0 |
+      | Vision | 0 |
+      | Total open BR findings | 0 |
+    end note
+  }
+  
+  BPL -[hidden]right-> COV
+  COV -[hidden]right-> FIND
+}
+
+note bottom of BM
+  Conclusion: BPA + BR are correctly INACTIVE for this engagement.
+  No findings, no recommendations. Downstream reviewers (MR, RC)
+  may treat the BM discipline as out-of-scope for the LCO milestone.
+end note
+
+@enduml
+```
 
 ### Compliance Matrix — Iteration 2 (Technical Reviewer Lens)
 
@@ -187,7 +257,6 @@ end note
 | Iteration Plan | Iter 2 objectives, 6-iteration roadmap, finding resolution plan, preserve converged | 4 | 0 | 0 | 0 |
 | Iteration Assessment | Iter 1 objectives, LCO block documented, metrics | 3 | 0 | 0 | 0 |
 | **TOTAL** | | **48** | **0** | **0** | **0** |
-
 ## Resolutions and Actions
 
 ### Prior Findings Resolved This Iteration (Technical Reviewer Lens)
