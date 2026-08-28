@@ -15,7 +15,7 @@
 | Phase | Construction |
 | Status | Draft |
 | Milestone Target | End-of-Construction |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
 | Contributors | Designer (Analysis Classes, Use-Case Realizations, Design Classes, Interface Contracts, State Machines, Testability); User-Interface Designer (UI View/Controller Classes, UI Patterns, Boundary Classes and Navigation Map); Database Designer (Persistent Data Classes) |
 
@@ -52,23 +52,27 @@ The design follows a three-layer architecture as defined in the SAD Logical View
 | Offline Retry | Client-side localStorage + POST retry with idempotency key; 5-min window; server accepts client timestamp | clocking-retry.js + IClockingService idempotencyKey param | COMP-002 |
 | CSV Export | Streaming response; HR-only; date-range filtered | IClockingService.ExportCsv returns Stream → Razor Page writes to Response.Body | COMP-002 |
 
-### Iteration 2 — M1/M2 Resolution Summary
+### Construction C2 — Design Model Evolution Summary
+
+This iteration evolves the Design Model to align with implementation divergences discovered during source code inspection. Per the lesson learned ("Design Model must be updated when implementation diverges for good reason — silent divergence is always a finding"), the following changes bring the design contracts in sync with the implemented code. No Review Record findings targeted the Design Model (all 8 document artifacts passed with zero findings); the changes resolve implementation-design divergences proactively.
+
+| Change | Rationale | Affected Sections |
+|---|---|---|
+| INT-002 method names: `PublishNews`→`Publish`, `EditNews`→`Edit`, `UnpublishNews`→`Unpublish`, `GetAllNewsItems`→`ListAll`, `GetNewsById`→`GetById` | Implementation uses concise .NET-idiomatic names; design updated to match | Interface Contracts, Design Packages and Classes, Use-Case Realizations |
+| INT-001 method name: `GetAllClockingsForMonth`→`GetAllClockings` | Implementation uses shorter name; IPersistence retains `GetAllClockingsForMonth` | Interface Contracts, Design Packages and Classes |
+| INT-005 `entityId` type: `Guid`→`string` | Implementation passes `item.Id.ToString()` for news and `adUserId` (string) for worker categories — `string` accommodates both | Interface Contracts, Design Packages and Classes |
+| NewsStatus enum: removed `Draft` state | Implementation creates NewsItem directly as `Published` (UC-005 flow); no draft/approval workflow in scope | Domain Model, Capsules (State Machine) |
+| NewsItem: `CreatedBy`→`AuthorId`, no `UpdatedBy` field | Implementation uses `AuthorId`; editor identity captured via `LogAudit` author parameter, not a separate field | Design Packages and Classes, Persistent Data Classes |
+| AuditAction enum values: `NewsPublished`→`Publish`, `NewsEdited`→`Edit`, `NewsUnpublished`→`Unpublish` | Implementation uses concise enum names matching operation semantics | Design Packages and Classes, Use-Case Realizations |
+| `isFeatured` parameter in INT-002 `Publish` and `Edit` | Design already had `isFeatured` in C1; implementation missing it (MAJOR-1, CR-010). Design is CORRECT — implementation must be fixed. Design Model retains `isFeatured` param. | Interface Contracts, Use-Case Realizations |
+| `ExecuteInTransactionAsync` in audit operations | Design specifies wrapping business op + audit in transaction (M2 fix). Implementation calls `LogAudit` outside transaction. Design is CORRECT — implementation must be updated. | Use-Case Realizations (SEQ-005/006/007/010) |
+
+### Prior Iteration Resolution Summary (C1)
 
 | Finding | Design Model Change | Affected Sections |
 |---|---|---|
 | M1 — IAuditLogger signature mismatch | `Log()` → `LogAudit()` (avoids .NET `ILogger.Log()` collision) | Interface Contracts (INT-005), Use-Case Realizations (SEQ-005/006/007/010), Design Overview |
 | M2 — IPersistence transaction API mismatch | Removed `BeginTransaction()`/`CommitTransaction()`; added `ExecuteInTransactionAsync(Func<Task> action)` callback pattern | Interface Contracts (INT-007), Use-Case Realizations (SEQ-005/006/007/010), Design Overview |
-
-### Construction C1 — Design Completion Summary
-
-| Added Element | Section | Purpose |
-|---|---|---|
-| Portal.Services class diagram | Design Packages and Classes | Full method signatures for CLS-001–005 + INT-001–005 |
-| Portal.Infrastructure class diagram | Design Packages and Classes | Full method signatures for CLS-006–010 + INT-006–007 |
-| Portal.Domain class diagram | Design Packages and Classes | Full attributes for CLS-011–023 (enums, entities, value objects) |
-| Subsystem interface dependency diagram | Design Packages and Classes | Component-level view showing all interface dependencies |
-| NewsItem state machine | Capsules, Protocols and Signals | 3-state lifecycle (Draft → Published → Unpublished) with audit mapping |
-| Testability entry points | Capsules, Protocols and Signals | 10 DI seams with test replacement strategies and observable state |
 ## Domain Model
 Analysis classes identify the boundary, control, and entity stereotypes for each architecturally significant use case. These are the bridge from the Use-Case Model to design classes — each analysis class will be refined into one or more design classes in the Design Packages and Classes section.
 
