@@ -7,7 +7,7 @@
 | Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
 | Prior Phase | Elaboration (LCA achieved — 0 Critical, 0 Major open; stakeholder sanction GRANTED) |
-| Evolution | Construction Iter 1: NFR baseline preserved — no approved CR introduces new quality attributes. All FURPS+ categories addressed in Elaboration baseline. Document Control updated to Construction phase. Construction Iter 2: NFR baseline preserved — CR-010 (IsFeatured flag) is a derived field within UC-005/UC-006, not a new quality attribute. No FURPS+ category changes required. |
+| Evolution | Construction Iter 1: NFR baseline preserved — no approved CR introduces new quality attributes. All FURPS+ categories addressed in Elaboration baseline. Document Control updated to Construction phase. Construction Iter 2: NFR baseline preserved — CR-010 (IsFeatured flag) is an approved functional extension within UC-005/UC-006 (CCB-approved Construction C1), not a new quality attribute. [DERIVED] marker on IsFeatured retired — CCB approval constitutes stakeholder confirmation. No FURPS+ category changes required. CR-011 (idempotency key) already reflected in REL-003/REL-004 from Elaboration baseline — no changes needed. |
 ## Functionality
 
 ### Security
