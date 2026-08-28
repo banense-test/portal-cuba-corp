@@ -26,9 +26,14 @@ public class LdapGateway : ILdapGateway
         conn.Connect(_options.Host, _options.Port);
         conn.Bind(_options.BindDn, _options.BindPassword);
 
+        var constraints = new LdapSearchConstraints
+        {
+            Scope = LdapSearchConstraints.SCOPE_SUB
+        };
+
         var searchResults = conn.Search(
             _options.SearchBase,
-            LdapConnection.SCOPE_SUB,
+            LdapSearchConstraints.SCOPE_SUB,
             filter,
             new[] { "sAMAccountName", "cn", "title", "department", "physicalDeliveryOfficeName", "mail", "telephoneNumber" },
             false);
