@@ -1,5 +1,4 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Construction |
@@ -7,13 +6,15 @@
 | Milestone Target | End-of-Construction |
 | Iteration | 1 (Cycle 1) |
 | Date | 2026-08-28 |
-| Author | Test Designer (Test Discipline) |
+| Author | Test Designer (Test Discipline) — Test Cases designed in Elaboration/C1 |
+| Tester | Tester (Test Discipline) — Execution and evaluation in Construction C1 |
 | Prior Phase | Elaboration (LCA achieved — 0 open Critical/Major; stakeholder sanction GRANTED) |
 | Evolution | Construction C1: Extended from 20 to 30 test cases. Added adversarial tests for Review Record findings (MAJOR-1: IsFeatured, MINOR-2: EmployeeId DTO, MINOR-3/MINOR-4: idempotency scoping). Added performance/stress/load tests with thresholds. Added Procedure sections to all TCs. Added suite membership tags and regression flags. Extended UC→TC traceability to complete coverage. |
 | Elaboration Baseline | 20 TCs (TC-001..TC-020) covering all 10 UCs at moderate depth. Status: BLOCKED (CR-006 — PR #4 not merged to main). 75 tests reviewed at code-level — ALL PASS. |
 | Construction C1 Review Record | PR #8 (feature/C1-presentation) — REQUEST_CHANGES: 1 Major (MAJOR-1: IsFeatured), 4 Minor. Adversarial tests TC-021..TC-024 target these findings. |
 | Test Infrastructure | InMemoryPersistence (INT-007), MockLdapGateway (INT-006), InMemoryAuditLogger (INT-005), OIDC Mock Token Provider (COMP-007), Clocking Client Test Harness (AC-005) |
-
+| C1 Execution Build | Branch: iteration/C1, CI: SUCCESS (2026-08-28 14:44:39Z), Run: 33181604442 |
+| C1 Execution Verdict | 20 PASS, 5 FAIL, 8 BLOCKED — 5 defects logged as Issues #10-#14 |
 ## Test Scope
 
 ### All Use Cases Under Test — Construction C1 Full Coverage
