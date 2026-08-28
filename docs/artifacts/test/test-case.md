@@ -719,7 +719,6 @@ The LDAP stub (LdapGatewayStub implementing INT-006/ILdapGateway) must be config
 | Employee not found | N/A | No matching entries | UC-010 A1: graceful not-found handling |
 
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | TC-001 | UC-001 (main flow) | Tests | ClockingService.cs, ClockingServiceTests.cs |
@@ -750,9 +749,6 @@ The LDAP stub (LdapGatewayStub implementing INT-006/ILdapGateway) must be config
 | TG-006 | SEC-002 | Refines | TC-013, TC-014, TC-020 |
 | TG-007 | R001, SUP-003 | Refines | TC-006 |
 | TG-008 | UC-001 A3 | Refines | TC-005 |
-| TD-008 | R001 | Tests | TC-006 |
-| TD-009 | CON-012 | Tests | TC-007 |
-| TD-011 | SEC-002 | Tests | TC-013, TC-014, TC-020 |
 | LdapGatewayStub | INT-006, COMP-005 | Implements | TC-006, TC-007, TC-019, TC-020 |
 | OIDC Mock Token Provider | COMP-007, SEC-002 | Implements | TC-013, TC-014, TC-020 |
 | InMemoryDb | INT-007, COMP-006 | Implements | TC-001..TC-005, TC-008..TC-010, TC-015..TC-019 |
@@ -760,3 +756,5 @@ The LDAP stub (LdapGatewayStub implementing INT-006/ILdapGateway) must be config
 | AuditRecordChecker | NFR-004, AUD-001..AUD-003 | Verifies | TC-008, TC-009, TC-010, TC-018 |
 | E1 Findings | Review Record (M1, M2), PR #4 | Derives | CR-006 |
 | E1 Smoke Test | CI build (main) | Tests | All TCs (BLOCKED) |
+
+**Note:** Test data sets (TD-001 through TD-011) are cataloged in the Test Data section and consumed by the test cases listed above. They are not independent traceable elements and have been removed from this traceability table per the Review Record iteration 1 finding (Traceability: FAIL — TD-NNN prefix).
