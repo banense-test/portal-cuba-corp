@@ -737,7 +737,6 @@ end note
 @enduml
 ```
 ## Design Packages and Classes
-
 ### UI View/Controller Classes
 
 > **Contributed by:** User-Interface Designer (Analysis & Design Discipline)
@@ -798,157 +797,555 @@ package "UI Layer (Razor Pages)" {
   
   class "WorkerCategoryModel" as V008 <<view>> {
     + OnGetAsync() : Task
-    + OnPostAsync(userId, category) : ActionResult
-    + Assignments : List<WorkerCategory>
+    + OnPostAsync(adUserId, category) : ActionResult
+    + Categories : List<WorkerCategory>
+    + SearchResults : List<DirectoryEntry>
+  }
+}
+@enduml
+```
+
+### Application Services Package (Portal.Services)
+
+Design classes for the application services layer. Each service implements a component interface from the SAD. Dependencies are injected via .NET DI container — all cross-boundary references use interfaces, never concrete classes.
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Application Services Package (Portal.Services)
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "Portal.Services" {
+  interface "IClockingService" as INT001 {
+    + RecordClocking(employeeId: string, timestamp: DateTime, type: ClockType, idempotencyKey: string) : ClockingResult
+    + GetCurrentStatus(employeeId: string) : ClockStatus
+    + GetHistory(employeeId: string, month: DateRange) : List<ClockingRecord>
+    + GetAllClockings(month: DateRange) : List<ClockingRecord>
+    + ExportCsv(month: DateRange) : Stream
+  }
+
+  interface "INewsService" as INT002 {
+    + Publish(title: string, body: string, category: NewsCategory, authorId: string) : NewsItem
+    + Edit(id: Guid, title: string, body: string, category: NewsCategory, authorId: string) : NewsItem
+    + Unpublish(id: Guid, authorId: string) : NewsItem
+    + GetById(id: Guid) : NewsItem
+    + GetPublishedNews(category: NewsCategory?) : List<NewsItem>
+    + GetFeaturedNews() : List<NewsItem>
+    + ListAll() : List<NewsItem>
+  }
+
+  interface "IDirectoryService" as INT003 {
+    + Search(query: string) : List<DirectoryEntry>
+  }
+
+  interface "IWorkerCategoryService" as INT004 {
+    + AssignCategory(adUserId: string, category: string, authorId: string) : WorkerCategory
+    + ListCategories() : List<WorkerCategory>
+    + LookupAdUser(query: string) : List<DirectoryEntry>
+  }
+
+  interface "IAuditLogger" as INT005 {
+    + Log(entityType: string, entityId: Guid, action: AuditAction, author: string, timestamp: DateTime) : void
+  }
+
+  class "ClockingService" as CLS001 {
+    - _persistence : IPersistence
+    - _ldapGateway : ILdapGateway
+    + RecordClocking(employeeId: string, timestamp: DateTime, type: ClockType, idempotencyKey: string) : ClockingResult
+    + GetCurrentStatus(employeeId: string) : ClockStatus
+    + GetHistory(employeeId: string, month: DateRange) : List<ClockingRecord>
+    + GetAllClockings(month: DateRange) : List<ClockingRecord>
+    + ExportCsv(month: DateRange) : Stream
+  }
+
+  class "NewsService" as CLS002 {
+    - _persistence : IPersistence
+    - _auditLogger : IAuditLogger
+    + Publish(title: string, body: string, category: NewsCategory, authorId: string) : NewsItem
+    + Edit(id: Guid, title: string, body: string, category: NewsCategory, authorId: string) : NewsItem
+    + Unpublish(id: Guid, authorId: string) : NewsItem
+    + GetById(id: Guid) : NewsItem
+    + GetPublishedNews(category: NewsCategory?) : List<NewsItem>
+    + GetFeaturedNews() : List<NewsItem>
+    + ListAll() : List<NewsItem>
+  }
+
+  class "DirectoryService" as CLS003 {
+    - _ldapGateway : ILdapGateway
+    + Search(query: string) : List<DirectoryEntry>
+    - MapLdapAttributes(entry: LdapEntry) : DirectoryEntry
+  }
+
+  class "WorkerCategoryService" as CLS004 {
+    - _persistence : IPersistence
+    - _ldapGateway : ILdapGateway
+    - _auditLogger : IAuditLogger
+    + AssignCategory(adUserId: string, category: string, authorId: string) : WorkerCategory
+    + ListCategories() : List<WorkerCategory>
+    + LookupAdUser(query: string) : List<DirectoryEntry>
+  }
+
+  class "AuditInterceptor" as CLS005 {
+    - _persistence : IPersistence
+    + Log(entityType: string, entityId: Guid, action: AuditAction, author: string, timestamp: DateTime) : void
   }
 }
 
-package "UI Controllers (Page Handlers)" {
-  class "ClockingHandler" as C001 <<controller>> {
-    + RecordClocking(empId, timestamp, key) : ClockingResult
-    + GetClockingStatus(empId) : ClockStatus
-    + GetClockingHistory(empId, month) : List
-  }
-  
-  class "NewsHandler" as C002 <<controller>> {
-    + PublishNews(item, author) : NewsItem
-    + EditNews(id, item, editor) : NewsItem
-    + UnpublishNews(id, unpublisher) : void
-    + GetPublishedNews() : List
-    + GetNewsByCategory(cat) : List
-  }
-  
-  class "DirectoryHandler" as C003 <<controller>> {
-    + SearchDirectory(criteria) : List
-    + GetEmployeeByADId(userId) : DirectoryEntry
-  }
-  
-  class "CategoryHandler" as C004 <<controller>> {
-    + GetCategories() : List
-    + AssignCategory(userId, cat, author) : void
-    + LookupADUser(userId) : DirectoryEntry
-  }
-  
-  class "ExportHandler" as C005 <<controller>> {
-    + GenerateCSV(month) : FileContentResult
-  }
-}
+CLS001 ..|> INT001
+CLS002 ..|> INT002
+CLS003 ..|> INT003
+CLS004 ..|> INT004
+CLS005 ..|> INT005
 
-V001 --> C001 : clocking status
-V001 --> C002 : news feed
-V002 --> C001 : clocking history
-V003 --> C001 : all clockings
-V003 --> C005 : CSV export
-V004 --> C002 : publish
-V005 --> C002 : edit
-V006 --> C002 : unpublish + list
-V007 --> C003 : directory search
-V008 --> C004 : category management
+CLS001 --> IPersistence
+CLS001 --> ILdapGateway
+CLS002 --> IPersistence
+CLS002 --> INT005
+CLS003 --> ILdapGateway
+CLS004 --> IPersistence
+CLS004 --> ILdapGateway
+CLS004 --> INT005
+CLS005 --> IPersistence
 
-note bottom of V001
-  CON-011: Mandatory design
-  implements employee-portal-design.html
-  Clock button: --accent (in) / --danger (out)
+note bottom of CLS001
+  COMP-002: Idempotency key check
+  before INSERT. Server accepts
+  client timestamp (AC-005).
+  NFR-002: <1s response time.
 end note
 
-note bottom of C001
-  AC-005: offline retry logic
-  lives in client-side script
-  on MainPage (localStorage)
+note bottom of CLS002
+  COMP-003: All news ops run within
+  a DB transaction that includes
+  the audit record (NFR-004).
+  News never hard-deleted (CON-013).
 end note
 
-note bottom of V007
-  AC-003: <10s search target
-  R001: LDAP attribute risk
-  CON-005: read-only LDAP
+note bottom of CLS003
+  COMP-001: R001 risk — LDAP
+  attributes may be missing.
+  Fallback to "N/A" for empty fields.
 end note
 
 @enduml
 ```
 
-**UI View Class Summary:**
+### Infrastructure Package (Portal.Infrastructure)
 
-| ID | View Class | Razor Page | UC Trace | Controller |
+Design classes for the infrastructure layer. All DB access is centralized in PersistenceGateway via EF Core. LDAP access is read-only via LdapGateway using Novell.Directory.Ldap with connection pooling.
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Infrastructure Package (Portal.Infrastructure)
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "Portal.Infrastructure" {
+  interface "ILdapGateway" as INT006 {
+    + SearchEntries(filter: string) : List<LdapSearchResult>
+    + GetEntryByUserId(adUserId: string) : LdapSearchResult?
+    + ResolveNames(adUserIds: List<string>) : Dictionary<string, string>
+  }
+
+  interface "IPersistence" as INT007 {
+    + GetClockingsByEmployee(empId: string, range: DateRange) : List<ClockingRecord>
+    + GetAllClockingsForMonth(range: DateRange) : List<ClockingRecord>
+    + InsertClocking(record: ClockingRecord) : ClockingRecord
+    + FindByImpotencyKey(key: string) : ClockingRecord?
+    + GetNewsItem(id: Guid) : NewsItem?
+    + SaveNewsItem(item: NewsItem) : NewsItem
+    + UpdateNewsItem(id: Guid, title: string, body: string, category: NewsCategory) : NewsItem
+    + UpdateNewsStatus(id: Guid, status: NewsStatus) : NewsItem
+    + GetPublishedNews(category: NewsCategory?) : List<NewsItem>
+    + GetFeaturedNews() : List<NewsItem>
+    + GetAllNewsItems() : List<NewsItem>
+    + UpsertWorkerCategory(adUserId: string, category: string) : WorkerCategory
+    + GetAllWorkerCategories() : List<WorkerCategory>
+    + InsertAuditRecord(record: AuditRecord) : void
+    + BeginTransaction() : IDbTransaction
+    + CommitTransaction() : void
+  }
+
+  class "LdapGateway" as CLS006 {
+    - _connectionPool : LdapConnectionPool
+    - _settings : LdapSettings
+    + SearchEntries(filter: string) : List<LdapSearchResult>
+    + GetEntryByUserId(adUserId: string) : LdapSearchResult?
+    + ResolveNames(adUserIds: List<string>) : Dictionary<string, string>
+    - MapAttributes(entry: LdapEntry) : LdapSearchResult
+    - BuildFilter(query: string) : string
+  }
+
+  class "PersistenceGateway" as CLS007 {
+    - _context : PortalDbContext
+    + GetClockingsByEmployee(empId: string, range: DateRange) : List<ClockingRecord>
+    + GetAllClockingsForMonth(range: DateRange) : List<ClockingRecord>
+    + InsertClocking(record: ClockingRecord) : ClockingRecord
+    + FindByImpotencyKey(key: string) : ClockingRecord?
+    + GetNewsItem(id: Guid) : NewsItem?
+    + SaveNewsItem(item: NewsItem) : NewsItem
+    + UpdateNewsItem(id: Guid, title: string, body: string, category: NewsCategory) : NewsItem
+    + UpdateNewsStatus(id: Guid, status: NewsStatus) : NewsItem
+    + GetPublishedNews(category: NewsCategory?) : List<NewsItem>
+    + GetFeaturedNews() : List<NewsItem>
+    + GetAllNewsItems() : List<NewsItem>
+    + UpsertWorkerCategory(adUserId: string, category: string) : WorkerCategory
+    + GetAllWorkerCategories() : List<WorkerCategory>
+    + InsertAuditRecord(record: AuditRecord) : void
+    + BeginTransaction() : IDbTransaction
+    + CommitTransaction() : void
+  }
+
+  class "PortalDbContext" as CLS008 {
+    + DbSet<ClockingRecord> Clockings
+    + DbSet<NewsItem> NewsItems
+    + DbSet<WorkerCategory> WorkerCategories
+    + DbSet<AuditRecord> AuditRecords
+    + OnModelCreating(modelBuilder: ModelBuilder) : void
+  }
+
+  class "LdapSettings" as CLS009 {
+    + Server : string
+    + Port : int
+    + BaseDn : string
+    + BindDn : string
+    + BindPassword : string
+    + AttributeMap : Dictionary<string, string>
+  }
+
+  class "LdapConnectionPool" as CLS010 {
+    - _pool : ConcurrentBag<LdapConnection>
+    + GetConnection() : LdapConnection
+    + ReturnConnection(conn: LdapConnection) : void
+  }
+}
+
+CLS006 ..|> INT006
+CLS007 ..|> INT007
+CLS007 --> CLS008
+CLS006 --> CLS009
+CLS006 --> CLS010
+
+note right of CLS006
+  COMP-005: Read-only LDAP access.
+  Connection pooling via
+  Novell.Directory.Ldap.
+  R001: Attribute mapping with
+  fallback for missing fields.
+end note
+
+note right of CLS007
+  COMP-006: EF Core + PostgreSQL.
+  All DB access centralized here.
+  Transaction management for
+  audit trail atomicity.
+end note
+
+note right of CLS008
+  EF Core DbContext.
+  OnModelCreating configures:
+  - Unique index on Clockings.idempotency_key
+  - News items: no DELETE (CON-013)
+  - Audit records: append-only
+  - Worker categories: 2 columns only
+end note
+
+@enduml
+```
+
+### Domain Package (Portal.Domain)
+
+Domain entities, enums, and value objects. These classes have no persistence logic and no external dependencies. They define the structural contracts that services and infrastructure operate on.
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Domain Package (Portal.Domain)
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "Portal.Domain" {
+  enum "ClockType" as CLS011 {
+    In
+    Out
+  }
+
+  enum "ClockStatus" as CLS012 {
+    ClockedIn
+    ClockedOut
+  }
+
+  enum "NewsCategory" as CLS013 {
+    General
+    HR
+    IT
+    Events
+  }
+
+  enum "NewsStatus" as CLS014 {
+    Published
+    Unpublished
+  }
+
+  enum "AuditAction" as CLS015 {
+    Publish
+    Edit
+    Unpublish
+    CategoryChanged
+  }
+
+  class "ClockingRecord" as CLS016 {
+    + Id : Guid
+    + EmployeeId : string
+    + Timestamp : DateTime
+    + ClockType : ClockType
+    + IdempotencyKey : string
+    + CreatedAt : DateTime
+  }
+
+  class "NewsItem" as CLS017 {
+    + Id : Guid
+    + Title : string
+    + Body : string
+    + Category : NewsCategory
+    + Status : NewsStatus
+    + CreatedBy : string
+    + CreatedAt : DateTime
+    + UpdatedAt : DateTime?
+    + IsFeatured : bool
+  }
+
+  class "WorkerCategory" as CLS018 {
+    + AdUserId : string
+    + Category : string
+    + UpdatedBy : string
+    + UpdatedAt : DateTime
+  }
+
+  class "AuditRecord" as CLS019 {
+    + Id : Guid
+    + EntityType : string
+    + EntityId : Guid
+    + Action : AuditAction
+    + Author : string
+    + Timestamp : DateTime
+  }
+
+  class "DirectoryEntry" as CLS020 {
+    + AdUserId : string
+    + Name : string
+    + JobTitle : string
+    + Department : string
+    + Office : string
+    + Email : string
+    + Extension : string
+  }
+
+  class "DateRange" as CLS021 {
+    + Start : DateTime
+    + End : DateTime
+  }
+
+  class "ClockingResult" as CLS022 {
+    + Success : bool
+    + Record : ClockingRecord?
+    + IsDuplicate : bool
+    + ErrorMessage : string?
+  }
+
+  class "LdapSearchResult" as CLS023 {
+    + DistinguishedName : string
+    + Attributes : Dictionary<string, string>
+  }
+}
+
+CLS016 --> CLS011
+CLS016 --> CLS021
+CLS017 --> CLS013
+CLS017 --> CLS014
+CLS019 --> CLS015
+CLS022 --> CLS016
+
+note bottom of CLS016
+  Persisted in PostgreSQL.
+  Unique index on IdempotencyKey
+  prevents duplicate clockings
+  under concurrent retries (AC-005).
+end note
+
+note bottom of CLS017
+  Status=Unpublished hides from
+  employees but preserves record
+  (CON-013). Never hard-deleted.
+end note
+
+note bottom of CLS018
+  Two columns: AdUserId + Category.
+  Nothing else (CON-009).
+  UpdatedBy/UpdatedAt for audit.
+end note
+
+note bottom of CLS020
+  Value object — projected from AD
+  at read time. Never persisted
+  (CON-009). Missing attributes
+  default to "N/A" (R001 fallback).
+end note
+
+@enduml
+```
+
+### Design Subsystems
+
+| Subsystem | ID | Provided Interface | Required Interfaces | Volatility |
 |---|---|---|---|---|
-| V001 | MainPageModel | /Index | UC-001, UC-008 | C001, C002 |
-| V002 | ClockingPageModel | /MyClockings | UC-002 | C001 |
-| V003 | AllClockingsModel | /HR/AllClockings | UC-003, UC-004 | C001, C005 |
-| V004 | PublishNewsModel | /HR/PublishNews | UC-005 | C002 |
-| V005 | EditNewsModel | /HR/EditNews | UC-006 | C002 |
-| V006 | NewsManagementModel | /HR/ManageNews | UC-007 | C002 |
-| V007 | DirectorySearchModel | /Directory | UC-009 | C003 |
-| V008 | WorkerCategoryModel | /HR/Categories | UC-010 | C004 |
+| Directory Service | COMP-001 | IDirectoryService (INT-003) | ILdapGateway (INT-006) | High (R001) |
+| Clocking Service | COMP-002 | IClockingService (INT-001) | IPersistence (INT-007), ILdapGateway (INT-006) | Medium (AC-005) |
+| News Service | COMP-003 | INewsService (INT-002) | IPersistence (INT-007), IAuditLogger (INT-005) | Low |
+| Worker Category Service | COMP-004 | IWorkerCategoryService (INT-004) | IPersistence (INT-007), ILdapGateway (INT-006), IAuditLogger (INT-005) | Medium |
+| LDAP Gateway | COMP-005 | ILdapGateway (INT-006) | (none — external AD) | High (R001) |
+| Persistence Gateway | COMP-006 | IPersistence (INT-007) | (none — external PostgreSQL) | Low |
+| OIDC Auth Middleware | COMP-007 | (middleware pipeline) | (none — external Keycloak) | Low-Med |
+| Audit Interceptor | COMP-008 | IAuditLogger (INT-005) | IPersistence (INT-007) | Low |
 
-### UI Patterns
+### State Machine: NewsItem Lifecycle
 
-> **Contributed by:** User-Interface Designer (Analysis & Design Discipline)
-> **Purpose:** Interaction conventions, visual hierarchy, terminology, and accessibility rules that ALL roles (Designer detailing view classes, Implementer building screens, Technical Writer documenting features) must follow. These patterns are derived from the mandatory design (CON-011) and usability requirements (USA-001 through USA-006).
+NewsItem has 3 distinct lifecycle states (Published, Unpublished, and the initial creation state), requiring a state machine per the quality criteria.
 
-#### Visual Design Tokens (from CON-011)
+```plantuml
+@startuml
+title Portal Cuba Corp — State Machine: NewsItem Lifecycle
 
-| Token | Value | Usage |
-|---|---|---|
-| `--brand-900` | #0B3D5C | Header, strong accents |
-| `--brand-700` | #145A82 | Secondary brand |
-| `--brand-500` | #1E7FB5 | Primary action, links |
-| `--brand-100` | #E3F0F8 | Soft backgrounds, active chips |
-| `--accent` | #17A398 | Confirmations, "present" status, Clock In button |
-| `--danger` | #C0392B | Clock Out button, errors |
-| `--warn` | #E6A817 | Featured news banners, warnings |
-| `--ink` | #1B2733 | Primary text |
-| `--muted` | #5B6B7A | Secondary text |
-| `--line` | #E2E8EE | Borders, dividers |
-| `--bg` | #F4F7FA | App background |
-| `--surface` | #FFFFFF | Cards |
+state "Draft\n(initial creation)" as DRAFT
+state "Published\n(visible to employees)" as PUBLISHED
+state "Unpublished\n(hidden, record preserved)" as UNPUBLISHED
 
-#### Typography
+[*] --> DRAFT : NewsService.Publish()\n[creates NewsItem]
 
-| Property | Value |
-|---|---|
-| Font family | "Segoe UI", system-ui, sans-serif |
-| Scale | 12 / 14 / 16 / 20 / 28 px |
-| Line height | 1.5 |
-| Weights | 400 (regular), 600 (semibold for titles) |
+DRAFT --> PUBLISHED : Save (status=published)
+PUBLISHED --> PUBLISHED : NewsService.Edit()\n[update title/body/category]\n[audit: action=EDIT]
+PUBLISHED --> UNPUBLISHED : NewsService.Unpublish()\n[status=unpublished]\n[audit: action=UNPUBLISH]
+UNPUBLISHED --> PUBLISHED : NewsService.Publish()\n[re-publish existing item]\n[audit: action=PUBLISH]
+UNPUBLISHED --> UNPUBLISHED : NewsService.Edit()\n[update content while hidden]\n[audit: action=EDIT]
 
-#### Interaction Conventions
+note right of PUBLISHED
+  Visible to employees in news feed.
+  Featured items show banner at top.
+end note
 
-| Pattern | Rule | Rationale |
-|---|---|---|
-| Clock button color | Clock In = `--accent` (teal-green); Clock Out = `--danger` (red) | CON-011: mandatory design; immediate visual recognition of state |
-| Confirmation messages | Inline toast/banner on same page, not redirect | USA-005: employee clocks without help; no navigation disruption |
-| Category filter chips | Horizontal chip bar: [All] [General] [HR] [IT] [Events] | CON-011: design reference; recognition over recall (Nielsen #6) |
-| Featured news banner | `--warn` background at top of news feed | CON-011: design reference; visual hierarchy for priority content |
-| Directory results | Card-based layout with all corporate fields visible | AC-003: find colleague <10s; no drill-down needed for basic info |
-| HR navigation | Dashboard with action buttons, not nested menus | USA-006: HR publishes without technical assistance |
-| Unpublish action | Confirmation dialog with "hidden but not deleted" message | CON-013: preserve audit trail; prevent accidental data loss |
-| Error states | Inline error message on form, not separate error page | Nielsen #9: help users recover from errors |
-| Session timeout | Modal dialog with "Login Again" redirect to Keycloak | Security: no silent session expiry |
-| Offline clocking | Button press stored in localStorage, retry indicator shown | AC-005: 5-minute offline tolerance; user sees retry status |
+note right of UNPUBLISHED
+  CON-013: Never hard-deleted.
+  Record preserved for audit trail.
+  Hidden from employee news feed.
+  HR can still see in management list.
+end note
 
-#### Terminology (Consistent Across All Screens)
+note left of PUBLISHED
+  NFR-004: Every transition
+  (publish, edit, unpublish)
+  creates an append-only
+  AuditRecord with author + timestamp.
+end note
 
-| Term | Usage | Avoid |
-|---|---|---|
-| Clock In / Clock Out | Button labels | "Check in", "Punch in" |
-| My Clockings | Navigation link | "My attendance", "My records" |
-| All Clockings | HR navigation link | "Time tracking", "Attendance log" |
-| Publish / Edit / Unpublish | News action verbs | "Create", "Modify", "Delete" (never "delete" — CON-013) |
-| Worker Categories | HR navigation link | "Employee types", "Staff classification" |
-| Employee Directory | Navigation link | "Phone book", "Contact list" |
-| Featured | News flag label | "Pinned", "Highlighted" |
+[*] --> DRAFT
 
-#### Accessibility Rules
+@enduml
+```
 
-| Rule | Source | Application |
-|---|---|---|
-| Color contrast ≥ 4.5:1 | WCAG 2.1 AA (implied by CON-008 Chrome/Edge) | All text on backgrounds; `--ink` on `--surface` = 12.6:1 ✓ |
-| Color is not sole indicator | WCAG 2.1 1.4.1 | Clock In/Out uses text label + color, not color alone |
-| Keyboard navigable | WCAG 2.1 2.1.1 | All interactive elements reachable via Tab; Razor Pages server-rendered HTML |
-| Form labels associated | WCAG 2.1 3.3.2 | All form inputs have `<label for>` associations |
-| Error identification | WCAG 2.1 3.3.1 | Form validation errors displayed inline with field reference |
+### Package Organization
 
-> **Note:** No explicit accessibility standard (WCAG, EN 301 549, Section 508) was declared by the stakeholder. The above rules follow WCAG 2.1 AA as a baseline best practice for Chrome/Edge compatibility (CON-008). If the stakeholder declares a specific standard, these rules must be updated to match.
+```plantuml
+@startuml
+title Portal Cuba Corp — Design Model Package Organization
 
+skinparam packageStyle rectangle
+skinparam componentStyle uml2
+
+package "Portal.UI" {
+  [MainPageModel]
+  [ClockingPageModel]
+  [AllClockingsModel]
+  [PublishNewsModel]
+  [EditNewsModel]
+  [NewsManagementModel]
+  [DirectorySearchModel]
+  [WorkerCategoryModel]
+}
+
+package "Portal.Services" {
+  [IClockingService]
+  [INewsService]
+  [IDirectoryService]
+  [IWorkerCategoryService]
+  [IAuditLogger]
+  [ClockingService]
+  [NewsService]
+  [DirectoryService]
+  [WorkerCategoryService]
+  [AuditInterceptor]
+}
+
+package "Portal.Infrastructure" {
+  [ILdapGateway]
+  [IPersistence]
+  [LdapGateway]
+  [PersistenceGateway]
+  [PortalDbContext]
+}
+
+package "Portal.Domain" {
+  [ClockingRecord]
+  [NewsItem]
+  [WorkerCategory]
+  [AuditRecord]
+  [DirectoryEntry]
+  [Enums & Value Objects]
+}
+
+Portal.UI ..> Portal.Services : depends on interfaces
+Portal.Services ..> Portal.Infrastructure : depends on interfaces
+Portal.Services ..> Portal.Domain : uses entities
+Portal.Infrastructure ..> Portal.Domain : persists entities
+
+note bottom of Portal.UI
+  Razor Pages (.NET 10)
+  CON-002: No SPA
+  clocking-retry.js for offline
+end note
+
+note bottom of Portal.Services
+  Application services implementing
+  component interfaces (COMP-001..008)
+  DI-injected, testable
+end note
+
+note bottom of Portal.Infrastructure
+  EF Core + PostgreSQL (CON-003)
+  Novell.Directory.Ldap (CON-005)
+  Read-only LDAP (CON-010)
+end note
+
+note bottom of Portal.Domain
+  Entities, enums, value objects
+  No persistence logic
+  No external dependencies
+end note
+
+@enduml
+```
+
+### Testability Entry Points
+
+| Test Point | DI Injection | Observable State | Test Strategy |
+|---|---|---|---|
+| ClockingService | Inject mock IPersistence + mock ILdapGateway | ClockingResult.Success, IsDuplicate, Record | Unit test: idempotency key collision, normal insert, offline timestamp acceptance |
+| NewsService | Inject mock IPersistence + mock IAuditLogger | NewsItem.Status, AuditRecord captured | Unit test: publish creates audit, edit creates audit, unpublish sets status without delete |
+| DirectoryService | Inject mock ILdapGateway | List<DirectoryEntry> with fallback values | Unit test: all attributes present, some attributes missing (R001), no results |
+| WorkerCategoryService | Inject mock IPersistence + mock ILdapGateway + mock IAuditLogger | WorkerCategory saved, AuditRecord captured | Unit test: assign new, update existing, audit trail |
+| LdapGateway | Inject LdapSettings with test server | LdapSearchResult attributes | Integration test: real LDAP query against test AD instance |
+| PersistenceGateway | Inject PortalDbContext with in-memory or test PostgreSQL | DB rows inserted/updated | Integration test: clocking insert, news lifecycle, audit record append |
 ## Interface Contracts
 
 > Placeholder — Designer owns this section. Will be populated with service interfaces and API contracts.
