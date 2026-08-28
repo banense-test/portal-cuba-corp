@@ -1,18 +1,17 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Construction |
 | Status | Draft |
 | Milestone Target | End-of-Construction |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
-| Prior Phase | Elaboration (LCA achieved, 0 open Critical/Major, stakeholder sanction GRANTED) |
+| Prior Phase | Construction C1 (REQUEST_CHANGES — 1 Major, 4 Minor; IOC NOT achieved; stakeholder sanction REFUSED) |
 | Author | Technical Writer (Deployment Discipline) |
 | Audience | Employees (STK-004), HR Administrators (STK-001), Infrastructure team (STK-003) |
-| Coverage | Install + Operate + Use + Maintain for Construction Iteration 1 build (UC-001 through UC-010) |
+| Coverage | Install + Operate + Use + Maintain for Construction C2 build (UC-001 through UC-010) |
+| C2 Evolution | CSV export format corrected per C2-MIN-4 (header: Employee,Date,Time,Direction). Featured news banner (CR-010) confirmed implemented and documented. Offline retry with idempotency (CR-011) confirmed implemented and documented. Directory office filter (CR-015) confirmed implemented and documented. |
 | Styleguide | Terminological contract: "Clock In/Out" (not "punch" or "check-in"), "News item" (not "article" or "post"), "Worker category" (not "employee type" or "classification"), "Directory" (not "phonebook" or "address book"), "Unpublish" (not "hide" or "remove"). Active voice. Task-oriented headings. |
-
 ## Overview
 
 Portal Cuba Corp is the employee portal for Cuba Corp — a single web application that centralizes clock in/out, HR news, and the employee directory into one place accessible from the corporate browser. It replaces shared Excel sheets, mass emails, and the outdated PDF phone directory.
