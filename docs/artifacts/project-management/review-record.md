@@ -544,7 +544,7 @@ Defect_Distribution --> MINOR_4
 
 **Business Modeling Lens (Business Reviewer): PRESERVED** — BM discipline is INACTIVE per DC §4 (`business-process-led = false`). No BM artifacts exist in the project. No BM deltas in Construction C1. Zero prior BR findings to reconcile. Zero new BR findings to record. The Elaboration baseline stands. System UCs trace directly to declared FR-001..FR-010 — no derivation bridge assessment required.
 
-**Overall Disposition: ACCEPT-WITH-CHANGES**
+**Overall Disposition (Technical Lens): ACCEPT-WITH-CHANGES**
 
 The Construction C1 iteration is partially met:
 - ✅ Document artifacts are complete and high-quality
@@ -562,6 +562,35 @@ The Construction C1 iteration is partially met:
 2. Reviewer re-reviews PR #8
 3. Integrator merges approved PR #8 into iteration/C1
 4. Integrator merges iteration/C1 into main via PR #9
+
+---
+
+### Management Lens — IOC Milestone Verdict
+
+**Verdict: CONDITIONAL — IOC NOT ACHIEVED**
+
+The project is at mid-Construction (C1 of 2 planned iterations). The Initial Operational Capability milestone is NOT achieved. The stakeholder has REFUSED sanction to advance, stating: "We cannot advance to Transition because there are still things to finish to have the system with the use cases correctly implemented in construction, which is where we are now. We cannot move forward without the software."
+
+The project continues in Construction C2. No phase transition is authorized.
+
+**Conditions for IOC (must ALL be met before IOC can be granted):**
+
+1. **MAJOR-1 Resolution**: Fix IsFeatured flag (CR-010), merge PR #8 to iteration/C1 baseline
+2. **Deferred Layer Implementation**: Application services, persistence, LDAP gateway, and audit logging must be implemented in C2
+3. **Defect Closure**: All 5 failing tests (Issues #10-#14) must be resolved; 4 Minor findings (MINOR-1..4) must be fixed per stakeholder requirement
+4. **R003 Resolution**: STK-003 OIDC registration must be confirmed OR mock auth formally adopted as primary path; 8 blocked tests must be unblocked
+5. **R007 Mitigation**: C2 capacity analysis must demonstrate the deferred scope is achievable within budget box, or stakeholder must approve a contingency (third iteration, scope reduction)
+6. **Test Coverage**: All 30 TCs must pass (or have documented waivers) before IOC assessment
+7. **Stakeholder Re-consultation**: Stakeholder must be re-consulted after C2 delivery before IOC can be granted
+
+**Management Findings Summary:**
+
+| Finding | Severity | Artifact | Status |
+|---|---|---|---|
+| MR-F1 | Major | Iteration Plan | Open — scope reduction without stakeholder approval |
+| MR-F2 | Minor | Iteration Plan | Open — no C2 budget capacity analysis |
+| MR-F3 | Major | Risk List | Open — R003 no escalation progress |
+| MR-F4 | Minor | Risk List | Open — R007 mitigation insufficient |
 ## Traceability
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
