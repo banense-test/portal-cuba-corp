@@ -6,7 +6,7 @@
 
 <div class="card">
     <h2 class="card-title">My Clocking History</h2>
-    <p style="color:var(--muted);margin-bottom:16px;">@Model.MonthRange.ToString("MMMM yyyy")</p>
+    <p style="color:var(--muted);margin-bottom:16px;">@Model.MonthDisplay</p>
 
     @if (Model.Clockings.Any())
     {

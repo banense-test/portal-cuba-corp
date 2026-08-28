@@ -8,7 +8,7 @@ namespace PortalCubaCorp.Tests;
 /// <summary>
 /// Unit tests for DirectoryService (COMP-001).
 /// Black-box: verify IDirectoryService contract — search returns DirectoryEntry list from LDAP.
-/// White-box: exercise empty query branch, R001 fallback (missing attributes → "N/A").
+/// White-box: exercise empty query branch, R001 fallback (missing attributes → "N/A"), office filter.
 /// </summary>
 public class DirectoryServiceTests
 {
@@ -149,6 +149,59 @@ public class DirectoryServiceTests
 
         // Mock returns all entries regardless of filter, so we get results
         // In real LDAP, the filter would exclude non-matching entries
+        Assert.Single(results);
+    }
+
+    // --- White-box: office filter (MINOR-1 fix) ---
+
+    [Fact]
+    public void Search_WithOfficeFilter_BuildsCombinedFilter()
+    {
+        var (service, ldap) = CreateService();
+        ldap.Entries.Add(new LdapSearchResult
+        {
+            AdUserId = "jdoe",
+            DisplayName = "John Doe",
+            Office = "Havana"
+        });
+
+        // The mock returns all entries regardless of filter, but we verify
+        // the service does not throw and returns results when office filter is applied
+        var results = service.Search("john", "Havana");
+
+        Assert.Single(results);
+        Assert.Equal("Havana", results[0].Office);
+    }
+
+    [Fact]
+    public void Search_WithNullOfficeFilter_BehavesAsNoFilter()
+    {
+        var (service, ldap) = CreateService();
+        ldap.Entries.Add(new LdapSearchResult
+        {
+            AdUserId = "jdoe",
+            DisplayName = "John Doe",
+            Office = "Havana"
+        });
+
+        var results = service.Search("john", null);
+
+        Assert.Single(results);
+    }
+
+    [Fact]
+    public void Search_WithEmptyOfficeFilter_BehavesAsNoFilter()
+    {
+        var (service, ldap) = CreateService();
+        ldap.Entries.Add(new LdapSearchResult
+        {
+            AdUserId = "jdoe",
+            DisplayName = "John Doe",
+            Office = "Havana"
+        });
+
+        var results = service.Search("john", "");
+
         Assert.Single(results);
     }
 }

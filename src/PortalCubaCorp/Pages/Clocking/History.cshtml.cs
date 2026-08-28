@@ -16,7 +16,7 @@ public class HistoryModel : PageModel
     }
 
     public List<ClockingRecord> Clockings { get; set; } = new();
-    public string MonthRange { get; set; } = string.Empty;
+    public string MonthDisplay { get; set; } = string.Empty;
 
     public void OnGet(int? year, int? month)
     {
@@ -27,6 +27,6 @@ public class HistoryModel : PageModel
 
         var employeeId = User.FindFirst("sub")?.Value ?? User.Identity?.Name ?? "unknown";
         Clockings = _clockingService.GetHistory(employeeId, range);
-        MonthRange = new DateTime(y, m, 1).ToString("MMMM yyyy");
+        MonthDisplay = new DateTime(y, m, 1).ToString("MMMM yyyy");
     }
 }
