@@ -316,7 +316,8 @@ public class PresentationTests
         model.OnPostUnpublish(id);
 
         newsSvc.Verify(s => s.Unpublish(id, "hr-user-1"), Times.Once);
-        newsSvc.Verify(s => s.ListAll(), Times.Exactly(2));
+        // OnPostUnpublish calls ListAll() once to refresh the list after unpublish
+        newsSvc.Verify(s => s.ListAll(), Times.Once);
     }
 
     // --- WorkerCategoryModel (V008) — UC-010 ---
