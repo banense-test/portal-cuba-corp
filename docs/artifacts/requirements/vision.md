@@ -5,7 +5,8 @@
 | Phase | Inception |
 | Status | Draft |
 | Milestone Target | End of Inception |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
+| Date | 2026-08-28 |
 
 ## Problem Statement
 
@@ -38,8 +39,8 @@ Cuba Corp (200 employees, 3 offices) manages three core HR processes with fragme
 **Who** need centralized clocking, news, and directory access
 **The Portal Cuba Corp** is a web-based employee portal
 **That** replaces Excel sheets, mass emails, and the PDF directory with a single integrated application
-**Unlike** the current fragmented manual tools
-**Our product** provides real-time clocking with confirmation, audited news management, and live AD-backed directory search — all in one responsive web interface accessible from the corporate browser.
+**Unlike** the current fragmented tools (Excel, email, PDF directory)
+**The portal** provides a single point of access for clocking, news, and directory lookup with audit trails and AD integration.
 
 ## Stakeholder Summary
 
@@ -84,18 +85,18 @@ Cuba Corp (200 employees, 3 offices) manages three core HR processes with fragme
 
 ## Features
 
-| Feature ID | Feature | Source | MoSCoW | Volatility | Success Metric |
+| Requirement ID | Feature | Source | MoSCoW | Volatility | Success Metric |
 |---|---|---|---|---|---|
-| FEAT-001 | Clock In/Out with confirmation | FR-001 | Must | Low | AC-001, AC-004, AC-005 |
-| FEAT-002 | Personal clocking history | FR-002 | Must | Low | Employee self-service |
-| FEAT-003 | HR clocking overview | FR-003 | Must | Low | BG-001 (50% HR time reduction) |
-| FEAT-004 | CSV clocking export | FR-004 | Must | Low | BG-002 (eliminate Excel) |
-| FEAT-005 | News publishing with audit | FR-005, NFR-004 | Must | Medium | AC-002 |
-| FEAT-006 | News editing with audit | FR-006, NFR-004 | Must | Medium | AC-002 |
-| FEAT-007 | News unpublish (no delete) | FR-007, CON-013 | Must | Low | Audit trail preserved |
-| FEAT-008 | News reading with filter & banners | FR-008 | Must | Medium | BG-003 (80% adoption) |
-| FEAT-009 | Employee directory search (AD/LDAP) | FR-009, CON-005 | Must | High | AC-003 (<10s lookup) |
-| FEAT-010 | Worker category management | FR-010, CON-009 | Must | Medium | HR self-service |
+| REQ-001 | Clock In/Out with confirmation | FR-001 | Must | Low | AC-001, AC-004, AC-005 |
+| REQ-002 | Personal clocking history | FR-002 | Must | Low | Employee self-service |
+| REQ-003 | HR clocking overview | FR-003 | Must | Low | BG-001 (50% HR time reduction) |
+| REQ-004 | CSV clocking export | FR-004 | Must | Low | BG-002 (eliminate Excel) |
+| REQ-005 | News publishing with audit | FR-005, NFR-004 | Must | Medium | AC-002 |
+| REQ-006 | News editing with audit | FR-006, NFR-004 | Must | Medium | AC-002 |
+| REQ-007 | News unpublish (no delete) | FR-007, CON-013 | Must | Low | Audit trail preserved |
+| REQ-008 | News reading with filter & banners | FR-008 | Must | Medium | BG-003 (80% adoption) |
+| REQ-009 | Employee directory search (AD/LDAP) | FR-009, CON-005 | Must | High | AC-003 (<10s lookup) |
+| REQ-010 | Worker category management | FR-010, CON-009 | Must | Medium | HR self-service |
 
 ### System Boundary Diagram
 
@@ -201,19 +202,19 @@ AC-005 is satisfied by **server-side fault tolerance** plus **one bounded client
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| FEAT-001 | FR-001 | Refines | UC-001 |
-| FEAT-002 | FR-002 | Refines | UC-002 |
-| FEAT-003 | FR-003 | Refines | UC-003 |
-| FEAT-004 | FR-004 | Refines | UC-004 |
-| FEAT-005 | FR-005, NFR-004 | Refines | UC-005 |
-| FEAT-006 | FR-006, NFR-004 | Refines | UC-006 |
-| FEAT-007 | FR-007, CON-013 | Refines | UC-007 |
-| FEAT-008 | FR-008 | Refines | UC-008 |
-| FEAT-009 | FR-009, CON-005 | Refines | UC-009 |
-| FEAT-010 | FR-010, CON-009 | Refines | UC-010 |
-| FEAT-001..004 | BG-001, BG-002 | Derives | AC-001, AC-004 |
-| FEAT-005..008 | BG-003 | Derives | AC-002 |
-| FEAT-009 | BG-002 | Derives | AC-003 |
-| FEAT-001 | AC-005 | Derives | UC-001 (offline retry) |
+| REQ-001 | FR-001 | Refines | UC-001 |
+| REQ-002 | FR-002 | Refines | UC-002 |
+| REQ-003 | FR-003 | Refines | UC-003 |
+| REQ-004 | FR-004 | Refines | UC-004 |
+| REQ-005 | FR-005, NFR-004 | Refines | UC-005 |
+| REQ-006 | FR-006, NFR-004 | Refines | UC-006 |
+| REQ-007 | FR-007, CON-013 | Refines | UC-007 |
+| REQ-008 | FR-008 | Refines | UC-008 |
+| REQ-009 | FR-009, CON-005 | Refines | UC-009 |
+| REQ-010 | FR-010, CON-009 | Refines | UC-010 |
+| REQ-001..004 | BG-001, BG-002 | Derives | AC-001, AC-004 |
+| REQ-005..008 | BG-003 | Derives | AC-002 |
+| REQ-009 | BG-002 | Derives | AC-003 |
+| REQ-001 | AC-005 | Derives | UC-001 (offline retry) |
 | A-002 | R001 | DependsOn | UC-009 |
 | A-001 | CON-004 | DependsOn | All UCs (auth) |
