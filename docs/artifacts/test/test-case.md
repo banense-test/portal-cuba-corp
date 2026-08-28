@@ -1417,7 +1417,7 @@ FBT --> NSU
 | TC-019 | UC-010 (A1) | Tests | WorkerCategoryService.cs, WorkerCategoryServiceTests.cs, MockLdapGateway |
 | TC-020 | UC-003, SEC-002, CON-005 | Tests | ClockingService.cs, MockLdapGateway, OIDC mock |
 | TC-021 | UC-001, MINOR-3, MINOR-4 | Tests | ClockingService.cs, OfflineRetryTests.cs |
-| TC-022 | UC-001, MINOR-2, SEC-001 | Tests | ClockingApiController.cs, OIDC mock |
+| TC-022 | UC-001, MINOR-2, SEC-001 | Tests | ClockingApiController.cs, OIDC mock — **C2 FAIL → Issue #24** |
 | TC-023 | UC-005, UC-008, FR-008, MAJOR-1 | Tests | NewsService.cs, PublishNews.cshtml.cs, NewsServiceTests.cs |
 | TC-024 | UC-006, UC-008, FR-008, MAJOR-1 | Tests | NewsService.cs, NewsServiceTests.cs |
 | TC-025 | UC-005, UC-006, UC-007, CON-013 | Tests | NewsItem.cs, DomainTests.cs |
@@ -1426,11 +1426,11 @@ FBT --> NSU
 | TC-028 | UC-009, R001, CON-005 | Tests | DirectoryService.cs, DirectoryServiceTests.cs |
 | TC-029 | UC-009, AC-003, PERF-003 | Tests | DirectoryService.cs, PerformanceTests |
 | TC-030 | UC-001, NFR-003 | Tests | ClockingService.cs, ClockingApiController.cs, PerformanceTests |
-| TC-031 | UC-001, C2-CRIT-1 | Tests | clocking-retry.js, ClockingApi.cshtml, RoutingBindingTests.cs |
-| TC-032 | UC-006, C2-MAJ-1, FR-006 | Tests | News/Edit.cshtml, News/Edit.cshtml.cs, NewsIntegrationTests.cs |
-| TC-033 | UC-001, C2-MAJ-2, SEC-001 | Tests | clocking-retry.js, ClockingApi.cshtml.cs, AntiforgeryIntegrationTests.cs |
-| TC-034 | UC-001, C2-MIN-2, SEC-001, CON-004 | Tests | ClockingApi.cshtml.cs, SecurityTests.cs |
-| TC-035 | UC-004, C2-MIN-4, FR-004, CR-012 | Tests | ClockingService.cs, RoutingBindingTests.cs |
+| TC-031 | UC-001, C2-CRIT-1 | Tests | clocking-retry.js, ClockingApi.cshtml — **C2 FAIL → Issue #22** |
+| TC-032 | UC-006, C2-MAJ-1, FR-006 | Tests | News/Edit.cshtml, News/Edit.cshtml.cs — **C2 BLOCKED → Issue #25** |
+| TC-033 | UC-001, C2-MAJ-2, SEC-001 | Tests | clocking-retry.js, ClockingApi.cshtml.cs — **C2 FAIL → Issue #23** |
+| TC-034 | UC-001, C2-MIN-2, SEC-001, CON-004 | Tests | ClockingApi.cshtml.cs, SecurityTests.cs — **C2 FAIL → Issue #24** |
+| TC-035 | UC-004, C2-MIN-4, FR-004, CR-012 | Tests | ClockingService.cs, ClockingServiceTests.cs — **C2 FAIL → Issue #12** |
 | TG-001 | NFR-001 | Refines | TC-011 |
 | TG-002 | NFR-002 | Refines | TC-012 |
 | TG-003 | AC-005, NFR-003 | Refines | TC-003, TC-004 |
@@ -1453,18 +1453,22 @@ FBT --> NSU
 | Clocking Client Test Harness | AC-005, clocking-retry.js | Implements | TC-003, TC-004 |
 | FormBindingTestHelper | C2-MAJ-1, form binding | Implements | TC-032, TC-035 |
 | MAJOR-1 finding (C1) | FR-008, V004 | Tests | TC-023, TC-024 — **RESOLVED in PR #20** |
-| MINOR-2 finding (C1) | INT-001, CON-004 | Tests | TC-022 |
+| MINOR-2 finding (C1) | INT-001, CON-004 | Tests | TC-022 — **C2 FAIL → Issue #24** |
 | MINOR-3/MINOR-4 findings (C1) | ClockingService.cs | Tests | TC-021 — **RESOLVED in PR #20** |
-| C2-CRIT-1 finding | UC-001, clocking-retry.js | Tests | TC-031 |
-| C2-MAJ-1 finding | UC-006, FR-006, News/Edit.cshtml | Tests | TC-032 |
-| C2-MAJ-2 finding | UC-001, SEC-001, clocking-retry.js | Tests | TC-033 |
-| C2-MIN-2 finding | UC-001, SEC-001, CON-004 | Tests | TC-034 |
-| C2-MIN-4 finding | UC-004, FR-004, CR-012 | Tests | TC-035 |
+| C2-CRIT-1 finding | UC-001, clocking-retry.js | Tests | TC-031 — **C2 FAIL → Issue #22** |
+| C2-MAJ-1 finding | UC-006, FR-006, News/Edit.cshtml | Tests | TC-032 — **C2 BLOCKED → Issue #25** |
+| C2-MAJ-2 finding | UC-001, SEC-001, clocking-retry.js | Tests | TC-033 — **C2 FAIL → Issue #23** |
+| C2-MIN-2 finding | UC-001, SEC-001, CON-004 | Tests | TC-034 — **C2 FAIL → Issue #24** |
+| C2-MIN-4 finding | UC-004, FR-004, CR-012 | Tests | TC-035 — **C2 FAIL → Issue #12** |
 | C2-MIN-1 finding | UC-009, R001, CON-005 | Tests | TC-028 (existing — DEFERRED to integration testing) |
-| C2-MIN-3 finding | CR-014, test quality | Tests | TC-026 (existing domain tests provide coverage) |
-| ISSUE-13 finding | TC-028, test code | Tests | DirectoryServiceTests.cs |
-| ISSUE-14 finding | test scaffolding | Tests | UnitTest1.cs |
-| INFRA-BLOCK-1 | STK-003, CON-004 | DependsOn | TC-022, TC-028, TC-029 |
+| C2-MIN-3 finding | CR-014, test quality | Tests | UnitTest1.cs — **Issue #14 (pre-existing)** |
+| ISSUE-22 | C2-CRIT-1, UC-001, TC-031 | Derives | ClockingApi.cshtml (missing) |
+| ISSUE-23 | C2-MAJ-2, UC-001, TC-033 | Derives | clocking-retry.js (no antiforgery) |
+| ISSUE-24 | C2-MIN-2, UC-001, TC-022, TC-034 | Derives | clocking-retry.js (employeeId in body) |
+| ISSUE-25 | Missing UI, UC-002..UC-010, TC-032 | Derives | Pages/ (9/10 UCs missing) |
+| ISSUE-14 | C2-MIN-3, test quality | Derives | UnitTest1.cs (placeholder) |
+| ISSUE-12 | C2-MIN-4, FR-004, TC-035 | Derives | ClockingService.cs (CSV header) |
+| INFRA-BLOCK-1 | STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-022, TC-028, TC-029 |
 | INFRA-BLOCK-2 | CON-006, deployment | DependsOn | TC-011, TC-012, TC-029, TC-030, TC-031, TC-032, TC-033 |
 | TD-014 | TC-016 (empty month) | Refines | CSV export boundary |
 | TD-015 | TC-023, MAJOR-1 | Refines | IsFeatured pre-seeded data |
@@ -1479,3 +1483,4 @@ FBT --> NSU
 | C1 Quality Assessment | All TCs, NFR-001..004, AC-001..005 | Derives | This Test Case artifact |
 | C1 Defect Pattern Analysis | Issues #10..#14, MAJOR-1, MINOR-1..4 | Derives | This Test Case artifact |
 | C2 Findings Coverage | C2-CRIT-1, C2-MAJ-1, C2-MAJ-2, C2-MIN-2, C2-MIN-4 | Derives | TC-031..TC-035 |
+| C2 Execution Results | Issues #22..#25, #12, #14 | Derives | This Test Case artifact |
