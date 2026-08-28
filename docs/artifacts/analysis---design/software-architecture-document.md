@@ -949,3 +949,7 @@ Per the Development Case, the Architectural Proof-of-Concept artifact is trigger
 | Construction C1 Governance — CR-002 concurrence | CR-002 (#2), R006, AC-005, COMP-002 | Realizes | PoC-R006 execution |
 | Construction C1 Governance — Implementation View refinement | ADR-001, CON-001 | Refines | All components (project naming, ILdapConnection, domain entities) |
 | Construction C1 Governance — Audit transaction observation | NFR-004, COMP-008, COMP-003 | DependsOn | Implementer (transaction boundary enforcement) |
+| Construction C2 Governance — Implementation View delivery status | ADR-001, CON-001 | Refines | All components (C1 delivery status, C2 targets) |
+| Construction C2 Governance — CR-011 idempotency key scoping | CR-011 (#11), AC-005, COMP-002 | Refines | Data View (UNIQUE(employee_id, idempotency_key)), Implementation View |
+| Construction C2 Governance — Design Model contract alignment | Design Model (C2), INT-001..INT-007 | Refines | Implementation View, Quality (no boundary violations) |
+| Construction C2 Governance — PR #9 architectural review | PR #9, Issue #16 | Realizes | Iteration C1 baseline merge (architectural sign-off) |
