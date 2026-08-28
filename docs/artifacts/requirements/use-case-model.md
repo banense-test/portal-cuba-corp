@@ -7,7 +7,7 @@
 | Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
 | Prior Phase | Elaboration (LCA achieved — 0 Critical, 0 Major open; stakeholder sanction GRANTED) |
-| Evolution | Construction Iter 1: Requirements baseline preserved — no approved CR affects scope or NFRs. All Elaboration implementation decisions (offline retry with idempotency key in UC-001, audit trail in UC-005/006/007/010, AD read-only in UC-009/010) already reflected in Elaboration baseline. Document Control updated to Construction phase. Construction Iter 2: CR-010 (IsFeatured flag) applied to UC-005 and UC-006 — IsFeatured is [DERIVED — from FR-008, awaiting stakeholder confirmation] enabling the featured news banner in UC-008. Use-Case Diagram title updated to Construction. |
+| Evolution | Construction Iter 1: Requirements baseline preserved — no approved CR affects scope or NFRs. All Elaboration implementation decisions (offline retry with idempotency key in UC-001, audit trail in UC-005/006/007/010, AD read-only in UC-009/010) already reflected in Elaboration baseline. Document Control updated to Construction phase. Construction Iter 2: CR-010 (IsFeatured flag) — [DERIVED] marker RETIRED. CR-010 was CCB-approved (Construction C1), which constitutes stakeholder confirmation. IsFeatured is now an approved extension of FR-008's featured banner requirement, no longer pending confirmation. UC-005 and UC-006 updated to reflect approved status. Use-Case Diagram and Traceability updated to remove [DERIVED] marker. CR-011 (idempotency key) remains reflected in UC-001 from Elaboration baseline — no changes needed. |
 ## Use-Case Diagram
 ```plantuml
 @startuml
