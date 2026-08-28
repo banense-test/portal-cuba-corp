@@ -511,9 +511,124 @@ Defect_Distribution --> MINOR_4
 | **Cost** | 🟡 YELLOW | Budget box ~10.4M tokens sized from Elaboration average; C2 load may exceed box; no cost overrun yet but risk is high |
 | **Quality** | 🔴 RED | 20 PASS, 5 FAIL, 8 BLOCKED of 30 TCs; 0% defect closure rate; 8 tests blocked by infrastructure dependencies |
 ## Resolutions and Actions
-
 ### Prior Finding Closure
 - **F1 (Minor, Test Case)**: Resolved in Elaboration iter 2. TD-NNN prefix entries removed from traceability table. No action needed this iteration.
+
+### Review Calendar — Construction Iteration Cadence
+
+```plantuml
+@startuml
+title Construction Review Cadence — Per-Iteration Review Rhythm + IOC Milestone
+
+|Review Coordinator|
+start
+:Schedule Iteration Plan Review\nfor Construction C1;
+:Distribute agenda + entry criteria\n48h in advance;
+if (Artifacts in target state?) then (yes)
+  :Conduct Iteration Plan Review;
+else (no)
+  :Block review — escalate\nto Project Manager;
+  stop
+endif
+
+|Implementer|
+:Execute C1 development\n(presentation layer, tests);
+
+|Review Coordinator|
+:Schedule PRA Review\nat C1 mid-iteration;
+:Conduct PRA Review\n(monitor health, risks, progress);
+
+|Reviewer|
+:Review PR #8 (feature code)\n+ document artifacts;
+:Record findings\n(MAJOR-1, MINOR-1..4);
+
+|Management Reviewer|
+:Conduct IOC Milestone Assessment\n(scope, schedule, cost, quality);
+
+|Review Coordinator|
+:Schedule Iteration Evaluation\nCriteria Review;
+:Verify exit criteria:\n - 0 open Critical/Major?\n - Planned UCs implemented?\n - Tests passing?;
+if (Exit criteria met?) then (no)
+  :Record findings;\nUpdate Finding Tracker;
+  :Schedule Iteration Acceptance Review\n(PARTIAL — document gaps);
+else (yes)
+  :Schedule Iteration Acceptance Review\n(FULL);
+endif
+
+:Compile IOC Review Package;\nConsolidate cross-lens findings;
+:Verify stakeholder sanction;
+
+if (Stakeholder sanction: GRANTED?) then (no)
+  :IOC NOT achieved;\nAuto-iterate to C2;
+  :Schedule C2 Iteration Plan Review;
+  :Schedule C2 PRA + Acceptance Reviews;
+  :Re-schedule IOC Milestone Review\nfor end of C2;
+else (yes)
+  :IOC achieved;\nPhase exit sanctioned;
+  :Schedule PR Milestone Review\n(Transition);
+endif
+
+stop
+@enduml
+```
+
+### Finding Tracker — Construction C1
+
+| ID | Severity | Lens | Artifact | Finding | Owner | Deadline | Status | Escalation |
+|---|---|---|---|---|---|---|---|---|
+| MAJOR-1 | Major | Technical | PR #8 (PublishNews.cshtml.cs, NewsService.cs, NewsItem.cs) | IsFeatured not implemented — FR-008 featured news banner non-functional | Implementer | C2 start | Open | Blocks merge to iteration/C1 |
+| MINOR-1 | Minor | Technical | PR #8 (Directory.cshtml.cs) | DirectorySearchModel missing Office filter parameter | Implementer | C2 start | Open | — |
+| MINOR-2 | Minor | Technical | PR #8 (IClockingService.cs) | RecordClocking method signature mismatch with INT-001 | Implementer | C2 start | Open | — |
+| MINOR-3 | Minor | Technical | PR #8 (ClockingApiController.cs) | Idempotency key not validated server-side (AC-005) | Implementer | C2 start | Open | — |
+| MINOR-4 | Minor | Technical | PR #8 (OfflineRetryTests.cs) | Missing 5-minute expiry boundary test (AC-005) | Implementer | C2 start | Open | — |
+| MR-F1 | Major | Management | Iteration Plan | Scope reduction (5 of 7 objectives deferred) without stakeholder approval | Project Manager | C2 start | Open | Governance gap — stakeholder must approve scope changes before execution |
+| MR-F2 | Minor | Management | Iteration Plan | No C2 budget capacity analysis for deferred scope | Project Manager | C2 start | Open | — |
+| MR-F3 | Major | Management | Risk List | R003 OIDC registration no escalation progress; 8 tests blocked | Project Manager | C2 start | Open | Escalate to STK-003; activate mock auth contingency if no response by C2 start |
+| MR-F4 | Minor | Management | Risk List | R007 mitigation insufficient — no capacity assessment or fallback plan | Project Manager | C2 start | Open | — |
+
+**Finding Lifecycle:**
+
+```plantuml
+@startuml
+title Finding Lifecycle — State Machine
+
+[*] --> Open : Finding recorded\nvia record_artifact_finding
+
+Open --> Assigned : Review Coordinator\nassigns owner + deadline
+Assigned --> InProgress : Owner begins\nremediation
+InProgress --> Resolved : Owner confirms\nfix applied
+Resolved --> Verified : Review Coordinator\nverifies corrective action
+Verified --> Closed : resolve_artifact_finding\ncalled by originating lens
+
+Open --> Escalated : Deadline missed\n(>1 business day)
+Escalated --> Assigned : PM intervenes\nnew deadline set
+Escalated --> Closed : Stakeholder decision\n(waiver or deferral)
+
+Closed --> [*]
+
+note right of Open
+  Every finding MUST have:
+  - Owner
+  - Severity (Critical/Major/Minor)
+  - Resolution deadline
+end note
+
+note right of Verified
+  Closure requires tool call
+  by the SAME lens that
+  emitted the finding.
+  Narrative "resolved" is
+  NOT a resolution.
+end note
+
+note right of Escalated
+  Overdue findings escalate
+  to Project Manager within
+  1 business day of deadline miss.
+end note
+
+@enduml
+```
 
 ### Current Iteration Actions
 
@@ -524,8 +639,51 @@ Defect_Distribution --> MINOR_4
 | Resolve MINOR-2: Align IClockingService signature with INT-001 | Implementer | High | Open |
 | Resolve MINOR-3: Add server-side idempotency key validation | Implementer | High | Open |
 | Resolve MINOR-4: Add 5-minute expiry boundary test | Implementer | High | Open |
+| Resolve MR-F1: Revise Iteration Plan with stakeholder-approved scope reduction | Project Manager | Blocking | Open |
+| Resolve MR-F2: Add C2 budget capacity analysis to Iteration Plan | Project Manager | High | Open |
+| Resolve MR-F3: Escalate R003 to STK-003; activate mock auth contingency | Project Manager | Blocking | Open |
+| Resolve MR-F4: Expand R007 mitigation with capacity assessment + fallback | Project Manager | High | Open |
 | Re-review PR #8 after rework | Reviewer | After rework | Pending |
 | Merge approved PR #9 (integration record) | Integrator | Normal | Approved |
+
+### Review Event Interaction
+
+```plantuml
+@startuml
+title Review Event Interaction — Sequence
+
+participant "Review Coordinator" as RC
+participant "Reviewer (Technical)" as REV
+participant "Management Reviewer" as MR
+participant "Business Reviewer" as BR
+participant "Artifact Authors" as AUTH
+participant "Project Manager" as PM
+participant "Stakeholder" as STK
+
+RC -> AUTH : Request artifacts in target state\n(48h before review)
+AUTH -> RC : Deliver artifacts + evidence
+RC -> REV : Distribute review package\n(agenda, criteria, artifacts)
+RC -> MR : Distribute IOC review package\n(scope, budget, risk data)
+RC -> BR : Notify BM INACTIVE\n(no review required)
+
+REV -> REV : Evaluate artifacts\nagainst checklists
+REV -> RC : Submit findings\n(MAJOR-1, MINOR-1..4)
+
+MR -> MR : Evaluate IOC criteria\n(scope, schedule, cost, quality)
+MR -> RC : Submit management findings\n(MR-F1..F4)
+
+RC -> RC : Consolidate findings\ninto Finding Tracker
+RC -> PM : Escalate overdue findings\n(if any deadlines missed)
+
+RC -> STK : Present consolidated review\nresults + stakeholder question
+STK -> RC : Sanction decision\n(REFUSED)
+
+RC -> RC : Record milestone verdict\n(requiresIteration = true)
+RC -> AUTH : Communicate rework actions\nfor next iteration
+
+note over RC, STK : Stakeholder sanction REFUSED\n→ Auto-iterate to C2\n→ No phase transition authorized
+@enduml
+```
 
 ### SCM Evidence
 
@@ -538,6 +696,105 @@ Defect_Distribution --> MINOR_4
 | PR #8 terminal decision | REQUEST_CHANGES (review 5052523905) |
 | PR #9 terminal decision | APPROVED (review 5052524021) |
 
+### Review Effectiveness Metrics — Construction C1
+
+```plantuml
+@startuml
+title Construction C1 Review Effectiveness — Metrics Dashboard
+
+start
+:Review Coverage;
+note
+  Artifacts planned for review: 8 documents + 2 PRs = 10
+  Artifacts formally reviewed: 8 documents + 2 PRs = 10
+  Coverage: 100%
+  
+  By type:
+  - Design Model: PASS (0 findings)
+  - Test Case: PASS (0 findings, 1 prior resolved)
+  - SAD: PASS (0 findings)
+  - Use-Case Model: PASS (0 findings)
+  - Supplementary Spec: PASS (0 findings)
+  - User Documentation: PASS (0 findings)
+  - Change Request: PASS (0 findings)
+  - Review Record: PASS (0 findings)
+  - PR #8: NEEDS REWORK (1 Major, 4 Minor)
+  - PR #9: APPROVED (0 findings)
+end note
+
+:Defect Density;
+note
+  Document artifacts: 0 defects / 8 artifacts = 0.0
+  Code (PR #8): 5 defects / ~[ASSUMPTION — KLOC not measured]
+  
+  By severity:
+  - Critical: 0
+  - Major: 1 (MAJOR-1: IsFeatured)
+  - Minor: 4 (MINOR-1..4)
+  - Management Major: 2 (MR-F1, MR-F3)
+  - Management Minor: 2 (MR-F2, MR-F4)
+end note
+
+:Defect Removal Efficiency;
+note
+  Defects found in review: 9 total
+  Defects found in test: 5 FAIL + 8 BLOCKED = 13
+  DRE = 9 / (9 + 13) = 40.9%
+  
+  Interpretation: Below 50% — more defects
+  escaped to test than were caught in review.
+  Indicates review process needs strengthening
+  for code artifacts (document review is effective).
+end note
+
+:Rework Effort;
+note
+  Open findings requiring rework: 9
+  - MAJOR-1: IsFeatured implementation (blocking)
+  - MINOR-1..4: Code fixes (high priority)
+  - MR-F1..F4: Plan + risk updates (management)
+  
+  Rework status: 0% closed this iteration
+  All findings carry forward to C2.
+end note
+
+:Trend Analysis;
+note
+  First Construction review — no prior
+  Construction data for comparison.
+  
+  Elaboration comparison:
+  - Elaboration: 3 open findings at LCA
+    (M1, M2, F1) → all resolved in Elab iter 2
+  - Construction C1: 9 open findings
+    → 0% closure rate this iteration
+  
+  Indicator: Review debt is accumulating.
+  C2 must prioritize closure.
+end note
+
+stop
+@enduml
+```
+
+**Metrics Interpretation:**
+
+| Metric | Value | Assessment |
+|---|---|---|
+| Review Coverage | 100% (10/10 artifacts) | ✅ Excellent — all planned artifacts received formal review |
+| Defect Density (Documents) | 0.0 defects/artifact | ✅ Excellent — document artifacts are high-quality |
+| Defect Density (Code) | 5 defects in PR #8 | 🟡 Acceptable for first code review; KLOC not measured `[ASSUMPTION — requires validation]` |
+| Defect Removal Efficiency | 40.9% (9 review / 22 total) | 🔴 Below 50% — more defects escaped to test than caught in review; code review process needs strengthening |
+| Rework Closure Rate | 0% (0/9 closed) | 🔴 All findings carry forward — no rework completed this iteration |
+| Review Debt | 9 open findings | 🔴 High — all 9 findings are from this iteration with 0% closure |
+
+**Escalation Notices:**
+
+| Finding | Escalation Target | Reason | Date |
+|---|---|---|---|
+| MR-F1 (Major) | Project Manager + Stakeholder | Scope reduction without stakeholder approval — governance gap | 2026-08-28 |
+| MR-F3 (Major) | Project Manager + STK-003 | R003 OIDC registration blocking 8 tests — external dependency unresolved | 2026-08-28 |
+| MAJOR-1 (Major) | Project Manager | Blocks FR-008 and PR #8 merge — highest-priority rework for C2 | 2026-08-28 |
 ## Disposition
 ### Iteration Acceptance: PARTIALLY MET
 
