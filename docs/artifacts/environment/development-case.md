@@ -190,27 +190,30 @@ All 6 OPTIONAL artifacts re-evaluated against §5.2 trigger conditions for Elabo
 **Exit criteria:** PoC report confirms LDAP attribute mapping works against real AD, OR gaps are documented with remediation actions for STK-003.
 
 ## Roles and Ownership
-
 All 25 roles from the IARI baseline are active. No roles are merged, omitted, or reassigned. Primary ownership of all 16 CORE artifacts is fixed per the baseline allowlist.
 
-### Project-Specific Role Notes (Updated for Elaboration)
+### Project-Specific Role Notes (Updated for Elaboration Iter 2)
 
-| Role | Project-Specific Context (Elaboration) |
+| Role | Project-Specific Context (Elaboration Iter 2) |
 |---|---|
-| SoftwareArchitect | SAD baselined with 4+1 views, 8 components (COMP-001..COMP-008), 5 ADRs. Must design and oversee Architectural PoC for R001 (LDAP attribute validation). Version policy reconciled — .NET 10 pinned. |
-| SystemAnalyst | Use-Case Model detailed to Elaboration depth — all 10 UCs with activity diagrams, scenarios, and flow specifications. Supplementary Specification includes cross-cutting mechanisms (OIDC auth, LDAP read, audit trail). |
-| Designer | Design Model evolving — class diagrams, use-case realizations, baseline migration scripts committed. Consumes SAD architecture and UC Model. |
+| SoftwareArchitect | SAD DRAFT — not yet BASELINED. M1/M2 interface mismatches (PR #4) must be resolved before baselining. Must design and oversee Architectural PoC for R001 (LDAP attribute validation). PoC results PENDING — MR-F1 (Major) open. Version policy reconciled — .NET 10 pinned. |
+| SystemAnalyst | Use-Case Model detailed to Elaboration depth — all 10 UCs with activity diagrams, scenarios, and flow specifications. No findings on requirements artifacts. |
+| Designer | Design Model evolving — class diagrams, use-case realizations, baseline migration scripts committed. **Design Model is the contract** — implementation must conform, not the reverse (Process Improvement Note #2). M1 (IAuditLogger INT-005) and M2 (IPersistence INT-007) interface mismatches must be resolved in the Design Model and implementation. |
 | UserInterfaceDesigner | Must implement mandatory custom design at `docs/inputs/employee-portal-design.html` (CON-011) — visual layer is authoritative. Razor Pages layout (CON-002). |
-| Implementer | Razor Pages server-rendered UI (CON-002); PostgreSQL data access via Npgsql (ADR-002); LDAP queries via Novell.Directory.Ldap (ADR-003); OIDC token validation via Keycloak (ADR-005). Implementation begins against baselined architecture. |
+| Implementer | Must resolve M1 (IAuditLogger signature mismatch) and M2 (IPersistence transaction API mismatch) from PR #4 review. Implementation must conform to Design Model interfaces — any deviation requires a CR to update the Design Model first (Process Improvement Note #2). |
 | DatabaseDesigner | Minimal local schema: Clocking, News, NewsAudit, WorkerCategory (AD user id → category only, CON-009). Baseline migration scripts with forward+rollback committed to Design Model. |
-| TestDesigner | Cross-browser testing (Chrome + Edge, CON-008); LDAP attribute consistency testing across 3 offices (R001); offline retry scenario testing (R006, AC-005). Critical test paths depend on STK-003 providing test AD and OIDC client. |
+| TestDesigner | **F1 finding resolved:** TC-NNN is the canonical test case ID prefix. TD-NNN is NOT valid. Cross-browser testing (Chrome + Edge, CON-008); LDAP attribute consistency testing across 3 offices (R001); offline retry scenario testing (R006, AC-005). Critical test paths depend on STK-003 providing test AD and OIDC client. Test execution was BLOCKED in Iter 1 by PR #4 interface mismatches. |
+| TestManager | Test execution blocked in Iter 1 (0/5 configs run) due to PR #4 interface mismatches. Must verify test execution unblocked after M1/M2 resolution. |
 | DeploymentManager | Internal Windows Server deployment (CON-006); no cloud; corporate network only (CON-007). Deployment View baselined in SAD. |
-| ConfigurationManager | CI pipeline (`.github/workflows/`), branch strategy, build automation — active in Elaboration. |
-| ProcessEngineer | Development Case evolved for Elaboration. Tool environment verification in progress. Process support active during iteration. |
+| ConfigurationManager | CI pipeline (`.github/workflows/`), branch strategy, build automation — still pending configuration. Not yet verified working. |
+| ProcessEngineer | Development Case evolved for Elaboration Iter 2. F1 finding resolved (TC-NNN declared canonical). Process improvement notes added from Iteration Assessment lessons learned. Tool environment verification updated — CI pipeline, CONTRIBUTING.md, and lint config still pending. |
+| ProjectManager | Iteration Plan must use Elaboration actuals for budget-boxing (not Inception rates). All findings (Major AND Minor) must be resolved before stakeholder sanction — STK-001 directive. Risk status MITIGATING without PoC evidence is insufficient (Process Improvement Note #3). |
+| Reviewer | Must verify interface conformance as a mandatory review checkpoint (Process Improvement Note #2). All findings — including Minor — must be tracked to closure before milestone sanction. |
+| CodeReviewer | Must verify implementation interfaces match Design Model contracts. M1 and M2 findings (PR #4) must be verified resolved in Iter 2. |
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Elaboration Role-Artifact Responsibility Matrix
+title Portal Cuba Corp — Elaboration Iter 2 Role-Artifact Responsibility Matrix
 
 skinparam classAttributeIconSize 0
 
@@ -218,7 +221,8 @@ class SoftwareArchitect {
   + SAD (4+1 views, 8 components)
   + ADR-001..ADR-005
   + Version Policy reconciliation
-  + Architectural PoC (R001)
+  + Architectural PoC (R001) — PENDING
+  + M1/M2 resolution required before BASELINE
 }
 
 class SystemAnalyst {
@@ -230,6 +234,7 @@ class Designer {
   + Design Model (classes, realizations)
   + Use-Case Realizations
   + Baseline migration scripts
+  + DESIGN MODEL IS THE CONTRACT
 }
 
 class DatabaseDesigner {
@@ -245,31 +250,37 @@ class UserInterfaceDesigner {
 class Implementer {
   + Implementation Model
   + Source Code
+  + M1: IAuditLogger fix (INT-005)
+  + M2: IPersistence fix (INT-007)
 }
 
 class TestDesigner {
-  + Test Cases (per UC)
+  + Test Cases (per UC) — TC-NNN prefix ONLY
   + R001 LDAP attribute coverage
   + R006 offline retry scenarios
+  + F1 RESOLVED: TC-NNN canonical
 }
 
 class TestManager {
   + Test Evaluation Summary
+  + Test execution BLOCKED Iter 1
 }
 
 class ProjectManager {
-  + Iteration Plan
+  + Iteration Plan (Elaboration actuals)
   + Iteration Assessment
-  + Risk List
+  + Risk List (PoC evidence required)
 }
 
 class ProcessEngineer {
   + Development Case (this artifact)
   + Process Configuration
+  + F1 finding resolved
+  + Process improvement notes added
 }
 
 class ConfigurationManager {
-  + CI/CD Pipeline
+  + CI/CD Pipeline — PENDING
   + Branch Strategy
 }
 
@@ -279,6 +290,12 @@ class TechnicalWriter {
 
 class Reviewer {
   + Review Record
+  + Interface conformance checkpoint
+}
+
+class CodeReviewer {
+  + PR #4 review — M1/M2 open
+  + Interface conformance verification
 }
 
 class ChangeControlManager {
@@ -304,34 +321,41 @@ UserInterfaceDesigner --> SoftwareArchitect : consumes SAD
 ProcessEngineer --> SoftwareArchitect : integrates tailoring
 ProcessEngineer --> SystemAnalyst : integrates tailoring
 ProcessEngineer --> Designer : integrates tailoring
-ProcessEngineer --> TestDesigner : integrates tailoring
+ProcessEngineer --> TestDesigner : integrates tailoring + F1 fix
 ConfigurationManager --> ProcessEngineer : references DC
 ProjectManager --> ProcessEngineer : references DC
 Reviewer --> ProcessEngineer : reviews DC
+CodeReviewer --> Designer : verifies interface conformance
+CodeReviewer --> Implementer : verifies M1/M2 fixes
 
 note bottom of ProcessEngineer
-  Elaboration tailoring integrates
-  discipline-expert input from
-  Architect, Analyst, Designer,
-  and TestDesigner before baseline.
+  Iter 2: F1 finding resolved (TC-NNN).
+  Process improvement notes added
+  from 5 Iteration Assessment lessons.
+  Tool environment: CI, CONTRIBUTING.md,
+  lint config still PENDING.
 end note
 
 note right of SoftwareArchitect
-  Elaboration: architecture baselined.
-  4+1 views complete. PoC for R001
-  (LDAP attribute mapping) triggered.
+  SAD DRAFT — not BASELINED.
+  M1/M2 must be resolved.
+  PoC results PENDING (MR-F1 open).
 end note
 
 note right of TestDesigner
-  Critical test paths:
-  R001: LDAP attribute coverage
-  R006: offline retry scenarios
-  STK-003: test AD/OIDC dependency
+  F1 RESOLVED: TC-NNN is canonical.
+  TD-NNN is NOT valid.
+  Test execution was BLOCKED in Iter 1.
+end note
+
+note right of Implementer
+  M1: IAuditLogger (INT-005) fix
+  M2: IPersistence (INT-007) fix
+  Design Model is the contract.
 end note
 
 @enduml
 ```
-
 ## Guidelines and Procedures
 ### Project-Specific Guidelines (Referenced, Not Authored Here)
 
