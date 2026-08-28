@@ -2254,32 +2254,27 @@ title Primary Screen: Worker Categories (HR)
 ## Capsules, Protocols and Signals
 ### NewsItem Lifecycle State Machine (CLS-017)
 
-The NewsItem entity has three lifecycle states governed by CON-013 (no hard delete) and NFR-004 (audit trail). Every transition is audited via `IAuditLogger.LogAudit()` within `IPersistence.ExecuteInTransactionAsync()`.
+The NewsItem entity has two lifecycle states governed by CON-013 (no hard delete) and NFR-004 (audit trail). Every transition is audited via `IAuditLogger.LogAudit()`. The implementation creates NewsItem directly as `Published` — there is no `Draft` state because no approval workflow exists in the declared scope.
+
+> **Construction C2 Update:** The `Draft` state has been removed. The prior 3-state model (Draft → Published → Unpublished) assumed an intermediate creation step that does not exist in the implementation or the UC-005 flow. NewsItem is created as `Published` immediately upon `Publish()` call.
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — NewsItem Lifecycle State Machine (CLS-017)
+title Portal Cuba Corp — NewsItem Lifecycle State Machine (CLS-017, Construction C2)
 
 skinparam classAttributeIconSize 0
 
-[*] --> Draft : NewsService.PublishNews()
-
-Draft --> Published : PublishNews()\n(authorId, timestamp)
-Published --> Published : EditNews()\n(authorId, timestamp)\n[updates UpdatedBy/UpdatedAt]
-Published --> Unpublished : UnpublishNews()\n(authorId, timestamp)
-Unpublished --> Published : PublishNews()\n(re-publish allowed)
-
-note right of Draft
-  Initial state when created.
-  Transition to Published is
-  immediate (no approval workflow).
-  Audit: NewsPublished action.
-end note
+[*] --> Published : NewsService.Publish()\n(authorId, timestamp)
+Published --> Published : Edit()\n(authorId, timestamp)\n[updates UpdatedAt]
+Published --> Unpublished : Unpublish()\n(authorId, timestamp)
+Unpublished --> Published : Publish()\n(re-publish allowed)
 
 note right of Published
+  Initial state when created.
   Visible to employees in news feed.
   Editable by HR (UC-006).
-  Audit: NewsEdited on each edit.
+  Audit: AuditAction.Publish on creation,
+  AuditAction.Edit on each edit.
   CON-013: never hard-deleted.
 end note
 
@@ -2288,7 +2283,7 @@ note right of Unpublished
   Record preserved for audit trail
   (CON-013, NFR-004).
   Can be re-published by HR.
-  Audit: NewsUnpublished action.
+  Audit: AuditAction.Unpublish.
 end note
 
 @enduml
@@ -2298,11 +2293,10 @@ end note
 
 | From State | To State | Trigger | Audit Action (CLS-015) | UC |
 |---|---|---|---|---|
-| (new) | Draft | PublishNews() | NewsPublished | UC-005 |
-| Draft | Published | (immediate) | — | UC-005 |
-| Published | Published | EditNews() | NewsEdited | UC-006 |
-| Published | Unpublished | UnpublishNews() | NewsUnpublished | UC-007 |
-| Unpublished | Published | PublishNews() (re-publish) | NewsPublished | UC-005 |
+| (new) | Published | Publish() | Publish | UC-005 |
+| Published | Published | Edit() | Edit | UC-006 |
+| Published | Unpublished | Unpublish() | Unpublish | UC-007 |
+| Unpublished | Published | Publish() (re-publish) | Publish | UC-005 |
 
 > **CON-013 enforcement:** No transition leads to a "Deleted" state. The Unpublished state is terminal unless HR explicitly re-publishes. The record remains in the `news_items` table indefinitely.
 
@@ -2314,7 +2308,7 @@ The design exposes dependency injection seams and observable state at every laye
 |---|---|---|---|
 | ClockingService → Persistence | INT-007 (IPersistence) | In-memory EF Core DbContext or mock IPersistence | ClockingRecord.IdempotencyKey uniqueness; ClockingResult.IsDuplicate flag |
 | ClockingService → LDAP | INT-006 (ILdapGateway) | Mock returning preset LdapSearchResult | Employee name resolution in clocking list |
-| NewsService → Persistence | INT-007 (IPersistence) | In-memory EF Core DbContext | NewsItem.Status transitions; NewsItem.UpdatedBy/UpdatedAt |
+| NewsService → Persistence | INT-007 (IPersistence) | In-memory EF Core DbContext | NewsItem.Status transitions; NewsItem.UpdatedAt |
 | NewsService → Audit | INT-005 (IAuditLogger) | Spy recording LogAudit calls | AuditAction enum; entityType; entityId; author; timestamp |
 | DirectoryService → LDAP | INT-006 (ILdapGateway) | Mock returning LdapSearchResult with missing attributes | DirectoryEntry fields show "N/A" for missing attributes (R001) |
 | WorkerCategoryService → Persistence | INT-007 (IPersistence) | In-memory EF Core DbContext | WorkerCategory upsert (INSERT ... ON CONFLICT UPDATE) |
