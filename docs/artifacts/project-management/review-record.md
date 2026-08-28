@@ -28,13 +28,12 @@
 | Open Findings (Iter 2) | 0 from Reviewer (Technical) lens; 0 from Business Reviewer lens; 0 from Management Reviewer lens; cross-lens: CR-MIN-1 (Minor, Code Reviewer — non-blocking) |
 | Review Coverage | 100% (12/12 artifacts reviewed; PR #7 reviewed for LCA sanction; BM discipline confirmed INACTIVE) |
 ## Review Scope and Criteria
-
 ### Review Process Framework
 
 | Review Type | Triggering Activity | Required Artifacts | Reviewer Lens |
 |---|---|---|---|
 | LCA Milestone Review | End-of-Elaboration phase assessment | SAD, UC Model, Design Model, Supp Spec, Risk List, Iteration Plan | Reviewer (Technical) |
-| LCA Management Review | Phase-level milestone assessment | Iteration Plan, Iteration Assessment, Risk List | Management Reviewer |
+| LCA Management Review | Phase-level milestone assessment | Iteration Plan, Iteration Assessment, Risk List, SAD | Management Reviewer |
 | LCA Business Review | Business alignment verification | Vision, UC Model, Supp Spec | Business Reviewer |
 | Code Review (E1/E2) | PR #4/#7 architectural prototype | Source code, test files | Code Reviewer |
 
@@ -50,6 +49,111 @@
 | 6 | Design Model consistent with SAD | **PASS** | M1 (IAuditLogger) RESOLVED — Design Model INT-005 matches SAD; M2 (IPersistence) RESOLVED — Design Model INT-007 matches SAD; Code Reviewer verified in Iter 2 |
 | 7 | PoC decisions recorded | **PASS** | Architectural Proof-of-Concept artifact: R001 single-mechanism, R006 single-mechanism, R003 analysis-only |
 | 8 | CI build green | **PASS** | iteration/E1: SUCCESS (2026-08-28 12:11:30Z) |
+
+### Management Reviewer — LCA Compliance Table (Iter 2)
+
+```plantuml
+@startuml
+title LCA Milestone Compliance Table — Management Reviewer (Elaboration Iter 2)
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+class "LCA Compliance Table" as T {
+  + Criterion : Status : Evidence : Verdict
+  ____
+  1. Architecture Baselined : PASS : SAD Status=BASELINED, 4+1 views, 8 COMPs, 5 ADRs : MET
+  2. Critical Risks Retired : PASS : R001 MITIGATED (PoC confirmed), R006 MITIGATED (PoC confirmed) : MET
+  3. R003 OIDC Status : PASS : MONITORING, mock auth contingency active : MET
+  4. M1 IAuditLogger Resolved : PASS : Code Reviewer Iter 2 APPROVED, PR #4 : MET
+  5. M2 IPersistence Resolved : PASS : Code Reviewer Iter 2 APPROVED, PR #4 : MET
+  6. F1 TD-NNN Prefix Resolved : PASS : Technical Lens Iter 2 RESOLVED : MET
+  7. MR-F1 Risk Evidence : PASS : PoC artifact exists, R001/R006 decisions recorded : MET
+  8. MR-F2 Iteration Count : PASS : Narrative corrected 6 to 7 iterations : MET
+  9. Construction Plan Credibility : PARTIAL : Grounded in Inception actuals; Elaboration actuals pending close : MET-WITH-ASSUMPTION
+  10. Stakeholder Sanction : PASS : STK-001 GRANTED : MET
+  ____
+  OVERALL VERDICT : GO : 10/10 criteria MET (9 PASS + 1 PARTIAL-acceptable) : LCA ACHIEVED
+}
+
+note right of T
+  LCA Milestone: Lifecycle Architecture
+  Phase: Elaboration, Iteration 2, Cycle 1
+  Date: 2026-08-28
+  Reviewer: Management Reviewer
+  Stakeholder Sanction: GRANTED
+end note
+
+@enduml
+```
+
+### Management Reviewer — Risk Retirement State Machine
+
+```plantuml
+@startuml
+title Risk Retirement State Machine — Inception to Elaboration End
+
+skinparam shadowing false
+
+state "R001: AD LDAP Attributes\nExposure=9, HIGH" as R001 {
+  state "INCEPTION: IDENTIFIED\nP=3, I=3, Exp=9" as R001_I
+  state "ELAB ITER 1: MITIGATING\nPoC triggered, no results" as R001_E1
+  state "ELAB ITER 2: MITIGATED\nPoC single-mechanism CONFIRMED" as R001_E2
+  [*] --> R001_I
+  R001_I --> R001_E1 : Risk accepted, mitigation planned
+  R001_E1 --> R001_E2 : PoC executed, decision recorded
+}
+
+state "R006: Offline Clocking Retry\nExposure=6, SIGNIFICANT" as R006 {
+  state "ELAB ITER 1: MITIGATING\nPoC triggered, no results" as R006_E1
+  state "ELAB ITER 2: MITIGATED\nPoC single-mechanism confirmed" as R006_E2
+  [*] --> R006_E1 : Risk identified (AC-005)
+  R006_E1 --> R006_E2 : PoC executed, decision recorded
+}
+
+state "R003: OIDC Registration\nExposure=6, MODERATE" as R003 {
+  state "ELAB ITER 1: MITIGATING\nExternal dep pending" as R003_E1
+  state "ELAB ITER 2: MONITORING\nMock auth contingency active" as R003_E2
+  [*] --> R003_E1 : Risk identified (CON-004)
+  R003_E1 --> R003_E2 : Analysis-only PoC, contingency prepared
+}
+
+state "R002: Clocking Adoption\nExposure=6, SIGNIFICANT" as R002 {
+  state "IDENTIFIED\nNon-technical, Transition-phase" as R002_S
+  [*] --> R002_S : Accepted, Transition mitigation
+}
+
+state "R004: Performance Under Load\nExposure=4, MODERATE" as R004 {
+  state "IDENTIFIED\nAddressed by architecture" as R004_S
+  [*] --> R004_S : Local PostgreSQL, no network hop
+}
+
+state "R005: UI Design Compliance\nExposure=4, MODERATE" as R005 {
+  state "IDENTIFIED\nAddressed by CON-011" as R005_S
+  [*] --> R005_S : Mandatory custom design
+}
+
+note bottom of R001_E2
+  TREND: HIGH to MITIGATED
+  PoC evidence: single-mechanism CONFIRMED
+  Retirement: COMPLETE
+end note
+
+note bottom of R006_E2
+  TREND: SIGNIFICANT to MITIGATED
+  PoC evidence: single-mechanism confirmed
+  Retirement: COMPLETE
+end note
+
+note bottom of R003_E2
+  TREND: MODERATE to MONITORING
+  External dependency (STK-003)
+  Contingency: mock auth active
+  Retirement: DEFERRED to Construction
+end note
+
+@enduml
+```
 
 ### Compliance Matrix — Technical Lens (Iter 2)
 
@@ -161,7 +265,6 @@ end note
 
 @enduml
 ```
-
 ## Findings
 
 ### Iteration 1 Findings (Prior — Status Update)
