@@ -105,29 +105,27 @@ end note
 @enduml
 ```
 ## Disciplines and Intensity
-
 Discipline intensity per phase is confirmed **per canonical matrix** — no deviations requested.
 
 | Discipline | Active? | Elaboration | Notes |
 |---|---|---|---|
-| Business Modeling | **INACTIVE** | — | See §4 verdict below — confirmed for Elaboration |
-| Requirements | Yes | High | Per canonical matrix — UC Model detailed to Elaboration depth |
-| Analysis & Design | Yes | **Critical** | Per canonical matrix — SAD baselined, Design Model evolving |
-| Implementation | Yes | Medium | Per canonical matrix — implementation begins against baselined architecture |
-| Test | Yes | Medium | Per canonical matrix — test cases designed per UC, R001/R006 critical paths |
+| Business Modeling | **INACTIVE** | — | See §4 verdict below — confirmed for Elaboration Iter 2 |
+| Requirements | Yes | High | Per canonical matrix — UC Model detailed to Elaboration depth, no findings |
+| Analysis & Design | Yes | **Critical** | Per canonical matrix — SAD DRAFT (not BASELINED), Design Model M1/M2 open. Architecture baselining blocked by interface mismatches. |
+| Implementation | Yes | Medium | Per canonical matrix — PR #4 reviewed with M1/M2 findings. Implementer must fix interface mismatches before architecture can be baselined. |
+| Test | Yes | Medium | Per canonical matrix — test cases designed per UC, R001/R006 critical paths. Test execution BLOCKED in Iter 1 (0/5 configs run). F1 resolved (TC-NNN canonical). |
 | Deployment | Yes | Low | Per canonical matrix — single Windows Server, deployment section in SAD |
-| Configuration & Change Management | Yes | Medium | Per canonical matrix — CI pipeline, branch strategy active |
-| Project Management | Yes | Medium | Per canonical matrix — iteration plan, risk monitoring |
-| Environment | Yes | Medium | Per canonical matrix — tool verification, process support |
+| Configuration & Change Management | Yes | Medium | Per canonical matrix — CI pipeline, branch strategy active. CI pipeline NOT YET configured. |
+| Project Management | Yes | Medium | Per canonical matrix — iteration plan, risk monitoring. MR-F2 (iteration count mismatch) open. Budget-boxing must use Elaboration actuals. |
+| Environment | Yes | Medium | Per canonical matrix — tool verification, process support. F1 resolved, process improvement notes added. |
 
-### Business Modeling — INACTIVE (DC §4 Verdict, Confirmed for Elaboration)
+### Business Modeling — INACTIVE (DC §4 Verdict, Confirmed for Elaboration Iter 2)
 
 **Verdict:** `isBusinessProcessLed = false`
 
-**Rationale:** Elaboration re-evaluation confirms the Inception verdict. The stakeholder declared 10 system-level functional requirements (FR-001 through FR-010) describing specific portal features — clock in/out, news management, employee directory, worker category management. These are system feature specifications, not business process models. The SAD (Elaboration baseline) and Use-Case Model (Elaboration detailed) confirm that the business processes (clocking, news publishing, directory lookup) are already defined and stable — the portal digitizes them, it does not redesign them. No business process reengineering, workflow optimization, or organizational change modeling is in scope. Business Modeling remains INACTIVE.
+**Rationale:** Elaboration Iter 2 re-evaluation confirms the Inception and Iter 1 verdict. The stakeholder declared 10 system-level functional requirements (FR-001 through FR-010) describing specific portal features — clock in/out, news management, employee directory, worker category management. These are system feature specifications, not business process models. The SAD (Elaboration draft) and Use-Case Model (Elaboration detailed) confirm that the business processes (clocking, news publishing, directory lookup) are already defined and stable — the portal digitizes them, it does not redesign them. No business process reengineering, workflow optimization, or organizational change modeling is in scope. Business Modeling remains INACTIVE.
 
 **Criteria triggered:** None — all DC §4 criteria evaluated, none triggered.
-
 ## Artifacts and Templates
 ### CORE Artifacts (16) — All Produced
 
