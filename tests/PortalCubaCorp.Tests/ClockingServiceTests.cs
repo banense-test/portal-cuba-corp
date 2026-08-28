@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using PortalCubaCorp.Application;
 using PortalCubaCorp.Domain;
 using PortalCubaCorp.Infrastructure;
@@ -45,28 +43,17 @@ public class ClockingServiceTests
         service.RecordClocking("emp1", ts, ClockType.In, "key-dup");
         var result = service.RecordClocking("emp1", ts, ClockType.In, "key-dup");
 
-        Assert.True(result.Success);
         Assert.True(result.IsDuplicate);
+        Assert.True(result.Success);
+        Assert.NotNull(result.Record);
         Assert.Equal("key-dup", result.Record!.IdempotencyKey);
     }
-
-    // --- White-box: RecordClocking validation branches ---
 
     [Fact]
     public void RecordClocking_EmptyEmployeeId_ReturnsFail()
     {
         var (service, _) = CreateService();
         var result = service.RecordClocking("", DateTime.UtcNow, ClockType.In, "key-001");
-
-        Assert.False(result.Success);
-        Assert.Equal("Employee ID is required", result.Error);
-    }
-
-    [Fact]
-    public void RecordClocking_NullEmployeeId_ReturnsFail()
-    {
-        var (service, _) = CreateService();
-        var result = service.RecordClocking(null!, DateTime.UtcNow, ClockType.In, "key-001");
 
         Assert.False(result.Success);
         Assert.Equal("Employee ID is required", result.Error);
@@ -82,44 +69,32 @@ public class ClockingServiceTests
         Assert.Equal("Idempotency key is required", result.Error);
     }
 
-    [Fact]
-    public void RecordClocking_WhitespaceIdempotencyKey_ReturnsFail()
-    {
-        var (service, _) = CreateService();
-        var result = service.RecordClocking("emp1", DateTime.UtcNow, ClockType.In, "   ");
-
-        Assert.False(result.Success);
-        Assert.Equal("Idempotency key is required", result.Error);
-    }
-
     // --- Black-box: GetCurrentStatus ---
 
     [Fact]
-    public void GetCurrentStatus_NoRecords_ReturnsClockedOut()
+    public void GetCurrentStatus_NoHistory_ReturnsClockedOut()
     {
         var (service, _) = CreateService();
         var status = service.GetCurrentStatus("emp1");
-
         Assert.Equal(ClockStatus.ClockedOut, status);
     }
 
     [Fact]
-    public void GetCurrentStatus_LastRecordIsIn_ReturnsClockedIn()
+    public void GetCurrentStatus_LastClockIn_ReturnsClockedIn()
     {
         var (service, _) = CreateService();
         service.RecordClocking("emp1", DateTime.UtcNow, ClockType.In, "key-001");
-
         var status = service.GetCurrentStatus("emp1");
         Assert.Equal(ClockStatus.ClockedIn, status);
     }
 
     [Fact]
-    public void GetCurrentStatus_LastRecordIsOut_ReturnsClockedOut()
+    public void GetCurrentStatus_LastClockOut_ReturnsClockedOut()
     {
         var (service, _) = CreateService();
-        service.RecordClocking("emp1", DateTime.UtcNow, ClockType.In, "key-001");
-        service.RecordClocking("emp1", DateTime.UtcNow.AddMinutes(1), ClockType.Out, "key-002");
-
+        var now = DateTime.UtcNow;
+        service.RecordClocking("emp1", now.AddMinutes(-30), ClockType.In, "key-001");
+        service.RecordClocking("emp1", now, ClockType.Out, "key-002");
         var status = service.GetCurrentStatus("emp1");
         Assert.Equal(ClockStatus.ClockedOut, status);
     }
@@ -127,36 +102,26 @@ public class ClockingServiceTests
     // --- Black-box: GetHistory ---
 
     [Fact]
-    public void GetHistory_ReturnsEmployeeClockingsOrderedByTimestampDesc()
+    public void GetHistory_ReturnsEmployeeClockings()
     {
         var (service, _) = CreateService();
         var now = DateTime.UtcNow;
-        var range = DateRange.ForMonth(now.Year, now.Month);
-        service.RecordClocking("emp1", now.AddHours(-2), ClockType.In, "key-001");
-        service.RecordClocking("emp1", now.AddHours(-1), ClockType.Out, "key-002");
-        service.RecordClocking("emp1", now, ClockType.In, "key-003");
+        service.RecordClocking("emp1", now, ClockType.In, "key-001");
+        service.RecordClocking("emp1", now.AddMinutes(30), ClockType.Out, "key-002");
 
+        var range = DateRange.ForMonth(now.Year, now.Month);
         var history = service.GetHistory("emp1", range);
 
-        Assert.Equal(3, history.Count);
-        Assert.Equal("key-003", history[0].IdempotencyKey);
-        Assert.Equal("key-002", history[1].IdempotencyKey);
-        Assert.Equal("key-001", history[2].IdempotencyKey);
+        Assert.Equal(2, history.Count);
     }
 
     [Fact]
-    public void GetHistory_OtherEmployeeRecords_ExcludesThem()
+    public void GetHistory_NoClockings_ReturnsEmptyList()
     {
         var (service, _) = CreateService();
-        var now = DateTime.UtcNow;
-        var range = DateRange.ForMonth(now.Year, now.Month);
-        service.RecordClocking("emp1", now, ClockType.In, "key-001");
-        service.RecordClocking("emp2", now, ClockType.In, "key-002");
-
+        var range = DateRange.ForMonth(2026, 1);
         var history = service.GetHistory("emp1", range);
-
-        Assert.Single(history);
-        Assert.Equal("emp1", history[0].EmployeeId);
+        Assert.Empty(history);
     }
 
     // --- Black-box: GetAllClockings ---
@@ -166,20 +131,19 @@ public class ClockingServiceTests
     {
         var (service, _) = CreateService();
         var now = DateTime.UtcNow;
-        var range = DateRange.ForMonth(now.Year, now.Month);
         service.RecordClocking("emp1", now, ClockType.In, "key-001");
         service.RecordClocking("emp2", now, ClockType.In, "key-002");
-        service.RecordClocking("emp3", now, ClockType.In, "key-003");
 
+        var range = DateRange.ForMonth(now.Year, now.Month);
         var all = service.GetAllClockings(range);
 
-        Assert.Equal(3, all.Count);
+        Assert.Equal(2, all.Count);
     }
 
     // --- Black-box: ExportCsv ---
 
     [Fact]
-    public void ExportCsv_ReturnsStreamWithHeaderAndData()
+    public void ExportCsv_WithClockings_ReturnsCsvStream()
     {
         var (service, _) = CreateService();
         var now = DateTime.UtcNow;

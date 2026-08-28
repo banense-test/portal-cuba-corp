@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore.Storage;
 using PortalCubaCorp.Domain;
 
 namespace PortalCubaCorp.Infrastructure;
@@ -6,6 +5,8 @@ namespace PortalCubaCorp.Infrastructure;
 /// <summary>
 /// Persistence gateway interface (INT-007, COMP-006).
 /// Centralizes all database access via EF Core + PostgreSQL.
+/// Transaction management via callback pattern (ExecuteInTransactionAsync)
+/// rather than exposing DbContext.Database.BeginTransaction() directly.
 /// </summary>
 public interface IPersistence
 {
@@ -31,6 +32,6 @@ public interface IPersistence
     // Audit operations
     void InsertAuditRecord(AuditRecord record);
 
-    // Transaction support
-    Task<IDbContextTransaction> BeginTransactionAsync();
+    // Transaction support — callback pattern wraps EF Core transaction
+    Task ExecuteInTransactionAsync(Func<Task> action);
 }

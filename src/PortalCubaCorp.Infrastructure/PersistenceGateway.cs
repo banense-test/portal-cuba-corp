@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using PortalCubaCorp.Domain;
 
 namespace PortalCubaCorp.Infrastructure;
@@ -64,7 +63,7 @@ public class PersistenceGateway : IPersistence
     public NewsItem UpdateNewsItem(Guid id, string title, string body, NewsCategory category)
     {
         var item = _db.NewsItems.FirstOrDefault(n => n.Id == id)
-            ?? throw new InvalidOperationException($"NewsItem {id} not found");
+            ?? throw new InvalidOperationException(string.Format("NewsItem {0} not found", id));
         item.Title = title;
         item.Body = body;
         item.Category = category;
@@ -76,7 +75,7 @@ public class PersistenceGateway : IPersistence
     public NewsItem UpdateNewsStatus(Guid id, NewsStatus status)
     {
         var item = _db.NewsItems.FirstOrDefault(n => n.Id == id)
-            ?? throw new InvalidOperationException($"NewsItem {id} not found");
+            ?? throw new InvalidOperationException(string.Format("NewsItem {0} not found", id));
         item.Status = status;
         item.UpdatedAt = DateTime.UtcNow;
         _db.SaveChanges();
@@ -134,10 +133,20 @@ public class PersistenceGateway : IPersistence
         _db.SaveChanges();
     }
 
-    // Transaction support
+    // Transaction support — callback pattern (INT-007 corrected)
 
-    public async Task<IDbContextTransaction> BeginTransactionAsync()
+    public async Task ExecuteInTransactionAsync(Func<Task> action)
     {
-        return await _db.Database.BeginTransactionAsync();
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+        try
+        {
+            await action();
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 }

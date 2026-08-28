@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore.Storage;
 using PortalCubaCorp.Domain;
 using PortalCubaCorp.Infrastructure;
 
@@ -59,7 +58,7 @@ public class InMemoryPersistence : IPersistence
     public NewsItem UpdateNewsItem(Guid id, string title, string body, NewsCategory category)
     {
         var item = _newsItems.FirstOrDefault(n => n.Id == id)
-            ?? throw new InvalidOperationException($"NewsItem {id} not found");
+            ?? throw new InvalidOperationException(string.Format("NewsItem {0} not found", id));
         item.Title = title;
         item.Body = body;
         item.Category = category;
@@ -70,7 +69,7 @@ public class InMemoryPersistence : IPersistence
     public NewsItem UpdateNewsStatus(Guid id, NewsStatus status)
     {
         var item = _newsItems.FirstOrDefault(n => n.Id == id)
-            ?? throw new InvalidOperationException($"NewsItem {id} not found");
+            ?? throw new InvalidOperationException(string.Format("NewsItem {0} not found", id));
         item.Status = status;
         item.UpdatedAt = DateTime.UtcNow;
         return item;
@@ -121,10 +120,10 @@ public class InMemoryPersistence : IPersistence
         _auditRecords.Add(record);
     }
 
-    public async Task<IDbContextTransaction> BeginTransactionAsync()
+    public async Task ExecuteInTransactionAsync(Func<Task> action)
     {
-        await Task.CompletedTask;
-        throw new NotImplementedException("Transactions not supported in in-memory test double.");
+        // In-memory test double — just execute the action directly
+        await action();
     }
 }
 
@@ -136,7 +135,7 @@ public class InMemoryAuditLogger : IAuditLogger
 {
     public List<AuditRecord> Records { get; } = new();
 
-    public void Log(string entityType, string entityId, AuditAction action, string author, DateTime timestamp)
+    public void LogAudit(string entityType, string entityId, AuditAction action, string author, DateTime timestamp)
     {
         Records.Add(new AuditRecord
         {

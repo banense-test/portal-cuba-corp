@@ -5,7 +5,7 @@ namespace PortalCubaCorp.Application;
 
 /// <summary>
 /// Worker category service implementation (COMP-004).
-/// UC-010: Manage worker category — AD user id → category (CON-009).
+/// UC-010: Manage worker category — AD user id to category (CON-009).
 /// Bridges local DB (worker_categories) and LDAP (AD lookup).
 /// All changes audited (NFR-004).
 /// </summary>
@@ -33,7 +33,7 @@ public class WorkerCategoryService : IWorkerCategoryService
         var result = _persistence.UpsertWorkerCategory(adUserId, category);
 
         // Audit trail (NFR-004)
-        _auditLogger.Log("WORKER_CATEGORY", adUserId, AuditAction.CategoryChanged, authorId, DateTime.UtcNow);
+        _auditLogger.LogAudit("WORKER_CATEGORY", adUserId, AuditAction.CategoryChanged, authorId, DateTime.UtcNow);
 
         return result;
     }
@@ -49,7 +49,7 @@ public class WorkerCategoryService : IWorkerCategoryService
             return new List<DirectoryEntry>();
 
         var escapedQuery = EscapeLdapFilter(query);
-        var filter = $"(|(cn=*{escapedQuery}*)(sAMAccountName=*{escapedQuery}*))";
+        var filter = string.Format("(|(cn=*{0}*)(sAMAccountName=*{0}*))", escapedQuery);
 
         var results = _ldapGateway.SearchEntries(filter);
 
@@ -67,6 +67,11 @@ public class WorkerCategoryService : IWorkerCategoryService
 
     private static string EscapeLdapFilter(string value)
     {
-        return value.Replace("\\", "\\5c").Replace("*", "\\2a").Replace("(", "\\28").Replace(")", "\\29").Replace("\0", "\\00");
+        return value
+            .Replace("\\", "\\5c")
+            .Replace("*", "\\2a")
+            .Replace("(", "\\28")
+            .Replace(")", "\\29")
+            .Replace("\0", "\\00");
     }
 }
