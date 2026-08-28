@@ -2,503 +2,476 @@
 | Field | Value |
 |---|---|
 | Phase | Construction |
-| Status | Active — Code Reviewer (C2 Cycle 1) |
+| Status | Active — Code Reviewer (C2 Cycle 2) |
 | Milestone Target | End-of-Construction (IOC) |
-| Iteration | 2 (Cycle 1) |
+| Iteration | 2 (Cycle 2) |
 | Date | 2026-08-28 |
-| Prior Phase | Construction C1 (REQUEST_CHANGES — 1 Major, 4 Minor; IOC NOT achieved; stakeholder sanction REFUSED) |
-| Technical Lens (Reviewer) | EXECUTED — Code Reviewer modality, Construction C2 |
-| Review Type | Construction C2 — PR Approval Loop (per RUP Ch.11) |
-| PRs Reviewed | #19 (feature/C2-presentation → iteration/C2), #20 (feature/C2-rework-findings → iteration/C2) |
-| CI Build Status | feature/C2-presentation: GREEN (2026-08-28 16:09:32Z); feature/C2-rework-findings: GREEN (2026-08-28 16:02:37Z) |
+| Prior Phase | Construction C2 Cycle 1 (REQUEST_CHANGES — 1 Critical, 2 Major, 4 Minor; stakeholder sanction REFUSED) |
+| Technical Lens (Reviewer) | EXECUTED — Code Reviewer modality, Construction C2 Cycle 2 |
+| Review Type | Construction C2 Cycle 2 — PR Re-Review + Artifact Review + Iteration Acceptance |
+| PRs Reviewed | #19 (feature/C2-presentation → iteration/C2), #21 (iteration/C2 → main), #8 (feature/C1-presentation → iteration/C1) |
+| CI Build Status | main: GREEN (2026-08-28 16:38:16Z); iteration/C2: GREEN (2026-08-28 16:20:31Z); feature/C2-presentation: GREEN (2026-08-28 16:10:28Z) |
 | Open Defect Issues | 0 |
-| PR #19 Disposition | **REQUEST_CHANGES** — 1 Critical, 2 Major, 4 Minor |
-| PR #20 Disposition | **APPROVED** — 0 Critical, 0 Major; C1 findings resolved |
-| C1 Findings Reconciliation | MAJOR-1: RESOLVED; MINOR-1: RESOLVED; MINOR-3: RESOLVED; MINOR-4: RESOLVED |
-| Consolidated Verdict | PR #20 approved for merge; PR #19 requires rework — 1 Critical + 2 Major block merge |
+| PR #19 Disposition | **REQUEST_CHANGES** — 1 Critical, 2 Major, 4 Minor (all persisting from C2 Cycle 1) |
+| PR #21 Disposition | **REQUEST_CHANGES** — premature integration (PR #19 not merged) |
+| PR #8 Disposition | **COMMENT** — stale C1 PR, should be closed |
+| C1 Findings Reconciliation | MAJOR-1: RESOLVED; MINOR-1: RESOLVED; MINOR-3: RESOLVED; MINOR-4: RESOLVED (all verified on iteration/C2 branch) |
+| C2 Cycle 1 Findings | 7 of 7 PERSIST (0 resolved since Cycle 1) |
+| New Findings (Cycle 2) | 2 Minor (Design Model INT-003 verification, Test Case UnitTest1.cs persistence) |
+| Consolidated Verdict | **IOC NOT ACHIEVED** — 1 open Critical, 2 open Major; stakeholder sanction REFUSED; auto-iterate to C2 Cycle 3 |
 
 ## Review Scope and Criteria
 
-This review evaluates Construction C2 pull requests against the following checklist:
+This review evaluates Construction C2 Cycle 2 against the following checklist:
 
-**Code Review Checklist (per §1.1):**
-1. CI Build Status (hard gate)
-2. Programming Guidelines Conformance
-3. Dual Coverage (black-box + white-box tests)
-4. Design Model Conformance (class names, signatures, interfaces)
-5. SAD Implementation View Conformance (subsystem boundaries, layer placement)
-6. Traceability Trailer (UC-NNN in PR body or commit)
-7. Build-Tree Coverage (all files under src/ or tests/)
-8. C1 Findings Resolution (MAJOR-1, MINOR-1, MINOR-3, MINOR-4)
+**Code Review Checklist:**
+1. CI Build Status (hard gate) — **PASS** (green on all 3 branches)
+2. Programming Guidelines Conformance — **PASS**
+3. Dual Coverage (black-box + white-box tests) — **PARTIAL** (UnitTest1.cs placeholder persists)
+4. Design Model Conformance (class names, signatures, interfaces) — **PARTIAL** (Application/Domain layer conforms; Presentation layer blocked by C2-CRIT-1)
+5. SAD Implementation View Conformance (subsystem boundaries, layer placement) — **PASS**
+6. Traceability Trailer (UC-NNN in PR body or commit) — **PASS**
+7. Build-Tree Coverage (all files under src/ or tests/) — **PASS**
+8. C1 Findings Resolution (MAJOR-1, MINOR-1, MINOR-3, MINOR-4) — **PASS** (all 4 resolved on iteration/C2)
+9. C2 Cycle 1 Findings Resolution (C2-CRIT-1, C2-MAJ-1..2, C2-MIN-1..4) — **FAIL** (0 of 7 resolved)
 
 **Upstream Artifacts Read:**
 - Design Model (Construction C2 — all design contracts aligned with implementation)
 - Software Architecture Document (Construction C2 — Implementation View, Data View)
 - Use-Case Model (Construction C2 — 10 UCs, CR-010 IsFeatured approved)
 - Supplementary Specification (Construction C2 — FURPS+ baseline preserved)
-- Change Request Log (13 CRs, CR-010 IsFeatured, CR-011 Idempotency approved)
-- Test Case (30 TCs, adversarial tests for C1 findings)
-- Iteration Assessment (C1 — IOC NOT achieved, auto-iterate to C2)
-- Iteration Plan (C1 — 7 objectives, 5 deferred to C2)
-- Development Case (Elaboration — tailoring, guidelines)
-- Branching Strategy (Construction — feature branches target iteration/C2)
-- employee-portal-design.html (CON-011 mandatory UI design)
+- Test Case (Construction C2 — 35 TCs including adversarial TC-031..TC-035)
+- Iteration Assessment (Construction C2 Cycle 1 — IOC NOT achieved, auto-iterate)
+- Change Request Log (CRs through CR-018)
+- Source code on main, iteration/C2, and feature/C2-presentation branches
 
-## PR #19 — Compliance Matrix
-
-```plantuml
-@startuml
-title PR #19 Compliance Matrix — Code Review Checklist (Construction C2)
-
-skinparam classAttributeIconSize 0
-skinparam monochrome false
-skinparam shadowing false
-
-object "CI Build Status" as CI {
-  GREEN = PASS
-}
-object "Traceability Trailer" as TT {
-  UC-001..UC-010 in PR body = PASS
-}
-object "Design Model Conformance" as DM {
-  INT-001..INT-007 signatures = PASS
-  CLS-016..CLS-020 entities = PASS
-  COMP-001..COMP-008 components = PASS
-  NewsStatus (no Draft) = PASS
-  IsFeatured (CR-010) = PASS
-  AuthorId (not CreatedBy) = PASS
-  FindByIdempotencyKey(employeeId, key) = PASS
-}
-object "Build-Tree Coverage" as BT {
-  All files under src/ or tests/ = PASS
-  No parallel solution = PASS
-}
-object "Dual Coverage (Black-box + White-box)" as DC {
-  ClockingServiceTests: 13 tests BB+WB = PASS
-  NewsServiceTests: 12 tests BB+WB = PASS
-  DirectoryServiceTests: 11 tests BB+WB = PASS
-  WorkerCategoryServiceTests: 10 tests BB+WB = PASS
-  OfflineRetryTests: 6 tests BB+WB = PASS
-  DomainTests: 10 tests BB+WB = PASS
-}
-object "C1 Findings Resolution" as C1F {
-  MAJOR-1 (IsFeatured) = RESOLVED
-  MINOR-1 (DirectoryModel naming) = RESOLVED
-  MINOR-3 (Idempotency scoping) = RESOLVED
-  MINOR-4 (Test codifies bug) = RESOLVED
-}
-object "API Endpoint URL" as URL {
-  JS calls /api/clocking
-  Page route /Api/ClockingApi
-  MISMATCH = **FAIL**
-}
-object "Form Binding (Edit)" as FB {
-  Form fields: title, body, category
-  BindProperties: EditTitle, EditBody, EditCategory
-  Names DO NOT MATCH = **FAIL**
-}
-object "Anti-forgery on AJAX" as AF {
-  fetch() has no anti-forgery token
-  Razor Pages validates by default = **FAIL**
-}
-object "Security: EmployeeId from body" as SEC {
-  Should use token sub claim = **FAIL**
-}
-object "Placeholder Test" as PT {
-  UnitTest1.cs: Assert.True(true) = **FAIL**
-}
-object "LDAP Adapter Stub" as LDAP {
-  NotImplementedException = WARN
-}
-object "CSV Column Naming" as CSV {
-  Header TimeIn,TimeOut misleading = **FAIL**
-}
-
-CI --> TT
-TT --> DM
-DM --> BT
-BT --> DC
-DC --> C1F
-C1F --> URL
-URL --> FB
-FB --> AF
-AF --> SEC
-SEC --> PT
-PT --> LDAP
-LDAP --> CSV
-
-note bottom of URL : **CRITICAL-C2-1**: UC-001 non-functional (404)
-note bottom of FB : **MAJOR-C2-1**: UC-006 non-functional (binding failure)
-note bottom of AF : **MAJOR-C2-2**: UC-001 blocked even if URL fixed
-note bottom of SEC : **MINOR-C2-2**: Security — trust client employeeId
-note bottom of PT : **MINOR-C2-3**: CR-014 deferred, still present
-note bottom of LDAP : **MINOR-C2-1**: Known stub, deferred to integration
-note bottom of CSV : **MINOR-C2-4**: Misleading column names
-
-@enduml
-```
-
-## PR #20 — Compliance Matrix
-
-```plantuml
-@startuml
-title PR #20 Compliance Matrix — Code Review Checklist (Construction C2)
-
-skinparam classAttributeIconSize 0
-skinparam monochrome false
-skinparam shadowing false
-
-object "CI Build Status" as CI {
-  GREEN = PASS
-}
-object "Traceability Trailer" as TT {
-  UC-008 + interface fixes in PR body = PASS
-}
-object "Design Model Conformance" as DM {
-  INT-001..INT-007 signatures = PASS
-  FindByIdempotencyKey(employeeId, key) = PASS
-  DirectoryService.Search(query, office) = PASS
-}
-object "Build-Tree Coverage" as BT {
-  All files under src/ or tests/ = PASS
-}
-object "C1 Findings Resolution" as C1F {
-  MAJOR-1 (IsFeatured) = RESOLVED
-  MINOR-1 (office filter) = RESOLVED
-  MINOR-3 (Idempotency scoping) = RESOLVED
-  MINOR-4 (Test codifies bug) = RESOLVED
-}
-object "Dual Coverage" as DC {
-  Tests updated for scoped idempotency = PASS
-  Office filter tests added = PASS
-}
-object "Overlap with PR #19" as OV {
-  Same files changed as PR #19
-  ClockingService, DirectoryService, TestDoubles
-  Both branches share same rework = WARN
-}
-
-CI --> TT
-TT --> DM
-DM --> BT
-BT --> C1F
-C1F --> DC
-DC --> OV
-
-note bottom of OV : **INFO-C2-1**: PR #20 is a subset of PR #19 changes. Both branches carry the same rework. PR #19 supersedes PR #20 for the shared files.
-
-@enduml
-```
-
-## Defect Distribution — PR #19
-
-```plantuml
-@startuml
-title Defect Distribution — PR #19 (feature/C2-presentation) Construction C2
-
-skinparam classAttributeIconSize 0
-skinparam monochrome false
-
-package "Critical (1)" as crit #FF6B6B {
-  class "C2-CRIT-1" as c1 {
-    API URL mismatch
-    JS: /api/clocking
-    Page: /Api/ClockingApi
-    UC-001 non-functional (404)
-    --
-    Remediation: Move to API controller
-    or add @page "/api/clocking"
-  }
-}
-
-package "Major (2)" as maj #FFA500 {
-  class "C2-MAJ-1" as m1 {
-    Edit form binding mismatch
-    Form: title, body, category
-    BindProps: EditTitle, EditBody, EditCategory
-    UC-006 non-functional
-    --
-    Remediation: Rename BindProperties
-    or add [BindProperty(Name=...)]
-  }
-  class "C2-MAJ-2" as m2 {
-    Missing anti-forgery token
-    fetch() POST has no XSRF token
-    UC-001 blocked even if URL fixed
-    --
-    Remediation: Add antiforgery token
-    or [IgnoreAntiforgeryToken] with reason
-  }
-}
-
-package "Minor (4)" as min #FFEB99 {
-  class "C2-MIN-1" as mi1 {
-    LDAP adapter stub
-    NotImplementedException
-    Known deferred to integration
-  }
-  class "C2-MIN-2" as mi2 {
-    EmployeeId from request body
-    Should use token sub claim
-    Security: client can spoof
-  }
-  class "C2-MIN-3" as mi3 {
-    UnitTest1.cs placeholder
-    Assert.True(true)
-    CR-014 deferred
-  }
-  class "C2-MIN-4" as mi4 {
-    CSV header misleading
-    TimeIn,TimeOut but single
-    time column with Direction
-  }
-}
-
-crit -[hidden]right-> maj
-maj -[hidden]right-> min
-
-@enduml
-```
+**SCM Evidence:**
+- CI Build: GREEN on main, iteration/C2, feature/C2-presentation
+- Open PRs: 3 (#19, #21, #8)
+- Closed PRs: 4 (#20 merged, #9, #7, #4)
+- Open defect issues: 0
+- Ready-for-review branches: 0
 
 ## Findings
 
-### C1 Findings Reconciliation
+### C1 Findings Reconciliation (Verified on iteration/C2 branch)
 
 | Finding ID | Severity | Description | Status | Resolution Verified |
 |---|---|---|---|---|
-| MAJOR-1 | Major | IsFeatured flag never set (FR-008 featured banner) | **RESOLVED** | `NewsService.Publish` accepts `isFeatured` param; `NewsItem.IsFeatured` property; `GetFeaturedNews()` query; Publish form has checkbox; `PersistenceGateway.GetFeaturedNews` filters `IsFeatured && Published`; Index.cshtml renders featured banners |
-| MINOR-1 | Minor | DirectoryModel naming / office filter | **RESOLVED** | `DirectoryService.Search(query, office?)` with LDAP AND-filter; `SearchModel` passes office filter; tests cover office filter |
-| MINOR-3 | Minor | Idempotency key not scoped by employee | **RESOLVED** | `FindByIdempotencyKey(employeeId, key)` — CR-011 implemented; `PortalDbContext` has `HasIndex(EmployeeId, IdempotencyKey).IsUnique()`; tests verify cross-employee same key both succeed |
-| MINOR-4 | Minor | Test codifies MINOR-3 behavior | **RESOLVED** | `RecordClocking_SameKeyDifferentEmployee_BothSucceed` test verifies correct scoped behavior; `OfflineRetryTests` updated for scoped idempotency |
+| MAJOR-1 | Major | IsFeatured flag never set (FR-008) | **RESOLVED** | `INewsService.Publish` accepts `isFeatured` param on iteration/C2; `NewsItem.IsFeatured` property; `GetFeaturedNews()` filters `IsFeatured && Published`; PortalDbContext maps `IsFeatured` column |
+| MINOR-1 | Minor | DirectoryModel naming / office filter | **RESOLVED** | `DirectoryService.Search(query, office?)` with LDAP AND-filter on iteration/C2; `IDirectoryService` updated with optional office parameter |
+| MINOR-3 | Minor | Idempotency key not scoped by employee | **RESOLVED** | `FindByIdempotencyKey(employeeId, key)` on iteration/C2; `PortalDbContext` has `HasIndex(EmployeeId, IdempotencyKey).IsUnique()`; TestDoubles updated |
+| MINOR-4 | Minor | Test codifies MINOR-3 behavior | **RESOLVED** | TestDoubles.cs on iteration/C2 has scoped `FindByIdempotencyKey(employeeId, key)` matching the implementation |
 
-### C2 New Findings — PR #19
+### C2 Cycle 1 Findings — All PERSISTING (0 of 7 resolved)
 
-| Finding ID | Severity | Location | Description | Remediation |
-|---|---|---|---|---|
-| C2-CRIT-1 | Critical | `clocking-retry.js`, `Index.cshtml`, `Pages/Api/ClockingApi.cshtml` | JS calls `fetch('/api/clocking')` but Razor Page routes to `/Api/ClockingApi`. UC-001 non-functional (404). | Add `@page "/api/clocking"` to ClockingApi.cshtml, OR move to API controller, OR rename page folder to `Pages/api/clocking.cshtml` |
-| C2-MAJ-1 | Major | `News/Edit.cshtml`, `News/Edit.cshtml.cs` | Form posts `title`, `body`, `category` but BindProperties are `EditTitle`, `EditBody`, `EditCategory`. Names don't match — UC-006 non-functional. | Add `[BindProperty(Name = "title")]` etc., OR rename properties, OR change form field names |
-| C2-MAJ-2 | Major | `clocking-retry.js`, `Index.cshtml` | `fetch()` POST has no anti-forgery token. Razor Pages validates by default — POST rejected with 400. | Add antiforgery token to fetch headers, OR `[IgnoreAntiforgeryToken]` with justification (OIDC bearer auth + idempotency key) |
-| C2-MIN-1 | Minor | `NovellLdapConnectionAdapter.cs` | All methods throw `NotImplementedException`. Known deferred to integration testing (R001). | Document as `[DEFERRED — requires integration testing with real AD server (R001)]` |
-| C2-MIN-2 | Minor | `Pages/Api/ClockingApi.cshtml.cs` | API accepts `employeeId` from request body — client can spoof identity. | Use `User.FindFirst("sub")?.Value` instead of `request.EmployeeId` |
-| C2-MIN-3 | Minor | `tests/PortalCubaCorp.Tests/UnitTest1.cs` | `Assert.True(true)` placeholder test. CR-014 deferred, still present. | Delete `UnitTest1.cs` |
-| C2-MIN-4 | Minor | `ClockingService.cs` (ExportCsv) | CSV header `TimeIn,TimeOut` but data has single time + Direction. Misleading for HR. | Change header to `Employee,Date,Time,Direction` |
+| Finding ID | Severity | Location | Description | Remediation | Status |
+|---|---|---|---|---|---|
+| C2-CRIT-1 | Critical | `clocking-retry.js`, `Index.cshtml`, `Pages/Api/ClockingApi.cshtml` | JS calls `fetch('/api/clocking')` but Razor Page routes to `/Api/ClockingApi`. UC-001 non-functional (404). | Add `@page "/api/clocking"` to ClockingApi.cshtml, OR move to API controller, OR rename page folder | **OPEN — persisting** |
+| C2-MAJ-1 | Major | `News/Edit.cshtml`, `News/Edit.cshtml.cs` | Form posts `title`, `body`, `category` but BindProperties are `EditTitle`, `EditBody`, `EditCategory`. UC-006 non-functional. | Add `[BindProperty(Name = "title")]` etc., OR rename properties, OR change form field names | **OPEN — persisting** |
+| C2-MAJ-2 | Major | `clocking-retry.js`, `Index.cshtml` | `fetch()` POST has no anti-forgery token. Razor Pages validates by default — POST rejected with 400. | Add antiforgery token to fetch headers, OR `[IgnoreAntiforgeryToken]` with justification | **OPEN — persisting** |
+| C2-MIN-1 | Minor | `NovellLdapConnectionAdapter.cs` | All methods throw `NotImplementedException`. Known deferred to integration testing (R001). | Document as `[DEFERRED — requires integration testing with real AD server (R001)]` | **OPEN — persisting** |
+| C2-MIN-2 | Minor | `Pages/Api/ClockingApi.cshtml.cs` | API accepts `employeeId` from request body — client can spoof identity. | Use `User.FindFirst("sub")?.Value` instead of `request.EmployeeId` | **OPEN — persisting** |
+| C2-MIN-3 | Minor | `tests/PortalCubaCorp.Tests/UnitTest1.cs` | `Assert.True(true)` placeholder test. Still present on iteration/C2 branch. | Delete `UnitTest1.cs` | **OPEN — persisting** |
+| C2-MIN-4 | Minor | `ClockingService.cs` (ExportCsv) | CSV header `Employee,Date,TimeIn,TimeOut,Direction` but data has single time + Direction. Misleading for HR. | Change header to `Employee,Date,Time,Direction` | **OPEN — persisting** |
 
-### C2 New Findings — PR #20
+### C2 Cycle 2 New Findings
 
-No findings. All C1 findings correctly resolved with Design Model conformance.
+| Finding ID | Severity | Artifact | Description | Remediation | Verdict |
+|---|---|---|---|---|---|
+| F1 (Design Model) | Minor | Design Model | INT-003 on main branch declares `Search(string query)` without office filter, but iteration/C2 branch has `Search(string query, string? office = null)`. Design Model document describes the office filter as resolved, but main branch code does not reflect this. | Verify Design Model INT-003 contract section reflects updated signature; main branch will be updated when PR #21 is eventually merged | Approved |
+| F2 (Test Case) | Minor | Test Case | UnitTest1.cs placeholder persists on both main and iteration/C2 branches. C2-MIN-3 identified this in Cycle 1 but it remains unfixed. | Delete `tests/PortalCubaCorp.Tests/UnitTest1.cs` in next rework cycle | Approved |
+
+### Compliance Matrix
+
+```plantuml
+@startuml
+title C2 Cycle 2 — Compliance Matrix: Checklist Items × Pass/Fail
+
+skinparam classAttributeIconSize 0
+skinparam monochrome false
+
+object "CI Build Status" as CI {
+  main: GREEN ✓
+  iteration/C2: GREEN ✓
+  feature/C2-presentation: GREEN ✓
+  **PASS**
+}
+
+object "Programming Guidelines" as PG {
+  Naming conventions: PASS
+  XML docs: PASS
+  Layer separation: PASS
+  **PASS**
+}
+
+object "Dual Coverage Tests" as DCT {
+  Black-box tests: 30 TCs ✓
+  White-box tests: 15 TCs ✓
+  Adversarial TC-031..035: PASS
+  UnitTest1.cs placeholder: FAIL
+  **PARTIAL**
+}
+
+object "Design Model Conformance" as DMC {
+  INT-001 IClockingService: PASS
+  INT-002 INewsService: PASS (isFeatured added)
+  INT-003 IDirectoryService: PASS (office filter)
+  INT-004 IWorkerCategoryService: PASS
+  CLS-016..020 entities: PASS
+  Presentation layer: BLOCKED (C2-CRIT-1)
+  **PARTIAL**
+}
+
+object "SAD Implementation View" as SAD {
+  COMP-001..008: PASS
+  Layer placement: PASS
+  Project structure: PASS
+  **PASS**
+}
+
+object "Traceability Trailer" as TT {
+  UC-NNN in PR body: PASS
+  CR references: PASS
+  FR/NFR mapping: PASS
+  **PASS**
+}
+
+object "Build-Tree Coverage" as BTC {
+  src/ files: PASS
+  tests/ files: PASS
+  All under src/ or tests/: PASS
+  **PASS**
+}
+
+object "C1 Findings Resolution" as C1R {
+  MAJOR-1 IsFeatured: RESOLVED ✓
+  MINOR-1 Office filter: RESOLVED ✓
+  MINOR-3 Idempotency scoped: RESOLVED ✓
+  MINOR-4 Test codification: RESOLVED ✓
+  **PASS**
+}
+
+object "C2 Findings Resolution" as C2R {
+  C2-CRIT-1 API routing: OPEN ✗
+  C2-MAJ-1 Form binding: OPEN ✗
+  C2-MAJ-2 Antiforgery: OPEN ✗
+  C2-MIN-1 LDAP stub: OPEN ✗
+  C2-MIN-2 Identity spoof: OPEN ✗
+  C2-MIN-3 UnitTest1.cs: OPEN ✗
+  C2-MIN-4 CSV header: OPEN ✗
+  **FAIL**
+}
+
+CI --> DMC
+PG --> DMC
+DCT --> C2R
+DMC --> C2R
+SAD --> DMC
+TT --> DMC
+BTC --> DMC
+C1R --> C2R
+
+note bottom of C2R
+  7 of 7 C2 findings persist.
+  All require Implementer rework
+  before PR #19 can be approved.
+end note
+
+@enduml
+```
+
+### Defect Distribution
+
+```plantuml
+@startuml
+title C2 Cycle 2 — Defect Distribution: Severity × Artifact/PR
+
+skinparam classAttributeIconSize 0
+skinparam monochrome false
+
+object "C2-CRIT-1" as CRIT1 {
+  Severity: Critical
+  Location: PR #19 — clocking-retry.js
+  Artifact: Implementation Model
+  Status: OPEN (persisting)
+  UC-001 non-functional (404)
+}
+
+object "C2-MAJ-1" as MAJ1 {
+  Severity: Major
+  Location: PR #19 — News/Edit.cshtml
+  Artifact: Implementation Model
+  Status: OPEN (persisting)
+  UC-006 non-functional (binding)
+}
+
+object "C2-MAJ-2" as MAJ2 {
+  Severity: Major
+  Location: PR #19 — clocking-retry.js
+  Artifact: Implementation Model
+  Status: OPEN (persisting)
+  POST rejected (no antiforgery)
+}
+
+object "C2-MIN-1" as MIN1 {
+  Severity: Minor
+  Location: PR #19 — NovellLdapConnectionAdapter
+  Artifact: Implementation Model
+  Status: OPEN (persisting)
+  NotImplementedException
+}
+
+object "C2-MIN-2" as MIN2 {
+  Severity: Minor
+  Location: PR #19 — ClockingApi.cshtml.cs
+  Artifact: Implementation Model
+  Status: OPEN (persisting)
+  Identity spoofing risk
+}
+
+object "C2-MIN-3" as MIN3 {
+  Severity: Minor
+  Location: PR #19 — UnitTest1.cs
+  Artifact: Test Case / Developer Test
+  Status: OPEN (persisting)
+  Assert.True(true) placeholder
+}
+
+object "C2-MIN-4" as MIN4 {
+  Severity: Minor
+  Location: PR #19 — ClockingService.cs
+  Artifact: Implementation Model
+  Status: OPEN (persisting)
+  CSV header mismatch
+}
+
+object "F1-DM" as F1DM {
+  Severity: Minor
+  Location: Design Model
+  Artifact: Design Model
+  Status: NEW (this iteration)
+  INT-003 main vs iteration/C2
+}
+
+object "F2-TC" as F2TC {
+  Severity: Minor
+  Location: Test Case
+  Artifact: Test Case
+  Status: NEW (this iteration)
+  UnitTest1.cs placeholder persists
+}
+
+CRIT1 --> MAJ1
+MAJ1 --> MAJ2
+MAJ2 --> MIN1
+MIN1 --> MIN2
+MIN2 --> MIN3
+MIN3 --> MIN4
+MIN4 --> F1DM
+F1DM --> F2TC
+
+note bottom of F2TC
+  Total: 1 Critical + 2 Major + 6 Minor = 9
+  All 7 C2 Cycle 1 findings persist (OPEN)
+  2 new Minor findings (Design Model, Test Case)
+  0 findings resolved this cycle
+end note
+
+@enduml
+```
 
 ## Resolutions and Actions
 
 | Action | Owner | Finding | Status |
 |---|---|---|---|
-| Fix API URL mismatch (C2-CRIT-1) | Implementer | C2-CRIT-1 | OPEN — requires rework |
-| Fix Edit form binding (C2-MAJ-1) | Implementer | C2-MAJ-1 | OPEN — requires rework |
-| Fix anti-forgery on AJAX POST (C2-MAJ-2) | Implementer | C2-MAJ-2 | OPEN — requires rework |
-| Use token sub claim for employeeId (C2-MIN-2) | Implementer | C2-MIN-2 | OPEN — requires rework |
-| Delete UnitTest1.cs (C2-MIN-3) | Implementer | C2-MIN-3 | OPEN — requires rework |
-| Fix CSV header (C2-MIN-4) | Implementer | C2-MIN-4 | OPEN — requires rework |
-| Document LDAP stub as DEFERRED (C2-MIN-1) | Implementer | C2-MIN-1 | OPEN — documentation only |
-| Merge PR #20 (rework findings) | Integrator | — | APPROVED — ready for merge |
-| Re-review PR #19 after fixes | Code Reviewer | C2-CRIT-1, C2-MAJ-1..2, C2-MIN-1..4 | PENDING — next cycle |
+| Fix API URL mismatch (C2-CRIT-1) | Implementer | C2-CRIT-1 | OPEN — persisting from Cycle 1, requires rework |
+| Fix Edit form binding (C2-MAJ-1) | Implementer | C2-MAJ-1 | OPEN — persisting from Cycle 1, requires rework |
+| Fix anti-forgery on AJAX POST (C2-MAJ-2) | Implementer | C2-MAJ-2 | OPEN — persisting from Cycle 1, requires rework |
+| Use token sub claim for employeeId (C2-MIN-2) | Implementer | C2-MIN-2 | OPEN — persisting from Cycle 1, requires rework |
+| Delete UnitTest1.cs (C2-MIN-3) | Implementer | C2-MIN-3 | OPEN — persisting from Cycle 1, requires rework |
+| Fix CSV header (C2-MIN-4) | Implementer | C2-MIN-4 | OPEN — persisting from Cycle 1, requires rework |
+| Document LDAP stub as DEFERRED (C2-MIN-1) | Implementer | C2-MIN-1 | OPEN — documentation only, persisting from Cycle 1 |
+| Verify Design Model INT-003 contract (F1) | Designer | F1 (Design Model) | OPEN — verification needed when PR #21 merges |
+| Merge PR #19 after fixes | Integrator | C2-CRIT-1, C2-MAJ-1..2, C2-MIN-1..4 | PENDING — blocked on Implementer rework |
+| Re-review PR #19 after fixes | Code Reviewer | All C2 findings | PENDING — next cycle |
+| Close stale PR #8 | Integrator | — | RECOMMENDED — C1 PR targeting old branch |
+| Close premature PR #21 | Integrator | — | REQUEST_CHANGES submitted — re-open after PR #19 merges |
 
 ## Disposition
 
-| PR | Disposition | Critical | Major | Minor | C1 Findings |
+### Iteration Acceptance: **NOT MET**
+
+The C2 Cycle 1 Review Record identified 7 findings (1 Critical, 2 Major, 4 Minor) in PR #19. As of C2 Cycle 2, **zero of these 7 findings have been addressed**. The Implementer has not pushed rework commits to `feature/C2-presentation` since the C2 Cycle 1 review.
+
+**Evidence:**
+- PR #19 diff unchanged — same 34 files, same 1418 additions, same 108 deletions
+- `UnitTest1.cs` still present on `iteration/C2` branch (C2-MIN-3)
+- `ClockingService.ExportCsv` header still `Employee,Date,TimeIn,TimeOut,Direction` on both branches (C2-MIN-4)
+- `IDirectoryService.Search` on main still lacks office filter (C2-MIN-1 pattern — main not updated)
+
+**SCM Evidence:**
+- CI Build: GREEN on all branches (build passes, but functionality is broken)
+- Open PRs: 3 (#19 REQUEST_CHANGES, #21 REQUEST_CHANGES, #8 stale)
+- Open defect issues: 0
+- PR #20 (C1 rework): CLOSED/merged — C1 findings correctly resolved
+
+**Stakeholder Sanction: REFUSED**
+STK-001: "We cannot advance to Transition because there are still things to finish to have the system with the use cases correctly implemented in construction, which is where we are now. We cannot move forward without the software."
+
+### PR Dispositions
+
+| PR | Disposition | Critical | Major | Minor | Rationale |
 |---|---|---|---|---|---|
-| #19 (feature/C2-presentation → iteration/C2) | **REQUEST_CHANGES** | 1 | 2 | 4 | 4/4 RESOLVED |
-| #20 (feature/C2-rework-findings → iteration/C2) | **APPROVED** | 0 | 0 | 0 | 4/4 RESOLVED |
+| #19 | **REQUEST_CHANGES** | 1 | 2 | 4 | All 7 C2 Cycle 1 findings persist; UC-001 and UC-006 non-functional |
+| #21 | **REQUEST_CHANGES** | 0 | 0 | 0 | Premature — PR #19 not merged; iteration/C2 incomplete |
+| #8 | **COMMENT** | 0 | 0 | 0 | Stale C1 PR targeting old branch; should be closed |
 
-**Integration guidance:** The Integrator should merge PR #20 first (clean C1 rework). PR #19 requires rework to fix C2-CRIT-1, C2-MAJ-1, C2-MAJ-2, and the 4 Minor findings before it can be approved. After the Implementer addresses the findings and pushes updates, the Code Reviewer will re-review PR #19.
-
-## Review Event Sequence
+### Test Coverage Matrix
 
 ```plantuml
 @startuml
-title Review Event Sequence — Construction C2 (Code Reviewer)
+title C2 Cycle 2 — Test Coverage Matrix: Use Cases × Test Cases
 
 skinparam classAttributeIconSize 0
 skinparam monochrome false
 
-state "S1: Discover" as s1 {
-  s1 : List ready-for-review branches
-  s1 : 2 found: feature/C2-presentation, feature/C2-rework-findings
-  s1 : Create PRs targeting iteration/C2
-  s1 : PR #19 (presentation), PR #20 (rework)
-  s1 : Load repo tree, Design Model, SAD
+object "UC-001 Clock In/Out" as UC1 {
+  TC-001: RecordClocking success ✓
+  TC-002: Duplicate key dedup ✓
+  TC-003: Empty employeeId ✓
+  TC-004: Empty idempotency key ✓
+  TC-031: API routing 404 (FAIL)
+  TC-033: Antiforgery token (FAIL)
+  TC-034: Identity spoofing (FAIL)
+  Coverage: 4/7 PASS — BLOCKED
 }
 
-state "S2: Review PR #19" as s2 {
-  s2 : CI: GREEN
-  s2 : Diff: 34 files, +1418/-108
-  s2 : Checklist: 7 PASS, 7 FAIL
-  s2 : 1 Critical (API URL mismatch)
-  s2 : 2 Major (form binding, anti-forgery)
-  s2 : 4 Minor (LDAP stub, security, placeholder, CSV)
-  s2 : Disposition: REQUEST_CHANGES
+object "UC-002 Clocking History" as UC2 {
+  TC-005: GetHistory returns records ✓
+  TC-006: Empty history ✓
+  Coverage: 2/2 PASS
 }
 
-state "S3: Review PR #20" as s3 {
-  s3 : CI: GREEN
-  s3 : Diff: 13 files, +250/-104
-  s3 : Checklist: all PASS
-  s3 : C1 findings all resolved
-  s3 : Subset of PR #19 shared files
-  s3 : Disposition: APPROVED
+object "UC-003 All Clockings" as UC3 {
+  TC-007: GetAllClockings ✓
+  Coverage: 1/1 PASS
 }
 
-state "S4: Persist Review Record" as s4 {
-  s4 : Cumulative with C1 findings
-  s4 : Compliance matrices embedded
-  s4 : Defect distribution diagram
-  s4 : Traceability table
+object "UC-004 CSV Export" as UC4 {
+  TC-008: CSV with data ✓
+  TC-009: CSV header only ✓
+  TC-035: CSV header mismatch (FAIL)
+  Coverage: 2/3 PASS
 }
 
-[*] --> s1
-s1 --> s2
-s2 --> s3
-s3 --> s4
-s4 --> [*]
+object "UC-005 Publish News" as UC5 {
+  TC-010: Publish valid ✓
+  TC-011: Audit record created ✓
+  TC-012: IsFeatured flag ✓
+  Coverage: 3/3 PASS
+}
+
+object "UC-006 Edit News" as UC6 {
+  TC-013: Edit existing ✓
+  TC-014: Edit audit ✓
+  TC-032: Form binding mismatch (FAIL)
+  Coverage: 2/3 PASS — BLOCKED
+}
+
+object "UC-007 Unpublish" as UC7 {
+  TC-015: Unpublish hides ✓
+  TC-016: Unpublish audit ✓
+  TC-017: No hard delete ✓
+  Coverage: 3/3 PASS
+}
+
+object "UC-008 Read/Filter News" as UC8 {
+  TC-018: Published only ✓
+  TC-019: Category filter ✓
+  TC-020: Featured banner ✓
+  Coverage: 3/3 PASS
+}
+
+object "UC-009 Directory Search" as UC9 {
+  TC-021: Search returns results ✓
+  TC-022: R001 fallback N/A ✓
+  TC-023: Empty query ✓
+  Coverage: 3/3 PASS
+}
+
+object "UC-010 Worker Category" as UC10 {
+  TC-024: Assign category ✓
+  TC-025: Update existing ✓
+  TC-026: Audit trail ✓
+  Coverage: 3/3 PASS
+}
+
+UC1 --> UC2
+UC2 --> UC3
+UC3 --> UC4
+UC4 --> UC5
+UC5 --> UC6
+UC6 --> UC7
+UC7 --> UC8
+UC8 --> UC9
+UC9 --> UC10
+
+note bottom of UC10
+  Total: 30 TCs (TC-001..TC-030) + 5 adversarial (TC-031..TC-035)
+  26 PASS, 4 FAIL (all in presentation layer)
+  2 UCs BLOCKED: UC-001, UC-006
+  8 TCs BLOCKED by infrastructure (OIDC/LDAP)
+end note
 
 @enduml
 ```
 
-## Finding Lifecycle
+### Consolidated Verdict
 
-```plantuml
-@startuml
-title Finding Lifecycle — C1 Findings Reconciliation (Construction C2)
+**IOC NOT ACHIEVED — auto-iterate to Construction C2 Cycle 3 (rework)**
 
-skinparam classAttributeIconSize 0
-skinparam monochrome false
+Rationale:
+1. 1 open Critical finding (C2-CRIT-1) makes UC-001 non-functional — blocks AC-001
+2. 2 open Major findings (C2-MAJ-1, C2-MAJ-2) make UC-006 non-functional and UC-001 POST rejected
+3. 4 open Minor findings remain unaddressed
+4. Stakeholder sanction explicitly REFUSED
+5. Zero C2 Cycle 1 findings resolved since last review — no rework has been pushed
+6. PR #19 cannot be approved until all 7 findings are fixed
+7. PR #21 (integration to main) is premature
 
-package "C1 Findings — RESOLVED in C2" as resolved #LightGreen {
-  class "MAJOR-1" as maj1 {
-    IsFeatured flag never set
-    Status: RESOLVED
-    Resolution: Publish() accepts isFeatured,
-    NewsItem.IsFeatured property,
-    GetFeaturedNews() query, form checkbox
-    Verified in: PR #19, PR #20
-  }
-  class "MINOR-1" as min1 {
-    DirectoryModel naming / office filter
-    Status: RESOLVED
-    Resolution: Search(query, office?) with
-    LDAP AND-filter for office
-    Verified in: PR #19, PR #20
-  }
-  class "MINOR-3" as min3 {
-    Idempotency key not scoped by employee
-    Status: RESOLVED
-    Resolution: FindByIdempotencyKey(employeeId, key)
-    CR-011 implemented
-    Verified in: PR #19, PR #20
-  }
-  class "MINOR-4" as min4 {
-    Test codifies MINOR-3 behavior
-    Status: RESOLVED
-    Resolution: Tests updated for scoped
-    idempotency, cross-employee test added
-    Verified in: PR #19, PR #20
-  }
-}
-
-package "C2 New Findings — OPEN" as open #LightCoral {
-  class "C2-CRIT-1" as crit1 {
-    API URL mismatch (UC-001 non-functional)
-    Status: OPEN
-    PR: #19
-    Severity: Critical
-  }
-  class "C2-MAJ-1" as maj2_1 {
-    Edit form binding mismatch (UC-006)
-    Status: OPEN
-    PR: #19
-    Severity: Major
-  }
-  class "C2-MAJ-2" as maj2_2 {
-    Missing anti-forgery on AJAX POST
-    Status: OPEN
-    PR: #19
-    Severity: Major
-  }
-  class "C2-MIN-1" as min2_1 {
-    LDAP adapter stub (NotImplementedException)
-    Status: OPEN (DEFERRED to integration)
-    PR: #19
-    Severity: Minor
-  }
-  class "C2-MIN-2" as min2_2 {
-    EmployeeId from request body (security)
-    Status: OPEN
-    PR: #19
-    Severity: Minor
-  }
-  class "C2-MIN-3" as min2_3 {
-    UnitTest1.cs placeholder
-    Status: OPEN
-    PR: #19
-    Severity: Minor
-  }
-  class "C2-MIN-4" as min2_4 {
-    CSV header column names misleading
-    Status: OPEN
-    PR: #19
-    Severity: Minor
-  }
-}
-
-resolved -[hidden]right-> open
-
-@enduml
-```
-
-## Design Model Conformance Detail
-
-| Design Element | ID | Implementation File | Conformance |
-|---|---|---|---|
-| IClockingService | INT-001 | `src/PortalCubaCorp.Application/IClockingService.cs` | PASS — RecordClocking, GetCurrentStatus, GetHistory, GetAllClockings, ExportCsv |
-| INewsService | INT-002 | `src/PortalCubaCorp.Application/INewsService.cs` | PASS — Publish, Edit, Unpublish, GetById, GetPublishedNews, GetFeaturedNews, ListAll |
-| IDirectoryService | INT-003 | `src/PortalCubaCorp.Application/IDirectoryService.cs` | PASS — Search(query, office?) |
-| IWorkerCategoryService | INT-004 | `src/PortalCubaCorp.Application/IWorkerCategoryService.cs` | PASS — AssignCategory, ListCategories, LookupAdUser |
-| IAuditLogger | INT-005 | `src/PortalCubaCorp.Infrastructure/Interfaces/IAuditLogger.cs` | PASS — LogAudit(entityType, entityId, action, author, timestamp) |
-| ILdapGateway | INT-006 | `src/PortalCubaCorp.Infrastructure/Interfaces/ILdapGateway.cs` | PASS — SearchEntries, GetEntryByUserId, ResolveNames |
-| IPersistence | INT-007 | `src/PortalCubaCorp.Infrastructure/Interfaces/IPersistence.cs` | PASS — All methods including ExecuteInTransactionAsync |
-| ClockingRecord | CLS-016 | `src/PortalCubaCorp.Domain/ClockingRecord.cs` | PASS — EmployeeId, Timestamp, Type, IdempotencyKey |
-| NewsItem | CLS-017 | `src/PortalCubaCorp.Domain/NewsItem.cs` | PASS — Title, Body, Category, Status, IsFeatured, CreatedAt, UpdatedAt, AuthorId |
-| WorkerCategory | CLS-018 | `src/PortalCubaCorp.Domain/WorkerCategory.cs` | PASS — AdUserId, Category (2 columns only, CON-009) |
-| AuditRecord | CLS-019 | `src/PortalCubaCorp.Domain/AuditRecord.cs` | PASS — EntityType, EntityId, Action, Author, Timestamp |
-| DirectoryEntry | CLS-020 | `src/PortalCubaCorp.Domain/DirectoryEntry.cs` | PASS — AdUserId, DisplayName, JobTitle, Department, Office, Email, Extension; FromLdapAttributes with N/A fallback |
-| NewsStatus enum | CLS-013 | `src/PortalCubaCorp.Domain/Enums.cs` | PASS — Published, Unpublished (no Draft state) |
-| AuditAction enum | CLS-015 | `src/PortalCubaCorp.Domain/Enums.cs` | PASS — Publish, Edit, Unpublish, CategoryChanged |
-
-## SAD Implementation View Conformance
-
-| SAD Component | ID | Implementation Project | Conformance |
-|---|---|---|---|
-| Portal.Presentation | COMP-001 | `src/PortalCubaCorp/` | PASS — Razor Pages, Program.cs DI, OIDC auth |
-| Portal.Services | COMP-002..004 | `src/PortalCubaCorp.Application/` | PASS — ClockingService, NewsService, DirectoryService, WorkerCategoryService |
-| Portal.Infrastructure | COMP-005..008 | `src/PortalCubaCorp.Infrastructure/` | PASS — LdapGateway, PersistenceGateway, AuditInterceptor, PortalDbContext |
-| Portal.Domain | — | `src/PortalCubaCorp.Domain/` | PASS — Entities, enums, value objects |
-| Layer dependencies | — | csproj references | PASS — Domain ← Infrastructure ← Application ← Presentation; no circular deps |
+**Required actions for C2 Cycle 3:**
+1. Implementer must fix all 7 C2 findings in PR #19
+2. Code Reviewer re-reviews PR #19
+3. Integrator merges PR #19 into iteration/C2
+4. PR #21 re-opened for integration to main
+5. PR #8 closed as stale
 
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| PR #19 | UC-001..UC-010, FR-001..FR-010 | Implements | src/PortalCubaCorp/ (all Pages, JS, CSS) |
-| PR #20 | MAJOR-1, MINOR-1, MINOR-3, MINOR-4, CR-010, CR-011 | Resolves | ClockingService.cs, DirectoryService.cs, TestDoubles.cs |
-| C2-CRIT-1 | UC-001, FR-001, AC-001, AC-005 | Derives | ClockingApi.cshtml, clocking-retry.js |
+| C2-CRIT-1 | UC-001, FR-001, AC-001 | Derives | clocking-retry.js, Index.cshtml, ClockingApi.cshtml |
 | C2-MAJ-1 | UC-006, FR-006 | Derives | News/Edit.cshtml, News/Edit.cshtml.cs |
 | C2-MAJ-2 | UC-001, FR-001, AC-001 | Derives | clocking-retry.js, Index.cshtml |
 | C2-MIN-1 | R001, CON-005 | DependsOn | NovellLdapConnectionAdapter.cs |
 | C2-MIN-2 | SEC-001, SEC-002, CON-004 | Derives | ClockingApi.cshtml.cs |
 | C2-MIN-3 | CR-014 | Derives | UnitTest1.cs |
 | C2-MIN-4 | FR-004, CR-012 | Derives | ClockingService.cs (ExportCsv) |
-| MAJOR-1 (C1) | FR-008, CR-010 | Resolved by | PR #19, PR #20 |
-| MINOR-1 (C1) | FR-009, CR-015 | Resolved by | PR #19, PR #20 |
-| MINOR-3 (C1) | AC-005, CR-011 | Resolved by | PR #19, PR #20 |
-| MINOR-4 (C1) | CR-011, CR-018 | Resolved by | PR #19, PR #20 |
+| F1 (Design Model) | INT-003, MINOR-1 (C1) | Derives | IDirectoryService.cs, DirectoryService.cs |
+| F2 (Test Case) | C2-MIN-3, CR-014 | Derives | UnitTest1.cs |
+| MAJOR-1 (C1, RESOLVED) | FR-008, CR-010 | Resolved by | PR #19, PR #20 |
+| MINOR-1 (C1, RESOLVED) | FR-009, CR-015 | Resolved by | PR #19, PR #20 |
+| MINOR-3 (C1, RESOLVED) | AC-005, CR-011 | Resolved by | PR #19, PR #20 |
+| MINOR-4 (C1, RESOLVED) | CR-011, CR-018 | Resolved by | PR #19, PR #20 |
 | Design Model conformance | INT-001..INT-007, CLS-016..CLS-020 | Realizes | All source files in src/ |
 | SAD Implementation View | COMP-001..COMP-008, ADR-001..ADR-005 | Realizes | All .csproj project structure |
-| Test coverage | TC-001..TC-030, CR-013, CR-014 | Tests | All test files in tests/ |
+| Test coverage | TC-001..TC-035, CR-013, CR-014 | Tests | All test files in tests/ |
+| CI Build (main) | CON-001, CON-003 | DependsOn | GitHub Actions run 33190913275 |
+| CI Build (iteration/C2) | CON-001, CON-003 | DependsOn | GitHub Actions run 33189502125 |
+| CI Build (feature/C2-presentation) | CON-001, CON-003 | DependsOn | GitHub Actions run 33188698124 |
+| PR #19 | UC-001..UC-010 | Realizes | feature/C2-presentation branch |
+| PR #20 (closed) | C1 findings | Resolved by | iteration/C2 branch |
+| PR #21 | IOC milestone | DependsOn | PR #19 merge (blocked) |
+| PR #8 | C1 presentation | Realizes | iteration/C1 (stale) |
+| Stakeholder sanction (REFUSED) | STK-001 answer (IOC C2) | Refines | IOC milestone decision (NOT ACHIEVED) |
