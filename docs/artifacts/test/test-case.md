@@ -1771,7 +1771,6 @@ CCH --> CIT
 @enduml
 ```
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | TC-001 | UC-001 (main flow) | Tests | ClockingService.cs, ClockingServiceTests.cs |
@@ -1822,3 +1821,16 @@ CCH --> CIT
 | MAJOR-1 finding | FR-008, V004 | Tests | TC-023, TC-024 |
 | MINOR-2 finding | INT-001, CON-004 | Tests | TC-022 |
 | MINOR-3/MINOR-4 findings | ClockingService.cs | Tests | TC-021 |
+| ISSUE-13 finding | TC-028, test code | Tests | DirectoryServiceTests.cs |
+| ISSUE-14 finding | test scaffolding | Tests | UnitTest1.cs |
+| INFRA-BLOCK-1 | STK-003, CON-004 | DependsOn | TC-022, TC-028, TC-029 |
+| INFRA-BLOCK-2 | CON-006, deployment | DependsOn | TC-011, TC-012, TC-029, TC-030 |
+| TD-014 | TC-016 (empty month) | Refines | CSV export boundary |
+| TD-015 | TC-023, MAJOR-1 | Refines | IsFeatured pre-seeded data |
+| TD-016 | TC-001 (special chars) | Refines | Idempotency key boundary |
+| TD-017 | TC-007, CON-012 | Refines | LDAP whitelist enforcement |
+| TD-018 | TC-017 (all featured) | Refines | Featured news edge case |
+| TD-019 | TC-003 (corrupted localStorage) | Refines | Offline retry robustness |
+| TD-020 | TC-015 (year boundary) | Refines | Month filter year transition |
+| C1 Quality Assessment | All TCs, NFR-001..004, AC-001..005 | Derives | This Test Case artifact |
+| C1 Defect Pattern Analysis | Issues #10..#14, MAJOR-1, MINOR-1..4 | Derives | This Test Case artifact |
