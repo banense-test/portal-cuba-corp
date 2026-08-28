@@ -1751,13 +1751,14 @@ All tables are in **3NF**:
 | Audit Trail (who did what, when) | Interceptor pattern — same transaction as the audited operation; append-only table; author from OIDC token subject claim; timestamp from server clock | EF Core SaveInterceptor + PostgreSQL audit_records table (CON-003) |
 | Offline Retry (AC-005 — 5-min network drop tolerance) | Idempotency key on clockings table; UNIQUE index prevents duplicate inserts; server accepts client timestamp | clocking-retry.js (CON-002) + PostgreSQL UNIQUE constraint (CON-003) |
 ## Boundary Classes and Navigation Map
-
 > **Contributed by:** User-Interface Designer (Analysis & Design Discipline)
-> **Purpose:** This section contains the interaction flows (activity diagrams per UC), the Navigation Topology (state machine of all screens), and Salt wireframes for primary screens. These are the user-interface realizations of all use cases — the direct translation of user goals into observable, navigable screen flows.
+> **Purpose:** This section contains the interaction flows (activity diagrams with user/system swimlanes per UC), the Navigation Topology (state machine of all screens), Salt wireframes for primary screens, and UI Patterns. These are the user-interface realizations of all use cases — the direct translation of user goals into observable, navigable screen flows. CON-011: the custom design at `docs/inputs/employee-portal-design.html` is MANDATORY and authoritative for the UI visual layer.
 
 ### Navigation Topology
 
 The following state machine defines ALL screens in the system, their relationships, and the conditions under which transitions fire. Every screen is a node; every user action causing a screen change is a directed edge with a guard condition. This model can be validated for: unreachable screens, dead-end screens, missing error states, and circular navigation traps.
+
+**Validation results:** All 19 screens are reachable from the initial state. No dead-end screens without explicit intent (Error and Timeout both have exit transitions). No circular navigation traps (all back-navigation paths return to a hub screen). Session timeout and error states are explicit terminal handlers.
 
 ```plantuml
 @startuml
@@ -1792,20 +1793,21 @@ MAIN_EMP --> MY_CLOCK : click "My Clockings"
 MY_CLOCK --> MAIN_EMP : click "Back"
 
 MAIN_EMP --> CLOCK_CONF : press Clock In/Out\n[network OK]
-MAIN_EMP --> CLOCK_ERR : press Clock In/Out\n[network down]\n[retry < 5 min]
-CLOCK_ERR --> CLOCK_CONF : network restored\n[retry succeeds]
-CLOCK_ERR --> CLOCK_ERR : network still down\n[retry < 5 min]
-CLOCK_ERR --> ERROR : retry exhausted\n[5 min elapsed]
+MAIN_EMP --> CLOCK_ERR : press Clock In/Out\n[network down > 5 min]
+CLOCK_CONF --> MAIN_EMP : confirmation displayed
+CLOCK_ERR --> MAIN_EMP : error dismissed
 
 MAIN_EMP --> NEWS_FEED : scroll to news section
 NEWS_FEED --> NEWS_DETAIL : click news item
-NEWS_DETAIL --> NEWS_FEED : click "Back"
+NEWS_DETAIL --> NEWS_FEED : click "Collapse"
+NEWS_FEED --> MAIN_EMP : navigate back
 
 MAIN_EMP --> DIR_SEARCH : click "Directory"
-DIR_SEARCH --> DIR_RESULTS : submit search\n[results found]
-DIR_SEARCH --> DIR_RESULTS : submit search\n[no results message]
+DIR_SEARCH --> DIR_RESULTS : click "Search" [results found]
+DIR_SEARCH --> DIR_SEARCH : click "Search" [no results]
 DIR_RESULTS --> DIR_SEARCH : click "New Search"
 DIR_RESULTS --> MAIN_EMP : click "Back"
+DIR_SEARCH --> MAIN_EMP : click "Back"
 
 MAIN_HR --> ALL_CLOCK : click "All Clockings"
 ALL_CLOCK --> EXPORT : click "Export CSV"
@@ -1814,10 +1816,10 @@ ALL_CLOCK --> MAIN_HR : click "Back"
 
 MAIN_HR --> NEWS_MGMT : click "Manage News"
 NEWS_MGMT --> PUB_FORM : click "Publish New"
-PUB_FORM --> NEWS_MGMT : publish confirmed
-NEWS_MGMT --> EDIT_FORM : click "Edit" on item
-EDIT_FORM --> NEWS_MGMT : save confirmed
-NEWS_MGMT --> UNPUB_DLG : click "Unpublish"
+PUB_FORM --> NEWS_MGMT : publish success
+NEWS_MGMT --> EDIT_FORM : click [Edit]
+EDIT_FORM --> NEWS_MGMT : save success
+NEWS_MGMT --> UNPUB_DLG : click [Unpublish]
 UNPUB_DLG --> NEWS_MGMT : confirm unpublish
 UNPUB_DLG --> NEWS_MGMT : cancel
 NEWS_MGMT --> MAIN_HR : click "Back"
@@ -1827,441 +1829,366 @@ CAT_MGMT --> MAIN_HR : click "Back"
 
 MAIN_EMP --> TIMEOUT : session expired
 MAIN_HR --> TIMEOUT : session expired
-TIMEOUT --> LOGIN : click "Login Again"
+TIMEOUT --> LOGIN : click "Re-login"
 
-MAIN_EMP --> [*] : logout
-MAIN_HR --> [*] : logout
-
-note right of CLOCK_ERR
-  AC-005: offline retry
-  Client stores press in localStorage
-  Retries POST for up to 5 minutes
-end note
-
-note right of DIR_SEARCH
-  AC-003: find colleague
-  in under 10 seconds
-  R001: LDAP attribute risk
-end note
+MAIN_EMP --> ERROR : unhandled exception
+MAIN_HR --> ERROR : unhandled exception
+ERROR --> LOGIN : click "Return to Portal"
 
 @enduml
 ```
 
-**Navigation completeness verification:**
-- ✅ All screens reachable from Login (no orphan screens)
-- ✅ No dead-end screens (every screen has a back/exit path)
-- ✅ Error states covered: auth failure (ERROR), offline clocking failure (CLOCK_ERR → ERROR), session timeout (TIMEOUT)
-- ✅ Terminal states explicit: logout (Employee and HR), session timeout → re-login
-- ✅ Guard conditions on all conditional transitions (role-based, network status, retry timeout)
+### Interaction Flows (Activity Diagrams with Swimlanes)
 
-### Interaction Flows (Activity Diagrams per UC)
+The following activity diagrams realize the user-interface interaction for each UC of UI significance. Each diagram uses user and system swimlanes to make the interaction sequence explicit and traceable to use-case flow steps.
 
-#### UC-001: Clock In / Clock Out
+#### UC-001: Clock In / Clock Out — Interaction Flow
 
-**Traces to:** FR-001, AC-001, AC-004, AC-005, NFR-002, USA-005
-**Screen sequence:** Main Page → Clock Button Press → Confirmation Display
+**Traces to:** UC-001 Main Flow steps 1–9, Alternative Flows A1 (offline retry), A2 (timeout), A3 (idempotency)
+**Usability criteria:** USA-005 (clock without HR help), USA-004 (no prior training), NFR-002 (<1s response)
 
 ```plantuml
 @startuml
-title UC-001: Clock In / Clock Out — Interaction Flow
-
-|Employee|
-|System|
+title UC-001: Clock In/Out — UI Interaction Flow
 
 |Employee|
 start
-:Open portal main page;
+:Opens portal main page;
 |System|
-:Retrieve employee clocking status\n(employee id from OIDC token);
-note right: NFR-002: <1s response time
-|System|
-:Display main page with Clock In\nor Clock Out button\n(accent green or danger red);
+:Retrieves clocking status\nfrom database\n(employee id from OIDC token);
+:Displays "Clock In" or "Clock Out"\nbutton based on current status;
 |Employee|
-:Press Clock In/Out button;
-|System|
-:Client records press timestamp\n+ generates idempotency key\nin localStorage;
-|System|
-:Send POST /clocking with\ntimestamp + idempotency key;
-|System|
-:Server records clocking entry\nin PostgreSQL;
-|System|
-:Return confirmation with\nrecorded time;
+:Presses Clock In/Out button;
+|System (Client)|
+:Records press timestamp +\ngenerates idempotency key\nin localStorage;
+:Sends POST request with\ntimestamp + idempotency key;
+|System (Server)|
+:Validates request;
+if (Network available?) then (yes)
+  :Records clocking entry\nin PostgreSQL;
+  :Returns confirmation\nwith recorded time;
+  |System (Client)|
+  :Displays confirmation on screen;
+else (no — A1: offline retry)
+  :Stores press in localStorage;
+  :Retries POST for up to 5 minutes;
+  if (Network restored within 5 min?) then (yes)
+    |System (Server)|
+    :Accepts original client timestamp;
+    :Rejects duplicates\nby idempotency key;
+    :Returns confirmation;
+    |System (Client)|
+    :Displays confirmation;
+  else (no — A2)
+    |System (Client)|
+    :Stops retrying;
+    :Displays "Clocking not recorded\n— report to HR";
+  endif
+endif
 |Employee|
-:See confirmation on screen\n(timestamp + direction);
-stop
-
-|Employee|
-note left: A1: Network error — client retries POST\nfor up to 5 min (AC-005)\nA2: Not restored in 5 min —\n"Clocking not recorded — report to HR"\nA3: Duplicate POST — server returns\noriginal confirmation (idempotency)
+:Sees confirmation or error message;
 stop
 @enduml
 ```
 
-#### UC-002: View Own Clocking History
+#### UC-005: Publish News — Interaction Flow
 
-**Traces to:** FR-002
-**Screen sequence:** Main Page → "My Clockings" Page → Clocking History Table
+**Traces to:** UC-005 Main Flow steps 1–7
+**Usability criteria:** USA-006 (publish without technical assistance), AC-002
 
 ```plantuml
 @startuml
-title UC-002: View Own Clocking History — Interaction Flow
+title UC-005: Publish News — UI Interaction Flow
 
-|Employee|
-|System|
-
-|Employee|
+|HR Administrator|
 start
-:Navigate to "My Clockings" page;
+:Navigates to "Publish News" form;
 |System|
-:Retrieve employee's clocking\nhistory for current month\n(employee id from OIDC token);
+:Verifies HR role from OIDC token;
+:Displays publish form\n(title, body, date, category);
+|HR Administrator|
+:Fills in title, body, date;
+:Selects category\n(General, HR, IT, Events);
+:Clicks "Publish";
 |System|
-:Display clocking history table\n(date, time in, time out,\ndirection);
-|Employee|
-:Review clocking entries;
+:Validates form fields;
+if (All fields valid?) then (yes)
+  :Creates news item\nwith status = Published;
+  :Creates audit record\n(author from OIDC, timestamp);
+  :Persists news item + audit record;
+  :Displays "News published successfully";
+else (no)
+  :Displays validation errors\nper invalid field;
+  |HR Administrator|
+  :Corrects errors and resubmits;
+endif
+|HR Administrator|
+:Sees confirmation;
 stop
 @enduml
 ```
 
-#### UC-003: View All Employee Clockings
+#### UC-007: Unpublish News — Interaction Flow
 
-**Traces to:** FR-003, CON-005
-**Screen sequence:** HR Dashboard → "All Clockings" Page → Clockings Table (with filters)
+**Traces to:** UC-007 Main Flow steps 1–6
+**Usability criteria:** CON-013 (never hard-delete), NFR-004 (audit trail)
 
 ```plantuml
 @startuml
-title UC-003: View All Employee Clockings — Interaction Flow
-
-|HR Administrator|
-|System|
+title UC-007: Unpublish News — UI Interaction Flow
 
 |HR Administrator|
 start
-:Navigate to "All Clockings" page;
+:Navigates to "News Management" list;
 |System|
-:Verify HR role from OIDC token;
-|System|
-:Retrieve all employees' clockings\n(join with AD for employee names);
-note right: CON-005: LDAP read\nfor employee name lookup
-|System|
-:Display clockings table\n(employee name, date, time in,\ntime out, direction);
+:Verifies HR role from OIDC token;
+:Displays all news items with actions\n([Edit] [Unpublish]);
 |HR Administrator|
-:Review clocking data;
-|HR Administrator|
-:Optionally filter by date range\nor employee;
+:Clicks "Unpublish" on a news item;
 |System|
-:Update table with filtered results;
+:Displays confirmation dialog:\n"Unpublish this news item?\nIt will be hidden but not deleted.";
+|HR Administrator|
+:Clicks "Confirm";
+|System|
+:Sets news item status = Unpublished\n(does NOT delete record);
+:Creates audit record\n(author, timestamp,\naction = Unpublished);
+:Persists changes;
+:Displays "News item unpublished";
+|HR Administrator|
+:Sees confirmation;
 stop
 @enduml
 ```
 
-#### UC-004: Export Monthly Clocking Report
+#### UC-008: Read and Filter News — Interaction Flow
 
-**Traces to:** FR-004
-**Screen sequence:** HR Dashboard → "All Clockings" Page → Month Selector → CSV Export
+**Traces to:** UC-008 Main Flow steps 1–7
+**Usability criteria:** USA-001 (mandatory design), USA-004 (no prior training)
 
 ```plantuml
 @startuml
-title UC-004: Export Monthly Clocking Report — Interaction Flow
+title UC-008: Read and Filter News — UI Interaction Flow
 
-|HR Administrator|
-|System|
-
-|HR Administrator|
+|Employee|
 start
-:Navigate to "All Clockings" page;
+:Navigates to main page;
 |System|
-:Verify HR role from OIDC token;
-|System|
-:Display clockings table with\nexport option;
-|HR Administrator|
-:Select month for export;
-|HR Administrator|
-:Click "Export CSV" button;
-|System|
-:Generate CSV file with all\nclocking records for selected month;
-|System|
-:Return CSV file as download;
-|HR Administrator|
-:Receive CSV file download;
+:Retrieves published news items\nsorted by date (newest first);
+:Identifies featured news items;
+:Displays news feed with\nfeatured banners at top;
+|Employee|
+:Views news feed;
+if (Wants to filter?) then (yes)
+  :Selects category filter\n(General, HR, IT, Events);
+  |System|
+  :Filters news items\nby selected category;
+  :Displays filtered results;
+else (no)
+  :Displays all news items;
+endif
+|Employee|
+:Scrolls through news feed;
+if (Clicks news item?) then (yes)
+  |System|
+  :Expands news detail (inline);
+  |Employee|
+  :Reads full news item;
+  :Clicks "Collapse"\nto return to feed;
+else (no)
+  :Continues browsing;
+endif
 stop
 @enduml
 ```
 
-#### UC-005: Publish News
+#### UC-009: Search Employee Directory — Interaction Flow
 
-**Traces to:** FR-005, NFR-004, AC-002, USA-006
-**Screen sequence:** HR Dashboard → "Publish News" Form → Publication Confirmation
+**Traces to:** UC-009 Main Flow steps 1–6, Alternative Flow A1 (no results)
+**Usability criteria:** USA-003 (find colleague in <10s), AC-003, R001 (LDAP attribute risk)
 
 ```plantuml
 @startuml
-title UC-005: Publish News — Interaction Flow
+title UC-009: Search Employee Directory — UI Interaction Flow
 
-|HR Administrator|
-|System|
-
-|HR Administrator|
+|Employee|
 start
-:Navigate to "Publish News" form;
+:Navigates to "Employee Directory";
 |System|
-:Verify HR role from OIDC token;
+:Displays search form\n(name, department, office fields);
+|Employee|
+:Enters search criteria\n(name, department, or office);
+:Clicks "Search";
 |System|
-:Display news form\n(title, body, date, category,\nfeatured flag);
-|HR Administrator|
-:Enter news title;
-|HR Administrator|
-:Enter news body content;
-|HR Administrator|
-:Select category\n(General, HR, IT, Events);
-|HR Administrator|
-:Optionally mark as featured;
-|HR Administrator|
-:Click "Publish" button;
-|System|
-:Validate required fields;
-|System|
-:Persist news item with\nauthor identity from OIDC token\n+ timestamp;
-note right: NFR-004: Audit trail\nAUD-001: author + timestamp
-|System|
-:Display "News published successfully"\nwith confirmation details;
-|HR Administrator|
-:See publication confirmation;
+:Queries Active Directory\nover LDAP with search criteria;
+if (Results found?) then (yes)
+  :Displays results list\n(name, job title, department,\noffice, email, extension);
+  |Employee|
+  :Views colleague information;
+  if (Needs another search?) then (yes)
+    :Enters new criteria;
+    |System|
+    :Queries AD again;
+  else (no)
+    :Done;
+  endif
+else (no results)
+  :Displays "No employees found";
+  |Employee|
+  :Refines search criteria;
+endif
 stop
 @enduml
 ```
 
-#### UC-006: Edit Published News
+#### UC-010: Manage Worker Category — Interaction Flow
 
-**Traces to:** FR-006, NFR-004
-**Screen sequence:** HR Dashboard → News Management List → Edit Form → Update Confirmation
+**Traces to:** UC-010 Main Flow steps 1–8, Alternative Flows A1 (not found), A2 (invalid category)
+**Usability criteria:** USA-006 (HR self-service), NFR-004 (audit trail)
 
 ```plantuml
 @startuml
-title UC-006: Edit Published News — Interaction Flow
-
-|HR Administrator|
-|System|
+title UC-010: Manage Worker Category — UI Interaction Flow
 
 |HR Administrator|
 start
-:Navigate to news management list;
+:Navigates to "Manage Worker Categories";
 |System|
-:Verify HR role from OIDC token;
-|System|
-:Display list of published news items;
+:Verifies HR role from OIDC token;
+:Displays current category assignments\n(AD user id, category);
 |HR Administrator|
-:Select news item to edit;
+:Searches for employee by AD user id;
 |System|
-:Display edit form pre-populated\nwith current title, body,\ncategory, featured flag;
+:Looks up AD user id via LDAP;
+if (Employee found in AD?) then (yes)
+  :Displays employee name\n+ current category;
+  |HR Administrator|
+  :Assigns or updates category;
+  :Clicks "Save";
+  |System|
+  :Validates category value;
+  if (Category valid?) then (yes)
+    :Persists worker category link\n(AD user id, category)\nin local table;
+    :Creates audit record\n(author, timestamp,\naction = CategoryChanged);
+    :Displays "Category updated successfully";
+  else (no — A2)
+    :Displays validation error;
+  endif
+else (no — A1)
+  :Displays "Employee not found in AD";
+endif
 |HR Administrator|
-:Modify news content;
-|HR Administrator|
-:Click "Save Changes" button;
-|System|
-:Validate required fields;
-|System|
-:Update news item and create\naudit record (editor identity\nfrom OIDC token + timestamp);
-note right: NFR-004: Audit trail\nAUD-001: every edit audited
-|System|
-:Display "News updated successfully";
-|HR Administrator|
-:See update confirmation;
+:Sees confirmation or error;
 stop
 @enduml
 ```
 
-#### UC-007: Unpublish News
+#### Tabular Interaction Flows (Standard UCs)
 
-**Traces to:** FR-007, CON-013, NFR-004
-**Screen sequence:** HR Dashboard → News Management List → Unpublish Confirmation Dialog → Unpublish Confirmation
+**UC-002: View Own Clocking History** — Traces to UC-002 Main Flow steps 1–5. Usability: USA-005, USA-004.
 
-```plantuml
-@startuml
-title UC-007: Unpublish News — Interaction Flow
+| Step | Actor | Action | System Response |
+|---|---|---|---|
+| 1 | Employee | Clicks "My Clockings" from main page | Navigates to clocking history page |
+| 2 | System | — | Retrieves current month's clocking records for authenticated employee |
+| 3 | System | — | Displays table: date, time in, time out, direction |
+| 4 | Employee | Reviews history | — |
+| 5 | Employee | Clicks "Back" | Returns to main page |
 
-|HR Administrator|
-|System|
+**UC-003: View All Employee Clockings** — Traces to UC-003 Main Flow steps 1–6. Usability: USA-006.
 
-|HR Administrator|
-start
-:Navigate to news management list;
-|System|
-:Verify HR role from OIDC token;
-|System|
-:Display list of published news items;
-|HR Administrator|
-:Click "Unpublish" on a news item;
-|System|
-:Display confirmation dialog:\n"Unpublish this news item?\nIt will be hidden but not deleted.";
-|HR Administrator|
-:Confirm unpublish action;
-|System|
-:Set news item status to unpublished\n(record preserved, not deleted);
-note right: CON-013: never hard-deleted\nAUD-001: unpublish audited\n(author + timestamp)
-|System|
-:Create audit record\n(unpublisher identity from\nOIDC token + timestamp);
-|System|
-:Display "News unpublished successfully";
-|HR Administrator|
-:See unpublish confirmation;
-stop
+| Step | Actor | Action | System Response |
+|---|---|---|---|
+| 1 | HR Admin | Navigates to "All Clockings" from HR dashboard | Verifies HR role from OIDC token |
+| 2 | System | — | Displays filter controls (month selector, employee name search) |
+| 3 | HR Admin | Selects month and/or enters employee name | — |
+| 4 | System | — | Queries clockings from PostgreSQL; resolves employee name via LDAP |
+| 5 | System | — | Displays results table: employee name, date, time in, time out, direction |
+| 6 | HR Admin | Reviews clockings | — |
 
-|HR Administrator|
-note left: A1: Cancel — news item\nremains published, no change
-stop
-@enduml
-```
+**UC-004: Export Monthly Clocking Report** — Traces to UC-004 Main Flow steps 1–5. Usability: USA-006, PERF-004.
 
-#### UC-008: Read and Filter News
+| Step | Actor | Action | System Response |
+|---|---|---|---|
+| 1 | HR Admin | On "All Clockings" page, selects target month | — |
+| 2 | HR Admin | Clicks "Export CSV" | — |
+| 3 | System | — | Generates CSV file with all clockings for selected month |
+| 4 | System | — | Triggers browser download dialog |
+| 5 | HR Admin | Saves file | — |
 
-**Traces to:** FR-008, USA-001
-**Screen sequence:** Main Page → News Feed (with category filter) → News Detail
+**UC-006: Edit Published News** — Traces to UC-006 Main Flow steps 1–6. Usability: USA-006, NFR-004.
 
-```plantuml
-@startuml
-title UC-008: Read and Filter News — Interaction Flow
+| Step | Actor | Action | System Response |
+|---|---|---|---|
+| 1 | HR Admin | Navigates to "News Management" list | Verifies HR role; displays all news items with [Edit] action |
+| 2 | HR Admin | Clicks [Edit] on a news item | Opens edit form pre-populated with current title, body, date, category |
+| 3 | HR Admin | Modifies fields and clicks "Save" | — |
+| 4 | System | — | Validates form fields |
+| 5 | System | — | Updates news item; creates audit record (author, timestamp, action = Edited) |
+| 6 | System | — | Displays "News updated successfully"; returns to news management list |
 
-|Employee|
-|System|
+### Wireframes (Salt)
 
-|Employee|
-start
-:Navigate to portal main page;
-|System|
-:Retrieve published news items\nsorted by date (descending);
-|System|
-:Display news feed on main page\n(featured items with banner at top);
-|Employee|
-:Browse news items;
-|System|
-:Display news cards with\ntitle, date, category badge,\nand body preview;
-|Employee|
-:Select category filter\n(General, HR, IT, Events);
-|System|
-:Filter news list by selected category;
-|System|
-:Update news feed showing\nonly filtered category items;
-|Employee|
-:Click news item to read full text;
-|System|
-:Expand news item or navigate\nto detail view;
-|Employee|
-:Read full news content;
-stop
-@enduml
-```
+The following Salt wireframes define the visual structure of all primary screens. CON-011: the custom design at `docs/inputs/employee-portal-design.html` is MANDATORY and authoritative for the UI visual layer — these wireframes capture the structural layout that the Implementer must follow.
 
-#### UC-009: Search Employee Directory
-
-**Traces to:** FR-009, CON-005, CON-012, R001, AC-003, USA-003
-**Screen sequence:** Main Page → Directory Search Form → Search Results → Colleague Detail Card
-
-```plantuml
-@startuml
-title UC-009: Search Employee Directory — Interaction Flow
-
-|Employee|
-|System|
-
-|Employee|
-start
-:Navigate to Employee Directory page;
-|System|
-:Display directory search form\n(name, department, office fields);
-|Employee|
-:Enter search criteria\n(name and/or department and/or office);
-|System|
-:Query Active Directory over LDAP\nwith search filter;
-note right: R001: LDAP attribute\nconsistency risk\nCON-005: read-only LDAP\nCON-012: corporate data only
-|System|
-:Retrieve matching entries\n(name, job title, department,\noffice, email, extension);
-|System|
-:Display search results as\ndirectory cards/list;
-|Employee|
-:View colleague contact info;
-note left: AC-003: find colleague\nin under 10 seconds
-stop
-
-|Employee|
-note left: A1: No results — display\n"No colleagues found matching criteria"
-stop
-@enduml
-```
-
-#### UC-010: Manage Worker Category
-
-**Traces to:** FR-010, CON-009, NFR-004
-**Screen sequence:** HR Dashboard → "Worker Categories" Page → Employee Search → Category Assignment → Confirmation
-
-```plantuml
-@startuml
-title UC-010: Manage Worker Category — Interaction Flow
-
-|HR Administrator|
-|System|
-
-|HR Administrator|
-start
-:Navigate to "Worker Categories" page;
-|System|
-:Verify HR role from OIDC token;
-|System|
-:Display current worker category\nassignments (AD user id, category);
-|HR Administrator|
-:Search for employee by AD user id;
-|System|
-:Look up employee in AD via LDAP;
-|System|
-:Display employee info\n(name, current category);
-|HR Administrator|
-:Assign or update worker category;
-|System|
-:Validate category value;
-|System|
-:Persist worker category link\n(AD user id, category)\nin local table;
-note right: CON-009: local table holds\nonly AD user id + category\nAUD-002: audit category change
-|System|
-:Create audit record\n(author identity from OIDC\ntoken + timestamp);
-|System|
-:Display "Category updated successfully";
-|HR Administrator|
-:See update confirmation;
-stop
-
-|HR Administrator|
-note left: A1: Employee not found in AD —\ndisplay "Employee not found"\nA2: Invalid category —\ndisplay validation error
-stop
-@enduml
-```
-
-### Wireframes (Primary Screens)
-
-#### Main Page (Employee) — Clock In/Out + News Feed
+#### Main Page (Employee)
 
 ```plantuml
 @startsalt
-title Main Page (Employee) — Wireframe
+title Primary Screen: Main Page (Employee)
 {
+  +Portal Cuba Corp - Employee Portal+
   +----------------------------------------------------------+
-  |d{"Portal Cuba Corp"                        [Logout] }|
-  |  [Clock In]  or  [Clock Out]                             |
-  |  Last clocking: 2026-08-28 08:32                         |
+  |  [Logo]  Cuba Corp Portal          [Employee Name] [Logout]|
   +----------------------------------------------------------+
-  |  Featured News                                           |
+  |  Navigation: [Home] [My Clockings] [Directory]             |
+  +----------------------------------------------------------+
+  |  Clock In / Out                                            |
   |  +------------------------------------------------------+|
-  |  | [FEATURED BANNER] Company Picnic Sept 15             ||
-  |  | Category: Events | 2026-08-26                        ||
+  |  |  Status: Not Clocked In                              ||
+  |  |  [    Clock In    ]                                 ||
   |  +------------------------------------------------------+|
-  |  News Feed                                               |
-  |  [All] [General] [HR] [IT] [Events]                    |
+  +----------------------------------------------------------+
+  |  Featured News                                            |
   |  +------------------------------------------------------+|
-  |  | New HR Policy Update                                 ||
-  |  | Category: HR | 2026-08-27                            ||
-  |  | Preview of news body text...                         ||
+  |  | [BANNER] Company Picnic — Saturday Aug 30            ||
   |  +------------------------------------------------------+|
-  |  | Network Maintenance Scheduled                        ||
-  |  | Category: IT | 2026-08-25                            ||
-  |  | Preview of news body text...                         ||
+  +----------------------------------------------------------+
+  |  News Feed                              [All] [General] [HR] [IT] [Events]|
   |  +------------------------------------------------------+|
-  |  [My Clockings]  [Employee Directory]                    |
+  |  | HR Policy Update — HR — 08/27                        ||
+  |  | Network Maintenance — IT — 08/25                     ||
+  |  | Company Picnic — Events — 08/26                      ||
+  |  +------------------------------------------------------+|
+  +----------------------------------------------------------+
+}
+@endsalt
+```
+
+#### Publish News (HR)
+
+```plantuml
+@startsalt
+title Primary Screen: Publish News (HR)
+{
+  +Portal Cuba Corp - HR Dashboard+
+  +----------------------------------------------------------+
+  |  [Logo]  Cuba Corp Portal          [HR Admin] [Logout]    |
+  +----------------------------------------------------------+
+  |  Navigation: [Home] [All Clockings] [Manage News] [Categories]|
+  +----------------------------------------------------------+
+  |  Publish News                                              |
+  |  +------------------------------------------------------+|
+  |  |  Title: [____________________________________]       ||
+  |  |  Category: [General v]                              ||
+  |  |  Date: [08/28/2026]                                 ||
+  |  |  Body:                                              ||
+  |  |  +------------------------------------------------+||
+  |  |  |                                                |||
+  |  |  |                                                |||
+  |  |  |                                                |||
+  |  |  +------------------------------------------------+||
+  |  |  [Publish]  [Cancel]                               ||
+  |  +------------------------------------------------------+|
   +----------------------------------------------------------+
 }
 @endsalt
@@ -2271,54 +2198,75 @@ title Main Page (Employee) — Wireframe
 
 ```plantuml
 @startsalt
-title Employee Directory Search — Wireframe
+title Primary Screen: Employee Directory Search
 {
+  +Portal Cuba Corp - Employee Directory+
   +----------------------------------------------------------+
-  |d{"Portal Cuba Corp"                        [Logout] }|
-  |  < Back to Main Page                                     |
+  |  [Logo]  Cuba Corp Portal          [Employee] [Logout]    |
   +----------------------------------------------------------+
-  |  Employee Directory                                      |
-  |  Name: [____________]                                    |
-  |  Department: [____________]                              |
-  |  Office: [____________]                                  |
-  |  [ Search ]                                              |
+  |  Navigation: [Home] [My Clockings] [Directory]             |
   +----------------------------------------------------------+
-  |  Results (3 found)                                      |
+  |  Search Employee Directory                                 |
   |  +------------------------------------------------------+|
-  |  | Maria Rodriguez                                      ||
-  |  | Job Title: Accountant | Dept: Finance               ||
-  |  | Office: Havana | Ext: 2201                           ||
-  |  | maria.rodriguez@cubacorp.cu                          ||
+  |  |  Name: [____________]                                ||
+  |  |  Department: [____________]                          ||
+  |  |  Office: [All v]                                    ||
+  |  |  [   Search   ]                                     ||
   |  +------------------------------------------------------+|
-  |  | Carlos Perez                                         ||
-  |  | Job Title: Developer | Dept: IT                     ||
-  |  | Office: Santiago | Ext: 3305                         ||
-  |  | carlos.perez@cubacorp.cu                             ||
+  +----------------------------------------------------------+
+  |  Results                                                   |
   |  +------------------------------------------------------+|
-  |  | Ana Gomez                                            ||
-  |  | Job Title: HR Specialist | Dept: HR                 ||
-  |  | Office: Havana | Ext: 2105                           ||
-  |  | ana.gomez@cubacorp.cu                                ||
+  |  |Name           | Job Title  | Dept    | Office | Email|Ext||
+  |  |M. Rodriguez   | Developer  | IT      | Havana | m.r@ | 123||
+  |  |C. Perez       | Accountant | Finance | Havana | c.p@ | 456||
+  |  |A. Gomez       | HR Staff   | HR      | Santiago| a.g@ | 789||
   |  +------------------------------------------------------+|
   +----------------------------------------------------------+
 }
 @endsalt
 ```
 
-#### HR Dashboard — All Clockings + News Management
+#### News Management (HR)
 
 ```plantuml
 @startsalt
-title HR Dashboard — Wireframe
+title Primary Screen: News Management (HR)
 {
+  +Portal Cuba Corp - HR Dashboard+
   +----------------------------------------------------------+
-  |d{"Portal Cuba Corp"            [HR Admin] [Logout] }   |
+  |  [Logo]  Cuba Corp Portal          [HR Admin] [Logout]    |
   +----------------------------------------------------------+
-  |  HR Dashboard                                            |
-  |  [All Clockings]  [Manage News]  [Worker Categories]    |
+  |  Navigation: [Home] [All Clockings] [Manage News] [Categories]|
   +----------------------------------------------------------+
-  |  All Clockings                                           |
-  |  Month: [August 2026 v]  [Export CSV]                   |
+  |  Manage News                              [Publish New]     |
+  |  +------------------------------------------------------+|
+  |  |Title              | Category | Date    | Status  | Actions   ||
+  |  |Company Picnic     | Events   | 08/26   |Published|[Edit][Unpub]||
+  |  |HR Policy Update   | HR       | 08/27   |Published|[Edit][Unpub]||
+  |  |Network Maint.     | IT       | 08/25   |Unpublished|[Edit][Pub]||
+  |  +------------------------------------------------------+|
+  +----------------------------------------------------------+
+}
+@endsalt
+```
+
+#### All Clockings (HR)
+
+```plantuml
+@startsalt
+title Primary Screen: All Clockings (HR)
+{
+  +Portal Cuba Corp - HR Dashboard+
+  +----------------------------------------------------------+
+  |  [Logo]  Cuba Corp Portal          [HR Admin] [Logout]    |
+  +----------------------------------------------------------+
+  |  Navigation: [Home] [All Clockings] [Manage News] [Categories]|
+  +----------------------------------------------------------+
+  |  All Employee Clockings                                    |
+  |  +------------------------------------------------------+|
+  |  |  Month: [August 2026 v]    [Export CSV]              ||
+  |  |  Employee: [____________]                           ||
+  |  +------------------------------------------------------+|
   |  +------------------------------------------------------+|
   |  |Employee    | Date    | Time In | Time Out | Direction||
   |  |M. Rodriguez| 08/28   | 08:32   | ---      | In      ||
@@ -2326,19 +2274,109 @@ title HR Dashboard — Wireframe
   |  |A. Gomez    | 08/27   | 08:30   | 17:15    | In/Out  ||
   |  +------------------------------------------------------+|
   +----------------------------------------------------------+
-  |  Manage News                                             |
-  |  [Publish New]                                           |
+}
+@endsalt
+```
+
+#### Worker Categories (HR)
+
+```plantuml
+@startsalt
+title Primary Screen: Worker Categories (HR)
+{
+  +Portal Cuba Corp - HR Dashboard+
+  +----------------------------------------------------------+
+  |  [Logo]  Cuba Corp Portal          [HR Admin] [Logout]    |
+  +----------------------------------------------------------+
+  |  Navigation: [Home] [All Clockings] [Manage News] [Categories]|
+  +----------------------------------------------------------+
+  |  Manage Worker Categories                                  |
   |  +------------------------------------------------------+|
-  |  |Title              | Category | Date    | Actions     ||
-  |  |Company Picnic     | Events   | 08/26   |[Edit][Unpub]||
-  |  |HR Policy Update   | HR       | 08/27   |[Edit][Unpub]||
-  |  |Network Maint.     | IT       | 08/25   |[Edit][Unpub]||
+  |  |  Search AD User: [____________]  [Search]             ||
+  |  +------------------------------------------------------+|
+  |  Current Assignments                                      |
+  |  +------------------------------------------------------+|
+  |  |AD User ID    | Employee Name  | Category  | Actions  ||
+  |  |jrodriguez    | M. Rodriguez   | IT        | [Edit]   ||
+  |  |cperez        | C. Perez       | Finance   | [Edit]   ||
+  |  |agomez        | A. Gomez       | HR        | [Edit]   ||
+  |  +------------------------------------------------------+|
+  |  +------------------------------------------------------+|
+  |  |  Assign Category                                     ||
+  |  |  AD User ID: [____________]                          ||
+  |  |  Category: [Select v]                                ||
+  |  |  [   Save   ]                                        ||
   |  +------------------------------------------------------+|
   +----------------------------------------------------------+
 }
 @endsalt
 ```
 
+### UI Patterns
+
+> **Contributed by:** User-Interface Designer (Analysis & Design Discipline)
+> **Purpose:** Interaction conventions, visual hierarchy, terminology, and accessibility rules that the Designer, Implementer, and Technical Writer must follow to ensure consistency across all screens. CON-011: the custom design at `docs/inputs/employee-portal-design.html` is MANDATORY and authoritative.
+
+#### Interaction Conventions
+
+| Pattern ID | Pattern | Rule | Rationale | Traces To |
+|---|---|---|---|---|
+| UIP-001 | Navigation bar | Persistent top navigation bar with role-based links. Employee: [Home] [My Clockings] [Directory]. HR: [Home] [All Clockings] [Manage News] [Categories]. | Consistency (Nielsen #4); recognition over recall (Nielsen #6) | CON-011, USA-004 |
+| UIP-002 | Primary action button | Single prominent button per primary action (e.g., "Clock In" is the only large button on the main page). | Fitts's Law; error prevention (Nielsen #5) | USA-005, AC-001 |
+| UIP-003 | Confirmation dialog | Destructive or irreversible actions (unpublish) require a confirmation dialog with clear wording: "Unpublish this news item? It will be hidden but not deleted." | User control and freedom (Nielsen #3); error prevention (Nielsen #5) | CON-013, UC-007 |
+| UIP-004 | Inline feedback | Success/error messages appear inline on the same page (no redirect for confirmation). Clocking confirmation, validation errors, and audit confirmations display on-page. | Visibility of system status (Nielsen #1); minimize page reloads | NFR-002, USA-005 |
+| UIP-005 | Form validation | Field-level validation errors display next to the invalid field. Summary of all errors at top of form. | Error recovery (Nielsen #9); error prevention (Nielsen #5) | USA-006, AC-002 |
+| UIP-006 | Back navigation | Every non-main page has a "Back" link/button returning to the preceding hub screen. No dead-end screens. | User control and freedom (Nielsen #3) | Navigation Topology |
+| UIP-007 | Category filter | News category filter uses pill/toggle buttons (All, General, HR, IT, Events) — not a dropdown. Selected state is visually distinct. | Recognition over recall (Nielsen #6); ease of use | USA-004, FR-008 |
+| UIP-008 | Table actions | Action buttons in table rows use text labels ([Edit] [Unpublish]), not icons alone. | Recognition over recall (Nielsen #6); accessibility | USA-004 |
+
+#### Visual Hierarchy
+
+| Pattern ID | Element | Rule | Traces To |
+|---|---|---|---|
+| UIV-001 | Page header | Logo + portal name + user name + logout button. Consistent across all pages. | CON-011 |
+| UIV-002 | Section headers | Each functional area on a page has a clear section header (e.g., "Clock In / Out", "Featured News", "News Feed"). | CON-011, USA-004 |
+| UIV-003 | Featured news banner | Featured news items display with a visually distinct banner at the top of the news section. | FR-008, CON-011 |
+| UIV-004 | Status indicators | Clocking status ("Not Clocked In" / "Clocked In at 08:32") is prominently displayed above the action button. | USA-005, AC-001 |
+| UIV-005 | Table layout | Data tables (clockings, news management, directory results) use consistent column alignment: left-aligned text, right-aligned numbers. | CON-011 |
+
+#### Terminology
+
+| Term | Usage | Rationale |
+|---|---|---|
+| "Clock In" / "Clock Out" | Button labels — never "Check In", "Punch In", or "Register Entry" | Matches employee mental model; AC-001 |
+| "My Clockings" | Navigation link to personal clocking history — never "Time Records" or "Attendance Log" | Self-descriptive; USA-004 |
+| "Manage News" | HR navigation link — never "Content Management" or "Article Admin" | Simple, role-appropriate; AC-002 |
+| "Unpublish" | Action to hide a news item — never "Delete" or "Remove" | CON-013: items are never hard-deleted |
+| "Worker Categories" | HR navigation link — never "Employee Classification" or "Staff Tags" | Matches HR terminology |
+| "Directory" | Navigation link — never "Phone Book" or "Contact List" | Replaces PDF phone directory; AC-003 |
+
+#### Accessibility Rules
+
+| Rule ID | Rule | Traces To |
+|---|---|---|
+| UIA-001 | All interactive elements (buttons, links, form fields) are keyboard-navigable. Tab order follows visual order. | WCAG 2.1 — Operable |
+| UIA-002 | Color is never the sole indicator of status or category. Text labels accompany all color-coded elements. | WCAG 2.1 — Perceivable; R001 fallback |
+| UIA-003 | Form fields have associated `<label>` elements. Error messages are programmatically associated with their fields. | WCAG 2.1 — Understandable |
+| UIA-004 | Missing AD attributes display "N/A" text, not blank cells or red indicators. | R001 fallback; WCAG 2.1 — Robust |
+| UIA-005 | Page uses semantic HTML structure (header, nav, main, section, footer). | WCAG 2.1 — Robust |
+
+> **Note:** No specific accessibility standard (WCAG, EN 301 549, Section 508) was declared by the stakeholder in the Work Order. The rules above are baseline good practice derived from WCAG 2.1 principles. If the stakeholder declares a specific compliance level, these rules must be updated to reference it explicitly.
+
+### UI Flow Coverage Summary
+
+| UC | UI Significance | Flow Type | Diagram | UC Steps Covered |
+|---|---|---|---|---|
+| UC-001 | Critical (clocking + offline) | Activity (swimlanes) | ✅ | Main + A1, A2, A3 |
+| UC-002 | Standard | Tabular | — | Main (5 steps) |
+| UC-003 | Standard | Tabular | — | Main (6 steps) |
+| UC-004 | Standard | Tabular | — | Main (5 steps) |
+| UC-005 | Critical (publish + audit) | Activity (swimlanes) | ✅ | Main (7 steps) |
+| UC-006 | Standard | Tabular | — | Main (6 steps) |
+| UC-007 | Critical (unpublish + confirm) | Activity (swimlanes) | ✅ | Main (6 steps) |
+| UC-008 | Critical (news feed + filter) | Activity (swimlanes) | ✅ | Main (7 steps) |
+| UC-009 | Critical (directory + R001) | Activity (swimlanes) | ✅ | Main + A1 |
+| UC-010 | Critical (category + audit) | Activity (swimlanes) | ✅ | Main + A1, A2 |
 ## Capsules, Protocols and Signals
 Not applicable for this technology stack. The portal is a Razor Pages monolith on .NET 10 — no capsules, protocols, or signals are used. All communication is synchronous HTTP request/response within a single process.
 ## Traceability
