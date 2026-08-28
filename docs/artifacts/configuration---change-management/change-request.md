@@ -298,19 +298,23 @@ stop
 | Closure Rate | 0% | 27% | ↑ First closures — process working |
 | Avg Age (approved, no PR) | N/A | 2 iterations (#1, #2) | ⚠ Architectural CRs aging — need PRs |
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| CR-001 (#1) | R001 (exposure=9), FR-009 | Derives | UC-009, SAD LDAP integration |
+| CR-001 (#1) | R001, CON-005 | Derives | UC-009, NovellLdapConnectionAdapter.cs |
 | CR-002 (#2) | AC-005, R006 (exposure=6) | Derives | UC-001, ClockingService, clocking-retry.js |
 | CR-003 (#3) | NFR-004 | Derives | UC-005, UC-006, UC-007, UC-010 |
-| CR-006 (#6) | PR #4, all UCs | DependsOn | PR #4, PR #8, PR #9 |
+| CR-006 (#6) | PR #4, all UCs | DependsOn | PR #4 (merged), PR #9 (merged) |
 | CR-010 (#10) | FR-008, Review Record MAJOR-1 | Derives | UC-005, UC-008, NewsService.cs, PublishNews.cshtml.cs |
 | CR-011 (#11) | AC-005, Review Record MINOR-3 | Derives | UC-001, ClockingService.cs, IPersistence |
 | CR-012 (#12) | FR-004 | Derives | UC-004, CSV export implementation |
 | CR-013 (#13) | FR-009 | Derives | UC-009, DirectorySearchModel tests |
 | CR-014 (#14) | Test quality | Tests | UnitTest1.cs |
 | CR-015 (#15) | Review Record MINOR-1, Design Model V007 | Derives | Directory.cshtml.cs, branch naming |
-| CR-016 (#16) | PR #9, Construction baseline | DependsOn | PR #9, all UCs |
 | CR-017 (#17) | Review Record MINOR-2, CON-004 (OIDC) | Derives | UC-001, ClockingApiController.cs |
-| CR-018 (#18) | Review Record MINOR-4, CR-011 | DependsOn | OfflineRetryTests.cs, CR-011 |
+| CR-018 (#18) | Review Record MINOR-4, CR-011 | DependsOn | OfflineRetryTests.cs, CR-011 (complete) |
+| C2-CRIT-1 (#22) | UC-001, FR-001, AC-001, Review Record C2-CRIT-1 | Derives | clocking-retry.js, Index.cshtml, ClockingApi.cshtml |
+| C2-MAJ-2 (#23) | UC-001, FR-001, AC-001, Review Record C2-MAJ-2 | Derives | clocking-retry.js, Index.cshtml |
+| C2-MIN-2 (#24) | CON-004 (OIDC), Review Record C2-MIN-2 | Derives | ClockingApi.cshtml.cs |
+| #25 | UC-002..UC-010, FR-002..FR-010, Review Record PR #19 | Derives | All Razor Pages, Design Model UI layer |
+| #26 | PR #21, Construction C2 baseline | DependsOn | PR #21, all UCs |
+| C2-MAJ-1 (#27) | UC-006, FR-006, Review Record C2-MAJ-1 | Derives | News/Edit.cshtml, News/Edit.cshtml.cs, CLS-016..CLS-020 |
