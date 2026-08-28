@@ -2115,22 +2115,85 @@ title HR Dashboard — Wireframe
 ## Capsules, Protocols and Signals
 Not applicable for this technology stack. The portal is a Razor Pages monolith on .NET 10 — no capsules, protocols, or signals are used. All communication is synchronous HTTP request/response within a single process.
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| V001 (MainPageModel) | UC-001, UC-008, CON-011 | Derives | C001, C002 |
-| V002 (ClockingPageModel) | UC-002 | Derives | C001 |
-| V003 (AllClockingsModel) | UC-003, UC-004 | Derives | C001, C005 |
-| V004 (PublishNewsModel) | UC-005, AC-002 | Derives | C002 |
-| V005 (EditNewsModel) | UC-006 | Derives | C002 |
-| V006 (NewsManagementModel) | UC-007, CON-013 | Derives | C002 |
-| V007 (DirectorySearchModel) | UC-009, AC-003, R001 | Derives | C003 |
-| V008 (WorkerCategoryModel) | UC-010, CON-009 | Derives | C004 |
-| C001 (ClockingHandler) | UC-001, UC-002, UC-003, NFR-002 | Derives | COMP-002 (SAD) |
-| C002 (NewsHandler) | UC-005, UC-006, UC-007, NFR-004 | Derives | COMP-003 (SAD) |
-| C003 (DirectoryHandler) | UC-009, CON-005, R001 | Derives | COMP-005 (SAD) |
-| C004 (CategoryHandler) | UC-010, CON-009, NFR-004 | Derives | COMP-005 (SAD) |
-| C005 (ExportHandler) | UC-004 | Derives | COMP-002 (SAD) |
+| **Analysis Classes** | | | |
+| ACL-001 (ClockingUI) | UC-001, FR-001 | Derives | CLS-001, V001 |
+| ACL-002 (ClockingController) | UC-001, UC-002, UC-003, UC-004, NFR-002 | Derives | CLS-001, INT-001 |
+| ACL-003 (ClockingRecord) | UC-001 | Derives | CLS-016 |
+| ACL-004 (DirectorySearchUI) | UC-009, FR-009 | Derives | CLS-003, V007 |
+| ACL-005 (DirectoryController) | UC-009, R001, CON-005 | Derives | CLS-003, INT-003 |
+| ACL-006 (DirectoryEntry) | UC-009, CON-012 | Derives | CLS-020 |
+| ACL-007 (NewsUI) | UC-005, UC-006, UC-007 | Derives | CLS-002, V004, V005, V006 |
+| ACL-008 (NewsController) | UC-005, UC-006, UC-007, NFR-004 | Derives | CLS-002, INT-002 |
+| ACL-009 (NewsItem) | UC-005, UC-006, UC-007, UC-008 | Derives | CLS-017 |
+| ACL-010 (AuditRecord) | UC-005, UC-006, UC-007, UC-010, NFR-004 | Derives | CLS-019 |
+| ACL-011 (CategoryUI) | UC-010, FR-010 | Derives | CLS-004, V008 |
+| ACL-012 (CategoryController) | UC-010, CON-009 | Derives | CLS-004, INT-004 |
+| ACL-013 (WorkerCategory) | UC-010, CON-009 | Derives | CLS-018 |
+| ACL-014 (NewsFeedUI) | UC-008, FR-008 | Derives | CLS-002, V001 |
+| ACL-015 (NewsFeedController) | UC-008 | Derives | CLS-002, INT-002 |
+| **Use-Case Realizations** | | | |
+| SEQ-001 (UC-001 Clock In/Out) | UC-001, AC-005, NFR-002 | Derives | CLS-001, CLS-007, CLS-016 |
+| SEQ-002 (UC-002 Clocking History) | UC-002, FR-002 | Derives | CLS-001, CLS-007 |
+| SEQ-003 (UC-003 All Clockings) | UC-003, FR-003, CON-009 | Derives | CLS-001, CLS-006, CLS-007 |
+| SEQ-004 (UC-004 CSV Export) | UC-004, FR-004, PERF-004 | Derives | CLS-001, CLS-006, CLS-007 |
+| SEQ-005 (UC-005 Publish News) | UC-005, NFR-004, AC-002 | Derives | CLS-002, CLS-005, CLS-007, CLS-017 |
+| SEQ-006 (UC-006 Edit News) | UC-006, NFR-004 | Derives | CLS-002, CLS-005, CLS-007 |
+| SEQ-007 (UC-007 Unpublish News) | UC-007, CON-013, NFR-004 | Derives | CLS-002, CLS-005, CLS-007 |
+| SEQ-008 (UC-008 Read/Filter News) | UC-008, FR-008 | Derives | CLS-002, CLS-007 |
+| SEQ-009 (UC-009 Directory Search) | UC-009, R001, CON-005, CON-012 | Derives | CLS-003, CLS-006 |
+| SEQ-010 (UC-010 Manage Category) | UC-010, CON-009, NFR-004 | Derives | CLS-004, CLS-005, CLS-006, CLS-007 |
+| **Design Classes — Services** | | | |
+| CLS-001 (ClockingService) | ACL-002, COMP-002, INT-001 | Realizes | INT-006, INT-007 |
+| CLS-002 (NewsService) | ACL-008, COMP-003, INT-002 | Realizes | INT-005, INT-007 |
+| CLS-003 (DirectoryService) | ACL-005, COMP-001, INT-003 | Realizes | INT-006 |
+| CLS-004 (WorkerCategoryService) | ACL-012, COMP-004, INT-004 | Realizes | INT-005, INT-006, INT-007 |
+| CLS-005 (AuditInterceptor) | ACL-010, COMP-008, INT-005 | Realizes | INT-007 |
+| **Design Classes — Infrastructure** | | | |
+| CLS-006 (LdapGateway) | COMP-005, INT-006 | Realizes | (AD external) |
+| CLS-007 (PersistenceGateway) | COMP-006, INT-007 | Realizes | CLS-008 |
+| CLS-008 (PortalDbContext) | COMP-006, CON-003 | Derives | CLS-016, CLS-017, CLS-018, CLS-019 |
+| CLS-009 (LdapSettings) | CON-005, R001 | Derives | CLS-006 |
+| CLS-010 (LdapConnectionPool) | CON-005 | Derives | CLS-006 |
+| **Design Classes — Domain** | | | |
+| CLS-011 (ClockType enum) | FR-001 | Derives | CLS-016 |
+| CLS-012 (ClockStatus enum) | FR-001 | Derives | (UI) |
+| CLS-013 (NewsCategory enum) | FR-005 | Derives | CLS-017 |
+| CLS-014 (NewsStatus enum) | CON-013, FR-007 | Derives | CLS-017 |
+| CLS-015 (AuditAction enum) | NFR-004 | Derives | CLS-019 |
+| CLS-016 (ClockingRecord) | ACL-003, FR-001, AC-005 | Derives | T1 (clockings) |
+| CLS-017 (NewsItem) | ACL-009, FR-005, CON-013 | Derives | T2 (news_items) |
+| CLS-018 (WorkerCategory) | ACL-013, FR-010, CON-009 | Derives | T3 (worker_categories) |
+| CLS-019 (AuditRecord) | ACL-010, NFR-004 | Derives | T4 (audit_records) |
+| CLS-020 (DirectoryEntry) | ACL-006, CON-009, CON-012 | Derives | (not persisted — AD projection) |
+| CLS-021 (DateRange) | — | Derives | (value object) |
+| CLS-022 (ClockingResult) | AC-005 | Derives | CLS-016 |
+| CLS-023 (LdapSearchResult) | CON-005 | Derives | CLS-006 |
+| **Interfaces** | | | |
+| INT-001 (IClockingService) | COMP-002, SAD | Derives | CLS-001 |
+| INT-002 (INewsService) | COMP-003, SAD | Derives | CLS-002 |
+| INT-003 (IDirectoryService) | COMP-001, SAD | Derives | CLS-003 |
+| INT-004 (IWorkerCategoryService) | COMP-004, SAD | Derives | CLS-004 |
+| INT-005 (IAuditLogger) | COMP-008, SAD | Derives | CLS-005 |
+| INT-006 (ILdapGateway) | COMP-005, SAD | Derives | CLS-006 |
+| INT-007 (IPersistence) | COMP-006, SAD | Derives | CLS-007 |
+| **UI Elements (from UI Designer)** | | | |
+| V001 (MainPageModel) | UC-001, UC-008, CON-011 | Derives | CLS-001, CLS-002 |
+| V002 (ClockingPageModel) | UC-002 | Derives | CLS-001 |
+| V003 (AllClockingsModel) | UC-003, UC-004 | Derives | CLS-001 |
+| V004 (PublishNewsModel) | UC-005, AC-002 | Derives | CLS-002 |
+| V005 (EditNewsModel) | UC-006 | Derives | CLS-002 |
+| V006 (NewsManagementModel) | UC-007, CON-013 | Derives | CLS-002 |
+| V007 (DirectorySearchModel) | UC-009, AC-003, R001 | Derives | CLS-003 |
+| V008 (WorkerCategoryModel) | UC-010, CON-009 | Derives | CLS-004 |
 | Navigation Topology | All UCs, CON-011 | Derives | V001–V008 |
 | UI Patterns | CON-011, USA-001–USA-006 | Refines | V001–V008, Implementer |
 | Wireframes | CON-011, All UCs | Derives | V001–V008 |
+| **State Machines** | | | |
+| NewsItem Lifecycle | CLS-017, CON-013, NFR-004 | Derives | CLS-002, CLS-005 |
+| **Database Tables** | | | |
+| T1 (clockings) | CLS-016, AC-005 | Derives | PostgreSQL (CON-003) |
+| T2 (news_items) | CLS-017, CON-013 | Derives | PostgreSQL (CON-003) |
+| T3 (worker_categories) | CLS-018, CON-009 | Derives | PostgreSQL (CON-003) |
+| T4 (audit_records) | CLS-019, NFR-004 | Derives | PostgreSQL (CON-003) |
