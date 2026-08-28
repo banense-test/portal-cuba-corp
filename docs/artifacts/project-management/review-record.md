@@ -43,7 +43,6 @@ This review applies the **feasibility and acceptability** lens per RUP Project A
 No open pull requests found. No CI build status to verify (Inception phase — no implementation code per RUP Ch.4).
 
 ## Findings
-
 ### Compliance Matrix
 
 ```plantuml
@@ -151,77 +150,123 @@ object "Test Eval Summary" as T {
   Minor: 0
 }
 
-object "Development Case" as DC {
-  Findings: 0 - CLEAN
-}
-
-object "Use-Case Model" as UCM {
-  Findings: 0 - CLEAN
-}
-
-object "Supplementary Spec" as SUP {
-  Findings: 0 - CLEAN
-}
-
-object "Software Arch Doc" as SAD {
-  Findings: 0 - CLEAN
-}
-
-object "Risk List" as RSK {
-  Findings: 0 - CLEAN
-}
-
-object "Iteration Plan" as ITP {
-  Findings: 0 - CLEAN
-}
-
-object "Defect Summary" as SUM {
-  Total Findings: 2
+object "All Other Artifacts" as O {
+  Info: 0
   Critical: 0
   Major: 0
   Minor: 0
-  Info: 2
-  Artifacts with Findings: 2 of 8
-  Artifacts Clean: 6 of 8
 }
 
-V --> SUM : 1 Info
-T --> SUM : 1 Info
-
-note right of SUM
-  All 8 artifacts APPROVED
-  Zero LCO-blocking findings
+note bottom
+  Total Findings: 2 Info (non-blocking)
+  Business Modeling: 0 findings (INACTIVE per DC §4)
   Disposition: APPROVED
 end note
 
 @enduml
 ```
 
-### Finding Details
+### Per-Artifact Findings (Technical Lens — Reviewer)
 
-| # | Artifact | Severity | Finding | Recommendation | Verdict |
-|---|---|---|---|---|---|
-| F1 | Vision | Info | Vision traceability table uses "FEAT-NNN" as an element ID prefix (FEAT-001 through FEAT-010). This prefix is not listed in the standard ID conventions table. While traceability is clear and correct (each FEAT-NNN traces from FR-NNN to UC-NNN), the non-standard prefix could cause confusion in cross-artifact traceability lookups. | Either (a) replace "FEAT-NNN" with the standard "REQ-NNN" prefix, or (b) declare "FEAT" as a project-specific element type in the Development Case's tool assessment section. Option (b) is preferred since features and requirements serve different abstraction purposes in the Vision document. | Approved |
-| F2 | Test Evaluation Summary | Info | Test Evaluation Summary traceability table uses "TD-NNN" as an element ID prefix (TD-001, TD-002) for Test Dependencies. This prefix is not listed in the standard ID conventions table. While traceability is clear (TD-001 traces from R001/STK-003/CON-005, TD-002 from R003/STK-003/CON-004), the non-standard prefix could cause confusion in cross-artifact traceability lookups. | Either (a) replace "TD-NNN" with a standard prefix or inline description, or (b) declare "TD" as a project-specific element type in the Development Case. Option (b) is preferred since Test Dependency is a meaningful concept in test planning that doesn't map to any existing standard ID type. | Approved |
+**1. Development Case** — APPROVED. DC conforms to IARI baseline: 24-role roster intact, no CORE artifact omissions, no ownership reassignment, no out-of-universe artifacts. Optional trigger table audited: Glossary NOT FIRED (no specialist vocabulary — correct), Architectural PoC NOT FIRED (deferred to Elaboration — correct per R001), Data Model NOT FIRED (3 data domains, <10 entities — correct), Deployment Model NOT FIRED (single Windows Server, non-distributed — correct), UI Prototype NOT FIRED (mandatory design HTML provided — correct), Test Plan NOT FIRED (no formal/regulatory delivery — correct). All 6 optional triggers correctly evaluated.
 
-### Per-Artifact Evaluation Summary
+**2. Vision** — APPROVED. Problem statement clearly identifies the three fragmented processes (Excel clocking, mass email news, PDF directory). Product positioning statement present. All 4 stakeholders mapped (STK-001..004). Success criteria measurable: BG-001 (50% HR time reduction), BG-002 (100% Excel elimination), BG-003 (80% adoption / 160 of 200 in 3 months). AC-005 offline resolution correctly incorporated per stakeholder answer (client-side retry for clocking only, no PWA). One Info finding: FEAT-NNN ID prefix is non-standard (should reference declared FR-NNN directly).
 
-**1. Development Case** — APPROVED. DC Baseline Conformance verified: (a) 25-role roster preserved, (b) no CORE ownership reassignment, (c) all 16 CORE artifacts accounted for, (d) no out-of-universe artifacts, (e) no role merges. All 6 OPTIONAL artifacts correctly NOT-TRIGGERED with valid §5.2 justifications: Glossary (no specialist vocabulary), PoC (Inception not Elaboration), Data Model (<10 entities, not data-centric), Deployment Model (single Windows Server, not distributed), UI Prototype (CON-011 provides authoritative design), Test Plan (no formal/regulatory delivery requirement). Business Modeling correctly declared INACTIVE (business-process-led = false).
+**3. Use-Case Model** — APPROVED. All 10 UCs trace 1:1 to declared FRs (UC-001→FR-001 through UC-010→FR-010). No cross-cutting mechanism UCs (auth handled as <<include>> constraint, not as a UC). No multi-actor splits (Employee and HR Administrator each have distinct UCs per their declared roles). UML use case diagram present with system boundary, actor positions, and volatility annotations. External system actor (AD/LDAP) correctly modeled.
 
-**2. Vision** — APPROVED. Problem statement clearly articulates the three fragmented processes being replaced. Product positioning statement is well-formed. All 4 stakeholders (STK-001..004) mapped with correct influence levels. Success criteria trace to BG-001..003 and AC-001..005. AC-005 offline resolution correctly incorporated per stakeholder answer (server-side fault tolerance + bounded client-side localStorage retry with idempotency key, no PWA/service worker). One Info finding on non-standard FEAT-NNN ID prefix.
+**4. Supplementary Specification** — APPROVED. Cross-cutting mechanisms (authentication, audit trail, offline retry) correctly placed as constraints/NFRs, not as UCs. NFR-001..004 derived from declared constraints. AC-005 offline retry mechanism specified as page-level JavaScript on Razor Pages (consistent with CON-002). FURPS+ categories bounded to declared scope (200 users, internal network, no cloud). UML activity diagram present showing offline retry flow.
 
-**3. Use-Case Model** — APPROVED. All 10 UCs trace 1:1 to declared FR-001..FR-010. No cross-cutting mechanisms (auth, sync, audit) appear as standalone UCs — audit trail is correctly in Supplementary Specification with <<include>>. No multi-actor splits: Employee and HR have distinct declared processes. Three actors defined (Employee, HR Administrator, Active Directory as external system). UML use-case diagram present and well-formed. Volatility annotations on architecturally significant UCs (UC-001, UC-009) support the SAD's component decomposition.
+**5. Software Architecture Document** — APPROVED. 8 components decomposed by volatility (Clocking, News, Directory, Worker Category, Auth, Audit, Offline Retry, Database Access). No layer-named subsystems (components named by domain, not by tier). 5 ADRs justified (OIDC auth, LDAP read-on-demand, PostgreSQL, Razor Pages, offline retry). PoC correctly deferred to Elaboration (R001 AD LDAP risk requires empirical validation). UML component and deployment diagrams present.
 
-**4. Supplementary Specification** — APPROVED. Cross-cutting mechanisms (OIDC authentication, audit trail) correctly placed as Supplementary Specification entries with <<include>> from dependent UCs. NFRs derived from declared constraints (SEC from CON-004/CON-007/CON-012/CON-010, AUD from NFR-004, PERF from NFR-001/002, REL from NFR-003/AC-005). AC-005 offline retry correctly scoped: REL-003 (localStorage retry) and REL-004 (idempotency key) capture the bounded client-side mechanism per stakeholder answer. FURPS+ is bounded to the 200-user intranet scope — no over-engineering.
-
-**5. Software Architecture Document** — APPROVED. 8 components (COMP-001..008) decomposed by volatility, not by feature or layer name. Component names reflect architectural role (LDAP Directory Service, Clocking Service, News Service, Worker Category Service, PostgreSQL Persistence, OIDC Authentication Middleware, Audit Interceptor). 5 ADRs (ADR-001..005) each justified with declared constraint traces. PoC plan for R001 correctly deferred to Elaboration per §5.2 (PoC requires Elaboration phase + technical risk). Candidate architecture depth is appropriate for Inception (sketch-level 4+1 with Process and Implementation views deferred). UML component and deployment diagrams present.
-
-**6. Risk List** — APPROVED. Both declared risks present with correct exposure values: R001 (P=3, I=3, exposure=9, HIGH) and R002 (P=3, I=2, exposure=6, SIGNIFICANT). Four derived risks (R003–R006) properly identified by Project Manager as risk authority, each tracing to declared constraints. Mitigation plans present for HIGH and SIGNIFICANT risks. Contingency plans for R001 and R006. Classification framework (P×I=Exposure) is sound and consistently applied. UML class diagram present showing risk model structure.
+**6. Risk List** — APPROVED. Both declared risks present with correct exposure values (R001: P=3, I=3, exposure=9; R002: P=3, I=2, exposure=6). Four derived risks (R003–R006) justified: R003 (OIDC client registration dependency), R004 (offline retry edge cases), R005 (adoption resistance), R006 (LDAP attribute coverage — refines R001). Mitigation plans present for all 6 risks. UML diagram present showing risk model structure.
 
 **7. Iteration Plan** — APPROVED. 6 iterations [1, 2, 2, 1] across 4 phases consistent with 6±3 rule for moderate complexity. Rubber profile adjusted for risk profile (Elaboration gets 2 iterations for R001/R006). FR-009 correctly sequenced to Elaboration Iter 1 to confront R001 (AD LDAP, highest risk). LCO readiness assessment present. Five iteration objectives are clear and bounded. Token-budget framing consistent with IARI planning rules (no person-weeks, no fabricated dates).
 
 **8. Test Evaluation Summary** — APPROVED. Testability of all 10 FRs, 4 NFRs, and 5 ACs assessed. Testing risks correctly derived from Risk List (R001 and R006 as top testing risks). AC-001..005 mapped to future Construction/Transition test phases. Test infrastructure dependencies identified (TD-001: test AD from STK-003, TD-002: OIDC client registration from STK-003). Inception scope correctly limited to assessment and strategy, not execution. One Info finding on non-standard TD-NNN ID prefix.
 
+### Business Modeling Lens (Business Reviewer)
+
+**Verdict: [BR-OK-INACTIVE] — Discipline NOT APPLICABLE per DC §4**
+
+DC §4 trigger evaluation: project does not exhibit business-process-led characteristics. No ERP / BPM / workflow-redesign / M&A signals found in Vision. No Business Use Cases / Workers / Entities sections present in Use-Case Model. No business-domain specialist terms in Glossary.
+
+Conclusion: BPA + BR are correctly INACTIVE for this engagement. No findings, no recommendations. Downstream reviewers (MR, RC) may treat the BM discipline as out-of-scope for the LCO milestone.
+
+```plantuml
+@startuml
+title BR Discipline Activation Assessment — DC §4
+
+skinparam noteBackgroundColor #F5F5F5
+skinparam rectangleBackgroundColor #E8F5E9
+
+rectangle "DC §4 Evaluation" as EVAL {
+  note top of EVAL
+    **Business-Process-Led Classification: FALSE**
+
+    Criteria evaluated:
+    — ERP / BPM / workflow redesign: NOT present
+    — M&A / organizational change: NOT present
+    — Business process reengineering: NOT present
+    — Requirements are system-level FRs (FR-001..FR-010)
+    — Processes are stable, digitized not redesigned
+
+    Classification by: Process Engineer
+    Classification date: 2026-08-28
+  end note
+}
+
+rectangle "BM Artifact Inventory" as INV {
+  note bottom of INV
+    **Business Use Cases**: 0 (none)
+    **Business Workers**: 0 (none)
+    **Business Entities**: 0 (none)
+    **Business Rules section**: 0 (none)
+    **Glossary (specialist vocab)**: Not triggered
+
+    System-level UCs present: UC-001..UC-010
+    All trace to declared FR-001..FR-010
+  end note
+}
+
+EVAL --> INV : "no BPL signal + zero BM sections"
+
+rectangle "BR Verdict" as VERDICT #C8E6C9 {
+  note bottom of VERDICT
+    **Verdict: BR-OK-INACTIVE**
+
+    Business Modeling discipline is correctly
+    INACTIVE for this engagement.
+
+    BPA + BR roles are out of scope.
+    No findings, no recommendations.
+    Downstream reviewers may treat BM as
+    out-of-scope for the LCO milestone.
+  end note
+}
+
+INV --> VERDICT
+
+@enduml
+```
+
+#### DC §4 Criteria Evaluation Table
+
+| DC §4 Criterion | Present? | Evidence |
+|---|---|---|
+| ERP implementation | No | No ERP signals in Vision; project is a focused employee portal |
+| BPM / workflow redesign | No | Processes (clocking, news, directory) are stable and digitized, not redesigned |
+| M&A / organizational change | No | No organizational restructuring in scope |
+| Business process reengineering | No | FR-001..FR-010 are system feature specs, not business process models |
+| Specialist vocabulary requiring Glossary | No | No regulated/legal/medical/financial jargon; domain is standard HR/intranet |
+
+#### BM Artifact Coverage Check
+
+| Expected BM Artifact | Present? | Notes |
+|---|---|---|
+| Business Use-Case Model | No | Not applicable — system UCs (UC-001..UC-010) directly model declared FRs |
+| Business Workers / Entities | No | Not applicable — no business process modeling warranted |
+| Business Rules (formal) | No | Business rules captured as constraints (CON-010, CON-012, CON-013) in declared scope, not as BM artifacts |
+| Glossary | No | Not triggered — no specialist vocabulary per DC §5.2 |
 ## Resolutions and Actions
 
 ### Open Action Items
