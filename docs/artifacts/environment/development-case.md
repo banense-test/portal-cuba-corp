@@ -167,12 +167,13 @@ All 6 OPTIONAL artifacts re-evaluated against §5.2 trigger conditions for Elabo
 
 **Recorded via:** `record_optional_artifact_triggers(["Architectural Proof-of-Concept"])` — Architectural PoC is producible. PoC execution pending STK-003 dependency.
 ## Optional Artifact Triggers
-
-### Architectural Proof-of-Concept — TRIGGERED
+### Architectural Proof-of-Concept — TRIGGERED (PoC Results PENDING)
 
 **Trigger condition:** Elaboration phase + at least one technical risk requiring empirical validation (per Risk List).
 
 **Risk driving the trigger:** R001 (P=3, I=3, exposure=9) — Active Directory integration: the LDAP attributes the directory reads (job title, extension) may not be filled consistently across the 3 offices. If not tested early the directory shows gaps.
+
+**Iter 2 status:** PoC designed in Iter 1 but NOT YET EXECUTED. MR-F1 (Major, Management Reviewer) flags that risk status MITIGATING without PoC results is a claim, not evidence. PoC execution is a prerequisite for LCA closure.
 
 **PoC scope:**
 1. Connect to AD via LDAP from the .NET 10 application using Novell.Directory.Ldap (ADR-003)
@@ -185,8 +186,7 @@ All 6 OPTIONAL artifacts re-evaluated against §5.2 trigger conditions for Elabo
 
 **Owner:** SoftwareArchitect (designs PoC), TestDesigner (defines validation criteria), Tester (executes PoC)
 
-**Exit criteria:** PoC report confirms LDAP attribute mapping works against real AD, OR gaps are documented with remediation actions for STK-003.
-
+**Exit criteria:** PoC report confirms LDAP attribute mapping works against real AD, OR gaps are documented with remediation actions for STK-003. Risk status may only be marked RESOLVED when empirical PoC evidence is documented (Process Improvement Note #3).
 ## Roles and Ownership
 All 25 roles from the IARI baseline are active. No roles are merged, omitted, or reassigned. Primary ownership of all 16 CORE artifacts is fixed per the baseline allowlist.
 
