@@ -283,7 +283,6 @@ Both Info findings are non-blocking suggestions for Elaboration improvement. The
 This is iteration 1, cycle 1 — no prior findings exist from this reviewer lens. All 8 artifacts returned empty findings arrays.
 
 ## Disposition
-
 **Overall LCO Disposition: APPROVED**
 
 All 8 Inception artifacts pass the LCO exit criteria. Zero Critical findings, zero Major findings, zero Minor findings. Two Info-level findings (non-standard ID prefixes in Vision and Test Evaluation Summary) are non-blocking suggestions for improvement in subsequent iterations.
@@ -295,8 +294,11 @@ The project demonstrates:
 - **Architecture candidate viability:** 8 components decomposed by volatility, 5 ADRs justified, PoC deferred to Elaboration.
 - **Stakeholder alignment:** Vision, Use-Case Model, and Supplementary Specification reflect declared scope with no undeclared additions.
 
-The project is viable to proceed to Elaboration upon ReviewCoordinator consolidation.
+**Business Modeling Lens Disposition: BR-OK-INACTIVE**
 
+Business Modeling discipline is correctly INACTIVE per DC §4. The project is not business-process-led — no ERP, BPM, workflow redesign, or M&A signals. All requirements are system-level FRs digitizing stable HR processes. No BM artifacts are expected or required. The BPA and BR roles are out of scope for this engagement. No findings, no recommendations from the business lens.
+
+The project is viable to proceed to Elaboration upon ReviewCoordinator consolidation.
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
