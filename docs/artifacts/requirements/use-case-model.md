@@ -747,6 +747,11 @@ package "Acceptance Criteria" {
   rectangle "AC-005: Offline tolerance 5min" as AC5
 }
 
+package "Change Requests (CR-NNN)" {
+  rectangle "CR-010: IsFeatured flag\n(UC-005, UC-006)" as CR10
+  rectangle "CR-011: Idempotency key\n(UC-001)" as CR11
+}
+
 BG1 --> FR1 : derives
 BG1 --> FR2 : derives
 BG1 --> FR3 : derives
@@ -776,6 +781,10 @@ UC1 --> AC5 : verifies
 UC5 --> AC2 : verifies
 UC9 --> AC3 : verifies
 
+CR10 --> UC5 : derives [DERIVED — from FR-008]
+CR10 --> UC6 : derives [DERIVED — from FR-008]
+CR11 --> UC1 : derives
+
 note bottom of BG1
   NFR-004 (audit trail) applies to
   UC-005, UC-006, UC-007, UC-010
@@ -788,12 +797,12 @@ end note
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| UC-001 | FR-001, AC-005 | Refines | REQ-001, REL-003, REL-004, PERF-002, AC-001, AC-004, AC-005 |
+| UC-001 | FR-001, AC-005, CR-011 | Refines | REQ-001, REL-003, REL-004, PERF-002, AC-001, AC-004, AC-005 |
 | UC-002 | FR-002 | Refines | REQ-002 |
 | UC-003 | FR-003 | Refines | REQ-003, PERF-005, REL-006 |
 | UC-004 | FR-004 | Refines | REQ-004, PERF-004, STD-003 |
-| UC-005 | FR-005, NFR-004 | Refines | REQ-005, AUD-001, AC-002 |
-| UC-006 | FR-006, NFR-004 | Refines | REQ-006, AUD-001 |
+| UC-005 | FR-005, NFR-004, CR-010 | Refines | REQ-005, AUD-001, AC-002 |
+| UC-006 | FR-006, NFR-004, CR-010 | Refines | REQ-006, AUD-001 |
 | UC-007 | FR-007, CON-013, NFR-004 | Refines | REQ-007, AUD-001, AUD-003 |
 | UC-008 | FR-008 | Refines | REQ-008, USA-001 |
 | UC-009 | FR-009, CON-005, CON-012 | Refines | REQ-009, SEC-004, SEC-005, PERF-003, SUP-003, R001, AC-003 |
@@ -806,3 +815,5 @@ end note
 | UC-005..UC-008 | BG-003 | Derives | (Business Goals) |
 | UC-009 | BG-002 | Derives | (Business Goals) |
 | UC-009 | R001 | DependsOn | (LDAP attribute consistency) |
+| CR-010 | FR-008 | Derives | UC-005, UC-006 (IsFeatured flag) |
+| CR-011 | AC-005 | Derives | UC-001 (idempotency key) |
