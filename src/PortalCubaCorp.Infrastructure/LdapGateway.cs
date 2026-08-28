@@ -13,6 +13,9 @@ public class LdapGateway : ILdapGateway
 {
     private readonly LdapGatewayOptions _options;
 
+    // LDAP search scope constants (Novell.Directory.Ldap.NETStandard)
+    private const int SCOPE_SUB = 2;
+
     public LdapGateway(LdapGatewayOptions options)
     {
         _options = options;
@@ -26,14 +29,9 @@ public class LdapGateway : ILdapGateway
         conn.Connect(_options.Host, _options.Port);
         conn.Bind(_options.BindDn, _options.BindPassword);
 
-        var constraints = new LdapSearchConstraints
-        {
-            Scope = LdapSearchConstraints.SCOPE_SUB
-        };
-
         var searchResults = conn.Search(
             _options.SearchBase,
-            LdapSearchConstraints.SCOPE_SUB,
+            SCOPE_SUB,
             filter,
             new[] { "sAMAccountName", "cn", "title", "department", "physicalDeliveryOfficeName", "mail", "telephoneNumber" },
             false);
@@ -66,28 +64,22 @@ public class LdapGateway : ILdapGateway
 
     private static DomainLdapSearchResult MapEntry(LdapEntry entry)
     {
+        var attrSet = entry.getAttributeSet();
         return new DomainLdapSearchResult
         {
-            AdUserId = GetAttribute(entry, "sAMAccountName"),
-            DisplayName = GetAttributeOrNull(entry, "cn"),
-            JobTitle = GetAttributeOrNull(entry, "title"),
-            Department = GetAttributeOrNull(entry, "department"),
-            Office = GetAttributeOrNull(entry, "physicalDeliveryOfficeName"),
-            Email = GetAttributeOrNull(entry, "mail"),
-            Extension = GetAttributeOrNull(entry, "telephoneNumber")
+            AdUserId = GetAttrValue(attrSet, "sAMAccountName") ?? string.Empty,
+            DisplayName = GetAttrValue(attrSet, "cn"),
+            JobTitle = GetAttrValue(attrSet, "title"),
+            Department = GetAttrValue(attrSet, "department"),
+            Office = GetAttrValue(attrSet, "physicalDeliveryOfficeName"),
+            Email = GetAttrValue(attrSet, "mail"),
+            Extension = GetAttrValue(attrSet, "telephoneNumber")
         };
     }
 
-    private static string GetAttribute(LdapEntry entry, string name)
+    private static string? GetAttrValue(LdapAttributeSet attrSet, string name)
     {
-        var attr = entry.getAttribute(name);
-        return attr?.StringValue ?? string.Empty;
-    }
-
-    private static string? GetAttributeOrNull(LdapEntry entry, string name)
-    {
-        var attr = entry.getAttribute(name);
-        return attr?.StringValue;
+        return attrSet.getAttribute(name)?.StringValue;
     }
 
     private static string EscapeFilter(string value)
