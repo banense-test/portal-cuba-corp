@@ -284,6 +284,99 @@ The architecture is baselined. PoC decisions are recorded for all 3 technical ri
 PR #7 (iteration/E1 → main) is the IN-SCOPE iteration-close PR carrying the architecture baseline. CI is green (iteration/E1: SUCCESS, 2026-08-28 12:11:30Z). Code Reviewer approved the prototype code (PR #4) in Iter 2 with M1/M2 resolved. The Technical Lens has approved PR #7 for LCA sanction — the architecture baseline is sanctioned for merge to main.
 
 **Terminal verdict for PR #7: APPROVED.**
+
+### Business Reviewer Verdict (Business Modeling Lens — Iter 2)
+
+**Verdict: BR-OK-INACTIVE — Discipline NOT APPLICABLE per DC §4**
+
+DC §4 trigger evaluation at LCA: project does not exhibit business-process-led characteristics. No BM sections were produced during Elaboration. The Inception INACTIVE verdict is sustained.
+
+**Assessment Details:**
+
+| Criterion | Result | Evidence |
+|---|---|---|
+| DC §4 Classification | `isBusinessProcessLed: false` | DC §4 re-evaluation (2026-08-28): 10 system-level FRs, no BPR, no workflow optimization |
+| Inception Verdict Consistency | Sustained | Inception INACTIVE verdict confirmed; no change in project characteristics |
+| BM Artifacts Produced | None | No Business Use-Case Model, no business workers, no business entities, no realization diagrams |
+| Prior BR Findings | 0 | No BusinessReviewer findings on any artifact (Vision, UC Model, Supp Spec, Review Record) |
+| New BR Findings | 0 | No defects to report — discipline correctly inactive |
+| Construction Readiness Impact | None | BM discipline does not gate Construction; Requirements discipline owns system UC derivation |
+
+**Conclusion:** BM discipline remains correctly INACTIVE. No findings, no recommendations. The LCA milestone may proceed without BM contributions.
+
+```plantuml
+@startuml
+title Business Modeling Discipline — BR-OK-INACTIVE Status (Elaboration Iter 2)
+
+skinparam classAttributeIconSize 0
+skinparam note {
+  BackgroundColor #LightYellow
+  BorderColor #Gray
+}
+
+class BM_Discipline_Status {
+  + project : Portal Cuba Corp
+  + phase : Elaboration
+  + iteration : 2 (Cycle 1)
+  + dcSection : DC §4
+  + bplClassification : isBusinessProcessLed = false
+  + verdict : BR-OK-INACTIVE
+}
+
+class DC4_ReEvaluation {
+  + evaluatedAt : 2026-08-28
+  + criteriaTriggered : None
+  + rationale : 10 system-level FRs (FR-001..FR-010)
+  + rationale : Portal digitizes existing processes
+  + rationale : No BPR or workflow optimization in scope
+  + inceptionVerdict : Sustained (INACTIVE)
+}
+
+class BM_Artifacts_Produced {
+  + businessUseCaseModel : NOT PRODUCED
+  + businessWorkers : NOT PRODUCED
+  + businessEntities : NOT PRODUCED
+  + businessRules : NOT PRODUCED (inline in UC Model)
+  + realizationDiagrams : NOT PRODUCED
+  + derivationBridge : N/A (no BM content)
+}
+
+class BR_Findings {
+  + priorFindings : 0
+  + newFindings : 0
+  + openFindings : 0
+  + resolvedFindings : 0
+  + disposition : No findings, no recommendations
+}
+
+class LCA_Gate_Impact {
+  + bmBlockingConditions : 0
+  + constructionReadiness : NOT IMPACTED by BM
+  + lcaCanProceed : YES (without BM contributions)
+}
+
+BM_Discipline_Status --> DC4_ReEvaluation : confirmed by
+BM_Discipline_Status --> BM_Artifacts_Produced : expected absence
+BM_Discipline_Status --> BR_Findings : quality gate result
+BM_Discipline_Status --> LCA_Gate_Impact : milestone impact
+
+note right of BM_Discipline_Status
+  **Verdict: BR-OK-INACTIVE**
+  
+  DC §4 trigger evaluation at LCA:
+  Project does not exhibit business-process-led
+  characteristics. No BM sections were produced
+  during Elaboration. The Inception INACTIVE
+  verdict is sustained.
+  
+  Conclusion: BM discipline remains correctly
+  INACTIVE. No findings, no recommendations.
+  The LCA milestone may proceed without BM
+  contributions.
+end note
+
+@enduml
+```
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
