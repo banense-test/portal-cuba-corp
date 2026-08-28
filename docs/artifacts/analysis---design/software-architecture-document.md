@@ -1,15 +1,16 @@
 ## Document Control
 | Field | Value |
 |---|---|
-| Phase | Elaboration |
-| Status | BASELINED |
-| Milestone Target | End of Elaboration (LCA) |
-| Iteration | 2 (Cycle 1) |
+| Phase | Construction |
+| Status | Active — Governance |
+| Milestone Target | End of Construction |
+| Iteration | 1 (Cycle 1) |
 | Date | 2026-08-28 |
-| Review Findings | MR-F1 (Major) — PoC decisions for R001/R006/R003 recorded; M1/M2 (Major) — SAD interface specs verified consistent with Design Model INT-005/INT-007; Implementer to align code |
-| Version Policy | Reconciled — .NET 10 pinned by enterprise policy; all NuGet packages at latest stable (verified Elaboration Iter 1, unchanged Iter 2) |
-| Prior Phase | Inception candidate architecture — evolved to Elaboration baseline |
-| PoC Decisions | R001: single-mechanism; R006: single-mechanism; R003: analysis-only (see Architectural Proof-of-Concept artifact) |
+| Review Findings | Elaboration LCA achieved — 0 Critical, 0 Major open. Construction C1: no new findings from architectural review. |
+| Version Policy | Reconciled — .NET 10 pinned by enterprise policy; all NuGet packages at 10.0.0 (verified Construction C1, unchanged from Elaboration) |
+| Prior Phase | Elaboration baseline (LCA achieved, stakeholder sanction GRANTED) |
+| PoC Decisions | R001: single-mechanism (execution pending — CR-001 concurred); R006: single-mechanism (execution pending — CR-002 concurred); R003: analysis-only (coordination with STK-003) |
+| Construction C1 Governance | CR concurrence: #1 CONCUR, #2 CONCUR. Refinement: Implementation View project naming + ILdapConnection + domain entities (minor-local). No iteration-baseline PR (iteration not yet closed). |
 ## Architectural Representation
 
 This document presents the **architectural baseline** for Portal Cuba Corp — evolved from the Inception candidate to a full 4+1 view model per RUP Elaboration requirements. All five views are now addressed with UML diagrams.
