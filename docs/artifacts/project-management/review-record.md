@@ -250,7 +250,6 @@ end note
 | CR-MIN-1 (Minor) | Code Reviewer | OPEN (non-blocking) | Traceability trailer in test files — deferred to Construction |
 
 ## Disposition
-
 ### Per-Artifact Verdicts (Technical Lens — Iter 2)
 
 | Artifact | Verdict | Rationale |
@@ -278,10 +277,13 @@ The architecture is baselined. PoC decisions are recorded for all 3 technical ri
 
 **From the Technical Lens, the LCA milestone conditions are SATISFIED.**
 
-### PR #7 Disposition
+### PR #7 Disposition — Terminal Verdict
 
-PR #7 (iteration/E1 → main) is the IN-SCOPE iteration-close PR carrying the architecture baseline. CI is green. Code Reviewer approved the prototype code (PR #4) in Iter 2 with M1/M2 resolved. The Technical Lens approves PR #7 for LCA sanction — the architecture baseline is ready to be merged to main.
+**APPROVED** — `scm_approve_pull_request` executed (review 5050994674).
 
+PR #7 (iteration/E1 → main) is the IN-SCOPE iteration-close PR carrying the architecture baseline. CI is green (iteration/E1: SUCCESS, 2026-08-28 12:11:30Z). Code Reviewer approved the prototype code (PR #4) in Iter 2 with M1/M2 resolved. The Technical Lens has approved PR #7 for LCA sanction — the architecture baseline is sanctioned for merge to main.
+
+**Terminal verdict for PR #7: APPROVED.**
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
