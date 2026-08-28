@@ -4,20 +4,22 @@
 | Phase | Construction |
 | Status | Draft |
 | Milestone Target | End-of-Construction |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
-| Author | Test Designer (Test Discipline) — Test Cases designed in Elaboration/C1 |
+| Author | Test Designer (Test Discipline) — Test Cases designed in Elaboration/C1/C2 |
 | Tester | Tester (Test Discipline) — Execution and evaluation in Construction C1 |
 | Test Analyst | Test Analyst (Test Discipline) — Quality evaluation, defect pattern analysis, Ideas evolution in Construction C1 |
 | Prior Phase | Elaboration (LCA achieved — 0 open Critical/Major; stakeholder sanction GRANTED) |
-| Evolution | Construction C1: Extended from 20 to 30 test cases. Added adversarial tests for Review Record findings (MAJOR-1: IsFeatured, MINOR-2: EmployeeId DTO, MINOR-3/MINOR-4: idempotency scoping). Added performance/stress/load tests with thresholds. Added Procedure sections to all TCs. Added suite membership tags and regression flags. Extended UC→TC traceability to complete coverage. Test Analyst C1: Added Findings sections to affected TCs with severity/priority/triggering conditions. Evolved Ideas sections with execution-discovered adversarial ideas. Added quality dimension assessment. Added boundary value extensions. |
+| Evolution | **Elaboration:** 20 TCs (TC-001..TC-020) covering all 10 UCs at moderate depth. **Construction C1:** Extended from 20 to 30 test cases. Added adversarial tests for Review Record findings (MAJOR-1: IsFeatured, MINOR-2: EmployeeId DTO, MINOR-3/MINOR-4: idempotency scoping). Added performance/stress/load tests with thresholds. Added Procedure sections to all TCs. Added suite membership tags and regression flags. Extended UC→TC traceability to complete coverage. Test Analyst C1: Added Findings sections to affected TCs with severity/priority/triggering conditions. Evolved Ideas sections with execution-discovered adversarial ideas. Added quality dimension assessment. Added boundary value extensions. **Construction C2:** Extended from 30 to 35 test cases. Added 5 adversarial test cases (TC-031..TC-035) targeting C2 Review Record findings: C2-CRIT-1 (clock API routing 404), C2-MAJ-1 (news edit form binding mismatch), C2-MAJ-2 (missing antiforgery token), C2-MIN-2 (identity spoofing via request body), C2-MIN-4 (CSV header mismatch). Updated C1 findings status: MAJOR-1 RESOLVED, MINOR-1 RESOLVED, MINOR-3 RESOLVED, MINOR-4 RESOLVED. Updated regression scope for C2 build. Added C2 test data sets (TD-021..TD-023). Updated test suite structure with C2 new suites. Added C2 adversarial test workflow diagram and test lifecycle state diagram. |
 | Elaboration Baseline | 20 TCs (TC-001..TC-020) covering all 10 UCs at moderate depth. Status: BLOCKED (CR-006 — PR #4 not merged to main). 75 tests reviewed at code-level — ALL PASS. |
 | Construction C1 Review Record | PR #8 (feature/C1-presentation) — REQUEST_CHANGES: 1 Major (MAJOR-1: IsFeatured), 4 Minor. Adversarial tests TC-021..TC-024 target these findings. |
-| Test Infrastructure | InMemoryPersistence (INT-007), MockLdapGateway (INT-006), InMemoryAuditLogger (INT-005), OIDC Mock Token Provider (COMP-007), Clocking Client Test Harness (AC-005) |
+| Construction C2 Review Record | PR #19 (feature/C2-presentation) — REQUEST_CHANGES: 1 Critical (C2-CRIT-1: clock API routing), 2 Major (C2-MAJ-1: news edit binding, C2-MAJ-2: antiforgery), 4 Minor (C2-MIN-1..C2-MIN-4). PR #20 (feature/C2-rework-findings) — APPROVED: 0 findings. C1 findings all RESOLVED. Adversarial tests TC-031..TC-035 target C2 new findings. |
+| Test Infrastructure | InMemoryPersistence (INT-007), MockLdapGateway (INT-006), InMemoryAuditLogger (INT-005), OIDC Mock Token Provider (COMP-007), Clocking Client Test Harness (AC-005), FormBindingTestHelper (C2 NEW — driver for form field name matching) |
 | C1 Execution Build | Branch: iteration/C1, CI: SUCCESS (2026-08-28 14:44:39Z), Run: 33181604442 |
 | C1 Execution Verdict | 20 PASS, 5 FAIL, 8 BLOCKED — 5 defects logged as Issues #10-#14 |
 | C1 Quality Assessment | Functionality: PARTIAL (MAJOR-1 blocks FR-008). Reliability: AT_RISK (MINOR-3 idempotency). Performance: BLOCKED (no deployment). Usability: BLOCKED (no deployment). |
 | C1 Defect Patterns | 5 patterns identified: MAJOR-1 (P1, NewsService), MINOR-2 (P2, ClockingApiController), MINOR-3/4 (P2, ClockingService), ISSUE-13 (P3, test code), ISSUE-14 (P3, scaffolding). All recorded in affected TC Findings sections. |
+| C2 Findings Status | C2-CRIT-1: OPEN (blocks UC-001). C2-MAJ-1: OPEN (blocks UC-006). C2-MAJ-2: OPEN (blocks UC-001 POST). C2-MIN-1: DEFERRED (LDAP integration testing). C2-MIN-2: OPEN (security). C2-MIN-3: OPEN (placeholder test). C2-MIN-4: OPEN (CSV header). C1 MAJOR-1: RESOLVED. C1 MINOR-1: RESOLVED. C1 MINOR-3: RESOLVED. C1 MINOR-4: RESOLVED. |
 ## Test Scope
 ### All Use Cases Under Test — Construction C1 Full Coverage
 
