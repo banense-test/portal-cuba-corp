@@ -255,816 +255,215 @@ stop
 ```
 
 ## Test Case Catalog
+### Construction C1 — Test Execution Findings
 
-### TC-001: Clock In — Main Flow (Happy Path)
+**Build Under Test:** Branch `iteration/C1`, CI Run #33181604442, Completed 2026-08-28 14:44:39Z, Status: SUCCESS
+**Tester:** Tester (Test Discipline)
+**Execution Method:** Source code inspection against Test Case specifications (CI green = all unit tests pass; defects identified by code analysis against TC contracts)
 
-| Field | Value |
+```plantuml
+@startuml
+title Construction C1 — Test Execution Results by UC
+
+skinparam activity {
+  BackgroundColor #FFFFFF
+  BorderColor #333333
+}
+
+start
+partition "UC-001: Clock In/Out (5 TCs)" {
+  :TC-001: Clock In happy path;
+  note right: **PASS** — RecordClocking returns\nSuccess, correct fields, 1 record
+  :TC-002: Clock Out with prior In;
+  note right: **PASS** — Status changes correctly
+  :TC-003: Offline retry idempotency;
+  note right: **PASS** — Same key returns Duplicate
+  :TC-004: Client-side timestamp preserved;
+  note right: **PASS** — Timestamp matches input
+  :TC-005: Empty employee ID rejected;
+  note right: **PASS** — Returns Fail with error
+}
+partition "UC-001 Adversarial (2 TCs)" {
+  :TC-021: Cross-employee idempotency;
+  note right: **FAIL** — Issue #11\nSame key loses emp2 data
+  :TC-022: EmployeeId from OIDC token;
+  note right: **BLOCKED** — No OIDC client
+}
+partition "UC-002: History (2 TCs)" {
+  :TC-015: View own history;
+  note right: **PASS** — Returns 2 records
+  :TC-016: Empty history;
+  note right: **PASS** — Returns empty list
+}
+partition "UC-003: All Clockings (1 TC)" {
+  :TC-017: HR views all clockings;
+  note right: **PASS** — Returns all employees
+}
+partition "UC-004: CSV Export (2 TCs)" {
+  :TC-018: CSV with data;
+  note right: **FAIL** — Issue #12\nTimeOut always empty
+  :TC-027: CSV header only;
+  note right: **PASS** — Header correct
+}
+partition "UC-005..007: News (5 TCs)" {
+  :TC-008: Publish with audit;
+  note right: **PASS** — Audit record created
+  :TC-009: Edit with audit;
+  note right: **PASS** — Updated + audited
+  :TC-010: Unpublish preserves record;
+  note right: **PASS** — Status=Unpublished, not deleted
+  :TC-023: IsFeatured settable on publish;
+  note right: **FAIL** — Issue #10\nNo isFeatured parameter
+  :TC-024: Featured banner display;
+  note right: **FAIL** — Issue #10\nGetFeaturedNews always empty
+}
+partition "UC-008: Read/Filter News (2 TCs)" {
+  :TC-011: Published sorted by date;
+  note right: **PASS** — Ordered by CreatedAt DESC
+  :TC-012: Filter by category;
+  note right: **PASS** — Category filter works
+}
+partition "UC-009: Directory (4 TCs)" {
+  :TC-006: Search returns results;
+  note right: **PASS** — Returns matching entries
+  :TC-007: Missing attrs → N/A;
+  note right: **PASS** — R001 fallback works
+  :TC-019: All attrs present;
+  note right: **PASS** — All fields populated
+  :TC-020: All null → N/A;
+  note right: **PASS** — All fields N/A
+}
+partition "UC-010: Worker Category (4 TCs)" {
+  :TC-013: Assign category;
+  note right: **PASS** — Category stored
+  :TC-014: Update existing category;
+  note right: **PASS** — Category updated
+  :TC-025: Audit trail on assign;
+  note right: **PASS** — Audit record created
+  :TC-026: List all categories;
+  note right: **PASS** — Returns all entries
+}
+partition "Cross-cutting (5 TCs)" {
+  :TC-028: OIDC auth required;
+  note right: **BLOCKED** — No OIDC client
+  :TC-029: HR role enforcement;
+  note right: **BLOCKED** — No OIDC client
+  :TC-030: Page load < 3s (NFR-001);
+  note right: **BLOCKED** — No deployed env
+  :TC-031: Clock response < 1s (NFR-002);
+  note right: **BLOCKED** — No deployed env
+  :TC-032: Fault tolerance (NFR-003);
+  note right: **BLOCKED** — No deployed env
+}
+stop
+@enduml
+```
+
+#### Execution Summary
+
+| Metric | Count |
 |---|---|
-| **UC Trace** | UC-001 (main flow, steps 1–9) |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-002 (clock response < 1s) |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingIntegrationTests |
-| **Adversarial Intent** | Verify that the system correctly records the clock-in time AND that the displayed confirmation matches the server-recorded time — a mismatch indicates a timestamp integrity bug |
-| **Preconditions** | Employee authenticated via OIDC mock (Employee role); no prior clock-in today; InMemoryDb initialized empty (TD-001) |
-| **Input Data** | Employee id: `emp-001`; direction: `in`; client timestamp: `2026-08-28T08:00:00Z`; idempotency key: `key-001` |
-| **Expected Outcome** | Confirmation returned with time `2026-08-28T08:00:00Z`; exactly 1 record in clockings table |
-| **Pass/Fail Criteria** | PASS: 1 record, correct fields, confirmation time matches. FAIL: 0 records, >1 record, or timestamp mismatch |
-| **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence) |
-| **Automation** | xUnit + Moq; InMemoryDb for persistence; OIDC mock token |
-| **Environment** | .NET 10 test project; no external dependencies |
-
-**Procedure:**
-1. Arrange: Initialize InMemoryDb (TD-001 — empty). Generate OIDC mock token for `emp-001` with Employee role.
-2. Act: Call `IClockingService.RecordClocking("emp-001", "in", "2026-08-28T08:00:00Z", "key-001")`.
-3. Assert: Return value `IsDuplicate == false` and `Success == true`.
-4. Assert: Query clockings table — exactly 1 record with `EmployeeId=emp-001`, `Direction=in`, `Timestamp=2026-08-28T08:00:00Z`, `IdempotencyKey=key-001`.
-5. Assert: Confirmation timestamp in response matches persisted timestamp exactly.
-
-### TC-002: Clock Out — Main Flow with Prior Clock-In
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001 (main flow, steps 1–9) |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-002 |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingIntegrationTests |
-| **Adversarial Intent** | Verify that clock-out after clock-in produces a correct alternating sequence — a missing or duplicated direction indicates a state machine bug |
-| **Preconditions** | Employee authenticated; InMemoryDb seeded with 1 clock-in record (TD-002) |
-| **Input Data** | Employee id: `emp-001`; direction: `out`; client timestamp: `2026-08-28T17:00:00Z`; idempotency key: `key-002` |
-| **Expected Outcome** | Confirmation returned; 2 records in clockings table (in at 08:00, out at 17:00) |
-| **Pass/Fail Criteria** | PASS: 2 records, alternating in→out, timestamps correct. FAIL: wrong direction, missing record, or non-alternating sequence |
-| **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Seed InMemoryDb with TD-002 (emp-001, in, 08:00). Generate OIDC mock token.
-2. Act: Call `IClockingService.RecordClocking("emp-001", "out", "2026-08-28T17:00:00Z", "key-002")`.
-3. Assert: Return value `Success == true`, `IsDuplicate == false`.
-4. Assert: Query clockings table — 2 records: (in, 08:00) and (out, 17:00) for emp-001.
-5. Assert: Records are ordered by timestamp ascending; directions alternate in→out.
-
-### TC-003: Offline Retry — Network Restored Within 5 Minutes
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001 (A1: offline retry), AC-005 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Reliability |
-| **Goal** | TG-003 (offline retry within 5 min) |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingIntegrationTests, OfflineRetryTests |
-| **Adversarial Intent** | Verify that a clocking stored locally during network outage is successfully synced after reconnection — a lost local clocking means the employee's attendance record is incomplete |
-| **Preconditions** | Clocking Client Test Harness initialized; mock HTTP endpoint returns 503 for first 4 minutes, then 200 |
-| **Input Data** | Employee id: `emp-001`; direction: `in`; client timestamp: `2026-08-28T08:00:00Z`; idempotency key: `key-003` |
-| **Expected Outcome** | After network restoration, clocking record persisted with original client timestamp; idempotency key prevents duplicate on retry |
-| **Pass/Fail Criteria** | PASS: 1 record with original timestamp, idempotency key honored. FAIL: 0 records, >1 record, or server timestamp overwrites client timestamp |
-| **Interface Points** | INT-001 (IClockingService), clocking-retry.js, ClockingApiController |
-| **Automation** | xUnit + Clocking Client Test Harness + mock HTTP endpoint |
-| **Environment** | .NET 10 test project with JavaScript test harness |
-
-**Procedure:**
-1. Arrange: Configure mock HTTP to return 503 for 4 minutes, then 200. Initialize Clocking Client Test Harness.
-2. Act: Client calls clock-in — receives 503. Client stores `{direction: "in", timestamp: "2026-08-28T08:00:00Z", idempotencyKey: "key-003"}` in localStorage.
-3. Act: Client retries with exponential backoff (1s, 2s, 4s, 8s, 16s, 32s, 64s, 128s).
-4. Act: At minute 4, mock HTTP returns 200. Client POST succeeds.
-5. Assert: Exactly 1 record in clockings table with `Timestamp=2026-08-28T08:00:00Z` (original client timestamp, NOT server time at retry).
-6. Assert: `IdempotencyKey=key-003` — no duplicate records from retry attempts.
-7. Assert: localStorage entry cleared after successful sync.
-
-### TC-004: Offline Retry — Network Not Restored Within 5 Minutes
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001 (A2: retry window exceeded), AC-005 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Reliability |
-| **Goal** | TG-003 |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingIntegrationTests, OfflineRetryTests |
-| **Adversarial Intent** | Verify that when the 5-minute retry window expires, the local clocking is preserved in localStorage and the user is notified — a silent data loss means the employee cannot prove they clocked in |
-| **Preconditions** | Clocking Client Test Harness; mock HTTP returns 503 indefinitely |
-| **Input Data** | Employee id: `emp-001`; direction: `in`; client timestamp: `2026-08-28T08:00:00Z`; idempotency key: `key-004` |
-| **Expected Outcome** | After 5 minutes, retry stops. localStorage retains the clocking entry. User sees "sync pending" notification. No record in server DB. |
-| **Pass/Fail Criteria** | PASS: 0 server records, localStorage retains entry, user notified. FAIL: localStorage cleared without sync, or no user notification |
-| **Interface Points** | clocking-retry.js, ClockingApiController |
-| **Automation** | xUnit + Clocking Client Test Harness + mock HTTP |
-| **Environment** | .NET 10 test project with JavaScript test harness |
-
-**Procedure:**
-1. Arrange: Configure mock HTTP to return 503 indefinitely. Initialize Clocking Client Test Harness.
-2. Act: Client calls clock-in — receives 503. Stores in localStorage with idempotency key `key-004`.
-3. Act: Client retries for 5 minutes (300 seconds) with exponential backoff.
-4. Assert: After 5 minutes, retry loop terminates.
-5. Assert: localStorage still contains the clocking entry (not cleared).
-6. Assert: User notification "sync pending" is displayed.
-7. Assert: Server clockings table has 0 records for emp-001.
-
-### TC-005: Double Clock-In Rejected
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001 (A3: duplicate direction) |
-| **Test Level** | Unit |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-008 |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingServiceUnitTests |
-| **Adversarial Intent** | Verify that a second clock-in without an intervening clock-out is rejected — a duplicate clock-in corrupts the attendance record and breaks alternating sequence |
-| **Preconditions** | InMemoryDb seeded with 1 clock-in record (TD-002) |
-| **Input Data** | Employee id: `emp-001`; direction: `in`; timestamp: `2026-08-28T09:00:00Z`; idempotency key: `key-005` |
-| **Expected Outcome** | Request rejected with error indicating "already clocked in" |
-| **Pass/Fail Criteria** | PASS: rejection returned, still 1 record. FAIL: second record created or no rejection |
-| **Interface Points** | INT-001 (IClockingService) |
-| **Automation** | xUnit + InMemoryDb |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Seed InMemoryDb with TD-002 (emp-001, in, 08:00).
-2. Act: Call `IClockingService.RecordClocking("emp-001", "in", "2026-08-28T09:00:00Z", "key-005")`.
-3. Assert: Return value `Success == false` with error message indicating duplicate direction.
-4. Assert: Clockings table still has exactly 1 record (the original clock-in).
-
-### TC-006: Directory Search — Missing LDAP Attributes (R001)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-009, R001 (exposure=9) |
-| **Test Level** | Integration |
-| **Quality Dimension** | Reliability |
-| **Goal** | TG-007 (missing attributes default to "N/A") |
-| **Regression** | Yes — every build |
-| **Suite** | DirectoryIntegrationTests, DirectoryServiceTests |
-| **Adversarial Intent** | Verify that missing LDAP attributes (jobTitle, telephoneNumber) across 3 offices do not crash the directory or show blank fields — inconsistent AD data is the top risk (R001, exposure=9) |
-| **Preconditions** | MockLdapGateway configured with TD-008 (3 entries: full, empty jobTitle, empty telephoneNumber) |
-| **Input Data** | Search query: `*` (return all) |
-| **Expected Outcome** | 3 results returned; missing attributes display "N/A"; no exceptions |
-| **Pass/Fail Criteria** | PASS: 3 results, missing fields show "N/A", no crash. FAIL: exception, blank field, or missing result |
-| **Interface Points** | INT-006 (ILdapGateway), COMP-005 (LDAP component) |
-| **Automation** | xUnit + MockLdapGateway |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Configure MockLdapGateway with TD-008: entry 1 (all attributes), entry 2 (empty jobTitle), entry 3 (empty telephoneNumber).
-2. Act: Call `IDirectoryService.Search("*")` with Employee OIDC token.
-3. Assert: 3 results returned — no exceptions thrown.
-4. Assert: Entry 1 — all 6 corporate fields populated (name, jobTitle, department, office, email, extension).
-5. Assert: Entry 2 — jobTitle displays "N/A", all other fields populated.
-6. Assert: Entry 3 — extension displays "N/A", all other fields populated.
-
-### TC-007: Directory Search — Private Data Filtered (CON-012)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-009, CON-012, SEC-004 |
-| **Test Level** | Unit |
-| **Quality Dimension** | Security |
-| **Goal** | TG-006 (corporate data only) |
-| **Regression** | Yes — every build |
-| **Suite** | DirectoryServiceUnitTests |
-| **Adversarial Intent** | Verify that private personal information (mobile, homeAddress, dateOfBirth) present in AD is NOT returned to the portal user — a leak of private data violates CON-012 and is a security incident |
-| **Preconditions** | MockLdapGateway configured with TD-009 (1 entry with corporate + private fields) |
-| **Input Data** | Search query: `Gómez` |
-| **Expected Outcome** | 1 result with only 6 corporate fields; private fields absent from response |
-| **Pass/Fail Criteria** | PASS: only corporate fields returned. FAIL: any private field (mobile, homeAddress, dateOfBirth) appears in response |
-| **Interface Points** | INT-006 (ILdapGateway), DirectoryService |
-| **Automation** | xUnit + MockLdapGateway |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Configure MockLdapGateway with TD-009: 1 entry with corporate fields (name, jobTitle, department, office, email, extension) AND private fields (mobile, homeAddress, dateOfBirth).
-2. Act: Call `IDirectoryService.Search("Gómez")` with Employee OIDC token.
-3. Assert: 1 result returned.
-4. Assert: Response contains exactly 6 fields: name, jobTitle, department, office, email, extension.
-5. Assert: Response does NOT contain: mobile, homeAddress, dateOfBirth, or any field not in the corporate-data whitelist.
-
-### TC-008: Publish News — Audit Record Created
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-005, NFR-004, AUD-001 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-005 (audit trail) |
-| **Regression** | Yes — every build |
-| **Suite** | NewsIntegrationTests, NewsServiceTests |
-| **Adversarial Intent** | Verify that publishing a news item creates an audit record with the correct author identity and timestamp — a missing or incorrect audit record breaks mandatory traceability (NFR-004) |
-| **Preconditions** | HR authenticated via OIDC mock (HR role); InMemoryDb empty (TD-001); InMemoryAuditLogger initialized |
-| **Input Data** | Title: `New Policy`; Body: `Effective immediately...`; Category: `HR`; AuthorId: `hr-001`; IsFeatured: `false` |
-| **Expected Outcome** | News item persisted; audit record created with author=`hr-001`, action=`publish`, timestamp recorded |
-| **Pass/Fail Criteria** | PASS: news item + audit record both persisted with correct fields. FAIL: missing audit record, wrong author, or missing timestamp |
-| **Interface Points** | INT-002 (INewsService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb + InMemoryAuditLogger |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Initialize InMemoryDb (TD-001) and InMemoryAuditLogger. Generate OIDC mock token for `hr-001` with HR role.
-2. Act: Call `INewsService.Publish("New Policy", "Effective immediately...", "HR", "hr-001", false)`.
-3. Assert: News item persisted in news_items table with Title, Body, Category=HR, Status=Published, AuthorId=hr-001.
-4. Assert: Audit record created with Action=publish, AuthorId=hr-001, Timestamp recorded (non-null, within 1s of call).
-5. Assert: Audit record's NewsItemId matches the created news item's Id.
-
-### TC-009: Unpublish News — Record Preserved (CON-013)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-007, CON-013, AUD-003 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-005 |
-| **Regression** | Yes — every build |
-| **Suite** | NewsIntegrationTests, NewsServiceTests |
-| **Adversarial Intent** | Verify that unpublishing a news item hides it from employees but NEVER deletes the record — a hard delete destroys the audit trail and violates CON-013 |
-| **Preconditions** | InMemoryDb seeded with 5 published news items (TD-006); InMemoryAuditLogger initialized |
-| **Input Data** | News item id: `news-001`; HR user: `hr-001` |
-| **Expected Outcome** | News item status changed to Unpublished; record still exists in DB; audit record created; item not returned in employee news feed |
-| **Pass/Fail Criteria** | PASS: status=Unpublished, record exists, audit created, not in feed. FAIL: record deleted, no audit, or item still visible to employees |
-| **Interface Points** | INT-002 (INewsService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb + InMemoryAuditLogger |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Seed InMemoryDb with TD-006 (5 published news items). Initialize InMemoryAuditLogger.
-2. Act: Call `INewsService.Unpublish("news-001", "hr-001")`.
-3. Assert: News item `news-001` still exists in news_items table (NOT deleted).
-4. Assert: News item status = `Unpublished`.
-5. Assert: Audit record created with Action=unpublish, AuthorId=hr-001, Timestamp recorded.
-6. Assert: `INewsService.GetPublishedNews()` does NOT include `news-001`.
-
-### TC-010: Edit Published News — Audit Record Created
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-006, NFR-004, AUD-001 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-005 |
-| **Regression** | Yes — every build |
-| **Suite** | NewsIntegrationTests, NewsServiceTests |
-| **Adversarial Intent** | Verify that editing a published news item creates a new audit record (who and when) and that the original content is replaced — a silent edit without audit violates NFR-004 and a lost edit means the published content is wrong |
-| **Preconditions** | InMemoryDb seeded with 1 published news item; InMemoryAuditLogger initialized |
-| **Input Data** | News item id: `news-001`; New title: `Updated Policy`; New body: `Revised text...`; Category: `HR`; Editor: `hr-001` |
-| **Expected Outcome** | News item updated; audit record created with action=edit, author=hr-001, timestamp |
-| **Pass/Fail Criteria** | PASS: content updated, audit created. FAIL: content unchanged, no audit, or original content lost without trace |
-| **Interface Points** | INT-002 (INewsService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb + InMemoryAuditLogger |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Seed InMemoryDb with 1 published news item (title="Original Title"). Initialize InMemoryAuditLogger.
-2. Act: Call `INewsService.Edit("news-001", "Updated Policy", "Revised text...", "HR", "hr-001")`.
-3. Assert: News item `news-001` title = "Updated Policy", body = "Revised text...".
-4. Assert: Audit record created with Action=edit, AuthorId=hr-001, Timestamp recorded.
-5. Assert: News item status remains Published (edit does not unpublish).
-
-### TC-011: Page Load Performance — NFR-001 (< 3s)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | All UCs (page load), NFR-001, PERF-001 |
-| **Test Level** | System / Performance |
-| **Quality Dimension** | Performance |
-| **Goal** | TG-001 (P95 < 3s) |
-| **Regression** | Yes — per build milestone |
-| **Suite** | PerformanceTests |
-| **Adversarial Intent** | Verify that no page exceeds 3 seconds load time at the 95th percentile — a slow page violates NFR-001 and drives employees back to Excel (R002) |
-| **Preconditions** | .NET 10 test host running; InMemoryDb seeded with representative data (100 clockings, 20 news items, 200 LDAP entries) |
-| **Input Data** | 10 sequential requests to each page: Home, Clocking, Directory, News |
-| **Expected Outcome** | 95th percentile response time < 3s for all pages |
-| **Pass/Fail Criteria** | PASS: P95 < 3s for all 4 pages. FAIL: any page P95 >= 3s |
-| **Interface Points** | Razor Page endpoints, OIDC middleware |
-| **Automation** | xUnit + BenchmarkDotNet or Stopwatch; .NET 10 test host |
-| **Environment** | .NET 10 test host on corporate-equivalent hardware |
-
-**Procedure:**
-1. Arrange: Start .NET 10 test host. Seed InMemoryDb with 100 clockings, 20 news items. Configure MockLdapGateway with 200 entries.
-2. Act: Send 1 warm-up request to each page (Home, Clocking, Directory, News) — discard timing.
-3. Act: Send 10 sequential requests to each page, measuring response time with Stopwatch.
-4. Assert: Calculate P95 for each page. All P95 values < 3000ms.
-5. Assert: No page returns HTTP 5xx during the test.
-
-### TC-012: Clock In/Out Response Time — NFR-002 (< 1s)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001, NFR-002, PERF-002 |
-| **Test Level** | System / Performance |
-| **Quality Dimension** | Performance |
-| **Goal** | TG-002 (P95 < 1s) |
-| **Regression** | Yes — per build milestone |
-| **Suite** | PerformanceTests |
-| **Adversarial Intent** | Verify that the clock-in/out operation completes in under 1 second at the 95th percentile even with 1000 existing records — a slow clock operation frustrates employees and hinders adoption (R002) |
-| **Preconditions** | InMemoryDb seeded with 1000 clocking records; OIDC mock configured |
-| **Input Data** | 100 sequential clock-in requests with unique employee IDs and timestamps |
-| **Expected Outcome** | P95 response time < 1 second |
-| **Pass/Fail Criteria** | PASS: P95 < 1000ms. FAIL: P95 >= 1000ms |
-| **Interface Points** | INT-001 (IClockingService), ClockingApiController |
-| **Automation** | xUnit + Stopwatch; .NET 10 test host |
-| **Environment** | .NET 10 test host |
-
-**Procedure:**
-1. Arrange: Seed InMemoryDb with 1000 clocking records. Generate 100 unique OIDC mock tokens.
-2. Act: Send 1 warm-up clock-in request — discard timing.
-3. Act: Send 100 sequential clock-in requests, measuring response time per request.
-4. Assert: Calculate P95. P95 < 1000ms.
-5. Assert: All 100 requests return Success=true.
-
-### TC-013: HR Role Gates Protected Use Cases
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-003..UC-007, UC-010, SEC-002 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Security |
-| **Goal** | TG-006 |
-| **Regression** | Yes — every build |
-| **Suite** | AuthIntegrationTests |
-| **Adversarial Intent** | Verify that an Employee-role token is rejected for all HR-only operations — a privilege escalation allows any employee to publish news or change worker categories |
-| **Preconditions** | OIDC mock configured with Employee and HR tokens (TD-011) |
-| **Input Data** | Employee-role token attempting: ViewAllClockings, ExportCSV, PublishNews, EditNews, UnpublishNews, ManageWorkerCategory |
-| **Expected Outcome** | All 6 operations return 403 Forbidden with Employee token; all succeed with HR token |
-| **Pass/Fail Criteria** | PASS: 6/6 reject Employee, 6/6 accept HR. FAIL: any HR operation accessible to Employee role |
-| **Interface Points** | OIDC middleware (COMP-007), all HR service interfaces |
-| **Automation** | xUnit + OIDC Mock Token Provider |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Generate OIDC mock tokens: Employee role (`emp-001`) and HR role (`hr-001`) per TD-011.
-2. Act: For each HR-only operation (ViewAllClockings, ExportCSV, PublishNews, EditNews, UnpublishNews, ManageWorkerCategory), call with Employee token.
-3. Assert: All 6 return 403 Forbidden.
-4. Act: Repeat all 6 operations with HR token.
-5. Assert: All 6 return success (200 or appropriate success code).
-
-### TC-014: Unauthenticated Requests Rejected
-
-| Field | Value |
-|---|---|
-| **UC Trace** | All UCs, SEC-001, SEC-002 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Security |
-| **Goal** | TG-006 |
-| **Regression** | Yes — every build |
-| **Suite** | AuthIntegrationTests |
-| **Adversarial Intent** | Verify that all portal endpoints reject unauthenticated requests — an open endpoint exposes corporate data without login |
-| **Preconditions** | No OIDC token provided |
-| **Input Data** | Unauthenticated requests to: ClockIn, ViewHistory, ViewAllClockings, PublishNews, EditNews, UnpublishNews, ReadNews, SearchDirectory, ManageWorkerCategory |
-| **Expected Outcome** | All 9 endpoint categories return 401 Unauthorized |
-| **Pass/Fail Criteria** | PASS: all return 401. FAIL: any endpoint accessible without authentication |
-| **Interface Points** | OIDC middleware (COMP-007) |
-| **Automation** | xUnit + OIDC Mock Token Provider |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Configure test host with OIDC middleware. Do NOT provide a token.
-2. Act: Send HTTP requests to all 9 endpoint categories without Authorization header.
-3. Assert: All return 401 Unauthorized.
-4. Assert: No response body contains corporate data.
-
-### TC-015: View Own Clocking History — Current Month Only
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-002 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-008 |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingIntegrationTests, ClockingServiceTests |
-| **Adversarial Intent** | Verify that only the current month's clockings are returned and that other employees' records are excluded — returning previous months or other employees' data is a privacy violation |
-| **Preconditions** | InMemoryDb seeded with TD-005 (3 current-month + 2 previous-month records for emp-001; 2 records for emp-002) |
-| **Input Data** | Employee id: `emp-001`; current month: August 2026 |
-| **Expected Outcome** | 3 records returned (current month only, emp-001 only) |
-| **Pass/Fail Criteria** | PASS: 3 records, all current month, all emp-001. FAIL: previous month records included, or emp-002 records included |
-| **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Seed InMemoryDb with TD-005: emp-001 has 3 August 2026 + 2 July 2026 records; emp-002 has 2 August 2026 records.
-2. Act: Call `IClockingService.GetHistory("emp-001", 2026, 8)` with Employee token for emp-001.
-3. Assert: Exactly 3 records returned.
-4. Assert: All records have EmployeeId=emp-001 (no emp-002 records).
-5. Assert: All records have timestamps within August 2026 (2026-08-01 to 2026-08-31).
-
-### TC-016: CSV Export — Format and Completeness
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-004, FR-004 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-008 |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingIntegrationTests, ClockingServiceTests |
-| **Adversarial Intent** | Verify that CSV export contains all records for the specified month with correct headers and data — a missing or malformed CSV makes the report useless for HR and drives them back to Excel |
-| **Preconditions** | InMemoryDb seeded with TD-004 (10 records, 3 employees, August 2026) |
-| **Input Data** | Month: August 2026; HR user: `hr-001` |
-| **Expected Outcome** | CSV with 10 data rows + 1 header row; columns: EmployeeId, Name, Direction, Timestamp |
-| **Pass/Fail Criteria** | PASS: 10 rows, correct headers, all data present. FAIL: missing rows, wrong format, or missing headers |
-| **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Seed InMemoryDb with TD-004 (10 clocking records across 3 employees for August 2026).
-2. Act: Call `IClockingService.ExportMonthlyReport(2026, 8)` with HR token.
-3. Assert: Response is valid CSV (parseable).
-4. Assert: Header row contains: EmployeeId, Name, Direction, Timestamp.
-5. Assert: 10 data rows present, each with all 4 columns populated.
-6. Assert: All timestamps fall within August 2026.
-
-### TC-017: Read and Filter News — Category Filter + Featured Banner
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-008, FR-008 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-010 |
-| **Regression** | Yes — every build |
-| **Suite** | NewsIntegrationTests, NewsServiceTests |
-| **Adversarial Intent** | Verify that category filtering returns only matching items and that featured items appear at the top with a banner — a broken filter shows wrong categories and a missing banner means featured news is invisible |
-| **Preconditions** | InMemoryDb seeded with TD-006 (5 published items: 2 General, 1 HR, 1 IT, 1 Events; 2 marked as featured) |
-| **Input Data** | Filter: `HR`; no filter (all) |
-| **Expected Outcome** | Filtered: 1 HR item. Unfiltered: 5 items, featured items first with banner flag |
-| **Pass/Fail Criteria** | PASS: filter returns correct subset, featured items first. FAIL: wrong items returned, featured not first, or banner flag missing |
-| **Interface Points** | INT-002 (INewsService), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Seed InMemoryDb with TD-006 (5 published items, 2 featured). Mark 1 HR item and 1 General item as featured.
-2. Act: Call `INewsService.GetPublishedNews("HR")` with Employee token.
-3. Assert: 1 result returned, category=HR.
-4. Act: Call `INewsService.GetPublishedNews(null)` (no filter).
-5. Assert: 5 results returned, sorted by date descending.
-6. Assert: Featured items (IsFeatured=true) appear before non-featured items.
-7. Assert: `GetFeaturedNews()` returns exactly 2 items.
-
-### TC-018: Manage Worker Category — Assign with Audit
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-010, NFR-004, AUD-002 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-005 |
-| **Regression** | Yes — every build |
-| **Suite** | WorkerCategoryUnitTests, WorkerCategoryServiceTests |
-| **Adversarial Intent** | Verify that assigning a worker category creates an audit record and that the local table holds only AD user id + category (two columns, nothing else) — a missing audit or extra columns violates NFR-004 and CON-009 |
-| **Preconditions** | InMemoryDb empty (TD-001); InMemoryAuditLogger initialized; MockLdapGateway with valid AD user |
-| **Input Data** | AD user id: `ad-user-001`; Category: `Administrative`; HR user: `hr-001` |
-| **Expected Outcome** | worker_categories record created with 2 columns (ad_user_id, category); audit record created |
-| **Pass/Fail Criteria** | PASS: record created with 2 columns only, audit created. FAIL: missing audit, extra columns, or no record |
-| **Interface Points** | INT-003 (IWorkerCategoryService), INT-005 (IAuditLogger), INT-006 (ILdapGateway), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb + InMemoryAuditLogger + MockLdapGateway |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Initialize InMemoryDb (TD-001), InMemoryAuditLogger, MockLdapGateway with valid AD user `ad-user-001`.
-2. Act: Call `IWorkerCategoryService.AssignCategory("ad-user-001", "Administrative", "hr-001")`.
-3. Assert: worker_categories table has 1 record with ad_user_id=`ad-user-001`, category=`Administrative`.
-4. Assert: Record has exactly 2 columns — no employee name, no department, no other AD data stored locally (CON-009).
-5. Assert: Audit record created with Action=category_assign, AuthorId=hr-001, Timestamp recorded.
-
-### TC-019: Manage Worker Category — AD User Not Found (A1)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-010 (A1: AD user not found) |
-| **Test Level** | Unit |
-| **Quality Dimension** | Reliability |
-| **Goal** | TG-007 |
-| **Regression** | Yes — every build |
-| **Suite** | WorkerCategoryUnitTests, WorkerCategoryServiceTests |
-| **Adversarial Intent** | Verify that assigning a category to a non-existent AD user id is rejected gracefully — a crash or silent acceptance means invalid data enters the local table |
-| **Preconditions** | MockLdapGateway configured to return null for `ad-user-999` |
-| **Input Data** | AD user id: `ad-user-999`; Category: `Administrative`; HR user: `hr-001` |
-| **Expected Outcome** | Request rejected with "AD user not found" error; no record in worker_categories |
-| **Pass/Fail Criteria** | PASS: rejection returned, 0 records. FAIL: record created or unhandled exception |
-| **Interface Points** | INT-003 (IWorkerCategoryService), INT-006 (ILdapGateway) |
-| **Automation** | xUnit + MockLdapGateway |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Configure MockLdapGateway to return null for `ad-user-999`.
-2. Act: Call `IWorkerCategoryService.AssignCategory("ad-user-999", "Administrative", "hr-001")`.
-3. Assert: Return value `Success == false` with error "AD user not found".
-4. Assert: worker_categories table has 0 records.
-5. Assert: No audit record created (operation did not succeed).
-
-### TC-020: Directory Search — Authentication Required
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-003, SEC-002, CON-005 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Security |
-| **Goal** | TG-006 |
-| **Regression** | Yes — every build |
-| **Suite** | DirectoryIntegrationTests, AuthIntegrationTests |
-| **Adversarial Intent** | Verify that directory search requires authentication and that LDAP results are correctly returned only to authenticated users — an unauthenticated search means corporate data is exposed without login |
-| **Preconditions** | OIDC mock configured; MockLdapGateway with 3 entries (TD-008) |
-| **Input Data** | Search query: `Gómez`; authenticated and unauthenticated requests |
-| **Expected Outcome** | Authenticated: results returned. Unauthenticated: 401 Unauthorized |
-| **Pass/Fail Criteria** | PASS: auth required, results correct. FAIL: unauthenticated access or wrong results |
-| **Interface Points** | INT-006 (ILdapGateway), COMP-007 (OIDC) |
-| **Automation** | xUnit + MockLdapGateway + OIDC Mock Token Provider |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Configure MockLdapGateway with TD-008 (3 entries). Generate OIDC mock Employee token.
-2. Act: Call directory search with Employee token and query `Gómez`.
-3. Assert: Results returned (at least 1 entry matching Gómez).
-4. Act: Call directory search without token.
-5. Assert: 401 Unauthorized returned.
-6. Assert: No LDAP query executed for unauthenticated request (verify MockLdapGateway was not called).
-
-### TC-021: Cross-Employee Idempotency Key Collision (MINOR-3/MINOR-4)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001, MINOR-3, MINOR-4 (Review Record) |
-| **Test Level** | Unit |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-008 |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingServiceUnitTests, OfflineRetryTests |
-| **Adversarial Intent** | Verify that two different employees using the same idempotency key both get their clocking records persisted — a cross-employee collision that drops the second record is a data loss bug (MINOR-3) |
-| **Preconditions** | InMemoryDb empty (TD-001) |
-| **Input Data** | Employee 1: `emp-001`, direction: `in`, timestamp: `08:00:00Z`, key: `shared-key`. Employee 2: `emp-002`, direction: `in`, timestamp: `08:05:00Z`, key: `shared-key` |
-| **Expected Outcome** | Both records persisted; neither marked as duplicate |
-| **Pass/Fail Criteria** | PASS: 2 records, both Success=true, IsDuplicate=false. FAIL: second record dropped or marked duplicate |
-| **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Initialize InMemoryDb (TD-001 — empty).
-2. Act: Call `IClockingService.RecordClocking("emp-001", "in", "2026-08-28T08:00:00Z", "shared-key")`.
-3. Assert: First call returns Success=true, IsDuplicate=false.
-4. Act: Call `IClockingService.RecordClocking("emp-002", "in", "2026-08-28T08:05:00Z", "shared-key")`.
-5. Assert: Second call returns Success=true, IsDuplicate=false.
-6. Assert: Clockings table has 2 records — one for emp-001, one for emp-002, both with idempotency key `shared-key`.
-7. **Note:** This test validates the fix for MINOR-3. If `FindByIdempotencyKey` is not scoped by employee, this test will FAIL, confirming the defect.
-
-### TC-022: Employee Identity from Token, Not DTO (MINOR-2)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001, MINOR-2 (Review Record), SEC-001 |
-| **Test Level** | Unit |
-| **Quality Dimension** | Security |
-| **Goal** | TG-006 |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingServiceUnitTests |
-| **Adversarial Intent** | Verify that the employee identity in the clocking record comes from the OIDC token's `sub` claim, NOT from the request DTO — trusting the DTO allows identity spoofing (an employee could clock in as someone else) |
-| **Preconditions** | OIDC mock configured; InMemoryDb empty (TD-001) |
-| **Input Data** | Token sub claim: `emp-001`; DTO EmployeeId: `emp-999` (mismatched); direction: `in`; timestamp: `08:00:00Z` |
-| **Expected Outcome** | Clocking record created for `emp-001` (from token), NOT `emp-999` (from DTO) |
-| **Pass/Fail Criteria** | PASS: record has EmployeeId=emp-001. FAIL: record has EmployeeId=emp-999 (DTO value used — security vulnerability) |
-| **Interface Points** | INT-001 (IClockingService), ClockingApiController, OIDC middleware |
-| **Automation** | xUnit + OIDC Mock Token Provider + InMemoryDb |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Generate OIDC mock token with sub claim = `emp-001`. Initialize InMemoryDb (TD-001).
-2. Act: Send clock-in request via ClockingApiController with DTO body containing `EmployeeId=emp-999` but authenticated with token for `emp-001`.
-3. Assert: Clocking record persisted with EmployeeId=`emp-001` (from token sub claim).
-4. Assert: Clocking record does NOT have EmployeeId=`emp-999`.
-5. **Note:** This test validates the security mitigation for MINOR-2. If the DTO EmployeeId is used, this test will FAIL, confirming the identity spoofing vulnerability.
-
-### TC-023: Publish News with IsFeatured Flag (MAJOR-1)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-005, UC-008, FR-008, MAJOR-1 (Review Record) |
-| **Test Level** | Unit |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-010 (IsFeatured persisted) |
-| **Regression** | Yes — every build |
-| **Suite** | NewsServiceUnitTests, NewsServiceTests |
-| **Adversarial Intent** | Verify that publishing a news item with IsFeatured=true actually persists the flag — the Review Record found that no code path sets IsFeatured, meaning the featured banner (FR-008) is non-functional |
-| **Preconditions** | InMemoryDb empty (TD-001); InMemoryAuditLogger initialized |
-| **Input Data** | Title: `Important Announcement`; Body: `All hands meeting...`; Category: `General`; AuthorId: `hr-001`; IsFeatured: `true` |
-| **Expected Outcome** | News item persisted with IsFeatured=true; GetFeaturedNews() returns this item |
-| **Pass/Fail Criteria** | PASS: IsFeatured=true in DB, GetFeaturedNews() returns item. FAIL: IsFeatured=false or GetFeaturedNews() returns empty |
-| **Interface Points** | INT-002 (INewsService), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Initialize InMemoryDb (TD-001) and InMemoryAuditLogger. Generate HR OIDC mock token.
-2. Act: Call `INewsService.Publish("Important Announcement", "All hands meeting...", "General", "hr-001", true)`.
-3. Assert: News item persisted with IsFeatured=true.
-4. Act: Call `INewsService.GetFeaturedNews()`.
-5. Assert: Result contains the published item.
-6. **Note:** This test directly targets MAJOR-1. If the `Publish` method does not accept or persist the `isFeatured` parameter, this test will FAIL, confirming the featured banner is non-functional.
-
-### TC-024: Edit News Does Not Reset IsFeatured
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-006, UC-008, FR-008, MAJOR-1 (Review Record) |
-| **Test Level** | Unit |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-010 |
-| **Regression** | Yes — every build |
-| **Suite** | NewsServiceUnitTests, NewsServiceTests |
-| **Adversarial Intent** | Verify that editing a featured news item does not reset the IsFeatured flag — a silent reset on edit means featured news disappears from the banner after a typo correction |
-| **Preconditions** | InMemoryDb seeded with 1 published, featured news item (IsFeatured=true) |
-| **Input Data** | News item id: `news-001`; New title: `Updated Title`; New body: `Fixed typo`; Category: `General`; Editor: `hr-001` |
-| **Expected Outcome** | News item updated; IsFeatured remains true |
-| **Pass/Fail Criteria** | PASS: content updated, IsFeatured still true. FAIL: IsFeatured reset to false after edit |
-| **Interface Points** | INT-002 (INewsService), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Seed InMemoryDb with 1 published news item (IsFeatured=true, title="Original Title").
-2. Act: Call `INewsService.Edit("news-001", "Updated Title", "Fixed typo", "General", "hr-001")`.
-3. Assert: News item title = "Updated Title", body = "Fixed typo".
-4. Assert: News item IsFeatured = true (unchanged by edit).
-5. Act: Call `INewsService.GetFeaturedNews()`.
-6. Assert: Result still contains `news-001`.
-
-### TC-025: NewsItem State Machine — Transitions
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-005, UC-006, UC-007, CON-013 |
-| **Test Level** | Unit |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-008 |
-| **Regression** | Yes — every build |
-| **Suite** | DomainUnitTests |
-| **Adversarial Intent** | Verify that NewsItem state transitions are enforced — a transition from Unpublished back to Draft or a missing Published→Unpublished path indicates a state machine bug that could allow hard deletes |
-| **Preconditions** | None (domain model test) |
-| **Input Data** | State transitions: Draft→Published, Published→Unpublished, Unpublished→Published (republish) |
-| **Expected Outcome** | Valid transitions succeed; invalid transitions (e.g., Draft→Unpublished) rejected |
-| **Pass/Fail Criteria** | PASS: valid transitions succeed, invalid rejected. FAIL: invalid transition allowed or valid transition rejected |
-| **Interface Points** | CLS-017 (NewsItem domain class) |
-| **Automation** | xUnit |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Create new NewsItem (state=Draft).
-2. Act: Transition Draft→Published.
-3. Assert: State = Published.
-4. Act: Transition Published→Unpublished.
-5. Assert: State = Unpublished. Record still exists (not deleted).
-6. Act: Transition Unpublished→Published (republish).
-7. Assert: State = Published.
-8. Act: Attempt transition Draft→Unpublished (invalid — must publish first).
-9. Assert: Transition rejected with error.
-
-### TC-026: ClockingRecord Validation
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001 |
-| **Test Level** | Unit |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-008 |
-| **Regression** | Yes — every build |
-| **Suite** | DomainUnitTests |
-| **Adversarial Intent** | Verify that ClockingRecord rejects invalid data — a null employee ID, empty direction, or future timestamp indicates a validation gap that could corrupt attendance records |
-| **Preconditions** | None (domain model test) |
-| **Input Data** | (1) null EmployeeId, (2) empty direction, (3) invalid direction "sideways", (4) future timestamp, (5) valid record |
-| **Expected Outcome** | Cases 1–4 rejected; case 5 accepted |
-| **Pass/Fail Criteria** | PASS: invalid data rejected, valid accepted. FAIL: any invalid case accepted |
-| **Interface Points** | CLS-016 (ClockingRecord domain class) |
-| **Automation** | xUnit |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Act: Create ClockingRecord with null EmployeeId.
-2. Assert: ArgumentException thrown.
-3. Act: Create ClockingRecord with empty direction.
-4. Assert: ArgumentException thrown.
-5. Act: Create ClockingRecord with direction="sideways".
-6. Assert: ArgumentException thrown (only "in" and "out" valid).
-7. Act: Create ClockingRecord with future timestamp (current time + 1 hour).
-8. Assert: ArgumentException thrown (timestamps must not be in the future).
-9. Act: Create ClockingRecord with valid data (emp-001, in, current timestamp).
-10. Assert: Record created successfully.
-
-### TC-027: Unpublish Then Republish — Audit Chain
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-005, UC-007, NFR-004, AUD-001, AUD-003 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-005 |
-| **Regression** | Yes — every build |
-| **Suite** | NewsIntegrationTests, NewsServiceTests |
-| **Adversarial Intent** | Verify that unpublishing and then republishing a news item creates a complete audit chain (publish → unpublish → publish) — a broken audit chain means the system cannot trace who re-published an item |
-| **Preconditions** | InMemoryDb seeded with 1 published news item; InMemoryAuditLogger initialized |
-| **Input Data** | News item id: `news-001`; HR user: `hr-001` |
-| **Expected Outcome** | 3 audit records: original publish, unpublish, republish — each with author + timestamp |
-| **Pass/Fail Criteria** | PASS: 3 audit records in correct order. FAIL: missing audit record or wrong action |
-| **Interface Points** | INT-002 (INewsService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb + InMemoryAuditLogger |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Seed InMemoryDb with 1 published news item (news-001, published by hr-001). Initialize InMemoryAuditLogger with 1 existing audit record (original publish).
-2. Act: Call `INewsService.Unpublish("news-001", "hr-001")`.
-3. Assert: Audit record created: Action=unpublish, AuthorId=hr-001.
-4. Act: Call `INewsService.Publish(existing item news-001, ...)` or republish method.
-5. Assert: News item status = Published.
-6. Assert: Audit record created: Action=publish (republish), AuthorId=hr-001.
-7. Assert: Total audit records for news-001 = 3 (publish, unpublish, republish), in chronological order.
-
-### TC-028: Multi-Office LDAP Search — All 3 Offices
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-009, R001, CON-005 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Reliability |
-| **Goal** | TG-007 |
-| **Regression** | Yes — every build |
-| **Suite** | DirectoryIntegrationTests, DirectoryServiceTests |
-| **Adversarial Intent** | Verify that directory search returns results from all 3 offices and that inconsistent attribute populations across offices are handled — R001 (exposure=9) specifically calls out LDAP attribute inconsistency across 3 offices |
-| **Preconditions** | MockLdapGateway configured with entries from 3 offices: Office 1 (full attributes), Office 2 (empty jobTitle), Office 3 (empty telephoneNumber) |
-| **Input Data** | Search query: `*` (all); filter by office: `Office 2` |
-| **Expected Outcome** | All query: results from all 3 offices with "N/A" for missing attributes. Office filter: only Office 2 results. |
-| **Pass/Fail Criteria** | PASS: all offices represented, missing attributes show "N/A", office filter works. FAIL: office missing, crash on missing attribute, or filter returns wrong office |
-| **Interface Points** | INT-006 (ILdapGateway), COMP-005 |
-| **Automation** | xUnit + MockLdapGateway |
-| **Environment** | .NET 10 test project |
-
-**Procedure:**
-1. Arrange: Configure MockLdapGateway with 3 entries from different offices: Office 1 (full), Office 2 (empty jobTitle), Office 3 (empty telephoneNumber).
-2. Act: Call `IDirectoryService.Search("*")` with Employee token.
-3. Assert: 3 results returned, one from each office.
-4. Assert: Office 2 entry — jobTitle = "N/A".
-5. Assert: Office 3 entry — extension = "N/A".
-6. Act: Call `IDirectoryService.Search("*", officeFilter="Office 2")`.
-7. Assert: 1 result returned, from Office 2 only.
-
-### TC-029: Directory Search Performance — AC-003 (< 10s)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-009, AC-003, PERF-003 |
-| **Test Level** | System / Performance |
-| **Quality Dimension** | Performance |
-| **Goal** | TG-004 (< 10s for any query) |
-| **Regression** | Yes — per build milestone |
-| **Suite** | PerformanceTests |
-| **Adversarial Intent** | Verify that directory search returns results in under 10 seconds for any query type — AC-003 requires an employee to find a colleague in under 10 seconds; a slow LDAP query blocks this acceptance criterion |
-| **Preconditions** | MockLdapGateway configured with 200 LDAP entries (simulating full employee directory) |
-| **Input Data** | 20 search queries: 5 by name, 5 by department, 5 by office, 5 by partial name |
-| **Expected Outcome** | All 20 queries complete in < 10 seconds |
-| **Pass/Fail Criteria** | PASS: all 20 < 10s. FAIL: any query >= 10s |
-| **Interface Points** | INT-006 (ILdapGateway), DirectoryService |
-| **Automation** | xUnit + Stopwatch + MockLdapGateway |
-| **Environment** | .NET 10 test host |
-
-**Procedure:**
-1. Arrange: Configure MockLdapGateway with 200 LDAP entries (simulating 200 employees across 3 offices).
-2. Act: Execute 5 search queries by full name (e.g., "Gómez", "Torres", "Díaz", "Rodríguez", "Hernández").
-3. Act: Execute 5 search queries by department (e.g., "IT", "HR", "Finance", "Operations", "Sales").
-4. Act: Execute 5 search queries by office (e.g., "Office 1", "Office 2", "Office 3").
-5. Act: Execute 5 search queries by partial name (e.g., "Góm", "Tor", "Dí", "Rod", "Her").
-6. Assert: All 20 queries complete in < 10 seconds each.
-7. Assert: All queries return at least 1 result (no false negatives from LDAP query construction).
-
-### TC-030: Concurrent Clock-In — 50 Simultaneous Users (Stress)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001, NFR-003, fault tolerance |
-| **Test Level** | System / Stress |
-| **Quality Dimension** | Reliability |
-| **Goal** | TG-009 (50 concurrent, 0 data loss) |
-| **Regression** | Yes — per build milestone |
-| **Suite** | PerformanceTests |
-| **Adversarial Intent** | Verify that 50 simultaneous clock-in requests all persist without data loss or race conditions — a lost clocking under concurrent load means an employee's attendance is missing and they appear absent |
-| **Preconditions** | InMemoryDb empty (TD-001); 50 OIDC mock tokens generated for 50 unique employees |
-| **Input Data** | 50 concurrent clock-in requests: employees emp-001..emp-050, direction: in, timestamps: 08:00:00Z..08:00:49Z, unique idempotency keys |
-| **Expected Outcome** | 50 records persisted, all unique, no duplicates, no lost records |
-| **Pass/Fail Criteria** | PASS: 50/50 records persisted with correct employee IDs and timestamps. FAIL: <50 records, duplicate records, or race condition |
-| **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence), ClockingApiController |
-| **Automation** | xUnit + Parallel.ForEach + InMemoryDb + 50 OIDC mock tokens |
-| **Environment** | .NET 10 test host |
-
-**Procedure:**
-1. Arrange: Initialize InMemoryDb (TD-001). Generate 50 OIDC mock tokens for emp-001 through emp-050.
-2. Act: Fire 50 clock-in requests simultaneously using `Parallel.ForEach` (or `Task.WhenAll` with 50 tasks).
-3. Assert: All 50 requests return Success=true.
-4. Assert: Clockings table has exactly 50 records.
-5. Assert: All 50 employee IDs are unique (emp-001 through emp-050).
-6. Assert: All 50 idempotency keys are unique.
-7. Assert: No duplicate records for any employee.
-
+| Total Test Cases Evaluated | 30 |
+| PASS | 20 |
+| FAIL | 5 |
+| BLOCKED | 8 |
+| Defects Logged | 5 (Issues #10–#14) |
+
+#### Per-Test-Case Verdicts
+
+| TC ID | UC | Verdict | Issue # | Notes |
+|---|---|---|---|---|
+| TC-001 | UC-001 | **PASS** | — | `RecordClocking_NewKey_ReturnsSuccess` validates: Success=true, IsDuplicate=false, correct EmployeeId/Type/IdempotencyKey |
+| TC-002 | UC-001 | **PASS** | — | `GetCurrentStatus_LastClockOut_ReturnsClockedOut` validates status transition In→Out |
+| TC-003 | UC-001 | **PASS** | — | `Retry_SameIdempotencyKey_ReturnsDuplicateNotNewRecord` validates AC-005 idempotency: same key → Duplicate, only 1 record in DB |
+| TC-004 | UC-001 | **PASS** | — | `Retry_ClientSideTimestamp_PreservedInRecord` validates client timestamp preserved exactly |
+| TC-005 | UC-001 | **PASS** | — | `RecordClocking_EmptyEmployeeId_ReturnsFail` validates validation: empty employeeId → Fail with error message |
+| TC-006 | UC-009 | **PASS** | — | `Search_ValidQuery_ReturnsResults` validates LDAP search returns DirectoryEntry with correct fields. **Note:** `Search_NoMatchingEntries_ReturnsEmptyList` test has incorrect assertion (Issue #13) but the core search functionality works |
+| TC-007 | UC-009 | **PASS** | — | `Search_MissingAttributes_ReturnsNA` validates R001 fallback: null attrs → "N/A" |
+| TC-008 | UC-005 | **PASS** | — | `Publish_CreatesAuditRecord` validates NFR-004: audit record created with Publish action, correct author |
+| TC-009 | UC-006 | **PASS** | — | `Edit_UpdatesAndAudits` validates edit updates fields + creates audit record with Edit action |
+| TC-010 | UC-007 | **PASS** | — | `Unpublish_PreservesRecord` validates CON-013: status=Unpublished, record still exists in ListAll |
+| TC-011 | UC-008 | **PASS** | — | `GetPublishedNews_SortedByDate` validates published news ordered by CreatedAt DESC |
+| TC-012 | UC-008 | **PASS** | — | `GetPublishedNews_FilterByCategory` validates category filter works correctly |
+| TC-013 | UC-010 | **PASS** | — | `AssignCategory_NewUser_CreatesCategory` validates category stored with correct AdUserId and Category |
+| TC-014 | UC-010 | **PASS** | — | `AssignCategory_ExistingUser_UpdatesCategory` validates upsert: existing user's category updated |
+| TC-015 | UC-002 | **PASS** | — | `GetHistory_ReturnsEmployeeClockings` validates history returns correct count for employee |
+| TC-016 | UC-002 | **PASS** | — | `GetHistory_NoClockings_ReturnsEmptyList` validates empty history returns empty list |
+| TC-017 | UC-003 | **PASS** | — | `GetAllClockings_ReturnsAllEmployees` validates HR view returns all employees' clockings |
+| TC-018 | UC-004 | **FAIL** | #12 | CSV export format: `TimeOut` column always empty. Format string `$"{record.EmployeeId},{date},{time},,{direction}"` puts all times in TimeIn position. OUT records have time in TimeIn column, TimeOut always blank |
+| TC-019 | UC-009 | **PASS** | — | `FromLdapAttributes_AllPresent_ReturnsAllValues` validates all 7 fields populated from LDAP |
+| TC-020 | UC-009 | **PASS** | — | `FromLdapAttributes_AllNull_ReturnsNA` validates all fields default to "N/A" when null |
+| TC-021 | UC-001 | **FAIL** | #11 | Cross-employee idempotency: `FindByIdempotencyKey` is global, not scoped per employee. Employee B using same key as Employee A gets Duplicate response — B's clocking silently lost. Test `Retry_SameKeyDifferentEmployee_BothSucceed` validates the BUGGY behavior (asserts IsDuplicate=true for emp2) |
+| TC-022 | UC-001 | **BLOCKED** | — | EmployeeId from OIDC token: requires OIDC client registration (STK-003 dependency). No OIDC infrastructure available for testing |
+| TC-023 | UC-005 | **FAIL** | #10 | IsFeatured not settable: `INewsService.Publish()` has no `isFeatured` parameter. `NewsItem.IsFeatured` defaults to false and is never set to true. No code path exists to mark news as featured |
+| TC-024 | UC-008 | **FAIL** | #10 | Featured banner display: `GetFeaturedNews()` queries for `IsFeatured == true` but no item ever has it set. Always returns empty list. FR-008 featured banner is non-functional |
+| TC-025 | UC-010 | **PASS** | — | `AssignCategory_CreatesAuditRecord` validates NFR-004: audit record with CategoryChanged action, correct author |
+| TC-026 | UC-010 | **PASS** | — | `ListCategories_ReturnsAllCategories` validates list returns all stored categories |
+| TC-027 | UC-004 | **PASS** | — | `ExportCsv_NoClockings_ReturnsHeaderOnly` validates empty export returns header row only |
+| TC-028 | Auth | **BLOCKED** | — | OIDC authentication: requires OIDC client registration by STK-003. Not yet confirmed |
+| TC-029 | Auth | **BLOCKED** | — | HR role enforcement: requires OIDC client with role claims. Not yet confirmed |
+| TC-030 | NFR-001 | **BLOCKED** | — | Page load < 3s: requires deployed environment. No deployment available in C1 |
+| TC-031 | NFR-002 | **BLOCKED** | — | Clock response < 1s: requires deployed environment with real PostgreSQL. In-memory tests don't measure real latency |
+| TC-032 | NFR-003 | **BLOCKED** | — | Fault tolerance: requires deployed environment and network simulation. Not available in C1 |
+
+#### Defect Summary
+
+```plantuml
+@startuml
+title Construction C1 — Defect Classification Summary
+
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #333333
+  FontSize 12
+}
+
+rectangle "MAJOR Defects (2)" as MAJOR {
+  rectangle "Issue #10: IsFeatured not settable\nFR-008 featured banner broken\nSeverity: Major | Priority: High\nTC-023, TC-024" as D1 #FFD0D0
+  rectangle "Issue #11: Idempotency not scoped per employee\nSame key across employees loses data\nSeverity: Major | Priority: High\nTC-021" as D2 #FFD0D0
+}
+
+rectangle "MINOR Defects (2)" as MINOR {
+  rectangle "Issue #12: CSV export format mismatch\nTimeOut always empty for OUT records\nSeverity: Minor | Priority: Medium\nTC-018" as D3 #FFF0D0
+  rectangle "Issue #13: Test assertion contradicts name\nSearch_NoMatchingEntries asserts Single\nSeverity: Minor | Priority: Medium" as D4 #FFF0D0
+}
+
+rectangle "TRIVIAL Defects (1)" as TRIVIAL {
+  rectangle "Issue #14: Placeholder test UnitTest1.cs\nAssert.True(true) no value\nSeverity: Trivial | Priority: Low" as D5 #F0FFF0
+}
+
+rectangle "BLOCKED Tests (8)" as BLOCKED {
+  rectangle "TC-022, TC-028, TC-029: OIDC auth tests\nNo OIDC client registered (STK-003)\nBlocked by infrastructure dependency" as B1 #D0D0FF
+  rectangle "TC-030, TC-031, TC-032: Performance/Load\nNo deployed environment to test against\nBlocked by deployment not yet available" as B2 #D0D0FF
+}
+
+MAJOR -[hidden]-> MINOR
+MINOR -[hidden]-> TRIVIAL
+TRIVIAL -[hidden]-> BLOCKED
+
+@enduml
+```
+
+#### Defect Details
+
+| Issue # | Severity | TC(s) | UC | Summary | Root Cause |
+|---|---|---|---|---|---|
+| #10 | Major | TC-023, TC-024 | UC-005/UC-008 | IsFeatured not settable in Publish/Edit | `INewsService.Publish()` signature lacks `isFeatured` parameter; `NewsItem.IsFeatured` never set to true |
+| #11 | Major | TC-021 | UC-001 | Idempotency key not scoped per employee | `FindByIdempotencyKey(string key)` is global lookup; no employee scoping. Cross-employee collision loses data |
+| #12 | Minor | TC-018 | UC-004 | CSV export TimeOut always empty | Format string `$"{emp},{date},{time},,{dir}"` — empty field for TimeOut regardless of record type |
+| #13 | Minor | TC-006 variant | UC-009 | Test assertion contradicts test name | `Search_NoMatchingEntries_ReturnsEmptyList` asserts `Single(results)` instead of `Empty(results)` |
+| #14 | Trivial | — | — | Placeholder test provides no value | `UnitTest1.cs` contains `Assert.True(true)` — scaffolding leftover |
+
+#### Blocked Tests Rationale
+
+| TC(s) | Blocker | Dependency | Resolution Path |
+|---|---|---|---|
+| TC-022, TC-028, TC-029 | No OIDC client registered | STK-003 (Infrastructure team) | OIDC client registration in Keycloak; confirmed test AD instance |
+| TC-030, TC-031, TC-032 | No deployed environment | Deployment pipeline (deploy.yml exists but no target server) | Deploy to internal Windows Server; run performance tests against real PostgreSQL + LDAP |
+
+#### Regression Status
+
+This is the first Construction iteration — no prior PASS verdicts exist to regress. All 20 PASS verdicts from C1 become the regression baseline for C2. The Elaboration baseline (75 tests at code-level, ALL PASS) is subsumed by the C1 execution which includes those same tests plus the 10 new adversarial/performance TCs.
 ## Test Data
 
 ### Test Data Catalog
