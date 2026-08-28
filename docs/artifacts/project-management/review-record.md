@@ -570,7 +570,6 @@ end note
 
 All lenses have converged. The architecture is baselined. All critical and major findings are resolved. Stakeholder sanction is GRANTED. The project is sanctioned to advance to the Construction phase.
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | Compliance Matrix | All 12 artifacts | Derives | LCA Milestone Decision |
@@ -578,10 +577,15 @@ All lenses have converged. The architecture is baselined. All critical and major
 | F1 (resolved) | Test Case traceability table | Derives | resolve_artifact_finding (Iter 2) |
 | M1 (resolved) | Design Model INT-005, SAD INT-005 | Derives | Code Reviewer Iter 2 verdict |
 | M2 (resolved) | Design Model INT-007, SAD INT-007 | Derives | Code Reviewer Iter 2 verdict |
-| MR-F1 (resolved) | Risk List R001/R006/R003 | Derives | Management Reviewer Iter 1 finding |
-| MR-F2 (resolved) | Iteration Plan narrative | Derives | Management Reviewer Iter 1 finding |
+| MR-F1 (resolved) | Risk List R001/R006/R003 | Derives | resolve_artifact_finding (Iter 2, Management Reviewer) |
+| MR-F2 (resolved) | Iteration Plan narrative | Derives | resolve_artifact_finding (Iter 2, Management Reviewer) |
 | CR-MIN-1 (open) | PR #4 test files | Derives | Code Reviewer Iter 2 finding |
-| LCA Exit Criteria (8) | SAD, Design Model, Risk List, PoC, CI | Derives | LCA Milestone Decision |
-| PR #7 disposition | CI build (iteration/E1), Code Reviewer verdict | Derives | LCA sanction |
-| Per-artifact verdicts | All 12 artifacts | Derives | Consolidated LCA disposition |
-| Iteration Assessment | Iteration Plan objectives | Refines | LCA milestone decision (NOT YET ACHIEVED — pending stakeholder sanction) |
+| LCA Compliance Table (MR) | SAD, Risk List, PoC, Iteration Plan, Code Reviewer verdict | Derives | LCA Milestone Decision (GO) |
+| Risk Retirement State Machine | Risk List R001/R006/R003, PoC artifact | Derives | LCA risk retirement verification |
+| Project Health Scorecard | All artifacts, Iteration Plan, Risk List | Derives | LCA milestone decision (GO) |
+| LCA Exit Criteria (8) | SAD, Design Model, Risk List, PoC, CI | Derives | LCA Milestone Decision (GO — ACHIEVED) |
+| PR #7 disposition | CI build (iteration/E1), Code Reviewer verdict | Derives | LCA sanction (APPROVED) |
+| Per-artifact verdicts | All 12 artifacts | Derives | Consolidated LCA disposition (GO) |
+| Stakeholder sanction (Iter 2) | STK-001 answer (LCA consultation) | Refines | LCA milestone decision (GRANTED — "Yes, everything looks very promising. We can move on to the construction phase.") |
+| Iteration Assessment | Iteration Plan objectives | Refines | LCA milestone decision (LCA ACHIEVED — stakeholder sanction GRANTED) |
+| Consolidated LCA Verdict | All lens verdicts (Technical, Management, Business, Code) | Derives | Phase transition: Elaboration → Construction |
