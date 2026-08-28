@@ -204,6 +204,13 @@ The Code Reviewer reviewed PR #4 and recorded 2 Major findings (implementation d
 |---|---|---|---|---|---|
 | F1 | Minor | Test Case | The Test Case traceability table uses "TD-NNN" as an element ID prefix (TD-008, TD-009, TD-011) for Test Dependencies. This prefix is not listed in the standard ID conventions table. The prior finding on the Test Evaluation Summary for the same prefix was resolved by replacing TD-NNN with TC-NNN, but the Test Case artifact still uses TD-NNN. Unlike the Test Evaluation Summary entries (which were test configurations mislabeled as dependencies), these TD entries represent genuine Test Dependencies — a concept distinct from Test Cases. Replacing with TC-NNN would be semantically incorrect. | Either (a) declare "TD" (Test Dependency) as a project-specific element type in the Development Case's tool assessment section, noting it as a test-planning concept that doesn't map to any existing standard ID type, or (b) replace TD-NNN with inline descriptive names consistent with the other test dependency entries in the same table (e.g., "LdapGatewayStub", "OIDC Mock Token Provider"). Option (a) is preferred since Test Dependency is a meaningful concept in test planning. | Approved |
 
+### Management Reviewer Findings (LCA Management Lens — Elaboration Iter 1)
+
+| # | Severity | Artifact | Finding | Recommendation | Verdict | Finding Key |
+|---|---|---|---|---|---|---|
+| MR-F1 | Minor | Iteration Plan | Iteration Plan text states "6 iterations across 4 phases" but the coarse roadmap table shows 7 iterations (2 Inception + 2 Elaboration + 2 Construction + 1 Transition = 7). The narrative count does not match the tabulated roadmap. | Correct the narrative text from "6 iterations" to "7 iterations across 4 phases" to match the roadmap table. Alternatively, if 6 is intended, revise the roadmap to show 6 iterations. | NeedsRework | F1 |
+| MR-F2 | Major | Risk List | R001 (AD LDAP, exposure=9, HIGH) and R006 (offline retry, exposure=6, SIGNIFICANT) are both in MITIGATING status with PoCs triggered but no PoC results evidenced. Stakeholder REFUSED sanction citing "issues to mitigate." At LCA gate, these risks MUST show PoC results — RETIRED or ESCALATED with evidence. R003 (OIDC, exposure=6) external dependency on STK-003 still pending. | 1. Execute R001 LDAP PoC across 3 offices in Iter 2 and record results (RETIRED or ESCALATED). 2. Execute R006 offline retry PoC in Iter 2 and record results. 3. Confirm R003 OIDC registration with STK-003 or activate mock auth contingency. 4. Update Risk List status fields with PoC evidence citations. | NeedsRework | F1 |
+
 ### Business Modeling Discipline (Business Reviewer — LCA Business Lens)
 
 **Verdict: [BR-OK-INACTIVE] — Discipline NOT APPLICABLE per DC §4**
@@ -291,74 +298,45 @@ end note
 
 Business Modeling discipline remains correctly **INACTIVE**. No findings, no recommendations. The LCA milestone may proceed without BM contributions. The Inception INACTIVE verdict is sustained through Elaboration.
 
-### Defect Distribution
+### Defect Distribution (All Lenses Combined)
 
 ```plantuml
 @startuml
-title LCA Review — Defect Distribution (Severity × Artifact)
+title LCA Review — Defect Distribution (All Lenses, Severity × Artifact)
 
 skinparam classAttributeIconSize 0
 
 object "Critical" as CR {
-  SAD: 0
-  Design Model: 0
-  UC Model: 0
-  Supp Spec: 0
-  Dev Case: 0
-  Risk List: 0
-  Iter Plan: 0
-  Test Case: 0
-  Test Eval Sum: 0
-  Vision: 0
-  Iter Assess: 0
-  Review Record: 0
   **Total: 0**
 }
 
 object "Major" as MA {
-  SAD: 0
-  Design Model: 0
-  UC Model: 0
-  Supp Spec: 0
-  Dev Case: 0
-  Risk List: 0
-  Iter Plan: 0
-  Test Case: 0
-  Test Eval Sum: 0
-  Vision: 0
-  Iter Assess: 0
-  Review Record: 0
-  **Total: 0**
+  PR #4 / Review Record: 2 (M1, M2 — Code Reviewer)
+  Risk List: 1 (MR-F2 — Management Reviewer)
+  **Total: 3**
 }
 
 object "Minor" as MI {
-  SAD: 0
-  Design Model: 0
-  UC Model: 0
-  Supp Spec: 0
-  Dev Case: 0
-  Risk List: 0
-  Iter Plan: 0
-  Test Case: 1 (TD-NNN prefix)
-  Test Eval Sum: 0
-  Vision: 0
-  Iter Assess: 0
-  Review Record: 0
-  **Total: 1**
+  Test Case: 1 (F1 — Reviewer, TD-NNN prefix)
+  Iteration Plan: 1 (MR-F1 — Management Reviewer, count mismatch)
+  **Total: 2**
 }
 
 object "Info" as IN {
   **Total: 0**
 }
 
-CR --> MI : 0 Critical, 0 Major
-MI --> IN : 1 Minor, 0 Info
+CR --> MA : 0 Critical
+MA --> MI : 3 Major
+MI --> IN : 2 Minor, 0 Info
 
 note bottom of MI
-  Overall LCA Disposition: APPROVED
-  0 Critical, 0 Major, 1 Minor (non-blocking)
-  PR #4: REQUEST_CHANGES (Code Reviewer — 2 Major impl divergences)
-  Business Modeling: INACTIVE (BR-OK-INACTIVE)
+  **Management Reviewer Verdict: CONDITIONAL**
+  Stakeholder sanction: REFUSED
+  0 Critical, 3 Major (2 Code Reviewer + 1 Management),
+  2 Minor (1 Reviewer + 1 Management)
+  Project must complete Elaboration Iter 2 with conditions
+  before LCA gate can close.
 end note
 
 @enduml
