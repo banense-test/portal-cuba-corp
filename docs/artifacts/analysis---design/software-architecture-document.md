@@ -4,13 +4,14 @@
 | Phase | Construction |
 | Status | Active — Governance |
 | Milestone Target | End of Construction |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
-| Review Findings | Elaboration LCA achieved — 0 Critical, 0 Major open. Construction C1: no new findings from architectural review. |
+| Review Findings | Elaboration LCA achieved — 0 Critical, 0 Major open. Construction C1: no architectural findings. Construction C2: no findings targeting SAD; refinement updates applied (Implementation View, Data View). |
 | Version Policy | Reconciled — .NET 10 pinned by enterprise policy; all NuGet packages at 10.0.0 (verified Construction C1, unchanged from Elaboration) |
 | Prior Phase | Elaboration baseline (LCA achieved, stakeholder sanction GRANTED) |
 | PoC Decisions | R001: single-mechanism (execution pending — CR-001 concurred); R006: single-mechanism (execution pending — CR-002 concurred); R003: analysis-only (coordination with STK-003) |
-| Construction C1 Governance | CR concurrence: #1 CONCUR, #2 CONCUR. Refinement: Implementation View project naming + ILdapConnection + domain entities (minor-local). No iteration-baseline PR (iteration not yet closed). |
+| Construction C1 Governance | CR concurrence: #1 CONCUR, #2 CONCUR. Refinement: Implementation View project naming + ILdapConnection + domain entities (minor-local). No iteration-baseline PR at time of governance run. |
+| Construction C2 Governance | CR concurrence: no `needs-architect-review` CRs pending. Refinement: Implementation View updated with C1 delivery status + C2 targets; Data View updated with CR-011 idempotency key scoping (minor-local). Iteration-baseline PR #9 APPROVED. Issue #16 (missing Architect approval) resolved. |
 ## Architectural Representation
 
 This document presents the **architectural baseline** for Portal Cuba Corp — evolved from the Inception candidate to a full 4+1 view model per RUP Elaboration requirements. All five views are now addressed with UML diagrams.
