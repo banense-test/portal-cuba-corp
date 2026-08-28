@@ -10,39 +10,40 @@
 | Evolution | Elaboration Iter 1 DC evolved with Iter 2 process improvements and F1 finding resolution |
 | Findings Addressed | F1 (Minor) — TD-NNN prefix non-standard; resolved by declaring TC-NNN as canonical test case ID prefix |
 ## Tailoring Overview
-
 This Development Case specifies the project-specific **deltas** over the IARI DC baseline for the Portal Cuba Corp Employee Portal project. The baseline defines 25 active roles, 16 CORE artifacts, 6 OPTIONAL artifacts, and a canonical discipline-intensity matrix. This document declares ONLY the project-specific deviations — it does not restate the baseline.
 
-### Organization Assessment (Updated for Elaboration)
+### Organization Assessment (Updated for Elaboration Iter 2)
 
-| Factor | Inception Finding | Elaboration Update |
-|---|---|---|
-| Agent role count | 25 roles per IARI baseline — all active | No change — 25 roles confirmed |
-| Project type | Internal employee portal (intranet), 200 users, 3 offices | No change |
-| Complexity | Moderate — CRUD-centric with AD/LDAP integration and audit trail | Confirmed by SAD baseline: 8 components, 5 ADRs, 3 sequence diagrams. Complexity is moderate as assessed. |
-| Tech stack | .NET 10 REST API, Razor Pages, PostgreSQL, Keycloak OIDC, AD LDAP, internal Windows Server | Confirmed by SAD: Novell.Directory.Ldap for LDAP (ADR-003), Npgsql for PostgreSQL (ADR-002), Keycloak OIDC client (ADR-005) |
-| Process maturity | First iteration — baseline IARI process applies | Inception completed successfully (LCO achieved, 0 open findings). Process baseline validated. Elaboration refines based on real Inception experience. |
-| Key risk | R001 (AD LDAP attribute inconsistency across 3 offices, exposure=9) | **Unchanged — R001 remains top risk.** Architectural PoC now triggered for empirical validation. |
-
-### Tool Assessment (Updated for Elaboration)
-
-| Tool | Inception Status | Elaboration Status | Notes |
+| Factor | Inception Finding | Elaboration Iter 1 Finding | Iter 2 Update |
 |---|---|---|---|
-| Git SCM | Available | Available | Repository active, IARI branching strategy committed |
-| GitHub Actions CI | Referenced | **In progress** | `.github/workflows/` — ConfigurationManager to configure this iteration |
-| .NET 10 SDK | Declared (CON-001) | Declared (CON-001) | Framework pinned in version policy |
-| PostgreSQL | Declared (CON-003) | Declared (CON-003) | SAD baselined schema: Clocking, News, NewsAudit, WorkerCategory |
-| Keycloak | External (CON-004) | External (CON-004) | OIDC client only — SAD ADR-005 confirms client registration approach |
-| Active Directory | External (CON-005, CON-010) | External (CON-005, CON-010) | SAD ADR-003 confirms LDAP read-only integration via Novell.Directory.Ldap |
-| Razor Pages | Declared (CON-002) | Declared (CON-002) | SAD confirms server-rendered, no SPA |
-| Chrome / Edge | Declared (CON-008) | Declared (CON-008) | Cross-browser testing target |
-| CONTRIBUTING.md | To be created | **In progress — Elaboration Iter 1** | Discipline experts author content; DC references it |
-| Lint config | To be created | **In progress — Elaboration Iter 1** | `.editorconfig` / `dotnet-format` — Implementer configures |
-| UI design source | Provided (CON-011) | Provided (CON-011) | `docs/inputs/employee-portal-design.html` — mandatory, authoritative |
+| Agent role count | 25 roles per IARI baseline — all active | No change | No change — 25 roles confirmed |
+| Project type | Internal employee portal (intranet), 200 users, 3 offices | No change | No change |
+| Complexity | Moderate — CRUD-centric with AD/LDAP integration and audit trail | Confirmed by SAD: 8 components, 5 ADRs, 3 sequence diagrams | SAD DRAFT not yet BASELINED — M1/M2 interface mismatches block baselining |
+| Tech stack | .NET 10 REST API, Razor Pages, PostgreSQL, Keycloak OIDC, AD LDAP, internal Windows Server | Confirmed by SAD: Novell.Directory.Ldap (ADR-003), Npgsql (ADR-002), Keycloak OIDC (ADR-005) | No change — stack confirmed |
+| Process maturity | First iteration — baseline IARI process applies | Inception completed (LCO, 0 open findings). Process baseline validated. | Elaboration Iter 1 revealed process gaps: interface conformance enforcement, evidence-based risk retirement, ID convention enforcement. Adjustments recorded in Guidelines and Procedures. |
+| Key risk | R001 (AD LDAP attribute inconsistency, exposure=9) | R001 remains top risk. PoC triggered but not yet executed. | **Unchanged — R001 PoC results still pending.** MR-F1 (Major) flags insufficient evidence for LCA closure. |
+| Cost profile | Inception: 22 min, 4.38M tokens, 11 runs | Elaboration Iter 1: 2.78× Inception tokens — cost driver is artifact surface reasoning | Budget boxes for remaining iterations must use Elaboration actuals, not Inception rates. |
+
+### Tool Assessment (Updated for Elaboration Iter 2)
+
+| Tool | Inception Status | Elaboration Iter 1 Status | Iter 2 Status | Notes |
+|---|---|---|---|---|
+| Git SCM | Available | Available | **Verified** | Repository active, PR #4 reviewed, artifacts persisting |
+| GitHub Actions CI | Referenced | In progress | **Pending** | `.github/workflows/` — ConfigurationManager has not yet confirmed pipeline working |
+| .NET 10 SDK | Declared (CON-001) | Declared (CON-001) | **Declared** | Framework pinned in version policy |
+| PostgreSQL | Declared (CON-003) | Declared (CON-003) | **Declared** | SAD baselined schema: Clocking, News, NewsAudit, WorkerCategory |
+| Keycloak | External (CON-004) | External (CON-004) | **External** | OIDC client only — STK-003 must provide registration before login testing |
+| Active Directory | External (CON-005, CON-010) | External (CON-005, CON-010) | **External** | STK-003 must provide test AD for PoC (R001) — still pending |
+| Razor Pages | Declared (CON-002) | Declared (CON-002) | **Declared** | SAD confirms server-rendered, no SPA |
+| Chrome / Edge | Declared (CON-008) | Declared (CON-008) | **Declared** | Cross-browser testing target |
+| CONTRIBUTING.md | To be created | In progress | **Pending** | Not yet created — discipline experts must author sections |
+| Lint config | To be created | In progress | **Pending** | `.editorconfig` / `dotnet-format` — not yet created |
+| UI design source | Provided (CON-011) | Provided (CON-011) | **Provided** | `docs/inputs/employee-portal-design.html` — mandatory, authoritative |
+| PR #4 (E1 prototype) | N/A | Reviewed — changes requested | **Open** | M1 (IAuditLogger mismatch) + M2 (IPersistence transaction API) — Implementer must fix |
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Elaboration Process Configuration Architecture
+title Portal Cuba Corp — Elaboration Process Configuration Architecture (Iter 2)
 
 skinparam componentStyle rectangle
 
@@ -58,13 +59,16 @@ package "Project Configuration (Thin Plug-Ins)" {
   component "Version Policy\n(.NET 10 pin)" as VP
   component "Measurement Policy\n(tokens + elapsed time)" as MP
   component "Tool References\n(CI, lint, CONTRIBUTING.md)" as Tools
+  component "ID Convention\n(TC-NNN declared)" as IDConv
+  component "Process Improvement\n(Assessment-driven)" as PI
 }
 
-package "Elaboration Deltas" {
+package "Elaboration Deltas (Iter 2)" {
   component "Architectural PoC\nTRIGGERED (R001)" as PoC
   component "Discipline Intensity\nElaboration column" as DI
-  component "Guideline Status\nUpdated for Elaboration" as GS
-  component "Tool Environment\nVerification" as TE
+  component "Guideline Status\nUpdated for Iter 2" as GS
+  component "Tool Environment\nVerification (Iter 2)" as TE
+  component "F1 Finding\nResolved (TC-NNN)" as F1Fix
 }
 
 Roles --> BM : deactivates
@@ -73,26 +77,33 @@ Optional --> PoC : trigger fires for R001
 Core --> VP : version policy governs
 Tools --> GS : references updated
 Tools --> TE : verification status
+IDConv --> F1Fix : F1 finding resolved
+PI --> GS : lessons learned integrated
 
 note bottom of PoC
   Trigger: Elaboration phase +
   R001 (exposure=9, LDAP attribute
   consistency across 3 offices).
-  PoC validates attribute mapping
-  against real AD before Construction.
+  PoC results PENDING — MR-F1 open.
 end note
 
-note bottom of DI
-  Elaboration: Requirements=High,
-  A&D=Critical, Implementation=Medium,
-  Test=Medium, Deployment=Low,
-  CCM=Medium, PM=Medium,
-  Environment=Medium
+note bottom of F1Fix
+  F1 (Minor): TD-NNN prefix non-standard.
+  Resolution: TC-NNN declared canonical
+  in Guidelines and Procedures section.
+end note
+
+note bottom of PI
+  5 lessons from Iter 1 Assessment:
+  1. Cost 2.78x Inception
+  2. Interface = contract
+  3. PoC evidence required
+  4. All findings resolved
+  5. Quality != scope completion
 end note
 
 @enduml
 ```
-
 ## Disciplines and Intensity
 
 Discipline intensity per phase is confirmed **per canonical matrix** — no deviations requested.
