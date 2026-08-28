@@ -609,10 +609,12 @@ end note
 The solution is organized as a layered .NET 10 solution with projects mirroring the architectural layers. Each project corresponds to one layer; dependencies flow downward only (Presentation → Application → Infrastructure → Domain).
 
 > **Construction C1 Refinement:** Project name corrected from `src/PortalCubaCorp.Web` (Elaboration baseline) to `src/PortalCubaCorp` (actual). `ILdapConnection` testability abstraction and additional Domain entities (ClockingResult, LdapSearchResult, DateRange, Enums) added to reflect implementation reality.
+>
+> **Construction C2 Refinement:** Implementation View updated to reflect C1 delivery status — only `Index.cshtml`, `Program.cs`, and `clocking-retry.js` were delivered in C1; the remaining 7 Razor Pages are C2 targets. CR-011 (idempotency key scoping) noted in Infrastructure annotations. Domain layer annotations updated to reflect C2 Design Model contract alignment (NewsStatus Draft removed, CreatedBy→AuthorId, entityId type=string).
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Implementation View (Construction C1 — Refined)
+title Portal Cuba Corp — Implementation View (Construction C2 — Refined)
 
 skinparam packageStyle rectangle
 skinparam componentStyle rectangle
@@ -621,23 +623,17 @@ package "PortalCubaCorp.sln" as SLN {
   
   package "src/PortalCubaCorp" as WEB {
     package "Pages" as PAGES {
-      package "Employee" as EMP_PAGES {
-        component "Index.cshtml\n(MainPageModel V001)" as IDX
-        component "Clocking.cshtml\n(ClockingPageModel V002)" as CLK_PG
-        component "Directory.cshtml\n(DirectorySearchModel V007)" as DIR_PG
-      }
-      package "HR" as HR_PAGES {
-        component "AllClockings.cshtml\n(AllClockingsModel V003)" as ALL_CLK
-        component "PublishNews.cshtml\n(PublishNewsModel V004)" as PUB_NEWS
-        component "EditNews.cshtml\n(EditNewsModel V005)" as EDT_NEWS
-        component "NewsManagement.cshtml\n(NewsManagementModel V006)" as MGT_NEWS
-        component "WorkerCategory.cshtml\n(WorkerCategoryModel V008)" as WC_PG
-      }
+      component "Index.cshtml\n(MainPageModel V001)\n[C1 DELIVERED]" as IDX
+      note right of IDX
+        C2 target: Clocking, Directory,
+        AllClockings, PublishNews, EditNews,
+        NewsManagement, WorkerCategory pages
+      end note
     }
     package "wwwroot/js" as JS {
-      component "clocking-retry.js\n(localStorage + POST retry\nAC-005)" as CLK_JS
+      component "clocking-retry.js\n(localStorage + POST retry\nAC-005) [C1 DELIVERED]" as CLK_JS
     }
-    component "Program.cs\n(DI wiring + OIDC)" as PROG
+    component "Program.cs\n(DI wiring + OIDC) [C1 DELIVERED]" as PROG
   }
   
   package "src/PortalCubaCorp.Application" as APP {
@@ -691,7 +687,9 @@ note bottom of WEB
   CON-011: Mandatory custom UI design
   Actual project: src/PortalCubaCorp (no .Web suffix)
   SDK: Microsoft.NET.Sdk.Web
-  Packages: OIDC, EF Core Design
+  C1 delivered: Index.cshtml, Program.cs, clocking-retry.js
+  C2 target: remaining 7 Razor Pages (Clocking, Directory,
+    AllClockings, PublishNews, EditNews, NewsManagement, WorkerCategory)
 end note
 
 note bottom of INFRA
@@ -700,12 +698,16 @@ note bottom of INFRA
   CON-004: Keycloak OIDC client
   ILdapConnection abstracts Novell.Directory.Ldap
   for testability (ILdapGateway + ILdapConnection)
+  C2 refinement: idempotency key scoped per employee
+    (CR-011: unique index on employee_id + idempotency_key)
 end note
 
 note bottom of DOMAIN
   SDK: Microsoft.NET.Sdk (class library)
   No project references — pure entities
   Nullable enabled, ImplicitUsings enabled
+  C2 alignment: NewsStatus Draft removed,
+    CreatedBy→AuthorId, entityId type=string
 end note
 
 @enduml
@@ -713,12 +715,12 @@ end note
 
 ### Build Structure
 
-| Project | Layer | SDK | Dependencies | Purpose |
-|---|---|---|---|---|
-| PortalCubaCorp | Presentation | Microsoft.NET.Sdk.Web | Application, Infrastructure, Domain | Razor Pages, static files, OIDC middleware wiring, DI registration |
-| PortalCubaCorp.Application | Application | Microsoft.NET.Sdk | Infrastructure (interfaces only), Domain | Service interfaces and implementations |
-| PortalCubaCorp.Infrastructure | Infrastructure | Microsoft.NET.Sdk | Domain | EF Core DbContext, LDAP gateway, OIDC middleware, audit interceptor |
-| PortalCubaCorp.Domain | Domain | Microsoft.NET.Sdk | (none) | Domain entities: ClockingRecord, NewsItem, WorkerCategory, AuditRecord, DirectoryEntry, ClockingResult, LdapSearchResult, DateRange, Enums |
+| Project | Layer | SDK | Dependencies | Purpose | C1 Status |
+|---|---|---|---|---|---|
+| PortalCubaCorp | Presentation | Microsoft.NET.Sdk.Web | Application, Infrastructure, Domain | Razor Pages, static files, OIDC middleware wiring, DI registration | Partial — Index.cshtml, Program.cs, clocking-retry.js delivered; 7 pages pending C2 |
+| PortalCubaCorp.Application | Application | Microsoft.NET.Sdk | Infrastructure (interfaces only), Domain | Service interfaces and implementations | Delivered — all 4 interfaces + 4 implementations |
+| PortalCubaCorp.Infrastructure | Infrastructure | Microsoft.NET.Sdk | Domain | EF Core DbContext, LDAP gateway, OIDC middleware, audit interceptor | Delivered — all components present |
+| PortalCubaCorp.Domain | Domain | Microsoft.NET.Sdk | (none) | Domain entities: ClockingRecord, NewsItem, WorkerCategory, AuditRecord, DirectoryEntry, ClockingResult, LdapSearchResult, DateRange, Enums | Delivered — all entities present |
 
 ### Dependency Rules
 
@@ -727,7 +729,7 @@ end note
 - **Infrastructure → Domain:** Infrastructure project references Domain for entity types used in persistence.
 - **Domain → (none):** Domain project has no dependencies. Pure entity definitions.
 
-### NuGet Package Inventory (Construction C1)
+### NuGet Package Inventory (Construction C2)
 
 | Package | Version | Project | Constraint | Policy |
 |---|---|---|---|---|
