@@ -75,8 +75,11 @@ public class DomainTests
     {
         var range = DateRange.ForMonth(2026, 3);
 
-        Assert.Equal(new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc), range.Start);
-        Assert.Equal(new DateTime(2026, 3, 31, 23, 59, 59, 9999999, DateTimeKind.Utc), range.End);
+        var expectedStart = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
+        var expectedEnd = expectedStart.AddMonths(1).AddTicks(-1);
+
+        Assert.Equal(expectedStart, range.Start);
+        Assert.Equal(expectedEnd, range.End);
     }
 
     [Fact]
@@ -84,8 +87,11 @@ public class DomainTests
     {
         var range = DateRange.ForMonth(2026, 12);
 
-        Assert.Equal(new DateTime(2026, 12, 1, 0, 0, 0, DateTimeKind.Utc), range.Start);
-        Assert.Equal(new DateTime(2026, 12, 31, 23, 59, 59, 9999999, DateTimeKind.Utc), range.End);
+        var expectedStart = new DateTime(2026, 12, 1, 0, 0, 0, DateTimeKind.Utc);
+        var expectedEnd = expectedStart.AddMonths(1).AddTicks(-1);
+
+        Assert.Equal(expectedStart, range.Start);
+        Assert.Equal(expectedEnd, range.End);
     }
 
     [Fact]
@@ -93,8 +99,11 @@ public class DomainTests
     {
         var range = DateRange.ForMonth(2026, 1);
 
-        Assert.Equal(new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), range.Start);
-        Assert.Equal(new DateTime(2026, 1, 31, 23, 59, 59, 9999999, DateTimeKind.Utc), range.End);
+        var expectedStart = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var expectedEnd = expectedStart.AddMonths(1).AddTicks(-1);
+
+        Assert.Equal(expectedStart, range.Start);
+        Assert.Equal(expectedEnd, range.End);
     }
 
     // --- ClockingResult ---
