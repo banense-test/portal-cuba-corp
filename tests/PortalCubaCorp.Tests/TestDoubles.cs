@@ -37,9 +37,9 @@ public class InMemoryPersistence : IPersistence
         return record;
     }
 
-    public ClockingRecord? FindByIdempotencyKey(string key)
+    public ClockingRecord? FindByIdempotencyKey(string employeeId, string key)
     {
-        return _clockings.FirstOrDefault(c => c.IdempotencyKey == key);
+        return _clockings.FirstOrDefault(c => c.EmployeeId == employeeId && c.IdempotencyKey == key);
     }
 
     public NewsItem? GetNewsItem(Guid id)

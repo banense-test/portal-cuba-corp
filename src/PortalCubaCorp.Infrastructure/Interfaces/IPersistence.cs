@@ -14,7 +14,7 @@ public interface IPersistence
     List<ClockingRecord> GetClockingsByEmployee(string empId, DateRange range);
     List<ClockingRecord> GetAllClockingsForMonth(DateRange range);
     ClockingRecord InsertClocking(ClockingRecord record);
-    ClockingRecord? FindByIdempotencyKey(string key);
+    ClockingRecord? FindByIdempotencyKey(string employeeId, string key);
 
     // News operations
     NewsItem? GetNewsItem(Guid id);

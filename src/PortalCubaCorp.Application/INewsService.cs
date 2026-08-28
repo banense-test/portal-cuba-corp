@@ -9,7 +9,7 @@ namespace PortalCubaCorp.Application;
 /// </summary>
 public interface INewsService
 {
-    NewsItem Publish(string title, string body, NewsCategory category, string authorId);
+    NewsItem Publish(string title, string body, NewsCategory category, bool isFeatured, string authorId);
     NewsItem Edit(Guid id, string title, string body, NewsCategory category, string authorId);
     NewsItem Unpublish(Guid id, string authorId);
     NewsItem? GetById(Guid id);
