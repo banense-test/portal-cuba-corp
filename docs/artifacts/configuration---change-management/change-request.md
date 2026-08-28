@@ -11,46 +11,52 @@
 | Prior Iteration | Construction C1 — 13 CRs, 6 approved, 7 deferred, 0 complete |
 | This Iteration | 5 new CRs registered, 6 approved, 3 completed, 7 deferred (carried) |
 ## Change Request Log
-
 ### Portfolio Summary
 
 | Metric | Value |
 |---|---|
-| Total CRs | 13 |
-| Approved (this iteration) | 5 |
-| Previously Approved (carried forward) | 1 (#6) |
-| Deferred to Next Iteration | 7 |
+| Total CRs (cumulative) | 18 (13 from C1 + 5 new in C2) |
+| Approved (this iteration) | 6 (#22, #23, #24, #25, #26, #27) |
+| Previously Approved (carried forward) | 2 (#1, #2 — assigned to software-architect, no PRs yet) |
+| Deferred to Next Iteration | 7 (#3, #12, #13, #14, #15, #17, #18 — carried from C1) |
 | Rejected | 0 |
-| Completed | 0 |
-| Closure Rate | 0% (first C1 cycle — no merged PRs to verify against yet) |
+| Completed (this iteration) | 3 (#6, #10, #11 — verified via merged PRs) |
+| Closure Rate | 3/11 approved = 27% (up from 0% in C1) |
 
 ### CR State Distribution
 
 ```plantuml
-@startuml CR_Portfolio_State_Distribution
-title CR Portfolio State Distribution — Construction C1 (2026-08-28)
+@startuml CR_Portfolio_State_Distribution_C2
+title CR Portfolio State Distribution — Construction C2 (2026-08-28)
 
 skinparam backgroundColor #FEFEFE
 skinparam shadowing false
 
-rectangle "Approved (6)" as approved #LightGreen {
-  note "CR-001: LDAP PoC (architect)\nCR-002: Offline Retry (architect)\nCR-006: Proto merge (implementer)\nCR-010: IsFeatured (implementer)\nCR-011: Idempotency (implementer)\nCR-016: Baseline block (architect)" as approved_note
+rectangle "Approved (8)" as approved #LightGreen {
+  note "CR-001: LDAP PoC (architect)\nCR-002: Offline Retry (architect)\nCR-022: Clocking API 404 (implementer)\nCR-023: Antiforgery token (implementer)\nCR-024: EmployeeId spoof (implementer)\nCR-025: Missing Razor Pages (implementer)\nCR-026: PR #21 approval (architect)\nCR-027: News/Edit mismatch (implementer)" as approved_note
 }
 
 rectangle "Deferred Next Iteration (7)" as deferred #LightYellow {
   note "CR-003: Audit trail validation\nCR-012: CSV export format\nCR-013: Test assertion\nCR-014: Placeholder test\nCR-015: Naming violation\nCR-017: Dead code DTO\nCR-018: Test codifies bug" as deferred_note
 }
 
+rectangle "Complete (3)" as complete #LightBlue {
+  note "CR-006: Proto merge (PR #4)\nCR-010: IsFeatured (PR #20)\nCR-011: Idempotency (PR #20)" as complete_note
+}
+
 rectangle "Rejected (0)" as rejected #LightCoral
 
 approved -[hidden]right-> deferred
-deferred -[hidden]right-> rejected
+deferred -[hidden]right-> complete
+complete -[hidden]right-> rejected
 
 note bottom of approved
-  **Total CRs: 13**
-  Approved: 6 (46%)
-  Deferred: 7 (54%)
+  **Total CRs: 18** (13 prior + 5 new this iteration)
+  Approved: 8 (44%)
+  Deferred: 7 (39%)
+  Complete: 3 (17%)
   Rejected: 0 (0%)
+  Closure Rate: 3/11 approved = 27%
 end note
 
 @enduml
@@ -59,74 +65,157 @@ end note
 ### Priority × Severity Matrix
 
 ```plantuml
-@startuml CR_Priority_Severity_Distribution
-title CR Priority x Severity Matrix — Construction C1 (2026-08-28)
+@startuml CR_Priority_Severity_C2
+title CR Priority x Severity Matrix — Construction C2 (2026-08-28)
 
 skinparam backgroundColor #FEFEFE
 skinparam shadowing false
 
 object "critical / blocker" as cb {
-  CR-006 (approved)
+  CR-022: Clocking API 404
+  CR-026: PR #21 approval
+  CR-006: Proto merge [COMPLETE]
 }
-object "high / blocker" as hb {
-  CR-016 (approved)
+
+object "critical / major" as cm {
+  (none)
 }
+
 object "high / major" as hm {
-  CR-001 (approved)
-  CR-002 (approved)
-  CR-010 (approved)
-  CR-011 (approved)
+  CR-001: LDAP PoC
+  CR-002: Offline Retry
+  CR-010: IsFeatured [COMPLETE]
+  CR-011: Idempotency [COMPLETE]
+  CR-023: Antiforgery token
+  CR-025: Missing Razor Pages
+  CR-027: News/Edit mismatch
 }
+
+object "high / minor" as hi {
+  (none)
+}
+
 object "medium / major" as mm {
-  CR-003 (deferred)
+  CR-003: Audit trail [DEFERRED]
 }
-object "medium / minor" as mmin {
-  CR-012 (deferred)
-  CR-013 (deferred)
-  CR-015 (deferred)
-  CR-017 (deferred)
+
+object "medium / minor" as mi {
+  CR-012: CSV export [DEFERRED]
+  CR-013: Test assertion [DEFERRED]
+  CR-015: Naming violation [DEFERRED]
+  CR-017: Dead code DTO [DEFERRED]
+  CR-024: EmployeeId spoof
 }
-object "low / minor" as lmin {
-  CR-018 (deferred)
+
+object "low / minor" as li {
+  CR-018: Test codifies bug [DEFERRED]
 }
+
 object "low / trivial" as lt {
-  CR-014 (deferred)
+  CR-014: Placeholder test [DEFERRED]
 }
 
-cb -[hidden]right-> hb
-hb -[hidden]right-> hm
-hm -[hidden]down-> mm
-mm -[hidden]right-> mmin
-mmin -[hidden]down-> lmin
-lmin -[hidden]right-> lt
+cb -[hidden]right-> cm
+cm -[hidden]right-> hm
+hm -[hidden]right-> hi
+hi -[hidden]down-> mm
+mm -[hidden]right-> mi
+mi -[hidden]down-> li
+li -[hidden]right-> lt
 
-note bottom
-  **Approved (6):** CR-001, CR-002, CR-006, CR-010, CR-011, CR-016
-  **Deferred (7):** CR-003, CR-012, CR-013, CR-014, CR-015, CR-017, CR-018
-  **Rejected (0)**
+note bottom of lt
+  **Priority x Severity Distribution**
+  Critical/Blocker: 3 (1 complete)
+  High/Major: 7 (2 complete)
+  Medium/Minor: 5 (4 deferred)
+  Low: 2 (deferred)
 end note
 
 @enduml
 ```
 
-### Detailed CR Register
+### CR Lifecycle Activity
 
-| Issue # | CR ID | Title | Priority | Severity | Nature | Impact | State | Assigned To | Origin |
+```plantuml
+@startuml CR_Lifecycle_Activity_C2
+title CR Lifecycle Activity — Construction C2 (2026-08-28)
+
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+
+start
+
+:New CRs discovered (5 new);
+:Issue #22 — Clocking API 404 (C2-CRIT-1);
+:Issue #23 — Antiforgery token (C2-MAJ-2);
+:Issue #24 — EmployeeId spoof (C2-MIN-2);
+:Issue #25 — Missing Razor Pages;
+:Issue #26 — PR #21 approval blocked;
+:Issue #27 — News/Edit mismatch (C2-MAJ-1);
+
+:Triage — classify on 4 axes;
+:Priority / Severity / Nature / Impact;
+
+if (Impact = architectural?) then (yes)
+  :Park with needs-architect-review;
+  :Wait for architect-concurred;
+else (no)
+  :Gate cleared;
+endif
+
+:CCB Decision;
+
+if (Priority in {critical, high}?) then (yes)
+  if (Fits C2 capacity?) then (yes)
+    :APPROVE + assign executor;
+  else (no)
+    :DEFER to next iteration;
+  endif
+else (medium/low)
+  if (Security or cross-cutting?) then (yes)
+    :APPROVE + assign executor;
+  else (no)
+    :DEFER to next iteration;
+  endif
+endif
+
+:Verify implementation;
+
+if (Linked PR merged?) then (yes)
+  :Transition to cr:complete;
+  :Close issue;
+else (no PR or open PR)
+  :Remain cr:approved;
+  :Next iteration re-check;
+endif
+
+stop
+
+@enduml
+```
+
+### Detailed CR Ledger
+
+| Issue # | CR ID | Title | State | Priority | Severity | Nature | Impact | Assigned | Origin |
 |---|---|---|---|---|---|---|---|---|---|
-| #1 | CR-001 | Execute LDAP Attribute Mapping PoC (R001) | high | major | enhancement | architectural | cr:approved | software-architect | Elaboration |
-| #2 | CR-002 | Validate Offline Clocking Retry Design (AC-005) | high | major | enhancement | architectural | cr:approved | software-architect | Elaboration |
-| #3 | CR-003 | Validate Audit Trail Pattern Implementation (NFR-004) | medium | major | enhancement | cross-cutting | cr:deferred-next-iteration | — | Elaboration |
-| #6 | CR-006 | Architectural prototype (PR #4) not merged to main | critical | blocker | defect | cross-cutting | cr:approved | implementer | Elaboration |
-| #10 | CR-010 | IsFeatured not settable in NewsService.Publish | high | major | defect | local | cr:approved | implementer | Review Record (MAJOR-1) |
-| #11 | CR-011 | Idempotency key not scoped per employee | high | major | defect | local | cr:approved | implementer | Review Record (MINOR-3) |
-| #12 | CR-012 | CSV export format — TimeOut column always empty | medium | minor | defect | local | cr:deferred-next-iteration | — | Construction |
-| #13 | CR-013 | Test assertion contradicts test name | medium | minor | defect | local | cr:deferred-next-iteration | — | Construction |
-| #14 | CR-014 | Placeholder test UnitTest1.cs | low | trivial | defect | local | cr:deferred-next-iteration | — | Construction |
-| #15 | CR-015 | Naming violation — missing UC identifiers | medium | minor | defect | local | cr:deferred-next-iteration | — | Review Record (MINOR-1) |
-| #16 | CR-016 | Construction C1 baseline blocked — missing Architect approval | high | blocker | defect | cross-cutting | cr:approved | software-architect | CCM process |
-| #17 | CR-017 | RecordClockingRequest.EmployeeId is dead code | medium | minor | defect | local | cr:deferred-next-iteration | — | Review Record (MINOR-2) |
-| #18 | CR-018 | Test codifies idempotency collision as expected | low | minor | defect | local | cr:deferred-next-iteration | — | Review Record (MINOR-4) |
-
+| #1 | CR-001 | Execute LDAP Attribute Mapping PoC (R001) | cr:approved | high | major | enhancement | architectural | software-architect | Elaboration |
+| #2 | CR-002 | Validate Offline Clocking Retry Design (AC-005) | cr:approved | high | major | enhancement | architectural | software-architect | Elaboration |
+| #3 | CR-003 | Validate Audit Trail Pattern (NFR-004) | cr:deferred-next-iteration | medium | major | enhancement | cross-cutting | — | Elaboration |
+| #6 | CR-006 | Architectural prototype PR #4 not merged | **cr:complete** | critical | blocker | defect | cross-cutting | implementer | C1 |
+| #10 | CR-010 | IsFeatured not settable in NewsService.Publish | **cr:complete** | high | major | defect | local | implementer | C1 |
+| #11 | CR-011 | Idempotency key not scoped per employee | **cr:complete** | high | major | defect | local | implementer | C1 |
+| #12 | CR-012 | CSV export — TimeOut column always empty | cr:deferred-next-iteration | medium | minor | defect | local | — | C1 |
+| #13 | CR-013 | Test assertion contradicts test name | cr:deferred-next-iteration | medium | minor | defect | local | — | C1 |
+| #14 | CR-014 | Placeholder test UnitTest1.cs | cr:deferred-next-iteration | low | trivial | defect | local | — | C1 |
+| #15 | CR-015 | Naming violation — missing UC identifiers | cr:deferred-next-iteration | medium | minor | defect | local | — | C1 |
+| #17 | CR-017 | RecordClockingRequest.EmployeeId dead code | cr:deferred-next-iteration | medium | minor | defect | local | — | C1 |
+| #18 | CR-018 | Test codifies idempotency collision as expected | cr:deferred-next-iteration | low | minor | defect | local | — | C1 |
+| #22 | C2-CRIT-1 | Clocking API endpoint missing — 404 | cr:approved | critical | blocker | defect | local | implementer | C2 Review |
+| #23 | C2-MAJ-2 | Missing antiforgery token on clocking POST | cr:approved | high | major | defect | local | implementer | C2 Review |
+| #24 | C2-MIN-2 | EmployeeId spoofable from request body | cr:approved | medium | minor | defect | local | implementer | C2 Review |
+| #25 | — | Missing Razor Pages for 9 of 10 UCs | cr:approved | high | major | defect | cross-cutting | implementer | C2 Review |
+| #26 | — | C2 baseline blocked — missing Architect approval on PR #21 | cr:approved | critical | blocker | defect | cross-cutting | software-architect | CCM |
+| #27 | C2-MAJ-1 | News/Edit form field names mismatch BindProperties | cr:approved | high | major | defect | local | implementer | C2 Review |
 ## Impact Analysis
 
 ### Approved CRs — Detailed Impact
