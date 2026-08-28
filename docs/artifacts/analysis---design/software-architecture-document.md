@@ -838,22 +838,21 @@ stop
 
 **Current LAM verdict:** Architecture is stable (criterion 2 PASS — SAD BASELINED). Risks are improving (criterion 3 PARTIAL → IMPROVING — PoC decisions recorded for R001/R006/R003; M1/M2 interface consistency verified). Construction plan and stakeholder agreement are PENDING completion of Implementer code alignment and end-of-iteration review. The milestone is NOT yet achieved — this is a working assessment for Elaboration Iteration 2.
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| COMP-001 (Directory Service) | UC-009, R001, CON-005 | Derives | COMP-005 (LDAP Gateway) |
-| COMP-002 (Clocking Service) | UC-001, AC-005, NFR-002 | Derives | COMP-006 (Persistence), COMP-008 (Audit) |
+| COMP-001 (Directory Service) | UC-009, R001, CON-005 | Derives | COMP-005 (LDAP Gateway), PoC-R001 |
+| COMP-002 (Clocking Service) | UC-001, AC-005, NFR-002 | Derives | COMP-006 (Persistence), COMP-008 (Audit), PoC-R006 |
 | COMP-003 (News Service) | UC-005, UC-006, UC-007, NFR-004 | Derives | COMP-006 (Persistence), COMP-008 (Audit) |
 | COMP-004 (Worker Category Service) | UC-010, CON-009, NFR-004 | Derives | COMP-005 (LDAP), COMP-006 (Persistence), COMP-008 (Audit) |
-| COMP-005 (LDAP Gateway) | CON-005, CON-009, CON-010 | Derives | COMP-001, COMP-004 |
+| COMP-005 (LDAP Gateway) | CON-005, CON-009, CON-010 | Derives | COMP-001, COMP-004, PoC-R001 |
 | COMP-006 (Persistence Gateway) | CON-003, CON-001 | Derives | COMP-002, COMP-003, COMP-004 |
-| COMP-007 (OIDC Auth Middleware) | CON-004, SEC-001, SEC-002 | Derives | All UCs (auth) |
-| COMP-008 (Audit Interceptor) | NFR-004, AUD-001, AUD-002, AUD-003 | Derives | COMP-003, COMP-004 |
+| COMP-007 (OIDC Auth Middleware) | CON-004, R003 | Derives | All UCs (auth), PoC-R003 |
+| COMP-008 (Audit Interceptor) | NFR-004, CON-013 | Derives | COMP-003, COMP-004 |
 | ADR-001 (Layered Monolith) | CON-001, CON-002, CON-006 | Derives | All components |
 | ADR-002 (PostgreSQL via EF Core) | CON-003, CON-001 | Derives | COMP-006 |
-| ADR-003 (LDAP with Attribute Mapping) | CON-005, CON-009, CON-010, R001 | Derives | COMP-001, COMP-005 |
-| ADR-004 (Offline Clocking Retry) | AC-005, CON-002, R006 | Derives | COMP-002, Clocking UI |
-| ADR-005 (Keycloak OIDC Client) | CON-004, SEC-001, SEC-002, R003 | Derives | COMP-007 |
+| ADR-003 (LDAP with Attribute Mapping) | CON-005, CON-009, CON-010, R001 | Derives | COMP-001, COMP-005, PoC-R001 |
+| ADR-004 (Offline Clocking Retry) | AC-005, CON-002, R006 | Derives | COMP-002, Clocking UI, PoC-R006 |
+| ADR-005 (Keycloak OIDC Client) | CON-004, R003 | Derives | COMP-007, PoC-R003 |
 | SEQ-001 (UC-009 Directory Search) | UC-009, R001 | Derives | COMP-001, COMP-005 |
 | SEQ-002 (UC-001 Clock In/Out) | UC-001, AC-005, NFR-002 | Derives | COMP-002, COMP-006 |
 | SEQ-003 (UC-005 Publish News) | UC-005, NFR-004 | Derives | COMP-003, COMP-008, COMP-006 |
@@ -865,3 +864,8 @@ stop
 | Implementation View (4 projects) | ADR-001, CON-001 | Derives | All components |
 | Process View (offline retry) | AC-005, R006 | Derives | COMP-002, Clocking UI |
 | Design Mechanisms (6) | Analysis Mechanisms (Inception) | Refines | All components |
+| PoC-R001 (LDAP PoC) | R001, ADR-003, AC-003, CON-012 | Derives | COMP-005, COMP-001, Architectural Proof-of-Concept |
+| PoC-R006 (Offline Retry PoC) | R006, ADR-004, AC-005 | Derives | COMP-002, clocking-retry.js, Architectural Proof-of-Concept |
+| PoC-R003 (OIDC Analysis) | R003, ADR-005, CON-004 | Derives | COMP-007, STK-003, Architectural Proof-of-Concept |
+| INT-005 (IAuditLogger) | NFR-004, CON-013 | Derives | COMP-008, Design Model INT-005 |
+| INT-007 (IPersistence) | CON-003, CON-001 | Derives | COMP-006, Design Model INT-007 |
