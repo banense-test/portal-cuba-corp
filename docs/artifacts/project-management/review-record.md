@@ -423,22 +423,34 @@ end note
 | Vision FEAT-NNN prefix (Minor) | ManagementReviewer | Resolved (Inception Iter 2) | No action — already closed (other lens) |
 | Test Eval Summary TD-NNN prefix (Info) | Reviewer | Resolved (Inception Iter 2) | No action — already closed |
 
-### Open Action Items
+### Open Action Items — Elaboration Iter 2 Target
 
-| # | Action | Owner | Priority | Target | Source |
-|---|---|---|---|---|---|
-| 1 | Fix M1: Align IAuditLogger implementation with INT-005 Design Model contract | Implementer | High | Elaboration Iter 2 | Code Reviewer |
-| 2 | Fix M2: Align IPersistence implementation with INT-007 Design Model contract | Implementer | High | Elaboration Iter 2 | Code Reviewer |
-| 3 | Fix F1: Declare TD prefix in Development Case or replace with inline descriptions | Test Designer / Process Engineer | Low | Elaboration Iter 2 | Reviewer |
-| 4 | Merge PR #4 after M1/M2 fixes | Integrator | High | Elaboration Iter 2 | Code Reviewer |
-| 5 | CR-001 (LDAP PoC): Execute and validate across 3 offices | Software Architect | High | Elaboration Iter 2 | Iteration Plan |
-| 6 | CR-002 (Offline retry PoC): Execute and validate AC-005 mechanism | Software Architect | High | Elaboration Iter 2 | Iteration Plan |
-| 7 | CR-003 (Audit trail validation): Validate NFR-004 implementation | Test Designer | Medium | Elaboration Iter 2 | Iteration Plan |
-| 8 | Fix MR-F1: Correct iteration count from "6" to "7" in Iteration Plan narrative | Project Manager | Low | Elaboration Iter 2 | Management Reviewer |
-| 9 | Fix MR-F2: Execute R001/R006 PoCs and update Risk List with results (RETIRED/ESCALATED) | Software Architect | High | Elaboration Iter 2 | Management Reviewer |
-| 10 | Confirm R003 OIDC registration with STK-003 or activate mock auth contingency | Software Architect | High | Elaboration Iter 2 | Management Reviewer |
-| 11 | Change SAD status from DRAFT to BASELINED after M1/M2 resolution | Software Architect | High | Elaboration Iter 2 | Management Reviewer |
-| 12 | Re-consult stakeholder for LCA sanction after all conditions resolved | Management Reviewer | High | Elaboration Iter 2 | Management Reviewer |
+| # | Action | Owner | Priority | Target | Source | Finding Key |
+|---|---|---|---|---|---|---|
+| 1 | Fix M1: Align IAuditLogger implementation with INT-005 Design Model contract | Implementer | High | Elaboration Iter 2 | Code Reviewer | M1 |
+| 2 | Fix M2: Align IPersistence implementation with INT-007 Design Model contract | Implementer | High | Elaboration Iter 2 | Code Reviewer | M2 |
+| 3 | Merge PR #4 after M1/M2 fixes | Integrator | High | Elaboration Iter 2 | Code Reviewer | M1, M2 |
+| 4 | Fix MR-F1: Execute R001/R006 PoCs and update Risk List with results (RETIRED/ESCALATED) | Software Architect | High | Elaboration Iter 2 | Management Reviewer | MR-F1 |
+| 5 | Confirm R003 OIDC registration with STK-003 or activate mock auth contingency | Software Architect | High | Elaboration Iter 2 | Management Reviewer | MR-F1 |
+| 6 | Change SAD status from DRAFT to BASELINED after M1/M2 resolution | Software Architect | High | Elaboration Iter 2 | Management Reviewer | MR-F1 |
+| 7 | Fix F1: Declare TD prefix in Development Case or replace with inline descriptions | Test Designer / Process Engineer | Low | Elaboration Iter 2 | Reviewer | F1 |
+| 8 | Fix MR-F2: Correct iteration count from "6" to "7" in Iteration Plan narrative | Project Manager | Low | Elaboration Iter 2 | Management Reviewer | MR-F2 |
+| 9 | CR-001 (LDAP PoC): Execute and validate across 3 offices | Software Architect | High | Elaboration Iter 2 | Iteration Plan | — |
+| 10 | CR-002 (Offline retry PoC): Execute and validate AC-005 mechanism | Software Architect | High | Elaboration Iter 2 | Iteration Plan | — |
+| 11 | CR-003 (Audit trail validation): Validate NFR-004 implementation | Test Designer | Medium | Elaboration Iter 2 | Iteration Plan | — |
+| 12 | Re-consult stakeholder for LCA sanction after all conditions resolved | Management Reviewer | High | Elaboration Iter 2 | Management Reviewer | — |
+
+### Escalation Status
+
+| Finding | Overdue? | Escalation Notice | Status |
+|---|---|---|---|
+| M1 (IAuditLogger) | No — deadline is Elaboration Iter 2 | Not yet required | On track |
+| M2 (IPersistence) | No — deadline is Elaboration Iter 2 | Not yet required | On track |
+| MR-F1 (Risk List PoCs) | No — deadline is Elaboration Iter 2 | Not yet required | On track |
+| F1 (TD-NNN prefix) | No — deadline is Elaboration Iter 2 | Not yet required | On track |
+| MR-F2 (iteration count) | No — deadline is Elaboration Iter 2 | Not yet required | On track |
+
+No findings are overdue. All 5 open findings have assigned owners and deadlines targeted for Elaboration Iter 2. No escalation notices are required at this time.
 ## Disposition
 ### Per-Artifact Verdicts
 
