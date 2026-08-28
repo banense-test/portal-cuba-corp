@@ -1,0 +1,56 @@
+@page
+@model PortalCubaCorp.Pages.WorkerCategory.ManageModel
+@{
+    ViewData["Title"] = "Worker Categories";
+}
+
+<div class="card">
+    <h2 class="card-title">Worker Category Management</h2>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:16px;">
+        Assign worker categories to employees. AD user ID links to Active Directory (CON-009).
+    </p>
+
+    <form method="post" asp-page-handler="Assign" style="margin-bottom:24px;">
+        <div class="grid-3">
+            <div class="form-group">
+                <label for="adUserId">AD User ID</label>
+                <input class="form-control" id="adUserId" name="adUserId" required />
+            </div>
+            <div class="form-group">
+                <label for="category">Category</label>
+                <input class="form-control" id="category" name="category" required />
+            </div>
+            <div class="form-group" style="display:flex;align-items:end;">
+                <button type="submit" class="btn btn-primary">Assign</button>
+            </div>
+        </div>
+    </form>
+
+    @if (Model.Categories.Any())
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>AD User ID</th>
+                    <th>Category</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cat in Model.Categories)
+                {
+                    <tr>
+                        <td>@cat.AdUserId</td>
+                        <td>@cat.Category</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="empty-state">
+            <h3>No categories assigned</h3>
+            <p>Assign a category to an employee above.</p>
+        </div>
+    }
+</div>

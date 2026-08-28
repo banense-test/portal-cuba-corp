@@ -1,0 +1,61 @@
+@page
+@model PortalCubaCorp.Pages.Directory.SearchModel
+@{
+    ViewData["Title"] = "Employee Directory";
+}
+
+<div class="card">
+    <h2 class="card-title">Employee Directory</h2>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:16px;">
+        Search for colleagues by name, department, or office. Data from Active Directory (read-only).
+    </p>
+
+    <form method="get" class="search-box">
+        <input class="form-control" name="query" value="@Model.Query" placeholder="Search by name, department, or office..." />
+        <input class="form-control" name="office" value="@Model.OfficeFilter" placeholder="Filter by office..." style="max-width:200px;" />
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    @if (Model.Results.Any())
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Job Title</th>
+                    <th>Department</th>
+                    <th>Office</th>
+                    <th>Email</th>
+                    <th>Extension</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entry in Model.Results)
+                {
+                    <tr>
+                        <td>@entry.DisplayName</td>
+                        <td>@entry.JobTitle</td>
+                        <td>@entry.Department</td>
+                        <td>@entry.Office</td>
+                        <td><a href="mailto:@entry.Email">@entry.Email</a></td>
+                        <td>@entry.Extension</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else if (!string.IsNullOrWhiteSpace(Model.Query))
+    {
+        <div class="empty-state">
+            <h3>No results found</h3>
+            <p>Try a different search term.</p>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <h3>Search for colleagues</h3>
+            <p>Enter a name, department, or office to find colleagues.</p>
+        </div>
+    }
+</div>

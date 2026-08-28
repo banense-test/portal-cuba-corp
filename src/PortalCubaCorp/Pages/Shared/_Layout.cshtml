@@ -7,8 +7,45 @@
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
+    <header class="portal-header">
+        <div class="header-inner">
+            <a href="/" class="brand">Portal Cuba Corp</a>
+            <nav class="main-nav">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/Clocking/History" class="nav-link">My Clockings</a>
+                <a href="/Directory/Search" class="nav-link">Directory</a>
+                @if (User.IsInRole("hr") || User.IsInRole("HR"))
+                {
+                    <a href="/Clocking/All" class="nav-link">All Clockings</a>
+                    <a href="/News/Management" class="nav-link">News Mgmt</a>
+                    <a href="/News/Publish" class="nav-link">Publish News</a>
+                    <a href="/WorkerCategory/Manage" class="nav-link">Categories</a>
+                }
+            </nav>
+            <div class="user-area">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <span class="user-name">@User.Identity.Name</span>
+                }
+                else
+                {
+                    <a href="/login" class="nav-link">Login</a>
+                }
+            </div>
+        </div>
+    </header>
     <main role="main" class="container">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-error">@TempData["ErrorMessage"]</div>
+        }
         @RenderBody()
     </main>
+    <script src="~/js/clocking-retry.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

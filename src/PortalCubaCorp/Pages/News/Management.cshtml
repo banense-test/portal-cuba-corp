@@ -1,0 +1,55 @@
+@page
+@model PortalCubaCorp.Pages.News.ManagementModel
+@{
+    ViewData["Title"] = "News Management";
+}
+
+<div class="card">
+    <h2 class="card-title">News Management</h2>
+    <p><a href="/News/Publish" class="btn btn-primary btn-sm">+ Publish New</a></p>
+
+    @if (Model.AllNews.Any())
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Featured</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.AllNews)
+                {
+                    <tr>
+                        <td>@item.Title</td>
+                        <td><span class="news-category">@item.Category</span></td>
+                        <td>@item.Status</td>
+                        <td>@(item.IsFeatured ? "★" : "")</td>
+                        <td>@item.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            <a href="/News/Edit?id=@item.Id" class="btn btn-secondary btn-sm">Edit</a>
+                            @if (item.Status == NewsStatus.Published)
+                            {
+                                <form method="post" asp-page-handler="Unpublish" style="display:inline;">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Unpublish this news item? The record will be preserved for audit.')">Unpublish</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="empty-state">
+            <h3>No news items</h3>
+            <p>Click "Publish New" to create your first news item.</p>
+        </div>
+    }
+</div>
