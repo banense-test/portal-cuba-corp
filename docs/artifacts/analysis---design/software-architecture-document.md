@@ -739,41 +739,60 @@ end note
 | Performance | Local PostgreSQL (no network hop); server-rendered pages (no SPA overhead); LDAP query for directory (R001 risk) | Addressed; LDAP performance to be validated against real AD |
 | Maintainability | Interface-based subsystem boundaries; each subsystem encapsulates one volatility area; layered monolith (simple to deploy and debug); 4-project solution structure | Addressed in baseline architecture |
 
+### PoC Plan — Risk Retirement Strategy
+
+Per the Development Case, the Architectural Proof-of-Concept artifact is triggered for Elaboration. PoC decisions have been recorded for all in-scope technical risks. The full strategy is documented in the Architectural Proof-of-Concept artifact; this section cross-references it.
+
+| Risk | Mode | Mechanism | Acceptance Criteria (Summary) | Status |
+|---|---|---|---|---|
+| R001 (AD LDAP, exposure=9) | single-mechanism | LDAP Gateway (COMP-005) + Directory Service (COMP-001) — evolutionary code in src/ | LDAP bind across 3 offices; search returns results; fallback "N/A" for missing attributes; no private data (CON-012); query < 10s (AC-003) | PoC decision recorded — Implementer to build |
+| R006 (Offline retry, exposure=6) | single-mechanism | clocking-retry.js + IClockingService idempotency — evolutionary code in src/ | localStorage stores POST; retry every 10s for 5 min; idempotency key prevents duplicates; server accepts client timestamp; user sees confirmation or failure | PoC decision recorded — Implementer to build |
+| R003 (OIDC registration) | analysis-only | Coordination with STK-003 — no code mechanism | OIDC client registered in Keycloak; portal redirects, receives token, extracts role claims | Retired by analysis — coordination dependency |
+
+**Interface Consistency Verification (M1/M2 findings):**
+
+The SAD Logical View interface specifications are verified consistent with the Design Model Interface Contracts section:
+- **INT-005 (IAuditLogger):** SAD specifies `Log(entityType, entityId, action, author, timestamp)` — matches Design Model INT-005. The Implementer's code used `LogAudit()` which diverges; the Implementer must align the code to the Design Model contract.
+- **INT-007 (IPersistence):** SAD specifies `BeginTransaction()` / `CommitTransaction()` as part of the IPersistence interface — matches Design Model INT-007. The Implementer's code did not expose these methods; the Implementer must align the code to the Design Model contract.
+
+The SAD and Design Model are the authoritative interface definitions. The implementation must conform to them, not the reverse. M1 and M2 are Implementer-owned findings — the code must be corrected to match the Design Model contracts.
+
 ### Lifecycle Architecture Milestone Assessment
 
-The following table assesses all 6 LAM criteria for the Elaboration iteration. This is a working assessment — the milestone is NOT yet achieved (per Work Order instructions). This section will be updated as the iteration progresses and reviewed at the end-of-Elaboration gate.
+The following table assesses all 6 LAM criteria for the Elaboration iteration. This is a working assessment — the milestone is NOT yet achieved (per Work Order instructions).
 
 | # | Criterion | Status | Assessment |
 |---|---|---|---|
 | 1 | Vision stable | PASS | Vision Document approved at LCO. Scope statement, stakeholders, and business goals unchanged. No CRs affecting vision. |
-| 2 | Architecture stable | PASS | SAD baselined with all 4+1 views. 8 components with full interface specifications. 5 ADRs with alternatives documented. 6 design mechanisms mapped from analysis mechanisms. Component, deployment, process, implementation, and 3 sequence diagrams validated. |
-| 3 | Risks resolved | PARTIAL | R001 (LDAP, exposure=9): addressed architecturally via ADR-003 (attribute mapping with fallback) and validated in UC-009 sequence diagram. Risk is mitigated by design but not yet empirically validated against real AD — requires testing with actual AD infrastructure (STK-003 dependency). R006 (offline clocking, exposure=6): addressed via ADR-004 (localStorage + POST retry) and validated in UC-001 sequence diagram + Process View activity diagram. Design is complete; implementation validation pending. |
-| 4 | Construction plan credible | PENDING | Iteration Plan from Inception provides construction planning basis. SAD prioritized UC list available for PM to plan from. Detailed estimates depend on Designer completing UC realizations and Database Designer completing schema. |
-| 5 | Stakeholders agree | PENDING | LCO stakeholder sanction granted (GO to Elaboration). Elaboration review pending — stakeholders have not yet reviewed the baselined architecture. |
+| 2 | Architecture stable | PASS | SAD BASELINED with all 4+1 views. 8 components with full interface specifications. 5 ADRs with alternatives documented. 6 design mechanisms mapped from analysis mechanisms. Component, deployment, process, implementation, and 3 sequence diagrams validated. PoC decisions recorded for R001, R006, R003. |
+| 3 | Risks resolved | PARTIAL → IMPROVING | R001 (LDAP, exposure=9): PoC decision recorded (single-mechanism); Implementer to build evolutionary LDAP Gateway. R006 (offline clocking, exposure=6): PoC decision recorded (single-mechanism); Implementer to build evolutionary retry mechanism. R003 (OIDC): retired by analysis — coordination with STK-003. M1/M2 interface mismatches: SAD verified consistent with Design Model; Implementer to align code. |
+| 4 | Construction plan credible | PENDING | Iteration Plan provides construction planning basis. SAD prioritized UC list available for PM. Design Model has UC realizations and class diagrams. |
+| 5 | Stakeholders agree | PENDING | LCO stakeholder sanction granted. Elaboration Iter 1 stakeholder sanction REFUSED — issues to mitigate in Iter 2. Iter 2 review pending. |
 | 6 | Expenditure acceptable | PASS | Inception cost: 22 min agent time, 0s stakeholder queue, 4.38M tokens, 11 agent runs, 10 artifacts. Proportional to scope. Elaboration costs tracking within budget. |
 
 ### Open Architecture Issues
 
 | Issue | Status | Resolution Path |
 |---|---|---|
-| R001 LDAP attribute consistency | Mitigated by design, not empirically validated | Requires test against real AD with 3 offices' data. STK-003 must provide test AD access. |
-| R006 Offline retry mechanism | Designed, not implemented | Implementer builds clocking-retry.js + idempotency key handling in Construction. |
-| Designer UC realizations | In progress | Design Model has UI classes; Designer must complete UC realizations and class diagrams. |
-| Database schema | Not yet produced | Database Designer must produce schema from Data View entities. |
+| R001 LDAP attribute consistency | PoC decision recorded — Implementer to build evolutionary mechanism | Implementer builds COMP-005 + COMP-001; test against real AD (STK-003) |
+| R006 Offline retry mechanism | PoC decision recorded — Implementer to build evolutionary mechanism | Implementer builds clocking-retry.js + idempotency key handling |
+| R003 OIDC registration | Retired by analysis — coordination dependency | STK-003 registers OIDC client before login testing |
+| M1 IAuditLogger signature | SAD verified consistent with Design Model | Implementer aligns code to INT-005 `Log()` signature |
+| M2 IPersistence transaction API | SAD verified consistent with Design Model | Implementer aligns code to INT-007 `BeginTransaction()`/`CommitTransaction()` |
 
 ### Risk Resolution Status
 
 | Risk | Exposure | Strategy | Status |
 |---|---|---|---|
-| R001 | 9 (HIGH) | Mitigate via ADR-003 (attribute mapping + fallback) | Design complete — empirical validation pending |
-| R006 | 6 (SIGNIFICANT) | Mitigate via ADR-004 (localStorage + POST retry) | Design complete — implementation pending |
-| R003 | — | Accept (Keycloak already running) | Addressed by ADR-005 |
+| R001 | 9 (HIGH) | Mitigate via ADR-003 (attribute mapping + fallback) | PoC decision recorded (single-mechanism) — Implementer to build |
+| R006 | 6 (SIGNIFICANT) | Mitigate via ADR-004 (localStorage + POST retry) | PoC decision recorded (single-mechanism) — Implementer to build |
+| R003 | — | Accept (Keycloak already running) | Retired by analysis — coordination with STK-003 |
 | R004 | — | Mitigate (local PostgreSQL, no network hop) | Addressed in Size & Performance |
 | R005 | — | Mitigate (mandatory custom UI design CON-011) | Addressed in Design Model UI Patterns |
 
 ```plantuml
 @startuml
-title LAM Review — 6 Criteria Assessment
+title LAM Review — 6 Criteria Assessment (Elaboration Iter 2)
 
 skinparam activityStyle rounded
 
@@ -808,7 +827,7 @@ stop
 @enduml
 ```
 
-**Current LAM verdict:** Architecture is stable (criterion 2 PASS). Risks are mitigated by design but not yet empirically validated (criterion 3 PARTIAL). Construction plan and stakeholder agreement are PENDING completion of parallel design activities and end-of-iteration review. The milestone is NOT yet achieved — this is a working assessment for the Elaboration iteration in progress.
+**Current LAM verdict:** Architecture is stable (criterion 2 PASS — SAD BASELINED). Risks are improving (criterion 3 PARTIAL → IMPROVING — PoC decisions recorded for R001/R006/R003; M1/M2 interface consistency verified). Construction plan and stakeholder agreement are PENDING completion of Implementer code alignment and end-of-iteration review. The milestone is NOT yet achieved — this is a working assessment for Elaboration Iteration 2.
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
