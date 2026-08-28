@@ -1,11 +1,10 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Elaboration |
 | Status | Draft |
 | Milestone Target | End of Elaboration (LCA) |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
 | Author | Test Designer (Test Discipline) — Test Cases; Tester (Test Discipline) — E1 Findings |
 | Prior Phase | Inception — Test Evaluation Summary (Approved) |
@@ -15,7 +14,8 @@
 | E1 Implementation State | Bootstrap skeleton (Inception scaffold) — no architectural prototype code on main |
 | E1 Overall Verdict | BLOCKED — all 20 TCs blocked; PR #4 (architectural prototype) reviewed but not merged to main |
 | E1 Defects Logged | 1 (CR-006: Architectural prototype not merged to main — all TCs blocked) |
-
+| Iter 2 Update | PR #4 **APPROVED** by Code Reviewer (M1/M2 resolved, 0 Critical, 0 Major, 1 Minor non-blocking). TCs transition from BLOCKED → READY pending merge to main. 6 test files reviewed: ClockingServiceTests, NewsServiceTests, DirectoryServiceTests, WorkerCategoryServiceTests, OfflineRetryTests, DomainTests. |
+| Iter 2 Finding Resolved | Traceability table TD-NNN prefix entries removed (Minor finding from Review Record Iter 1). |
 ## Test Scope
 
 ### Architecturally Significant Use Cases Under Test
