@@ -307,6 +307,101 @@ end note
 ## Logical View
 The architecture is a **layered monolith** with three layers. Subsystem decomposition follows the "decompose by change" principle — each subsystem encapsulates ONE area of volatility identified in the Use-Case Model.
 
+```plantuml
+@startuml
+title Portal Cuba Corp — Component Diagram (Logical View, Elaboration Baseline)
+
+skinparam componentStyle rectangle
+skinparam interfaceStyle circle
+
+package "Presentation Layer" {
+  [Clocking UI\n(V002)\n+ clocking-retry.js] as CLK_UI
+  [Directory UI\n(V007)] as DIR_UI
+  [News UI\n(V004-V006)] as NEWS_UI
+  [Worker Category UI\n(V008)] as WC_UI
+  [Main Page\n(V001)] as MAIN_UI
+}
+
+package "Application Layer" {
+  component "DirectoryService\n(COMP-001)" as COMP1
+  component "ClockingService\n(COMP-002)" as COMP2
+  component "NewsService\n(COMP-003)" as COMP3
+  component "WorkerCategoryService\n(COMP-004)" as COMP4
+}
+
+package "Infrastructure Layer" {
+  component "LdapGateway\n(COMP-005)" as COMP5
+  component "PersistenceGateway\n(COMP-006)" as COMP6
+  component "OidcAuthMiddleware\n(COMP-007)" as COMP7
+  component "AuditInterceptor\n(COMP-008)" as COMP8
+}
+
+' Interfaces
+interface "IDirectoryService\n(INT-003)" as IDir
+interface "IClockingService\n(INT-001)" as IClk
+interface "INewsService\n(INT-002)" as INews
+interface "IWorkerCategoryService\n(INT-004)" as IWC
+interface "ILdapGateway\n(INT-006)" as ILdap
+interface "IPersistence\n(INT-007)" as IPersist
+interface "IAuditLogger\n(INT-005)" as IAudit
+
+' Presentation -> Application (via interfaces)
+CLK_UI --> IClk
+DIR_UI --> IDir
+NEWS_UI --> INews
+WC_UI --> IWC
+
+' Application implements interfaces
+COMP1 -up-|> IDir
+COMP2 -up-|> IClk
+COMP3 -up-|> INews
+COMP4 -up-|> IWC
+
+' Application depends on Infrastructure interfaces
+COMP1 --> ILdap
+COMP2 --> IPersist
+COMP3 --> IPersist
+COMP3 --> IAudit
+COMP4 --> ILdap
+COMP4 --> IPersist
+COMP4 --> IAudit
+
+' Infrastructure implements interfaces
+COMP5 -up-|> ILdap
+COMP6 -up-|> IPersist
+COMP8 -up-|> IAudit
+
+' Auth middleware is cross-cutting
+COMP7 --> CLK_UI : validates token
+COMP7 --> DIR_UI : validates token
+COMP7 --> NEWS_UI : validates token +\n[Authorize(Roles="HR")]
+COMP7 --> WC_UI : validates token +\n[Authorize(Roles="HR")]
+
+note bottom of COMP5
+  R001: LDAP attribute mapping
+  with fallback "N/A" for missing
+  attributes across 3 offices.
+  Read-only (CON-010).
+end note
+
+note bottom of COMP6
+  PostgreSQL via EF Core.
+  Unique index on idempotency_key.
+  Append-only audit_records.
+  2-column worker_categories (CON-009).
+end note
+
+note bottom of COMP8
+  NFR-004: Audit within same
+  DB transaction as business op.
+  IAuditLogger.Log() called
+  inside BeginTransaction()/
+  CommitTransaction() boundary.
+end note
+
+@enduml
+```
+
 ### Subsystem Decomposition
 
 | Component | ID | Encapsulates | Volatility | Interfaces |
