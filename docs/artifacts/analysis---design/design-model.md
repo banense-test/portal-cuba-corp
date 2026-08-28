@@ -1,14 +1,12 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Elaboration |
 | Status | Draft |
 | Milestone Target | End of Elaboration |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
 | Contributors | User-Interface Designer (Boundary Classes and Navigation Map, UI Classes, UI Patterns) |
-
 ## Design Overview
 | Field | Value |
 |---|---|
