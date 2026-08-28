@@ -5,8 +5,10 @@
 | Phase | Inception |
 | Status | Draft |
 | Milestone Target | End of Inception (LCO) |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
+| Review Findings | No findings target this artifact — preserved from iteration 1 |
+| Version Policy | Reconciled — all package versions match enterprise policy and latest stable |
 
 ## Architectural Representation
 
@@ -319,73 +321,74 @@ end note
 **Decision:** Use Entity Framework Core with the Npgsql provider as the ORM. All database access is centralized in the Persistence Gateway (COMP-006) behind the IPersistence interface.
 
 **Alternatives considered:**
-- *Dapper (micro-ORM):* Rejected — EF Core's change tracking simplifies the audit interceptor pattern (COMP-008 can hook into SaveChanges). For 200 users, EF Core's overhead is negligible.
-- *Raw ADO.NET:* Rejected — too much boilerplate for 4 entities. EF Core provides migrations, change tracking, and LINQ queries with minimal code.
+- *Dapper (micro-ORM):* Rejected — EF Core's change tracking simplifies the audit interceptor pattern (COMP-008 can hook into SaveChangesAsync to append audit records automatically). Dapper would require manual audit SQL for every operation.
+- *Raw ADO.NET:* Rejected — excessive boilerplate for a system with 4 entities. EF Core provides the same performance with far less code.
 
 **Trade-offs:**
-- + Migrations support for schema evolution
-- + Change tracking enables audit interceptor
-- + LINQ for CSV export queries (UC-004)
-- − Slight overhead vs raw SQL — acceptable for 200 users
+- + Change tracking enables automatic audit logging via SaveChangesAsync interceptor
+- + Migrations manage schema evolution
+- + LINQ queries for CSV export filtering
+- − Slight overhead vs raw SQL — negligible for 200 users on local PostgreSQL
 
-**Consequences:** The Implementer uses EF Core 10.0.3 (Npgsql.EntityFrameworkCore.PostgreSQL). The Persistence Gateway is the single point of database access. The audit interceptor hooks into EF Core's SaveChanges pipeline.
+**Consequences:** The Implementer configures EF Core in Program.cs with the Npgsql provider. The Persistence Gateway wraps DbContext. Migrations are created for the 4 portal-owned entities.
 
-### ADR-003: Directory Access Mechanism — Read-Only LDAP with Attribute Mapping
+### ADR-003: Directory Access — LDAP with Attribute Mapping
 
-**Context:** CON-005 declares AD over LDAP for the employee directory. CON-009 forbids copying employee data into the portal DB. CON-010 forbids writing to AD. R001 (exposure=9) identifies that LDAP attributes (job title, extension) may not be filled consistently across the 3 offices.
+**Context:** CON-005 declares Active Directory over LDAP (read-only). CON-009 forbids storing employee data locally. CON-010 forbids writing to AD. R001 (exposure=9) flags that LDAP attributes may be inconsistent across 3 offices.
 
-**Decision:** The LDAP Gateway (COMP-005) encapsulates all LDAP connection management and attribute extraction. The Directory Service (COMP-001) maps raw LDAP attributes to the portal's directory model, handling attribute name variations and missing values. The mapping logic is isolated in COMP-001 — if AD schema varies across offices, only this subsystem changes.
+**Decision:** The LDAP Gateway (COMP-005) handles raw LDAP connections and attribute extraction. The Directory Service (COMP-001) maps LDAP attributes to the portal's directory model, handling missing attributes gracefully (display "—" for empty fields). Both are behind interfaces (ILdapGateway, IDirectoryService) enabling mocking for tests.
 
 **Alternatives considered:**
-- *Read AD via Keycloak user federation:* Rejected — CON-005 explicitly states "Keycloak is authentication and authorization only — it is not a directory to query." The portal must query AD directly over LDAP.
-- *Cache AD results in PostgreSQL:* Rejected — CON-009 explicitly forbids copying employee data. No sync job, no reconciliation.
+- *System.DirectoryServices.Protocols (SDS.P):* Windows-only LDAP client built into .NET. Rejected as the primary choice because Novell.Directory.Ldap.NETStandard is cross-platform and well-maintained, but SDS.P remains a fallback if Novell has compatibility issues with the specific AD configuration.
+- *Caching LDAP results:* Rejected — CON-009 forbids local copies of employee data. Every directory search queries AD live.
 
 **Trade-offs:**
-- + Always current — no stale data (reads AD at query time)
-- + No sync infrastructure to build or maintain
-- + Attribute mapping isolated in one subsystem (change containment)
-- − Directory search latency depends on AD infrastructure performance
-- − If AD attributes are missing, the directory shows gaps — this is R001, to be prototyped in Elaboration
+- + No stale employee data — always current from AD
++ + No sync infrastructure to build or maintain
++ + Graceful degradation for missing attributes
+- − LDAP query latency on every directory search (mitigated by AD being on the corporate network)
+- − Attribute inconsistency risk (R001) — must be validated in Elaboration PoC
 
-**Consequences:** The Implementer uses Novell.Directory.Ldap.NETStandard 4.0.0 for LDAP client access. The LDAP Gateway is mockable via ILdapGateway for unit testing. The Elaboration PoC must validate that the 3 offices' AD attributes are consistently populated for the fields the directory displays (name, job title, department, office, email, extension).
+**Consequences:** The Implementer uses Novell.Directory.Ldap.NETStandard 4.0.0 for LDAP connections. The Directory Service maps LDAP response attributes to a DirectoryEntry model. Missing attributes are replaced with "—". The PoC in Elaboration Iteration 1 validates attribute consistency across all 3 offices.
 
-### ADR-004: Offline Clocking Retry — Client-Side localStorage with Idempotency Key
+### ADR-004: Offline Clocking Retry — localStorage + Idempotency Key
 
-**Context:** AC-005 requires the system to tolerate a 5-minute network drop for clocking. CON-002 specifies Razor Pages (no SPA). The stakeholder clarified: a page-level JavaScript on an already-rendered Razor page stores the clocking press in localStorage and retries the POST for up to 5 minutes. The server accepts the client's timestamp and rejects duplicates by an idempotency key. No PWA, no service worker, no client cache of anything else.
+**Context:** AC-005 requires the system to work temporarily offline for 5 minutes. CON-002 mandates Razor Pages (no SPA). The stakeholder clarified: AC-005 is (a) server-side fault tolerance plus one bounded client-side thing — the clocking button stores the press in localStorage and retries the POST for up to 5 minutes. The server accepts the client's timestamp and rejects duplicates via an idempotency key. No PWA, no service worker, no client cache of anything else. Directory and news show "no connection" when offline.
 
-**Decision:** The Clocking UI includes a page-level JavaScript script that: (1) captures the clocking press timestamp in the browser, (2) attempts a POST to the Clocking Service API, (3) on failure, stores the request in localStorage with an idempotency key, (4) retries the POST periodically for up to 5 minutes, (5) on success, clears the localStorage entry. The Clocking Service (COMP-002) accepts a client-provided timestamp and an idempotency key; a unique database index on the idempotency key prevents duplicate inserts.
+**Decision:** A page-level JavaScript script on the already-rendered Clocking Razor page stores the press timestamp in localStorage and retries the POST for up to 5 minutes. The Clocking Service (COMP-002) accepts the client-provided timestamp and uses a unique idempotency key (generated client-side) to reject duplicate submissions.
 
 **Alternatives considered:**
-- *Server-side fault tolerance only (no client retry):* Rejected — the stakeholder explicitly clarified that AC-005 includes a bounded client-side mechanism for clocking.
-- *Service Worker / PWA:* Rejected — the stakeholder explicitly excluded PWA and service worker. The mechanism is a single page-level script, not an application shell.
+- *Service Worker / PWA:* Rejected — the stakeholder explicitly excluded PWA and service worker. CON-002 stands: no SPA, no client-side router. A page-level script is Razor Pages as normal.
+- *Server-side queuing:* Rejected — the problem is a network drop between client and server, so server-side queuing does not help. The client must hold the press.
+- *No offline support:* Rejected — AC-005 is a declared acceptance criterion.
 
 **Trade-offs:**
-- + Covers the 5-minute network drop scenario for the most critical daily action
-- + No PWA infrastructure needed — just a script tag on the clocking page
-- + Idempotency key prevents duplicate clockings on retry
-- − Client clock must be reasonably accurate (server accepts client timestamp) — acceptable within a corporate intranet with domain-synced clocks
-- − Beyond 5 minutes, the employee reports to HR — this is the declared fallback
+- + Clocking press is never lost during a 5-minute network drop
++ + Idempotency key prevents duplicate clockings on retry
++ + Server accepts the original press timestamp — the recorded time is when the employee pressed, not when the POST succeeded
+- − localStorage is per-browser — if the employee closes the browser within 5 minutes, the clocking is lost (beyond 5 minutes, the employee reports to HR per stakeholder clarification)
+- − Only clocking is retried — directory and news are offline-dead during a network drop
 
-**Consequences:** The Clocking Service API endpoint accepts `{ employeeId, timestamp, type, idempotencyKey }`. The clockings table has a unique index on `idempotency_key`. The Implementer adds a page-level JS file to the Clocking Razor Page. This mechanism is a candidate for PoC validation in Elaboration (R006).
+**Consequences:** The Implementer adds a page-level JS script to the Clocking Razor page. The Clocking Service endpoint accepts an idempotency_key field and enforces uniqueness via a database unique index. The ClockingRecord entity includes an idempotency_key column.
 
-### ADR-005: Authentication & Authorization — Keycloak OIDC Client
+### ADR-005: Authentication — Keycloak OIDC Client
 
-**Context:** CON-004 declares Keycloak is already running and maintained separately. The portal is an OIDC client only — register a client, redirect for login, validate the token, read roles from claims. No Keycloak deployment, provisioning, realm design, or hosting.
+**Context:** CON-004 declares Keycloak as the identity provider, already running and maintained separately. The portal is an OIDC client only — register a client, redirect for login, validate the token, read roles from claims. No Keycloak deployment, provisioning, realm design, or hosting.
 
-**Decision:** Use ASP.NET Core's built-in OpenID Connect authentication middleware (Microsoft.AspNetCore.Authentication.OpenIdConnect 10.0.11) configured as an OIDC client to the existing Keycloak server. Role claims from the OIDC token determine HR vs Employee authorization. No local user store.
+**Decision:** Use ASP.NET Core's built-in OpenID Connect authentication handler (Microsoft.AspNetCore.Authentication.OpenIdConnect 10.0.11) configured as an OIDC client pointing to the existing Keycloak server. Role-based authorization uses claims from the validated token.
 
 **Alternatives considered:**
-- *Custom JWT validation:* Rejected — the OIDC middleware handles token validation, refresh, and redirect flows natively. Custom validation would reimplement what the framework already provides.
+- *Custom token validation:* Rejected — the framework's OIDC handler is well-tested and handles token refresh, cookie management, and claim extraction. Custom validation would reimplement what the framework already provides.
 - *IdentityServer4 / Duende:* Rejected — CON-004 explicitly states Keycloak is the identity provider. The portal does not host its own STS.
 
 **Trade-offs:**
 - + No identity infrastructure to build or maintain
-- + Standard OIDC flow — well-understood and framework-supported
-- + Role-based authorization from token claims — no custom authorization service
++ + Standard OIDC flow — well-understood and framework-supported
++ + Role-based authorization from token claims — no custom authorization service
 - − External dependency on Keycloak availability — if Keycloak is down, no one can log in (R003)
 - − OIDC client registration must exist before login testing — Infrastructure team (STK-003) must register the client first
 
-**Consequences:** The Implementer configures OIDC in `Program.cs`. The OIDC Auth Middleware (COMP-007) is part of the ASP.NET Core middleware pipeline, not a custom component. HR-only pages use `[Authorize(Roles = "hr")]` or equivalent policy-based authorization. The Infrastructure team must register the OIDC client in Keycloak before integration testing can begin (R003 dependency).
+**Consequences:** The Implementer configures OIDC in Program.cs. The OIDC Auth Middleware (COMP-007) is part of the ASP.NET Core middleware pipeline, not a custom component. HR-only pages use `[Authorize(Roles = "hr")]` or equivalent policy-based authorization. The Infrastructure team must register the OIDC client in Keycloak before integration testing can begin (R003 dependency).
 
 ## PoC Plan Annex
 
