@@ -50,6 +50,7 @@ UC010 ..> AD : LDAP read\n(AD user id lookup)
 note right of UC001
   Architecturally significant
   NFR-002: <1s response
+  AC-005: offline retry (5 min)
   Volatility: Low
 end note
 
@@ -96,7 +97,7 @@ end note
 
 | UC ID | Name | Source | Primary Actor | MoSCoW | Volatility | Architecturally Significant | Detail Level |
 |---|---|---|---|---|---|---|---|
-| UC-001 | Clock In / Clock Out | FR-001 | Employee | Must | Low | Yes (NFR-002: <1s) | Detailed |
+| UC-001 | Clock In / Clock Out | FR-001 | Employee | Must | Low | Yes (NFR-002: <1s, AC-005: offline retry) | Detailed |
 | UC-002 | View Own Clocking History | FR-002 | Employee | Must | Low | No | Outline |
 | UC-003 | View All Employee Clockings | FR-003 | HR Administrator | Must | Low | No | Outline |
 | UC-004 | Export Monthly Clocking Report | FR-004 | HR Administrator | Must | Low | No | Outline |
@@ -117,7 +118,7 @@ end note
 | Primary Actor | Employee (ACT-001) |
 | Trigger | Employee opens the portal main page |
 | Preconditions | Employee is authenticated via Keycloak OIDC |
-| Postconditions | Clocking record persisted in PostgreSQL with employee id, timestamp, and direction (in/out); confirmation displayed |
+| Postconditions | Clocking record persisted in PostgreSQL with employee id, client-side timestamp, clock direction (in/out), and idempotency key; confirmation displayed |
 | MoSCoW | Must |
 | Volatility | Low |
 
@@ -126,17 +127,22 @@ end note
 2. System retrieves the employee's current clocking status from the database (authenticated employee id from OIDC token).
 3. System displays a "Clock In" or "Clock Out" button depending on current status.
 4. Employee presses the button.
-5. System records the timestamp, employee id, and clock direction in the clocking table.
-6. System displays a confirmation message showing the recorded time.
+5. Client records the press timestamp and generates an idempotency key in localStorage.
+6. Client sends POST request to server with timestamp and idempotency key.
+7. Server records the clocking entry (employee id, client timestamp, direction, idempotency key) in PostgreSQL.
+8. Server returns confirmation with the recorded time.
+9. Employee sees confirmation on screen.
 
 **Alternative Flows:**
-- **A1: Network error during recording** — System displays an error message; no partial record is saved. Employee can retry.
+- **A1: Network error during POST (offline retry — AC-005 resolved):** Client stores the press in localStorage and retries the POST for up to 5 minutes. When the network is restored, the server accepts the original client-side timestamp (the moment the employee pressed) and rejects duplicates by idempotency key. This is a page-level script on an already-rendered Razor page — no SPA, no client-side router (CON-002 stands). This is not the excluded sync work: one action, one queue, one entity, nothing to reconcile.
+- **A2: Network not restored within 5 minutes:** Client stops retrying and displays "Clocking not recorded — report to HR." The employee reports the clocking to HR manually.
+- **A3: Duplicate POST received (idempotency):** Server detects the idempotency key already exists in the clocking table and returns the original confirmation without creating a duplicate record.
 
 **Activity Diagram:**
 
 ```plantuml
 @startuml
-title UC-001: Clock In / Clock Out — Activity Diagram
+title UC-001: Clock In / Clock Out — Activity Diagram (with offline retry)
 
 start
 :Employee opens portal main page;
@@ -148,10 +154,27 @@ else (no)
 endif
 
 :Employee presses button;
-:System records timestamp + employee id\nin PostgreSQL clocking table;
-:System returns confirmation message\nwith recorded time;
-:Employee sees confirmation on screen;
-stop
+:Client records press timestamp + idempotency key\nin localStorage;
+:Client sends POST to server;
+
+if (Network available?) then (yes)
+  :Server records clocking with client timestamp;
+  :Server rejects duplicates via idempotency key;
+  :System displays confirmation with recorded time;
+  stop
+else (no — network down)
+  :Client retries POST for up to 5 minutes;
+  if (Network restored within 5 min?) then (yes)
+    :Server records clocking with original client timestamp;
+    :Server rejects duplicates via idempotency key;
+    :System displays confirmation with recorded time;
+    stop
+  else (no — timeout)
+    :Client stops retrying;
+    :Display "Clocking not recorded — report to HR";
+    stop
+  endif
+endif
 
 @enduml
 ```
@@ -266,7 +289,7 @@ stop
 | MoSCoW | Must |
 | Volatility | Medium |
 
-**Outline:** Employee sees published news on the main page, sorted by date. Can filter by category (General, HR, IT, Events). Featured news items appear with a banner at the top. Read-only — no comments or reactions.
+**Outline:** Employee sees published news on the main page, sorted by date. Can filter by category (General, HR, IT, Events). Featured news items appear with a banner at the top. Read-only — no comments or reactions. When the network is down, news shows a "no connection" message (AC-005 resolved — only clocking has offline tolerance).
 
 ---
 
@@ -292,7 +315,7 @@ stop
 **Alternative Flows:**
 - **A1: No results** — System displays "No results found" message.
 - **A2: AD LDAP attributes missing** — If an AD entry has empty attributes (e.g., no extension), the field is displayed as blank or "N/A". This is an AD data quality issue (R001), not a portal error. Per CON-010, the fix is in AD, not the portal.
-- **A3: AD unreachable** — System displays an error message indicating the directory is temporarily unavailable.
+- **A3: AD unreachable** — System displays an error message indicating the directory is temporarily unavailable. When the network is down, directory shows "no connection" (AC-005 resolved — only clocking has offline tolerance).
 
 **Activity Diagram:**
 
@@ -343,7 +366,7 @@ end note
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| UC-001 | FR-001 | Refines | FEAT-001 |
+| UC-001 | FR-001, AC-005 | Refines | FEAT-001, REL-003, REL-004 |
 | UC-002 | FR-002 | Refines | FEAT-002 |
 | UC-003 | FR-003 | Refines | FEAT-003 |
 | UC-004 | FR-004 | Refines | FEAT-004 |
