@@ -2,12 +2,12 @@
 | Field | Value |
 |---|---|
 | Phase | Construction |
-| Status | Approved (Preserved) |
+| Status | Draft |
 | Milestone Target | End of Construction |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
 | Prior Phase | Elaboration (LCA achieved — 0 Critical, 0 Major open; stakeholder sanction GRANTED) |
-| Evolution | Construction Iter 1: NFR baseline preserved — no approved CR introduces new quality attributes. All FURPS+ categories addressed in Elaboration baseline. Document Control updated to Construction phase. |
+| Evolution | Construction Iter 1: NFR baseline preserved — no approved CR introduces new quality attributes. All FURPS+ categories addressed in Elaboration baseline. Document Control updated to Construction phase. Construction Iter 2: NFR baseline preserved — CR-010 (IsFeatured flag) is a derived field within UC-005/UC-006, not a new quality attribute. No FURPS+ category changes required. |
 ## Functionality
 
 ### Security
