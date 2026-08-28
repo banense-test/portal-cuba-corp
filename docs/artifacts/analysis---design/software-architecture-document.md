@@ -604,19 +604,20 @@ end note
 - **Client-side offline (AC-005):** Only the clocking POST is retried via localStorage. The page-level JavaScript on the already-rendered Razor page stores the press timestamp and retries the POST for up to 5 minutes. The server accepts the client's timestamp and rejects duplicates via an idempotency key. No PWA, no service worker, no client cache of directory or news data.
 
 ## Implementation View
-
 The solution is organized as a layered .NET 10 solution with projects mirroring the architectural layers. Each project corresponds to one layer; dependencies flow downward only (Presentation → Application → Infrastructure → Domain).
+
+> **Construction C1 Refinement:** Project name corrected from `src/PortalCubaCorp.Web` (Elaboration baseline) to `src/PortalCubaCorp` (actual). `ILdapConnection` testability abstraction and additional Domain entities (ClockingResult, LdapSearchResult, DateRange, Enums) added to reflect implementation reality.
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Implementation View (Elaboration)
+title Portal Cuba Corp — Implementation View (Construction C1 — Refined)
 
 skinparam packageStyle rectangle
 skinparam componentStyle rectangle
 
 package "PortalCubaCorp.sln" as SLN {
   
-  package "src/PortalCubaCorp.Web" as WEB {
+  package "src/PortalCubaCorp" as WEB {
     package "Pages" as PAGES {
       package "Employee" as EMP_PAGES {
         component "Index.cshtml\n(MainPageModel V001)" as IDX
@@ -634,13 +635,14 @@ package "PortalCubaCorp.sln" as SLN {
     package "wwwroot/js" as JS {
       component "clocking-retry.js\n(localStorage + POST retry\nAC-005)" as CLK_JS
     }
+    component "Program.cs\n(DI wiring + OIDC)" as PROG
   }
   
   package "src/PortalCubaCorp.Application" as APP {
-    component "IClockingService" as I_CLK
-    component "INewsService" as I_NEWS
-    component "IDirectoryService" as I_DIR
-    component "IWorkerCategoryService" as I_WC
+    component "IClockingService\n(INT-001)" as I_CLK
+    component "INewsService\n(INT-002)" as I_NEWS
+    component "IDirectoryService\n(INT-003)" as I_DIR
+    component "IWorkerCategoryService\n(INT-004)" as I_WC
     component "ClockingService\n(COMP-002)" as CLK_IMPL
     component "NewsService\n(COMP-003)" as NEWS_IMPL
     component "DirectoryService\n(COMP-001)" as DIR_IMPL
@@ -648,13 +650,18 @@ package "PortalCubaCorp.sln" as SLN {
   }
   
   package "src/PortalCubaCorp.Infrastructure" as INFRA {
-    component "ILdapGateway" as I_LDAP
-    component "IPersistence" as I_PERSIST
-    component "IAuditLogger" as I_AUDIT
+    package "Interfaces" as INFRA_IF {
+      component "ILdapGateway\n(INT-006)" as I_LDAP
+      component "IPersistence\n(INT-007)" as I_PERSIST
+      component "IAuditLogger\n(INT-005)" as I_AUDIT
+      component "ILdapConnection" as I_LDAP_CONN
+    }
     component "LdapGateway\n(COMP-005)" as LDAP_IMPL
     component "PersistenceGateway\n(COMP-006)" as PERSIST_IMPL
     component "OidcAuthMiddleware\n(COMP-007)" as OIDC_IMPL
     component "AuditInterceptor\n(COMP-008)" as AUDIT_IMPL
+    component "NovellLdapConnectionAdapter" as LDAP_ADAPTER
+    component "PortalDbContext" as DB_CTX
   }
   
   package "src/PortalCubaCorp.Domain" as DOMAIN {
@@ -663,24 +670,40 @@ package "PortalCubaCorp.sln" as SLN {
     component "WorkerCategory" as DM_WC
     component "AuditRecord" as DM_AUDIT
     component "DirectoryEntry" as DM_DIR
+    component "ClockingResult" as DM_CLK_RES
+    component "LdapSearchResult" as DM_LDAP_RES
+    component "DateRange" as DM_DATE
+    component "Enums" as DM_ENUMS
   }
 }
 
 WEB ..> APP : depends on interfaces
-APP ..> INFRA : depends on interfaces
+WEB ..> INFRA : DI wiring
+WEB ..> DOMAIN : uses domain entities
+APP ..> INFRA_IF : depends on interfaces only
 APP ..> DOMAIN : uses domain entities
 INFRA ..> DOMAIN : uses domain entities
 
 note bottom of WEB
   CON-002: Razor Pages
   CON-011: Mandatory custom UI design
-  Single .NET 10 project per layer
+  Actual project: src/PortalCubaCorp (no .Web suffix)
+  SDK: Microsoft.NET.Sdk.Web
+  Packages: OIDC, EF Core Design
 end note
 
 note bottom of INFRA
-  CON-003: PostgreSQL via EF Core
+  CON-003: PostgreSQL via EF Core (Npgsql 10.0.0)
   CON-005: AD over LDAP (read-only)
   CON-004: Keycloak OIDC client
+  ILdapConnection abstracts Novell.Directory.Ldap
+  for testability (ILdapGateway + ILdapConnection)
+end note
+
+note bottom of DOMAIN
+  SDK: Microsoft.NET.Sdk (class library)
+  No project references — pure entities
+  Nullable enabled, ImplicitUsings enabled
 end note
 
 @enduml
@@ -688,12 +711,12 @@ end note
 
 ### Build Structure
 
-| Project | Layer | Dependencies | Purpose |
-|---|---|---|---|
-| PortalCubaCorp.Web | Presentation | Application, Domain | Razor Pages, static files, OIDC middleware wiring |
-| PortalCubaCorp.Application | Application | Infrastructure (interfaces only), Domain | Service interfaces and implementations |
-| PortalCubaCorp.Infrastructure | Infrastructure | Domain | EF Core DbContext, LDAP gateway, OIDC middleware, audit interceptor |
-| PortalCubaCorp.Domain | Domain | (none) | Domain entities: ClockingRecord, NewsItem, WorkerCategory, AuditRecord, DirectoryEntry |
+| Project | Layer | SDK | Dependencies | Purpose |
+|---|---|---|---|---|
+| PortalCubaCorp | Presentation | Microsoft.NET.Sdk.Web | Application, Infrastructure, Domain | Razor Pages, static files, OIDC middleware wiring, DI registration |
+| PortalCubaCorp.Application | Application | Microsoft.NET.Sdk | Infrastructure (interfaces only), Domain | Service interfaces and implementations |
+| PortalCubaCorp.Infrastructure | Infrastructure | Microsoft.NET.Sdk | Domain | EF Core DbContext, LDAP gateway, OIDC middleware, audit interceptor |
+| PortalCubaCorp.Domain | Domain | Microsoft.NET.Sdk | (none) | Domain entities: ClockingRecord, NewsItem, WorkerCategory, AuditRecord, DirectoryEntry, ClockingResult, LdapSearchResult, DateRange, Enums |
 
 ### Dependency Rules
 
@@ -702,6 +725,14 @@ end note
 - **Infrastructure → Domain:** Infrastructure project references Domain for entity types used in persistence.
 - **Domain → (none):** Domain project has no dependencies. Pure entity definitions.
 
+### NuGet Package Inventory (Construction C1)
+
+| Package | Version | Project | Constraint | Policy |
+|---|---|---|---|---|
+| Microsoft.AspNetCore.Authentication.OpenIdConnect | 10.0.0 | PortalCubaCorp | CON-004 (OIDC) | .NET 10 pinned |
+| Microsoft.EntityFrameworkCore.Design | 10.0.0 | PortalCubaCorp | CON-003 (EF Core) | .NET 10 pinned |
+| Microsoft.EntityFrameworkCore | 10.0.0 | PortalCubaCorp.Infrastructure | CON-003 (EF Core) | .NET 10 pinned |
+| Npgsql.EntityFrameworkCore.PostgreSQL | 10.0.0 | PortalCubaCorp.Infrastructure | CON-003 (PostgreSQL) | .NET 10 pinned |
 ## Data View
 
 ### Portal-Owned Data (PostgreSQL)
