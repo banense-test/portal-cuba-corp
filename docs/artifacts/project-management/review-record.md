@@ -612,3 +612,13 @@ The project continues in Construction C2. No phase transition is authorized.
 | BR Lens — Stakeholder Coverage | STK-001..STK-004 | Refines | Findings: BM Lens section |
 | BR Lens — Derivation Bridge | FR-001..FR-010 → UC-001..UC-010 | Derives | N/A (BM inactive, direct trace) |
 | BR Lens — Verdict | Elaboration baseline (LCA achieved) | Refines | Disposition: PRESERVED |
+| MR-F1 (Iteration Plan) | IOC criteria, stakeholder sanction | Derives | Iteration Plan scope reduction governance |
+| MR-F2 (Iteration Plan) | IOC criteria, budget box | Derives | C2 capacity analysis |
+| MR-F3 (Risk List) | R003, STK-003, CON-004 | Derives | OIDC escalation, 8 blocked tests |
+| MR-F4 (Risk List) | R007, PR #8 findings | Derives | C2 schedule risk mitigation |
+| IOC Compliance Table | IOC exit criteria, AC-001..AC-005 | Derives | Findings: Management Lens |
+| Iteration Scorecard | Iteration Plan objectives, Test Case results | Derives | Findings: Management Lens |
+| Risk Retirement Status | Risk List R001..R007 | Derives | Findings: Management Lens |
+| Project Health State Machine | All dimensions (scope/schedule/cost/quality) | Derives | Findings: Management Lens |
+| Stakeholder Consultation | STK-001, IOC milestone | Refines | Disposition: Management Lens verdict |
+| Management Lens Verdict | IOC exit criteria, stakeholder sanction REFUSED | Derives | Conditional — IOC NOT achieved |
