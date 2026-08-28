@@ -129,45 +129,43 @@ Discipline intensity per phase is confirmed **per canonical matrix** — no devi
 **Criteria triggered:** None — all DC §4 criteria evaluated, none triggered.
 
 ## Artifacts and Templates
-
 ### CORE Artifacts (16) — All Produced
 
 All 16 CORE artifacts from the IARI baseline are produced. No CORE artifacts are omitted. Primary ownership is fixed per the baseline allowlist — no reassignments.
 
-| CORE Artifact | Primary Owner | Elaboration Status | Notes |
+| CORE Artifact | Primary Owner | Elaboration Iter 2 Status | Notes |
 |---|---|---|---|
 | Vision | BusinessProcessAnalyst | Baselined (Inception) | No changes in Elaboration |
-| Use-Case Model | SystemAnalyst | **Elaboration Draft** | 10 UCs detailed with activity diagrams, all scenarios elaborated |
-| Supplementary Specification | SystemAnalyst | **Elaboration Draft** | NFRs + cross-cutting mechanisms (OIDC auth, LDAP read, audit trail) |
-| Software Architecture Document | SoftwareArchitect | **Elaboration Draft** | 4+1 views baselined, 8 components, 5 ADRs, 3 sequence diagrams |
-| Design Model | Designer | **Elaboration Draft** | Class diagrams, use-case realizations, baseline migration scripts |
-| Implementation Model | Implementer | Pending | Reverse-engineered from source in Construction |
-| Test Case | TestDesigner | Pending | Per-UC test coverage; R001 and R006 are critical test paths |
-| Test Evaluation Summary | TestManager | Inception baseline | Per-iteration test results |
+| Use-Case Model | SystemAnalyst | Elaboration Draft — no findings | 10 UCs detailed with activity diagrams, all scenarios elaborated |
+| Supplementary Specification | SystemAnalyst | Elaboration Draft — no findings | NFRs + cross-cutting mechanisms (OIDC auth, LDAP read, audit trail) |
+| Software Architecture Document | SoftwareArchitect | **DRAFT — not yet BASELINED** | 4+1 views, 8 components, 5 ADRs. M1/M2 interface mismatches block baselining. MR-F1 (PoC evidence) open. |
+| Design Model | Designer | Elaboration Draft — M1/M2 open | Class diagrams, use-case realizations, baseline migration scripts. M1 (INT-005) and M2 (INT-007) interface mismatches must be resolved. |
+| Implementation Model | Implementer | Pending | Reverse-engineered from source in Construction. PR #4 M1/M2 fixes required first. |
+| Test Case | TestDesigner | Elaboration Draft — F1 resolved | Per-UC test coverage; R001 and R006 are critical test paths. **F1 resolved: TC-NNN is canonical prefix.** Test execution BLOCKED in Iter 1. |
+| Test Evaluation Summary | TestManager | Inception baseline | Per-iteration test results. 0/5 configs run in Iter 1 (blocked by PR #4). |
 | User Documentation | TechnicalWriter | Pending | End-user guide for portal features |
 | Release Notes | TechnicalWriter | Pending | Per-release change summary |
-| Iteration Plan | ProjectManager | Inception baseline | Cost-boxed, not time-boxed |
-| Iteration Assessment | ProjectManager | Inception final | Per-iteration retrospective |
-| Risk List | ProjectManager | Inception baseline | R001–R006, R001 top risk (exposure=9) |
-| Review Record | Reviewer | Inception final | All findings resolved, LCO achieved |
-| Development Case | ProcessEngineer | **This artifact** | Elaboration delta overrides |
+| Iteration Plan | ProjectManager | Elaboration Draft — MR-F2 open | Cost-boxed, not time-boxed. MR-F2 (Minor): iteration count mismatch (6 vs 7). |
+| Iteration Assessment | ProjectManager | Elaboration Iter 1 Final | 5 lessons learned recorded. Process improvements integrated into DC. |
+| Risk List | ProjectManager | Elaboration Draft — MR-F1 open | R001–R006. R001 top risk (exposure=9). MR-F1: PoC results not confirmed. |
+| Review Record | Reviewer | Elaboration Iter 1 Final | 5 open findings (3 Major, 2 Minor). All targeted for Iter 2. |
+| Development Case | ProcessEngineer | **This artifact — Iter 2 evolved** | F1 resolved, process improvement notes added, tool verification updated |
 | Change Request | ChangeControlManager | Construction onwards | SCM issues carry live state |
 
-### OPTIONAL Artifacts (6) — Trigger Evaluation (Elaboration Re-evaluation)
+### OPTIONAL Artifacts (6) — Trigger Evaluation (Elaboration Iter 2 Re-evaluation)
 
-All 6 OPTIONAL artifacts re-evaluated against §5.2 trigger conditions for Elaboration.
+All 6 OPTIONAL artifacts re-evaluated against §5.2 trigger conditions for Elaboration Iter 2.
 
-| Optional Artifact | Trigger Condition | Inception Verdict | Elaboration Verdict | Justification |
+| Optional Artifact | Trigger Condition | Iter 1 Verdict | Iter 2 Verdict | Justification |
 |---|---|---|---|---|
 | Glossary | Domain uses specialist vocabulary | NOT TRIGGERED | **NOT TRIGGERED** | Standard HR/IT terminology — no regulated, legal, medical, or financial jargon requiring stakeholder-validated definitions |
-| Architectural Proof-of-Concept | Elaboration phase + at least one technical risk requiring empirical validation | NOT TRIGGERED (Inception) | **TRIGGERED** | R001 (AD LDAP attribute consistency, exposure=9) is a technical risk requiring empirical validation. The SAD baselined LDAP integration (COMP-005, ADR-003) but actual attribute consistency across 3 offices must be validated against real AD before Construction. PoC scope: query AD from each office's LDAP endpoint, verify job title, department, office, email, and extension attributes are populated and consistent. |
+| Architectural Proof-of-Concept | Elaboration phase + at least one technical risk requiring empirical validation | TRIGGERED | **TRIGGERED — PoC results PENDING** | R001 (AD LDAP attribute consistency, exposure=9) is a technical risk requiring empirical validation. PoC designed but not yet executed. MR-F1 (Major) flags insufficient evidence. STK-003 must provide test AD before execution. |
 | Data Model | Data-centric OR >10 entities OR data-migration in scope | NOT TRIGGERED | **NOT TRIGGERED** | ~4 local entities (Clocking, News, NewsAudit, WorkerCategory); not data-centric; baseline migration scripts in Design Model; employee data read from AD at read time (CON-009) |
 | Deployment Model | Distributed / multi-node topology OR multi-environment non-trivial | NOT TRIGGERED | **NOT TRIGGERED** | Single internal Windows Server (CON-006); deployment is a section in the SAD (Deployment View baselined) |
 | User-Interface Prototype | UX-critical OR UI complexity requiring stakeholder validation | NOT TRIGGERED | **NOT TRIGGERED** | CON-011 provides a mandatory, authoritative custom design (`docs/inputs/employee-portal-design.html`) — no prototype iteration needed |
 | Test Plan | Formal delivery / regulatory audit / contractual test reporting | NOT TRIGGERED | **NOT TRIGGERED** | Internal intranet portal — no regulatory or contractual test reporting requirement; per-iteration testing scope defined in Iteration Plan |
 
-**Recorded via:** `record_optional_artifact_triggers(["Architectural Proof-of-Concept"])` — Architectural PoC is producible this iteration.
-
+**Recorded via:** `record_optional_artifact_triggers(["Architectural Proof-of-Concept"])` — Architectural PoC is producible. PoC execution pending STK-003 dependency.
 ## Optional Artifact Triggers
 
 ### Architectural Proof-of-Concept — TRIGGERED
