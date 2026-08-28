@@ -1,0 +1,74 @@
+# CI Pipeline for Portal Cuba Corp — .NET 10 / Razor Pages / PostgreSQL
+#
+# Dependency Hierarchy (bottom-up integration order per SAD):
+# ┌─────────────────────────────────────────────────────────────┐
+# │  Presentation (Razor Pages)                                 │
+# │    ├── Clocking Pages                                       │
+# │    ├── News Pages                                           │
+# │    ├── Directory Pages                                      │
+# │    └── HR Admin Pages                                       │
+# │  Application Services                                       │
+# │    ├── Clocking Service                                     │
+# │    ├── News Service                                         │
+# │    ├── Directory Service (LDAP)                             │
+# │    └── Worker Category Service                              │
+# │  Infrastructure                                             │
+# │    ├── PostgreSQL Data Access                               │
+# │    ├── LDAP / AD Integration                                │
+# │    └── OIDC Auth (Keycloak client)                          │
+# │  Cross-cutting                                              │
+# │    ├── Audit Trail                                          │
+# │    └── Offline Clocking Retry (client-side localStorage)    │
+# └─────────────────────────────────────────────────────────────┘
+#
+# Target build frequency: >=1 build/day toward iteration end
+# Integration order: Infrastructure -> Application Services -> Presentation
+#
+# The solution file is regenerated from src/ + tests/ on every CI run
+# to ensure new subsystem projects are automatically included.
+
+name: CI
+
+on:
+  push:
+    branches: [main, iteration/**, chore/**, feature/**, hotfix/**]
+  pull_request:
+    branches: [main, iteration/**, chore/**, feature/**, hotfix/**]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Sync solution from src/ and tests/
+        run: |
+          dotnet new sln --force --name PortalCubaCorp
+          find src tests -name '*.csproj' -print0 | xargs -0 -r dotnet sln add
+      - name: Restore dependencies
+        run: dotnet restore PortalCubaCorp.sln
+      - name: Build
+        run: dotnet build PortalCubaCorp.sln --no-restore --configuration Release
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Sync solution from src/ and tests/
+        run: |
+          dotnet new sln --force --name PortalCubaCorp
+          find src tests -name '*.csproj' -print0 | xargs -0 -r dotnet sln add
+      - name: Restore dependencies
+        run: dotnet restore PortalCubaCorp.sln
+      - name: Test
+        run: dotnet test PortalCubaCorp.sln --no-restore --configuration Release --logger trx --results-directory ./TestResults
