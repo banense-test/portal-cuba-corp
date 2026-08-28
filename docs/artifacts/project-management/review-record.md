@@ -287,114 +287,72 @@ object "Review Record" as RR {
 @enduml
 ```
 ## Findings
-### Prior Findings (Code Reviewer — E1 PR Review)
-
-The Code Reviewer reviewed PR #4 and recorded 2 Major findings (implementation divergences from the Design Model). These are implementation-level defects, not artifact-level defects — the Design Model interfaces are correct; the implementation code in PR #4 diverges from them.
-
-| # | Severity | Artifact | Finding | Recommendation | Status |
-|---|---|---|---|---|---|
-| M1 | Major | PR #4 / Review Record | IAuditLogger (INT-005) signature mismatch — implementation LogAudit() does not match Design Model interface contract | Align implementation with INT-005 signature | Open (PR #4 REQUEST_CHANGES) |
-| M2 | Major | PR #4 / Review Record | IPersistence (INT-007) transaction API mismatch — implementation does not expose the transaction boundary method defined in the Design Model | Align implementation with INT-007 transaction API | Open (PR #4 REQUEST_CHANGES) |
-
-### New Findings (Reviewer — LCA Technical Lens)
-
-| # | Severity | Artifact | Finding | Recommendation | Verdict |
-|---|---|---|---|---|---|
-| F1 | Minor | Test Case | The Test Case traceability table uses "TD-NNN" as an element ID prefix (TD-008, TD-009, TD-011) for Test Dependencies. This prefix is not listed in the standard ID conventions table. The prior finding on the Test Evaluation Summary for the same prefix was resolved by replacing TD-NNN with TC-NNN, but the Test Case artifact still uses TD-NNN. Unlike the Test Evaluation Summary entries (which were test configurations mislabeled as dependencies), these TD entries represent genuine Test Dependencies — a concept distinct from Test Cases. Replacing with TC-NNN would be semantically incorrect. | Either (a) declare "TD" (Test Dependency) as a project-specific element type in the Development Case's tool assessment section, noting it as a test-planning concept that doesn't map to any existing standard ID type, or (b) replace TD-NNN with inline descriptive names consistent with the other test dependency entries in the same table (e.g., "LdapGatewayStub", "OIDC Mock Token Provider"). Option (a) is preferred since Test Dependency is a meaningful concept in test planning. | Approved |
-
-### Management Reviewer Findings (LCA Management Lens — Elaboration Iter 1)
-
-| # | Severity | Artifact | Finding | Recommendation | Verdict | Finding Key |
-|---|---|---|---|---|---|---|
-| MR-F1 | Minor | Iteration Plan | Iteration Plan text states "6 iterations across 4 phases" but the coarse roadmap table shows 7 iterations (2 Inception + 2 Elaboration + 2 Construction + 1 Transition = 7). The narrative count does not match the tabulated roadmap. | Correct the narrative text from "6 iterations" to "7 iterations across 4 phases" to match the roadmap table. Alternatively, if 6 is intended, revise the roadmap to show 6 iterations. | NeedsRework | F1 |
-| MR-F2 | Major | Risk List | R001 (AD LDAP, exposure=9, HIGH) and R006 (offline retry, exposure=6, SIGNIFICANT) are both in MITIGATING status with PoCs triggered but no PoC results evidenced. Stakeholder REFUSED sanction citing "issues to mitigate." At LCA gate, these risks MUST show PoC results — RETIRED or ESCALATED with evidence. R003 (OIDC, exposure=6) external dependency on STK-003 still pending. | 1. Execute R001 LDAP PoC across 3 offices in Iter 2 and record results (RETIRED or ESCALATED). 2. Execute R006 offline retry PoC in Iter 2 and record results. 3. Confirm R003 OIDC registration with STK-003 or activate mock auth contingency. 4. Update Risk List status fields with PoC evidence citations. | NeedsRework | F1 |
-
-### Business Modeling Discipline (Business Reviewer — LCA Business Lens)
-
-**Verdict: [BR-OK-INACTIVE] — Discipline NOT APPLICABLE per DC §4**
-
-#### DC §4 Classification Assessment
-
-| Field | Value |
-|---|---|
-| Classification Source | `get_dc_classification` — Process Engineer, Elaboration re-evaluation |
-| `isBusinessProcessLed` | `false` |
-| Criteria Triggered | None — all DC §4 criteria evaluated, none triggered |
-| Classification Date | 2026-08-28T10:48:45Z |
-| Inception Verdict | INACTIVE (sustained) |
-| Elaboration Verdict | INACTIVE (sustained) |
-
-#### Rationale
-
-The stakeholder declared 10 system-level functional requirements (FR-001 through FR-010) describing specific portal features — clock in/out, news management, employee directory, worker category management. These are **system feature specifications**, not business process models. The Use-Case Model (Elaboration baseline) contains system-level use cases (UC-001 through UC-010) with system actors (Employee, HR Administrator, Active Directory, Keycloak) — not business actors, business workers, or business entities.
-
-The business processes (clocking, news publishing, directory lookup) are already defined and stable within the organization. The portal **digitizes** them; it does not **redesign** them. No business process reengineering, workflow optimization, or organizational change modeling is in scope.
-
-#### Artifact Inventory — BM Section Coverage Check
-
-| Artifact | BM Sections Present? | Assessment |
-|---|---|---|
-| Use-Case Model | No BUCs, no business workers, no business entities, no business realizations | ✅ Correct — system-level UC model only, as expected for non-BPL project |
-| Vision | No business process models, no organizational models | ✅ Correct — system vision with feature-level scope |
-| Supplementary Specification | No business rules section (rules are system-level constraints: SEC, AUD, PERF) | ✅ Correct — system NFRs, not business rules |
-| Glossary | Not produced (no specialist vocabulary trigger) | ✅ Correct — no BM vocabulary to define |
-
-#### Prior BR Findings Reconciliation
-
-| Artifact | Prior BR Findings | Open (resolution==null) | Disposition |
-|---|---|---|---|
-| Use-Case Model | 0 | 0 | N/A — no BR findings to reconcile |
-| Vision | 2 (both from other lenses: Reviewer idx=0, ManagementReviewer idx=1) | 0 | N/A — not BR findings; both already resolved in Inception |
-| Supplementary Specification | 0 | 0 | N/A — no BR findings to reconcile |
-
-No prior BusinessReviewer findings exist on any artifact. No resolves needed.
-
-#### Coverage Diagram
+### Finding Lifecycle
 
 ```plantuml
 @startuml
-title Business Modeling Discipline — DC §4 Classification Status
+title Finding Lifecycle — Open → Assigned → In-Progress → Resolved → Verified → Closed
 
-skinparam rectangleBorderColor #4a90d9
-skinparam noteBorderColor #999999
-
-rectangle "DC §4 Business-Process-Led Classification" as DC {
-  rectangle "isBusinessProcessLed = FALSE" as BPL #LightGray
-  rectangle "Criteria Triggered: NONE" as CR #LightGray
+skinparam state {
+  BackgroundColor #ECF0F1
+  BorderColor #2C3E50
 }
 
-rectangle "Business Modeling Discipline" as BM {
-  rectangle "INACTIVE" as INACT #Salmon
-}
+[*] --> Open : Finding raised\nby reviewer lens
 
-rectangle "Business Reviewer Verdict" as BRV {
-  rectangle "BR-OK-INACTIVE" as VERDICT #LightGreen
-}
+Open --> Assigned : Review Coordinator\nassigns owner + deadline
 
-DC --> BM : governs
-BM --> BRV : reviewer assessment
+Assigned --> InProgress : Owner begins\nremediation work
 
-note bottom of INACT
-  Rationale: Stakeholder declared 10 system-level FRs
-  (FR-001..FR-010) describing portal features, not business
-  process models. No BPR, workflow optimization, or
-  organizational change modeling in scope.
-  Portal digitizes existing stable HR processes.
+InProgress --> Resolved : Owner completes\nfix and submits
+
+Resolved --> Verified : Review Coordinator\nverifies corrective action
+
+Verified --> Closed : Finding formally\nclosed in tracker
+
+Resolved --> InProgress : Verification failed\n— rework required
+
+Open --> Escalated : Deadline missed\n→ escalate to PM
+
+Escalated --> Assigned : PM intervenes\nreassigns or extends
+
+Closed --> [*]
+
+note right of Escalated
+  Escalation Protocol:
+  1. Overdue finding identified
+  2. Escalation notice sent to PM
+  3. PM reassigns or extends deadline
+  4. Owner resumes remediation
 end note
 
-note bottom of VERDICT
-  BM discipline correctly INACTIVE.
-  No findings, no recommendations.
-  LCA milestone may proceed without BM contributions.
-  Inception INACTIVE verdict sustained.
+note right of Verified
+  Closure Invariant:
+  Only the lens that emitted
+  the finding may close it.
+  Cross-lens closure rejected.
 end note
 
 @enduml
 ```
 
-#### Conclusion
+### Finding Tracker — Elaboration Iter 1 (Consolidated, All Lenses)
 
-Business Modeling discipline remains correctly **INACTIVE**. No findings, no recommendations. The LCA milestone may proceed without BM contributions. The Inception INACTIVE verdict is sustained through Elaboration.
+| # | Key | Severity | Artifact | Lens | Finding (Summary) | Owner | Deadline | Status |
+|---|---|---|---|---|---|---|---|---|
+| 1 | M1 | Major | PR #4 / Review Record | Code Reviewer | IAuditLogger (INT-005) signature mismatch — implementation LogAudit() does not match Design Model interface contract | Implementer | Elaboration Iter 2 | Open — Assigned |
+| 2 | M2 | Major | PR #4 / Review Record | Code Reviewer | IPersistence (INT-007) transaction API mismatch — implementation does not expose transaction boundary method defined in Design Model | Implementer | Elaboration Iter 2 | Open — Assigned |
+| 3 | MR-F1 | Major | Risk List | Management Reviewer | R001/R006 in MITIGATING without PoC results; R003 OIDC registration pending — insufficient for LCA closure | Software Architect | Elaboration Iter 2 | Open — Assigned |
+| 4 | F1 | Minor | Test Case | Reviewer | TD-NNN prefix not in standard ID conventions — declare in Dev Case or replace with inline descriptions | Test Designer / Process Engineer | Elaboration Iter 2 | Open — Assigned |
+| 5 | MR-F2 | Minor | Iteration Plan | Management Reviewer | Iteration count mismatch — narrative says "6 iterations" but roadmap table shows 7 | Project Manager | Elaboration Iter 2 | Open — Assigned |
+
+### Prior Findings (Resolved — Inception)
+
+| # | Key | Severity | Artifact | Lens | Finding (Summary) | Resolution |
+|---|---|---|---|---|---|---|
+| P1 | F1 | Info | Vision | Reviewer | FEAT-NNN prefix non-standard | Resolved (Inception Iter 2) — replaced with REQ-NNN |
+| P2 | F1 | Minor | Vision | Management Reviewer | FEAT-NNN prefix non-standard (management lens) | Resolved (Inception Iter 2) — replaced with REQ-NNN |
+| P3 | F1 | Info | Test Evaluation Summary | Reviewer | TD-NNN prefix non-standard | Resolved (Inception Iter 2) — replaced with TC-NNN |
 
 ### Defect Distribution (All Lenses Combined)
 
@@ -410,13 +368,13 @@ object "Critical" as CR {
 
 object "Major" as MA {
   PR #4 / Review Record: 2 (M1, M2 — Code Reviewer)
-  Risk List: 1 (MR-F2 — Management Reviewer)
+  Risk List: 1 (MR-F1 — Management Reviewer)
   **Total: 3**
 }
 
 object "Minor" as MI {
   Test Case: 1 (F1 — Reviewer, TD-NNN prefix)
-  Iteration Plan: 1 (MR-F1 — Management Reviewer, count mismatch)
+  Iteration Plan: 1 (MR-F2 — Management Reviewer, count mismatch)
   **Total: 2**
 }
 
@@ -439,6 +397,23 @@ end note
 
 @enduml
 ```
+
+### Review Effectiveness Metrics — Elaboration Iter 1
+
+| Metric | Value | Interpretation |
+|---|---|---|
+| Artifacts Planned for Review | 12 | All Elaboration artifacts + Inception carry-over |
+| Artifacts Reviewed | 12 (100%) | Full coverage — no artifacts skipped |
+| Total Findings Raised | 5 (3 Major, 2 Minor) | Plus 3 prior resolved (Inception) |
+| Critical Findings | 0 | No blockers — architecture is sound |
+| Major Findings | 3 | 2 implementation divergences (PR #4) + 1 risk evidence gap |
+| Minor Findings | 2 | 1 ID prefix convention + 1 iteration count text error |
+| Defect Density (Major) | 3 Major / 12 artifacts = 0.25/artifact | Acceptable — concentrated in implementation + risk evidence, not design |
+| Review Coverage | 100% (12/12) | All planned artifacts received formal review |
+| Defect Removal Efficiency | 5 found in review / 0 found in test = 100% (test BLOCKED) | Test execution blocked by PR #4 — all defects found by review, none by test yet |
+| Rework Effort | [ASSUMPTION — requires validation] Not yet measured in tokens for this iteration | Will be quantified at iteration close |
+| Open Findings | 5 (all targeted for Elaboration Iter 2) | All have owners and deadlines — no orphaned findings |
+| Overdue Findings | 0 | All findings assigned within iteration — no deadlines missed yet |
 ## Resolutions and Actions
 ### Prior Findings Reconciliation
 
