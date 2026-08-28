@@ -1,0 +1,25 @@
+# Portal Cuba Corp — Infrastructure as Code Base
+# Inception baseline: skeleton only, filled in during Elaboration
+# Target: internal Windows Server (CON-006), single node
+# No cloud — this file tracks infrastructure prerequisites and configuration
+
+apiVersion: v1
+name: portal-cuba-corp
+description: Infrastructure configuration for Portal Cuba Corp — internal Windows Server deployment
+type: application
+version: 0.1.0
+appVersion: '0.1.0'
+
+# Notes:
+# - CON-006: Internal Windows Server, no cloud
+# - CON-003: PostgreSQL on same node
+# - CON-004: Keycloak external, OIDC client registration required (STK-003)
+# - CON-005: AD LDAP external, read-only connectivity required (STK-003)
+# - NFR-003: Deployment window outside Mon-Fri 7:00-19:00
+#
+# Prerequisites to verify before Elaboration close:
+# 1. .NET 10 runtime installed on target Windows Server
+# 2. PostgreSQL installed and configured on target server
+# 3. Keycloak OIDC client registered (coordinate with STK-003)
+# 4. LDAP connectivity to AD verified from target server (coordinate with STK-003)
+# 5. IIS or Kestrel service configured for hosting .NET 10 app
