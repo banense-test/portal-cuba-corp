@@ -4,14 +4,14 @@
 
 | Field | Value |
 |---|---|
-| Phase | Elaboration |
+| Phase | Construction |
 | Status | Active |
-| Milestone Target | End of Elaboration (LCA) |
+| Milestone Target | End of Construction (IOC) |
 | Owner | Configuration Manager |
 | Last Updated | 2026-08-28 |
-| Prior Phase | Inception — baseline strategy established |
-| Current Iteration | Elaboration Iter 2 (E2) |
-| E1 Baseline Status | DEFERRED — no tag written (mechanism not merged to main) |
+| Prior Phase | Elaboration — E1 baseline DEFERRED (mechanism not merged to main) |
+| Current Iteration | Construction Iter 1 (C1) |
+| C1 Baseline Status | BLOCKED — PR #9 missing Architect approval (Issue #16) |
 
 ---
 
@@ -46,263 +46,223 @@ downstream consumers.
 
 | Pattern | Phase | Purpose |
 |---|---|---|
-| `feature/E{n}-{risk-id}[-{mechanism}]` | Elaboration | Evolutionary architectural mechanism — real code in `src/`, based on `iteration/E{n}` |
-| `feature/C{n}-{uc-id}-{subject}` | Construction | UC realizations |
-| `iteration/E{n}` | Elaboration | Integration workspace per iteration |
-| `iteration/C{n}` | Construction | Integration workspace per iteration |
-| `hotfix/{issue-id}` | Transition | Hotfixes from main |
-| `chore/{subject}` | Any | Non-functional repo maintenance |
+| `feature/E{n}-{risk-id}[-{mechanism}]` | Elaboration | Evolutionary architectural mechanism |
+| `feature/C{n}-{uc-id}-{subject}` | Construction | UC realization feature branch |
+| `iteration/E{n}` \| `iteration/C{n}` | All | Integration workspace per iteration |
+| `hotfix/{issue-id}` | Transition | Hotfix from main |
+| `chore/{subject}` | All | Non-functional repo maintenance |
+
+### Naming Violations
 
 Non-conforming branches are surfaced as SCM issues with `severity:minor` +
 `nature:defect` + `naming-violation` labels.
 
----
-
-## 4. Workspace Hierarchy
-
-### 4.1 Elaboration — Evolutionary Architectural Mechanism
-
-The architectural prototype is **evolutionary** — it becomes the Construction
-baseline, not throwaway sample code. Technical risks are retired by:
-
-- **Analysis** (the Software Architect reasons feasibility — no code), OR
-- **Building the real mechanism** in `src/` on `feature/E{n}-{risk-id}[-{mechanism}]`
-  based on `iteration/E{n}`
-
-The Code Reviewer reviews each mechanism PR (base `iteration/E{n}`) as production.
-The Integrator merges APPROVED mechanisms into `iteration/E{n}`. At LAM close,
-the Integrator opens `iteration/E{n} → main`; the Deliver bookend merges the
-reviewed baseline.
-
-**There is NO `samples/poc/` directory and NO ephemeral `poc/*` branch.**
-
-### 4.2 Current State — Elaboration Iter 2 (E2)
-
-| Branch | Status | Notes |
-|---|---|---|
-| `iteration/E1` | Prior iteration | PR #4 (`feature/E1-architectural-infrastructure → iteration/E1`) still OPEN — Code Reviewer findings M1, M2 unresolved |
-| `iteration/E2` | Active | Created from `main` — current integration workspace |
-| `feature/E2-{risk-id}-{mechanism}` | Expected | Evolutionary mechanisms for E2 risks (R001 LDAP, R006 offline retry) |
-| `main` | Stable | CI GREEN (success, 2026-08-28 10:50:54Z) — no E1 baseline tag (DEFERRED) |
-
-### 4.3 E1 Baseline Deferral
-
-No `baseline-elaboration-E1-v1` tag was written. The E1 architectural mechanism
-(PR #4) has not been merged to `iteration/E1` (Code Reviewer findings M1/M2 open),
-and no `iteration/E1 → main` PR exists. The E1 baseline is **DEFERRED** — the
-architecture baseline will be established at E2 close when the LAM-close PR
-(`iteration/E2 → main`) is APPROVED and `main` CI is GREEN.
+**Current violations:**
+- Issue #15: `feature/C1-presentation` — missing UC identifiers (should follow
+  `feature/C{n}-{uc-id}-{subject}` or `feature/C{n}-{uc-range}-{subject}` for multi-UC branches)
 
 ---
 
-## 5. Baseline Identification Scheme
+## 4. Branching Topology — Construction Phase
 
-### 5.1 Tag Naming Convention
-
-| Phase | Tag Pattern | Example |
-|---|---|---|
-| Elaboration | `baseline-elaboration-E{n}-v{patch}` | `baseline-elaboration-E2-v1` |
-| Construction | `baseline-construction-C{n}-v{patch}` | `baseline-construction-C1-v1` |
-| Transition | `baseline-transition-T{n}-v{patch}` | `baseline-transition-T1-v1` |
-
-`<patch>` starts at `1`; re-tag `v2, v3…` only after an explicit rollback or
-post-baseline critical fix.
-
-### 5.2 Pre-Tag Gate (MANDATORY)
-
-Before any `scm_create_tag`, verify BOTH gates:
-
-1. `scm_get_pull_request_review_state(projectId, prNumber) == "APPROVED"` on the
-   iteration-close PR
-2. `scm_get_build_status(projectId, "main") == green` after the merge
-
-Either fails → file an Issue (`severity:blocker` + `nature:defect`) and DO NOT TAG.
-
-### 5.3 Tag Message (Audit Record)
-
-The tag body MUST contain:
-- Iteration-close PR number and head commit SHA
-- Architect approval review ID
-- `main` CI run URL at tag time
-- Any notable findings (naming violations, deferred items, re-tag justifications)
-
-### 5.4 E2 Baseline Plan
-
-| Item | Value |
-|---|---|
-| Target Tag | `baseline-elaboration-E2-v1` |
-| Prerequisite PR | `iteration/E2 → main` (not yet opened by Integrator) |
-| Prerequisite Review | Architect APPROVED on iteration-close PR |
-| Prerequisite CI | `main` GREEN post-merge |
-| E1 Baseline | DEFERRED — folded into E2 baseline |
-| Blocker Issue | #6 — architectural prototype not merged to main |
-
----
-
-## 6. Cross-Phase Invariants
-
-- Only the Integrator writes `iteration/*` and `main` (no other role pushes there)
-- `ready-for-review` is the Implementer → Code Reviewer handoff label
-- A baseline tag freezes ONLY an APPROVED + CI-green commit
-- One baseline per iteration close — never mid-iteration
-- `docs/BRANCHING_STRATEGY.md` updates go directly to `main` via `scm_commit_files` — no PR
-
----
-
-## 7. Elaboration E2 — Branching Topology
+The following component diagram shows the canonical branching topology for
+Construction C1, including the workspace hierarchy (feature → iteration → main)
+and the roles that operate at each level.
 
 ```plantuml
-@startuml
-title Elaboration E2 — Branching Topology and Baseline Pedigree
+@startuml Branching_Topology_C1
+title Construction C1 — Branching Topology Component Diagram
 
 skinparam component {
-  BackgroundColor #ECF0F1
-  BorderColor #2C3E50
+  BackgroundColor<<feature>> #4ECDC4
+  BackgroundColor<<iteration>> #FFE66D
+  BackgroundColor<<main>> #95E1D3
+  BackgroundColor<<issue>> #FF6B6B
 }
 
-skinparam note {
-  BackgroundColor #FFF9C4
-  BorderColor #F9A825
+package "Feature Branches" {
+  [feature/C1-presentation] as FEAT1 <<feature>>
+  note right of FEAT1: PR #8 → iteration/C1\nUC-001 through UC-010\nNaming: Issue #15
 }
 
-package "E1 (Prior Iteration)" {
-  [feature/E1-architectural-infrastructure] as E1FEAT
-  [iteration/E1] as E1INT
-  E1FEAT --> E1INT : PR #4 (open)\nCode Reviewer findings M1, M2
-  note right of E1INT
-    E1 baseline DEFERRED
-    No tag written —
-    mechanism not yet merged
-  end note
+package "Integration Branch" {
+  [iteration/C1] as ITER1 <<iteration>>
+  note right of ITER1: Integrator merges\napproved feature PRs here\nPR #9 → main (BLOCKED)
 }
 
-package "E2 (Current Iteration)" {
-  [feature/E2-{risk-id}-{mechanism}] as E2FEAT
-  [iteration/E2] as E2INT
-  E2FEAT --> E2INT : Code Reviewer reviews\nIntegrator merges APPROVED
-  E2INT --> [main] : LAM-close PR\n(Architect reviews)
-  note right of E2INT
-    E2 workspace created from main
-    Evolutionary mechanisms integrate here
-    before LAM baseline reaches main
-  end note
+package "Main Branch" {
+  [main] as MAIN <<main>>
+  note right of MAIN: CI: GREEN\nBaseline tag target:\nbaseline-construction-C1-v1\nGATE: PR #9 NOT APPROVED
 }
 
-[main] as MAIN
-note bottom of MAIN
-  Pre-Tag Gate (before baseline-elaboration-E2-v1):
-  1. scm_get_pull_request_review_state == APPROVED
-  2. scm_get_build_status("main") == green
-  Either fails → Issue(severity:blocker, nature:defect)
-  Both pass → scm_create_tag("baseline-elaboration-E2-v1")
+package "Issues" {
+  [Issue #15] as I15 <<issue>>
+  [Issue #16] as I16 <<issue>>
+  note right of I15: naming-violation\nseverity:minor
+  note right of I16: missing-approval\nseverity:blocker
+}
+
+FEAT1 --> ITER1 : PR #8 (open)
+ITER1 --> MAIN : PR #9 (open, review: NONE)
+I16 ..> MAIN : blocks baseline tag
+I15 ..> FEAT1 : naming deviation
+
+@enduml
+```
+
+### Cross-Phase Invariants
+
+- Only the Integrator writes to `iteration/*` and `main` — no other role pushes there.
+- `ready-for-review` is the Implementer → Code Reviewer handoff label.
+- A baseline tag freezes ONLY an APPROVED + CI-green commit.
+- Feature branches derive from `iteration/C{n}`, NOT from `main`.
+
+---
+
+## 5. Baseline Procedure — Construction Phase
+
+The following state machine diagram shows the Configuration Manager's baseline
+pedigree workflow for Construction C1, including the current gate failure.
+
+```plantuml
+@startuml CM_Baseline_Pedigree_C1
+title Configuration Manager — Construction C1 Baseline Pedigree
+
+skinparam state {
+  BackgroundColor<<blocked>> #FF6B6B
+  BackgroundColor<<passed>> #6BCB77
+  BackgroundColor<<pending>> #FFD93D
+  BackgroundColor<<skipped>> #B0B0B0
+}
+
+[*] --> S1_DISCOVER : Load CM context
+
+state "S1_DISCOVER\nLoad SCM state" as S1_DISCOVER
+S1_DISCOVER --> S2_VALIDATE : Branching strategy + PRs loaded
+
+state "S2_VALIDATE\nAudit branch naming" as S2_VALIDATE
+S2_VALIDATE --> S3_AUTHORIZE : All branches audited\nIssue #15: naming violation filed
+
+state "S3_AUTHORIZE\nPre-baseline gate" as S3_AUTHORIZE <<blocked>>
+S3_AUTHORIZE : PR #9 (iteration/C1 → main)
+S3_AUTHORIZE : Review state: NONE
+S3_AUTHORIZE : Issue #16: blocker filed
+
+state "S4_CREATE_BASELINE\nTag baseline-construction-C1-v1" as S4_SKIPPED <<skipped>>
+S4_SKIPPED : SKIPPED — authorization blocked
+
+S3_AUTHORIZE --> S4_SKIPPED : Gate FAILED\nNo Architect approval
+S4_SKIPPED --> S5_REPORT : No tag written
+
+state "S5_REPORT\nConfiguration status" as S5_REPORT <<passed>>
+S5_REPORT : Progress: 0/1 tags\nAging: no prior tags\n12 open issues\nCI main: GREEN
+
+S5_REPORT --> [*] : Report complete\nNext invocation re-checks gate
+
+note right of S3_AUTHORIZE
+  BLOCKER — Issue #16
+  Architect must approve PR #9
+  before baseline tag can be written.
+end note
+
+note right of S4_SKIPPED
+  No baseline-construction-C1-v1 tag
+  will be written this invocation.
+  The CM will re-verify on next call
+  after the blocker is cleared.
 end note
 
 @enduml
 ```
 
----
+### Pre-Tag Gate Checklist
 
-## 8. Baseline Pedigree State Machine
+Before writing `baseline-construction-C{n}-v{x}`:
 
-```plantuml
-@startuml
-title Baseline Pedigree State Machine — Elaboration E2
+1. **Review Gate:** `scm_get_pull_request_review_state(PR #)` on the iteration-close
+   PR (`iteration/C{n} → main`) must return `APPROVED`.
+2. **CI Gate:** `scm_get_build_status("main")` must return `green` AFTER the merge.
+3. **Tag Message:** Must contain iteration-close PR number, head commit SHA,
+   Architect approval review ID, `main` CI run URL, and notable findings.
 
-skinparam state {
-  BackgroundColor #ECF0F1
-  BorderColor #2C3E50
-}
-
-[*] --> S1_DISCOVER
-state "S1: Load Architecture + SCM State" as S1_DISCOVER {
-  S1_DISCOVER : list_artifacts, read SAD
-  S1_DISCOVER : scm_get_file_content(BRANCHING_STRATEGY.md)
-  S1_DISCOVER : scm_list_issues(blocker)
-  S1_DISCOVER : scm_list_pull_requests(open)
-  S1_DISCOVER : scm_create_branch(iteration/E2, main)
-}
-
-S1_DISCOVER --> c_lam_pr
-state c_lam_pr <<choice>>
-c_lam_pr --> S2_GATE : [iteration-close PR → main exists]
-c_lam_pr --> IDLE : [no LAM-close PR — CM idle]
-
-state "IDLE: No LAM-close PR" as IDLE {
-  IDLE : Update BRANCHING_STRATEGY.md for E2
-  IDLE : Verify blocker issue status
-  IDLE : Check naming compliance
-  IDLE : Exit: wait for Integrator to open iteration/E2 → main
-}
-IDLE --> [*]
-
-state "S2: Pre-Tag Gate Verification" as S2_GATE {
-  S2_GATE : scm_get_pull_request_review_state(pr)
-  S2_GATE : scm_get_build_status("main")
-}
-
-S2_GATE --> c_gates
-state c_gates <<choice>>
-c_gates --> S3_TAG : [APPROVED AND green]
-c_gates --> S_ESCALATE : [NOT APPROVED OR red]
-
-state "S3: Write Baseline Tag" as S3_TAG {
-  S3_TAG : scm_create_tag("baseline-elaboration-E2-v1")
-  S3_TAG : audit message: PR#, SHA, review ID, CI URL
-}
-S3_TAG --> [*]
-
-state "S_ESCALATE: File Gate-Failure Issue" as S_ESCALATE {
-  S_ESCALATE : scm_create_issue(severity:blocker, nature:defect)
-}
-S_ESCALATE --> [*]
-
-@enduml
-```
+Either gate fails → file an Issue (`severity:blocker` + `nature:defect`) and DO NOT tag.
 
 ---
 
-## 9. Change-Control Integration
+## 6. Construction C1 — CM Status Reports
 
-Change Requests are managed by the Change Control Manager (CCM) via SCM issues
-with the canonical label convention:
+### Progress
 
-| Label | Meaning |
+| Metric | Value |
 |---|---|
-| `change-request` | Issue is a formal CR |
-| `cr:new` | CR submitted, awaiting triage |
-| `cr:approved` | CCB approved, implementation authorized |
-| `cr:complete` | CR implemented and verified |
-| `severity:blocker` | Blocks iteration close |
-| `severity:major` | Significant impact, must resolve before milestone |
-| `severity:minor` | Minor impact, resolve when feasible |
-| `nature:defect` | Issue is a defect |
-| `nature:enhancement` | Issue is an enhancement |
-| `naming-violation` | Branch/PR/tag naming convention violation |
+| Tags created this phase | 0 |
+| Tags target | 1 (`baseline-construction-C1-v1`) |
+| Prior phase tags | 0 (Elaboration E1 DEFERRED) |
 
-The Configuration Manager consumes CCM-triaged outcomes indirectly via the
-branches and PRs they authorize. The CM does NOT triage CRs or evaluate impact.
+### Aging
+
+| Metric | Value |
+|---|---|
+| Days since last baseline tag | N/A — no baseline tags exist project-wide |
+| Open naming-violation Issue age | Issue #15 — created 2026-08-28 |
+| Open blocker Issue age | Issue #16 — created 2026-08-28 |
+
+### Distribution
+
+| Category | Count | Items |
+|---|---|---|
+| Tags per phase | Inception: 0, Elaboration: 0 (deferred), Construction: 0 (blocked) | — |
+| Open Issues — Blocker | 2 | #16 (missing-approval), #6 (prototype not merged) |
+| Open Issues — Major | 4 | #11 (idempotency), #10 (IsFeatured), #3 (audit trail), #2 (offline retry) |
+| Open Issues — Minor | 3 | #15 (naming), #13 (test assertion), #12 (CSV export) |
+| Open Issues — Trivial | 1 | #14 (placeholder test) |
+| Open Issues — Other | 2 | #5 (deferred record), #1 (LDAP PoC CR) |
+
+### Trends
+
+| Metric | Elaboration E2 | Construction C1 | Delta |
+|---|---|---|---|
+| Open Issues | ~6 | 12 | +6 (6 new CRs from code review + 2 CM gate issues) |
+| Baseline tags | 0 | 0 | 0 |
+| Open PRs | 2 | 2 | 0 |
+| Closed PRs | 2 | 2 | 0 |
 
 ---
 
-## 10. Open Blockers and Issues
+## 7. Elaboration Phase — Historical Record
 
-| Issue # | Title | Severity | Status | Impact on Baseline |
-|---|---|---|---|---|
-| #6 | CR: Architectural prototype (PR #4) not merged to main — all 20 test cases BLOCKED | blocker | open | E1 baseline DEFERRED; E2 baseline blocked until mechanism merged and LAM-close PR approved |
+### E1 Baseline Status: DEFERRED
+
+The Elaboration E1 baseline tag was not written because the architectural
+prototype mechanism (PR #4) was not merged to `main`. The stakeholder sanction
+was REFUSED. E2 was intended to absorb E1 scope, but the E1 close PR (#7) was
+closed without merge. Issue #6 tracks the unmerged prototype.
+
+### Elaboration Branching Model
+
+- `feature/E{n}-{risk-id}[-{mechanism}]` — evolutionary architectural mechanism
+- `iteration/E{n}` — integration workspace
+- Architect records PoC decision: `analysis-only` | `single-mechanism` | `candidates`
+- Code Reviewer opens + reviews each mechanism PR (base `iteration/E{n}`)
+- Integrator merges APPROVED mechanism into `iteration/E{n}`
+- At LAM close: Integrator opens `iteration/E{n} → main`
 
 ---
 
-## 11. Traceability
+## 8. Traceability
 
 | Element | Traces From | Link Type | Traces To |
-|---|---|---|
-| `baseline-elaboration-E2-v1` (planned) | RUP Ch.13 (Manage Baselines and Releases) | Refines | `scm_create_tag`, `scm_get_pull_request_review_state`, `scm_get_build_status` |
-| `feature/E2-{risk-id}-{mechanism}` | R001 (AD LDAP risk), R006 (offline retry) | Derives | Elaboration evolutionary mechanism |
-| `iteration/E2` | RUP Ch.13 + IARI convention | Refines | Integration workspace, LAM-close PR |
-| E1 baseline DEFERRED | Review Record (stakeholder sanction REFUSED) | Derives | E2 baseline absorbs E1 scope |
+|---|---|---|---|
+| `feature/C1-presentation` | FR-001 through FR-010 | Realizes | PR #8 → iteration/C1 |
+| `iteration/C1` | RUP Ch.13 + IARI convention | Refines | PR #9 → main |
+| `baseline-construction-C1-v1` (pending) | RUP Ch.13 baseline discipline | Refines | `scm_create_tag` (blocked) |
+| Pre-tag gate | RUP Ch.13 Fig 13-6 | Refines | `scm_get_pull_request_review_state`, `scm_get_build_status` |
+| Issue #15 (naming violation) | Branch naming conventions | DependsOn | `feature/C1-presentation` |
+| Issue #16 (missing approval) | Pre-tag gate | DependsOn | PR #9 review state |
 | CI gating on .NET 10 | CON-001 | DependsOn | `.github/workflows/` |
 | OIDC client pre-requisite | CON-004 | DependsOn | Integration test environment |
 | Mandatory design CI | CON-011 | DependsOn | `docs/inputs/employee-portal-design.html` |
-| Audit trail requirement | NFR-004 | Refines | Tag message audit record, PCA sign-off |
-| Blocker issue #6 | PR #4 not merged | DependsOn | E2 baseline gate |
+| Audit trail requirement | NFR-004 | Refines | Tag message audit record |
+| E1 baseline DEFERRED | Review Record (stakeholder sanction REFUSED) | Derives | E2/C1 absorbs E1 scope |
+| Blocker issue #6 | PR #4 not merged | DependsOn | Construction baseline gate |
 | Baseline pedigree state machine | RUP Ch.13 baseline discipline | Refines | Pre-tag gate, `scm_create_tag` |
