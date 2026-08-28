@@ -16,6 +16,95 @@
 | Stakeholder Sanction | **REFUSED** — STK-001: "We need to iterate again. There are issues to mitigate, pull requests to close, and findings to address, even if they're minor." |
 | Management Verdict | **CONDITIONAL** — 8 conditions for LCA closure at end of Iter 2 |
 ## Review Scope and Criteria
+### Review Process Framework
+
+| Review Type | Triggering Activity | Required Participants | Entry Criteria | Exit Criteria | Primary Output |
+|---|---|---|---|---|---|
+| Iteration Plan Review | Plan for Next Iteration | Review Coordinator, Reviewer, Management Reviewer | Iteration Plan in target state; agenda distributed 48h advance | Findings logged; owners assigned; Review Record signed | Review Record (iteration plan section) |
+| PRA Review | Manage Iteration (mid-checkpoint) | Review Coordinator, Reviewer | Iteration in progress; artifacts available for inspection | Project health assessed; deviations documented | PRA Review Record |
+| Architecture Review | SAD + Design Model produced | Review Coordinator, Reviewer (technical lens), Software Architect | SAD 4+1 views complete; Design Model UC realizations done | Architecture findings logged; verdict recorded | Architecture Review Record |
+| Iteration Evaluation Criteria Review | Close-Out Iteration | Review Coordinator, Reviewer, Management Reviewer | All iteration artifacts reviewed; exit criteria defined | Exit criteria verified; gaps documented | Evaluation Criteria Record |
+| Iteration Acceptance Review | Close-Out Iteration | Review Coordinator, Reviewer, Management Reviewer, Stakeholder | All findings from prior reviews tracked; artifacts in target state | Acceptance verdict; stakeholder sanction decision | Acceptance Review Record |
+| LCA Milestone Review | Close-Out Phase (Elaboration) | Review Coordinator, Reviewer, Management Reviewer, Business Reviewer, Stakeholder | Architecture BASELINED; PoC results for R001/R006; M1/M2 resolved; PR #4 merged | LCA sanction decision; phase gate decision | LCA Milestone Review Record |
+
+### Review Event Workflow
+
+```plantuml
+@startuml
+title Review Event Workflow — Coordinator, Reviewers, and Authors
+
+|Review Coordinator|
+start
+:Distribute review materials\n(48h before review event);
+:Confirm reviewers assigned\nwith matched expertise;
+:Verify entry criteria met\n(artifacts in target state);
+
+|Reviewer|
+:Review artifacts\nagainst evaluation criteria;
+:Log findings with severity\n(Critical/Major/Minor/Enhancement);
+
+|Review Coordinator|
+:Compile findings log;
+:Assign owners + deadlines\nto all findings;
+:Record Review Record\n(signed attendance, findings, verdict);
+
+|Artifact Author|
+:Receive findings;
+:Begin remediation\n(per owner assignment);
+
+|Review Coordinator|
+:Track findings to closure;
+:Escalate overdue findings\nto Project Manager;
+:Update Finding Tracker;
+
+stop
+@enduml
+```
+
+### Elaboration Review Calendar
+
+```plantuml
+@startuml
+title Elaboration Review Calendar — Iteration Reviews + LCA Milestone
+
+skinparam activityBorderColor #2C3E50
+skinparam activityBackgroundColor #ECF0F1
+
+|Review Coordinator|
+start
+:Schedule Iteration Plan Review\n(Elaboration Iter 1 — before iteration begins);
+|Reviewer, Management Reviewer|
+:Execute Iteration Plan Review\nEntry: Iteration Plan in target state\nExit: Findings logged, owners assigned;
+|Review Coordinator|
+:Schedule PRA Review\n(Elaboration Iter 1 — mid-iteration checkpoint);
+|Reviewer, Management Reviewer|
+:Execute PRA Review\nMonitor project health\nCheck iteration plan adherence;
+|Review Coordinator|
+:Schedule Architecture Review\n(SAD + Design Model — before LCA);
+|Reviewer (Technical Lens)|
+:Execute Architecture Review\nEntry: SAD 4+1 views complete,\nDesign Model UC realizations done\nExit: Findings logged, verdict recorded;
+|Review Coordinator|
+:Schedule Iteration Evaluation Criteria Review\n(Elaboration Iter 1 — before closing iteration);
+|Reviewer, Management Reviewer|
+:Execute Iteration Evaluation Criteria Review\nVerify exit criteria met;
+|Review Coordinator|
+:Schedule Iteration Acceptance Review\n(Elaboration Iter 1 — formal acceptance);
+|Reviewer, Management Reviewer, Stakeholder|
+:Execute Iteration Acceptance Review\nEntry: All iteration artifacts reviewed\nExit: Acceptance verdict, findings tracked;
+note right
+  **STAKEHOLDER SANCTION: REFUSED**
+  STK-001: "We need to iterate again.
+  There are issues to mitigate, pull requests
+  to close, and findings to address."
+  → Auto-iterate to Elaboration Iter 2
+end note
+|Review Coordinator|
+:Schedule LCA Milestone Review\n(End of Elaboration Iter 2 — phase gate);
+|Reviewer, Management Reviewer, Business Reviewer, Stakeholder|
+:Execute LCA Milestone Review\nEntry: Architecture BASELINED,\nPoC results for R001/R006,\nM1/M2 resolved, PR #4 merged\nExit: LCA sanction decision;
+stop
+@enduml
+```
 
 ### Review Process
 
@@ -57,8 +146,8 @@ This LCA milestone review evaluates ALL Elaboration artifacts against the Lifecy
 | Use-Case Model | Elaboration Draft | ✅ Full content | APPROVED |
 | Supplementary Specification | Elaboration Draft | ✅ Full content | APPROVED |
 | Development Case | Elaboration Draft | ✅ Full content | APPROVED |
-| Risk List | Elaboration Draft | ✅ Full content | APPROVED |
-| Iteration Plan | Elaboration Draft | ✅ Full content | APPROVED |
+| Risk List | Elaboration Draft | ✅ Full content | NEEDS REWORK (MR lens) |
+| Iteration Plan | Elaboration Draft | ✅ Full content | NEEDS REWORK (MR lens) |
 | Test Case | Elaboration Draft | ✅ Full content | APPROVED (1 Minor) |
 | Test Evaluation Summary | Elaboration Draft | ✅ Full content | APPROVED |
 | Vision | Inception Approved | ✅ Full content | N/A (Inception) |
@@ -66,6 +155,15 @@ This LCA milestone review evaluates ALL Elaboration artifacts against the Lifecy
 | Review Record | Elaboration Draft | ✅ Full content | EVOLVED (this update) |
 | PR #4 Diff | 43 files, +2958/-482 | ✅ Full diff | REQUEST_CHANGES (Code Reviewer) |
 | SCM Issues #1-#6 | Issue tracker | ✅ All issues | See disposition |
+
+### Lens Participation
+
+| Lens | Role | Status | Verdict |
+|---|---|---|---|
+| Technical | Reviewer | EXECUTED | APPROVED — 0 Critical, 0 Major (artifact-level), 1 Minor |
+| Business | BusinessReviewer | EXECUTED | APPROVED — 0 findings (Business Modeling INACTIVE) |
+| Management | ManagementReviewer | EXECUTED | CONDITIONAL — 0 Critical, 1 Major (Risk List), 1 Minor (Iteration Plan) |
+| Code | CodeReviewer | EXECUTED (prior — PR #4) | REQUEST_CHANGES — 2 Major (M1, M2 implementation divergences) |
 
 ### Compliance Matrix
 
@@ -137,7 +235,7 @@ object "Risk List" as RL {
   Mitigation Plans: PASS
   PoC Triggered: PASS
   Traceability: PASS
-  **Verdict: APPROVED**
+  **Verdict: NEEDS REWORK (MR)**
 }
 
 object "Iteration Plan" as IP {
@@ -145,7 +243,7 @@ object "Iteration Plan" as IP {
   Budget-Boxed: PASS
   Risk-Driven: PASS
   Traceability: PASS
-  **Verdict: APPROVED**
+  **Verdict: NEEDS REWORK (MR)**
 }
 
 object "Test Case" as TC {
@@ -188,7 +286,6 @@ object "Review Record" as RR {
 
 @enduml
 ```
-
 ## Findings
 ### Prior Findings (Code Reviewer — E1 PR Review)
 
