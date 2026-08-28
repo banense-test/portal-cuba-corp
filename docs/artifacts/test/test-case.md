@@ -497,22 +497,30 @@ end note
 | TD-018 | **[C1 NEW]** 10 featured news items | UC-008 | Seed: 10 published news items all with IsFeatured=true — verify all display with banner |
 | TD-019 | **[C1 NEW]** Corrupted localStorage entry | UC-001, AC-005 | Test input: localStorage with invalid JSON string for clocking retry — verify graceful handling |
 | TD-020 | **[C1 NEW]** Year-boundary clockings (Dec → Jan) | UC-002 | Seed: 3 December 2026 + 2 January 2027 records — verify month filter handles year transition |
+| TD-021 | **[C2 NEW]** Single published news item for edit test | UC-006, C2-MAJ-1 | Seed: 1 published news item (id=1, title="Original Title", body="Original body", category="General", IsFeatured=false) — used to verify edit form binding |
+| TD-022 | **[C2 NEW]** OIDC token with known sub claim for spoofing test | UC-001, C2-MIN-2 | OIDC Mock Token Provider: 1 token with sub="emp-001" — used to verify identity comes from token, not request body |
+| TD-023 | **[C2 NEW]** Clocking records with mixed in/out for CSV header test | UC-004, C2-MIN-4 | Seed: 4 clocking records (emp-001: in 08:00, out 12:00; emp-002: in 09:00, out 17:00) — used to verify CSV header matches actual data schema (single time + direction, not TimeIn/TimeOut) |
 
 ### Boundary Value Analysis
 
-| TC | Boundary | Min | Min+1 | Max | Max-1 | Below Min | Above Max | C1 Status |
-|---|---|---|---|---|---|---|---|---|
-| TC-003 | Offline retry window (minutes) | 0 | 1 | 5 | 4 | N/A | 6 (TC-004) | PASS (0..5) |
-| TC-004 | Offline retry expiry (minutes) | 5 | 6 | ∞ | N/A | 4 (TC-003) | N/A | PASS (>5) |
-| TC-005 | Clock-in sequence | 1st in | 2nd in (rejected) | N/A | N/A | 0 (no prior) | N/A | PASS |
-| TC-006 | LDAP attribute completeness | Full | 1 missing | All missing | 5 missing | N/A | N/A | PASS (1 missing) |
-| TC-015 | Month filter boundary | Aug 1 | Aug 2 | Aug 31 | Aug 30 | Jul 31 | Sep 1 | PASS |
-| TC-016 | CSV row count | 0 (TD-014) | 1 | 10 (TD-004) | 9 | N/A | 31 (full month) | PASS (10); **[C1 NEW]** 0 pending |
-| TC-023 | IsFeatured flag | false | N/A | true | N/A | N/A | N/A | **FAIL** (true never set) |
-| TC-026 | ClockingRecord direction | "in" | "out" | N/A | N/A | "invalid" | null | PASS |
-| TC-026 | ClockingRecord timestamp | epoch | current | current | current-1s | future+1s | null | PASS |
-| TC-029 | Directory search time (seconds) | 0 | 1 | 10 (AC-003) | 9 | N/A | 11 | **BLOCKED** |
-| TC-030 | Concurrent users | 1 | 2 | 50 | 49 | 0 | 100, 200 | **BLOCKED** |
+| TC | Boundary | Min | Min+1 | Max | Max-1 | Below Min | Above Max | C1 Status | C2 Status |
+|---|---|---|---|---|---|---|---|---|---|
+| TC-003 | Offline retry window (minutes) | 0 | 1 | 5 | 4 | N/A | 6 (TC-004) | PASS (0..5) | Regression pending |
+| TC-004 | Offline retry expiry (minutes) | 5 | 6 | ∞ | N/A | 4 (TC-003) | N/A | PASS (>5) | Regression pending |
+| TC-005 | Clock-in sequence | 1st in | 2nd in (rejected) | N/A | N/A | 0 (no prior) | N/A | PASS | Regression pending |
+| TC-006 | LDAP attribute completeness | Full | 1 missing | All missing | 5 missing | N/A | N/A | PASS (1 missing) | Regression pending |
+| TC-015 | Month filter boundary | Aug 1 | Aug 2 | Aug 31 | Aug 30 | Jul 31 | Sep 1 | PASS | Regression pending |
+| TC-016 | CSV row count | 0 (TD-014) | 1 | 10 (TD-004) | 9 | N/A | 31 (full month) | PASS (10); 0 pending | Regression pending + TC-035 header check |
+| TC-023 | IsFeatured flag | false | N/A | true | N/A | N/A | N/A | **FAIL** (true never set) | **RESOLVED** — regression pending |
+| TC-026 | ClockingRecord direction | "in" | "out" | N/A | N/A | "invalid" | null | PASS | Regression pending |
+| TC-026 | ClockingRecord timestamp | epoch | current | current | current-1s | future+1s | null | PASS | Regression pending |
+| TC-029 | Directory search time (seconds) | 0 | 1 | 10 (AC-003) | 9 | N/A | 11 | **BLOCKED** | BLOCKED |
+| TC-030 | Concurrent users | 1 | 2 | 50 | 49 | 0 | 100, 200 | **BLOCKED** | BLOCKED |
+| TC-031 | HTTP response code | 200 | 201 | N/A | N/A | 404 | 500 | N/A | **NEW — designed for C2** |
+| TC-032 | Form field name match | match | N/A | N/A | N/A | mismatch | null | N/A | **NEW — designed for C2** |
+| TC-033 | Antiforgery presence | with token | N/A | N/A | N/A | without token | invalid token | N/A | **NEW — designed for C2** |
+| TC-034 | Identity source | token sub | N/A | N/A | N/A | request body | empty | N/A | **NEW — designed for C2** |
+| TC-035 | CSV header correctness | matches schema | N/A | N/A | N/A | TimeIn,TimeOut | empty header | N/A | **NEW — designed for C2** |
 
 ### LDAP Stub Configuration
 
@@ -529,11 +537,11 @@ The LDAP stub (MockLdapGateway implementing INT-006/ILdapGateway) must be config
 | **[C1 NEW]** Unexpected attribute (salary) | Office 1 | Corporate fields + salary | CON-012: whitelist enforcement — salary must NOT display |
 | **[C1 NEW]** Unicode name | Office 2 | Name with accents (José Núñez) | Verify correct unicode display in directory |
 
-### Test Suite Structure
+### Test Suite Structure — Construction C2 (Extended)
 
 ```plantuml
 @startuml
-title Test Suite Structure — Construction C1
+title Test Suite Structure — Construction C2 (Extended)
 
 skinparam componentStyle rectangle
 skinparam packageStyle rectangle
@@ -546,6 +554,8 @@ package "PortalCubaCorp.Tests" {
     component "DirectoryServiceUnitTests" as DSU
     component "WorkerCategoryUnitTests" as WCU
     component "DomainUnitTests" as DOM
+    component "RoutingBindingTests" as RBT <<C2 NEW>>
+    component "SecurityTests" as SEC <<C2 NEW>>
   }
   
   package "Integration Tests (20%)" {
@@ -553,6 +563,7 @@ package "PortalCubaCorp.Tests" {
     component "NewsIntegrationTests" as NIT
     component "DirectoryIntegrationTests" as DIT
     component "AuthIntegrationTests" as AIT
+    component "AntiforgeryIntegrationTests" as AFG <<C2 NEW>>
   }
   
   package "System / Performance Tests (10%)" {
@@ -566,49 +577,58 @@ package "Test Infrastructure" {
   component "InMemoryAuditLogger" as IAL <<stub>>
   component "OIDCMockTokenProvider" as OMT <<stub>>
   component "ClockingClientHarness" as CCH <<driver>>
+  component "FormBindingTestHelper" as FBT <<C2 NEW driver>>
 }
 
 note right of CSU
   TC-001: Clock In happy path
   TC-002: Clock Out happy path
   TC-005: Double clock-in rejected
-  TC-021: Cross-employee idempotency collision
+  TC-021: Cross-employee idempotency
   TC-022: EmployeeId from token not DTO
+  TC-034: Identity spoofing (C2-MIN-2)
 end note
 
 note right of NSU
   TC-008: Publish with audit
   TC-009: Unpublish preserves record
   TC-010: Edit with audit
-  TC-023: IsFeatured flag persisted on publish
+  TC-023: IsFeatured persisted on publish
   TC-024: Edit does not reset IsFeatured
+  TC-032: Edit form binding (C2-MAJ-1)
+end note
+
+note right of RBT
+  TC-031: Clock API routing (C2-CRIT-1)
+  TC-035: CSV header correctness (C2-MIN-4)
+end note
+
+note right of AFG
+  TC-033: Antiforgery token (C2-MAJ-2)
 end note
 
 note right of CIT
   TC-003: Offline retry within 5 min
   TC-004: Offline retry exceeds 5 min
-  TC-015: View own history (current month)
+  TC-015: View own history
   TC-016: CSV export format
-end note
-
-note right of PT
-  TC-011: Page load < 3s (NFR-001)
-  TC-012: Clock response < 1s (NFR-002)
-  TC-029: Directory search < 10s (AC-003)
-  TC-030: Concurrent clock-in (50 users)
 end note
 
 IMP --> CSU
 IMP --> CIT
 IMP --> NSU
 IMP --> WCU
+IMP --> RBT
 MLG --> DSU
 MLG --> DIT
 IAL --> NSU
 IAL --> WCU
 OMT --> AIT
 OMT --> CIT
+OMT --> SEC
 CCH --> CIT
+FBT --> RBT
+FBT --> NSU
 
 @enduml
 ```
