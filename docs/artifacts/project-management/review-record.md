@@ -674,16 +674,19 @@ The project must complete the remaining conditions and re-consult the stakeholde
 | Test Case (20 TCs) | UC-001..UC-010, NFR-001..NFR-004, AC-001..AC-005 | Derives | Test Evaluation Summary |
 | Test Evaluation Summary | Test Case, PR #4, CI build | Derives | Review Record |
 | Review Record (this artifact) | All Elaboration artifacts, PR #4, SCM issues | Derives | LCA Milestone Decision |
-| PR #4 | SAD, Design Model, ADR-001..ADR-005 | Realizes | iteration/E1 (pending merge) |
-| M1 (IAuditLogger mismatch) | INT-005, COMP-008, NFR-004 | Tests | PR #4 AuditInterceptor.cs |
-| M2 (IPersistence mismatch) | INT-007, COMP-006, CON-003 | Tests | PR #4 PersistenceGateway.cs |
+| PR #4 | SAD, Design Model, ADR-001..ADR-005 | Realizes | iteration/E1 (APPROVED — pending integration) |
+| M1 (IAuditLogger mismatch) — RESOLVED | INT-005, COMP-008, NFR-004 | Tests | PR #4 AuditInterceptor.cs — LogAudit() verified matching Design Model |
+| M2 (IPersistence mismatch) — RESOLVED | INT-007, COMP-006, CON-003 | Tests | PR #4 PersistenceGateway.cs — ExecuteInTransactionAsync() verified matching Design Model |
+| CR-MIN-1 (traceability trailer) | Code Reviewer checklist §1.1.4 | Tests | PR #4 description — lacks Implements: UC-NNN trailer |
+| CR-SUG-1 (transaction test double) | OfflineRetryTests.cs, INT-007 | Tests | InMemoryPersistence — does not simulate rollback |
+| CR-SUG-2 (misleading test name) | DirectoryServiceTests.cs | Tests | Search_NoMatchingEntries_ReturnsEmptyList — asserts Single not Empty |
 | F1 (TD-NNN prefix) | Test Case traceability table | Refines | Development Case (tool assessment) |
 | MR-F1 (Risk List — PoC results pending) | R001, R006, R003 (Risk List) | Derives | Elaboration Iter 2 PoC execution |
 | MR-F2 (Iteration Plan — count mismatch) | Iteration Plan coarse roadmap | Refines | Iteration Plan (correction) |
-| Stakeholder sanction (REFUSED) | STK-001 answer (LCA consultation) | Refines | LCA Milestone Decision (NOT ACHIEVED) |
-| LCA Conditions (1-8) | MR-F1, MR-F2, M1, M2, R001, R003, R006, SAD status | Derives | Elaboration Iter 2 objectives |
+| Stakeholder sanction (REFUSED) | STK-001 answer (LCA consultation) | Refines | LCA Milestone Decision (NOT YET ACHIEVED) |
+| LCA Conditions (1-8) | MR-F1, MR-F2, M1✅, M2✅, R001, R003, R006, SAD✅ | Derives | Elaboration Iter 2 objectives |
 | Review Calendar (activity diagram) | Iteration Plan iteration schedule | Derives | LCA Milestone Review scheduling |
-| Finding Tracker | All lens findings (M1, M2, MR-F1, F1, MR-F2) | Derives | Elaboration Iter 2 action items |
+| Finding Tracker | All lens findings (M1✅, M2✅, MR-F1, F1, MR-F2, CR-MIN-1, CR-SUG-1, CR-SUG-2) | Derives | Elaboration Iter 2 action items |
 | Review Effectiveness Metrics | All Elaboration artifacts, all findings | Derives | Review process improvement |
 | Finding Lifecycle (state diagram) | Finding tracker entries | Refines | Finding closure process |
 | Review Process Framework | IARI DC review types, RUP workflow activities | Derives | Review Calendar, Review Record |
