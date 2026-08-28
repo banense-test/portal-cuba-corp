@@ -74,7 +74,7 @@ This iteration evolves the Design Model to align with implementation divergences
 | M1 — IAuditLogger signature mismatch | `Log()` → `LogAudit()` (avoids .NET `ILogger.Log()` collision) | Interface Contracts (INT-005), Use-Case Realizations (SEQ-005/006/007/010), Design Overview |
 | M2 — IPersistence transaction API mismatch | Removed `BeginTransaction()`/`CommitTransaction()`; added `ExecuteInTransactionAsync(Func<Task> action)` callback pattern | Interface Contracts (INT-007), Use-Case Realizations (SEQ-005/006/007/010), Design Overview |
 ## Domain Model
-Analysis classes identify the boundary, control, and entity stereotypes for each architecturally significant use case. These are the bridge from the Use-Case Model to design classes — each analysis class will be refined into one or more design classes in the Design Packages and Classes section.
+Analysis classes identify the boundary, control, and entity stereotypes for each architecturally significant use case. These are the bridge from the Use-Case Model to design classes — each analysis class is refined into one or more design classes in the Design Packages and Classes section.
 
 ### Analysis Class Catalog
 
@@ -88,7 +88,7 @@ Analysis classes identify the boundary, control, and entity stereotypes for each
 | ACL-006 | DirectoryEntry | <<entity>> | UC-009 | Value object: name, jobTitle, department, office, email, extension — projected from AD at read time | COMP-005 |
 | ACL-007 | NewsUI | <<boundary>> | UC-005, UC-006, UC-007 | Display publish/edit forms; display news list; confirm unpublish | COMP-003 |
 | ACL-008 | NewsController | <<control>> | UC-005, UC-006, UC-007 | Publish, edit, unpublish news; integrate audit trail; list published and all | COMP-003, COMP-008 |
-| ACL-009 | NewsItem | <<entity>> | UC-005, UC-006, UC-007, UC-008 | News content: title, body, category, status, createdBy, createdAt, isFeatured | COMP-006 |
+| ACL-009 | NewsItem | <<entity>> | UC-005, UC-006, UC-007, UC-008 | News content: title, body, category, status, isFeatured, authorId, createdAt, updatedAt | COMP-006 |
 | ACL-010 | AuditRecord | <<entity>> | UC-005, UC-006, UC-007, UC-010 | Append-only audit: entityType, entityId, action, author, timestamp | COMP-008 |
 | ACL-011 | CategoryUI | <<boundary>> | UC-010 | Display category list; display assign form; show confirmation | COMP-004 |
 | ACL-012 | CategoryController | <<control>> | UC-010 | Assign category; list categories; lookup AD user | COMP-004, COMP-005 |
@@ -100,7 +100,7 @@ Analysis classes identify the boundary, control, and entity stereotypes for each
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Analysis Classes (Elaboration)
+title Portal Cuba Corp — Analysis Classes (Construction C2)
 
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
@@ -139,7 +139,8 @@ package "UC-009: Search Employee Directory" {
     + mapLdapAttributes(entry) : DirectoryEntry
   }
   class "DirectoryEntry" as ACL006 <<entity>> {
-    + name : string
+    + adUserId : string
+    + displayName : string
     + jobTitle : string
     + department : string
     + office : string
@@ -156,8 +157,8 @@ package "UC-005/006/007: News Lifecycle" {
     + confirmUnpublish(id)
   }
   class "NewsController" as ACL008 <<control>> {
-    + publish(title, body, category, authorId)
-    + edit(id, title, body, category, authorId)
+    + publish(title, body, category, authorId, isFeatured)
+    + edit(id, title, body, category, authorId, isFeatured)
     + unpublish(id, authorId)
     + listPublished()
     + listAll()
@@ -168,13 +169,14 @@ package "UC-005/006/007: News Lifecycle" {
     + body : string
     + category : NewsCategory
     + status : NewsStatus
-    + createdBy : string
-    + createdAt : DateTime
     + isFeatured : bool
+    + authorId : string
+    + createdAt : DateTime
+    + updatedAt : DateTime
   }
   class "AuditRecord" as ACL010 <<entity>> {
     + entityType : string
-    + entityId : Guid
+    + entityId : string
     + action : AuditAction
     + author : string
     + timestamp : DateTime
@@ -240,6 +242,8 @@ note right of ACL008
   NFR-004: audit trail
   for publish/edit/unpublish
   AuditRecord is append-only
+  C2: isFeatured param added
+  to publish/edit (CR-010)
 end note
 
 @enduml
