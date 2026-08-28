@@ -1420,96 +1420,162 @@ All subsystem boundaries are defined by interfaces. No concrete class is referen
 | BeginTransaction | `IDbTransaction BeginTransaction()` | — | Begins a new DB transaction |
 | CommitTransaction | `void CommitTransaction()` | Transaction is active | Commits the current transaction |
 ## Persistent Data Classes
-EF Core entity classes map to PostgreSQL tables. The PortalDbContext configures all mappings, constraints, and indexes in OnModelCreating.
+> **Contributed by:** Database Designer (Analysis & Design Discipline)
+> **Persistence Engine:** PostgreSQL (CON-003 — declared by stakeholder)
+> **ORM:** EF Core 10 + Npgsql (CON-001, CON-003)
+> **Design Mechanism:** Repository + Unit of Work via PortalDbContext (SAD Logical View)
 
-### Entity-to-Table Mapping
+EF Core entity classes map to PostgreSQL tables. The PortalDbContext configures all mappings, constraints, and indexes in OnModelCreating. The schema is minimal — 4 tables — because employee data is read from AD at read time (CON-009) and authentication is handled by Keycloak (CON-004). No local user table exists.
 
-| Design Class | Table | Key Columns | Constraints |
-|---|---|---|---|
-| ClockingRecord (CLS-016) | clockings | Id (PK), IdempotencyKey (UNIQUE) | Unique index on idempotency_key prevents duplicate clockings (AC-005) |
-| NewsItem (CLS-017) | news_items | Id (PK) | Status column: Published/Unpublished; no DELETE operation (CON-013) |
-| WorkerCategory (CLS-018) | worker_categories | AdUserId (PK) | Two columns only: ad_user_id + category (CON-009) |
-| AuditRecord (CLS-019) | audit_records | Id (PK) | Append-only: no UPDATE, no DELETE (NFR-004) |
-
-### Schema Diagram
+### Schema Organization
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Database Schema (PostgreSQL)
+title Portal Cuba Corp — Schema Organization
 
-skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
 
-database "PostgreSQL" {
-  entity "clockings" as T1 {
-    * id : uuid (PK)
-    --
-    employee_id : varchar(255)
-    timestamp : timestamptz
-    clock_type : varchar(10)
-    idempotency_key : varchar(255) (UNIQUE)
-    created_at : timestamptz
-  }
+package "PostgreSQL Database\n(CON-003)" as DB {
 
-  entity "news_items" as T2 {
-    * id : uuid (PK)
-    --
-    title : varchar(500)
-    body : text
-    category : varchar(20)
-    status : varchar(20)
-    created_by : varchar(255)
-    created_at : timestamptz
-    updated_at : timestamptz (nullable)
-    is_featured : boolean
-  }
-
-  entity "worker_categories" as T3 {
-    * ad_user_id : varchar(255) (PK)
-    --
-    category : varchar(100)
-    updated_by : varchar(255)
-    updated_at : timestamptz
-  }
-
-  entity "audit_records" as T4 {
-    * id : uuid (PK)
-    --
-    entity_type : varchar(50)
-    entity_id : uuid
-    action : varchar(20)
-    author : varchar(255)
-    timestamp : timestamptz
+  package "portal_schema" {
+    rectangle "clockings\n(T1)" as T1
+    rectangle "news_items\n(T2)" as T2
+    rectangle "worker_categories\n(T3)" as T3
+    rectangle "audit_records\n(T4)" as T4
   }
 }
 
-note bottom of T1
-  UNIQUE INDEX idx_clockings_idempotency
-  ON idempotency_key — prevents
-  duplicate inserts under concurrent
-  offline retries (AC-005).
-end note
+package "External Systems (Read-Only)" {
+  rectangle "Active Directory\n(LDAP — CON-005)" as AD
+  rectangle "Keycloak\n(OIDC — CON-004)" as KC
+}
 
-note bottom of T2
-  No DELETE operation (CON-013).
-  Unpublish sets status='unpublished'.
-  Record preserved for audit trail.
-end note
+T4 ..> T2 : entity_id (logical FK)
+T4 ..> T3 : entity_id (logical FK)
+T1 ..> KC : employee_id from OIDC token
+T2 ..> KC : created_by from OIDC token
+T3 ..> KC : updated_by from OIDC token
+T4 ..> KC : author from OIDC token
+T3 ..> AD : ad_user_id references AD user
 
-note bottom of T3
-  Two data columns only (CON-009):
-  ad_user_id + category.
-  No employee data copied from AD.
-end note
-
-note bottom of T4
-  Append-only table (NFR-004).
-  No UPDATE, no DELETE.
-  Author from OIDC token.
-  Timestamp from server clock.
+note bottom of DB
+  4 tables total — minimal schema.
+  No employee data stored locally (CON-009).
+  All identity fields reference OIDC
+  token subject claim, not a local user table.
 end note
 
 @enduml
 ```
+
+### Entity-to-Table Mapping (<<table>> Class Diagram)
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Persistent Data Classes (PostgreSQL)
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+package "Portal Schema" {
+
+  class "clockings" as T1 <<table>> {
+    + id : uuid <<PK>>
+    --
+    employee_id : varchar(255) NOT NULL
+    clock_timestamp : timestamptz NOT NULL
+    clock_type : varchar(10) NOT NULL  <<CHECK: 'IN','OUT'>>
+    idempotency_key : varchar(255) NOT NULL <<UNIQUE>>
+    created_at : timestamptz NOT NULL DEFAULT now()
+  }
+
+  class "news_items" as T2 <<table>> {
+    + id : uuid <<PK>>
+    --
+    title : varchar(500) NOT NULL
+    body : text NOT NULL
+    category : varchar(20) NOT NULL <<CHECK: 'General','HR','IT','Events'>>
+    status : varchar(20) NOT NULL DEFAULT 'published' <<CHECK: 'published','unpublished'>>
+    created_by : varchar(255) NOT NULL
+    created_at : timestamptz NOT NULL DEFAULT now()
+    updated_at : timestamptz NULL
+    is_featured : boolean NOT NULL DEFAULT false
+  }
+
+  class "worker_categories" as T3 <<table>> {
+    + ad_user_id : varchar(255) <<PK>>
+    --
+    category : varchar(100) NOT NULL
+    updated_by : varchar(255) NOT NULL
+    updated_at : timestamptz NOT NULL DEFAULT now()
+  }
+
+  class "audit_records" as T4 <<table>> {
+    + id : uuid <<PK>>
+    --
+    entity_type : varchar(50) NOT NULL <<CHECK: 'news_item','worker_category'>>
+    entity_id : uuid NOT NULL
+    action : varchar(20) NOT NULL <<CHECK: 'publish','edit','unpublish','assign_category'>>
+    author : varchar(255) NOT NULL
+    record_timestamp : timestamptz NOT NULL DEFAULT now()
+  }
+}
+
+T4 ..> T2 : entity_id references news_items.id
+T4 ..> T3 : entity_id references (logical)
+
+note right of T1
+  **Indexes:**
+  idx_clockings_idempotency (UNIQUE) — AC-005
+  idx_clockings_emp_ts — UC-002 history query
+  idx_clockings_ts — UC-003/UC-004 monthly report
+  --
+  **NFR-002:** Simple INSERT, <1s response
+  **AC-005:** Idempotency key prevents
+  duplicate clockings from offline retry
+end note
+
+note right of T2
+  **Indexes:**
+  idx_news_status_created — UC-008 feed (published, date DESC)
+  idx_news_category_status — UC-008 filter by category
+  idx_news_featured_status — UC-008 featured banners
+  --
+  **CON-013:** No DELETE operation.
+  Unpublish sets status='unpublished'.
+  **NFR-004:** Record preserved for audit.
+end note
+
+note right of T3
+  **CON-009:** Two data columns only
+  (ad_user_id + category). No employee
+  data copied from AD. PK is ad_user_id
+  for O(1) lookup.
+end note
+
+note right of T4
+  **Append-only (NFR-004):**
+  No UPDATE, no DELETE.
+  Author from OIDC token.
+  Timestamp from server clock.
+  --
+  **Indexes:**
+  idx_audit_entity — lookup by entity
+  idx_audit_timestamp — chronological
+end note
+
+@enduml
+```
+
+### O/R Mapping Specification
+
+| Design Class | Table | Identity Strategy | Loading Policy | Column Mapping | Type Conversions |
+|---|---|---|---|---|---|
+| ClockingRecord (CLS-016) | clockings | Guid PK (server-generated, UUID v4) | Eager (single-row INSERT/SELECT) | id→id, EmployeeId→employee_id, Timestamp→clock_timestamp, ClockType→clock_type (string conversion), IdempotencyKey→idempotency_key, CreatedAt→created_at | ClockType enum → varchar(10) via HasConversion<string>() |
+| NewsItem (CLS-017) | news_items | Guid PK (server-generated, UUID v4) | Eager (UC-008 lists ≤50 items) | id→id, Title→title, Body→body, Category→category, Status→status, CreatedBy→created_by, CreatedAt→created_at, UpdatedAt→updated_at (nullable), IsFeatured→is_featured | NewsCategory enum → varchar(20); NewsStatus enum → varchar(20); both via HasConversion<string>() |
+| WorkerCategory (CLS-018) | worker_categories | String PK (ad_user_id — natural key from AD) | Eager (single-row lookup) | AdUserId→ad_user_id (PK), Category→category, UpdatedBy→updated_by, UpdatedAt→updated_at | No conversions — all string/timestamptz |
+| AuditRecord (CLS-019) | audit_records | Guid PK (server-generated, UUID v4) | Eager (append-only INSERT) | id→id, EntityType→entity_type, EntityId→entity_id, Action→action, Author→author, Timestamp→record_timestamp | AuditAction enum → varchar(20) via HasConversion<string>() |
 
 ### EF Core Configuration (PortalDbContext.OnModelCreating)
 
@@ -1517,12 +1583,173 @@ end note
 |---|---|---|
 | ClockingRecord | Table name | `modelBuilder.Entity<ClockingRecord>().ToTable("clockings")` |
 | ClockingRecord | Unique index | `modelBuilder.Entity<ClockingRecord>().HasIndex(c => c.IdempotencyKey).IsUnique()` |
+| ClockingRecord | Composite index (emp + timestamp) | `modelBuilder.Entity<ClockingRecord>().HasIndex(c => new { c.EmployeeId, c.Timestamp })` |
+| ClockingRecord | Timestamp index | `modelBuilder.Entity<ClockingRecord>().HasIndex(c => c.Timestamp)` |
+| ClockingRecord | CHECK constraint | `clock_type IN ('IN', 'OUT')` — enforced via CHECK constraint |
 | NewsItem | Table name | `modelBuilder.Entity<NewsItem>().ToTable("news_items")` |
+| NewsItem | Status + created index | `modelBuilder.Entity<NewsItem>().HasIndex(n => new { n.Status, n.CreatedAt })` |
+| NewsItem | Category + status index | `modelBuilder.Entity<NewsItem>().HasIndex(n => new { n.Category, n.Status })` |
+| NewsItem | Featured + status index | `modelBuilder.Entity<NewsItem>().HasIndex(n => new { n.IsFeatured, n.Status })` |
 | NewsItem | Status check | `modelBuilder.Entity<NewsItem>().Property(n => n.Status).HasConversion<string>()` |
+| NewsItem | Category check | `modelBuilder.Entity<NewsItem>().Property(n => n.Category).HasConversion<string>()` |
 | WorkerCategory | Table name | `modelBuilder.Entity<WorkerCategory>().ToTable("worker_categories")` |
 | WorkerCategory | PK | `modelBuilder.Entity<WorkerCategory>().HasKey(w => w.AdUserId)` |
 | AuditRecord | Table name | `modelBuilder.Entity<AuditRecord>().ToTable("audit_records")` |
+| AuditRecord | Entity index | `modelBuilder.Entity<AuditRecord>().HasIndex(a => new { a.EntityType, a.EntityId })` |
+| AuditRecord | Timestamp index | `modelBuilder.Entity<AuditRecord>().HasIndex(a => a.Timestamp)` |
 | AuditRecord | Append-only | No update/delete APIs exposed on IPersistence for audit records |
+
+### Index Strategy (Each Index Justified by Query/NFR)
+
+| Index | Table | Columns | Query Served | NFR/UC Justification |
+|---|---|---|---|---|
+| idx_clockings_idempotency (UNIQUE) | clockings | idempotency_key | INSERT deduplication check | AC-005: prevents duplicate clockings from offline retry |
+| idx_clockings_emp_ts | clockings | employee_id, clock_timestamp | UC-002: employee views own history for current month | NFR-001: <3s page load — composite index avoids full scan |
+| idx_clockings_ts | clockings | clock_timestamp | UC-003/UC-004: HR views all clockings, CSV export by month | NFR-001: range scan on timestamp for monthly filter |
+| idx_news_status_created | news_items | status, created_at DESC | UC-008: news feed sorted by date, published only | NFR-001: <3s page load — covering index for main page feed |
+| idx_news_category_status | news_items | category, status | UC-008: filter by category (General, HR, IT, Events) | NFR-001: category filter without full table scan |
+| idx_news_featured_status | news_items | is_featured, status | UC-008: featured news banners at top | NFR-001: fast lookup of featured items |
+| idx_audit_entity | audit_records | entity_type, entity_id | Audit lookup by entity (news item or worker category) | NFR-004: audit trail retrieval |
+| idx_audit_timestamp | audit_records | record_timestamp | Chronological audit log display | NFR-004: chronological ordering |
+
+### Constraint Specification
+
+| Table | Constraint | Type | Rationale |
+|---|---|---|---|
+| clockings | id NOT NULL | NOT NULL | PK — UUID generated by server |
+| clockings | employee_id NOT NULL | NOT NULL | Every clocking belongs to an employee |
+| clockings | clock_timestamp NOT NULL | NOT NULL | Timestamp is the core data point |
+| clockings | clock_type NOT NULL | NOT NULL | Must be IN or OUT |
+| clockings | clock_type IN ('IN','OUT') | CHECK | Domain constraint — only two values valid |
+| clockings | idempotency_key NOT NULL | NOT NULL | Required for deduplication |
+| clockings | idempotency_key UNIQUE | UNIQUE | AC-005: prevents duplicate clockings |
+| news_items | title NOT NULL | NOT NULL | Every news item has a title |
+| news_items | body NOT NULL | NOT NULL | Every news item has content |
+| news_items | category NOT NULL | NOT NULL | Must be one of the four categories |
+| news_items | category IN ('General','HR','IT','Events') | CHECK | FR-005: four categories defined |
+| news_items | status NOT NULL | NOT NULL | Must be published or unpublished |
+| news_items | status IN ('published','unpublished') | CHECK | CON-013: no hard delete, only status change |
+| news_items | created_by NOT NULL | NOT NULL | NFR-004: author required for audit |
+| news_items | is_featured NOT NULL DEFAULT false | NOT NULL + DEFAULT | Featured flag defaults to false |
+| worker_categories | ad_user_id NOT NULL | NOT NULL (PK) | Natural key from AD |
+| worker_categories | category NOT NULL | NOT NULL | Every worker has a category |
+| worker_categories | updated_by NOT NULL | NOT NULL | NFR-004: audit who changed category |
+| audit_records | entity_type IN ('news_item','worker_category') | CHECK | Only auditable entity types |
+| audit_records | action IN ('publish','edit','unpublish','assign_category') | CHECK | Only valid audit actions |
+| audit_records | author NOT NULL | NOT NULL | NFR-004: author identity required |
+| audit_records | Append-only | Application-level | No UPDATE/DELETE APIs exposed — enforced by IPersistence interface contract |
+
+### Migration Strategy (Baseline)
+
+**Migration:** `20260828120000_InitialCreate` — baseline schema for Elaboration.
+
+**Forward migration (CREATE TABLE):**
+
+```sql
+-- Migration: InitialCreate (baseline)
+-- Engine: PostgreSQL (CON-003)
+
+CREATE TABLE clockings (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    employee_id     VARCHAR(255) NOT NULL,
+    clock_timestamp TIMESTAMPTZ NOT NULL,
+    clock_type      VARCHAR(10) NOT NULL,
+    idempotency_key VARCHAR(255) NOT NULL,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT chk_clock_type CHECK (clock_type IN ('IN', 'OUT'))
+);
+
+CREATE UNIQUE INDEX idx_clockings_idempotency ON clockings (idempotency_key);
+CREATE INDEX idx_clockings_emp_ts ON clockings (employee_id, clock_timestamp);
+CREATE INDEX idx_clockings_ts ON clockings (clock_timestamp);
+
+CREATE TABLE news_items (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title       VARCHAR(500) NOT NULL,
+    body        TEXT NOT NULL,
+    category    VARCHAR(20) NOT NULL,
+    status      VARCHAR(20) NOT NULL DEFAULT 'published',
+    created_by  VARCHAR(255) NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at  TIMESTAMPTZ,
+    is_featured BOOLEAN NOT NULL DEFAULT false,
+    CONSTRAINT chk_news_category CHECK (category IN ('General', 'HR', 'IT', 'Events')),
+    CONSTRAINT chk_news_status CHECK (status IN ('published', 'unpublished'))
+);
+
+CREATE INDEX idx_news_status_created ON news_items (status, created_at DESC);
+CREATE INDEX idx_news_category_status ON news_items (category, status);
+CREATE INDEX idx_news_featured_status ON news_items (is_featured, status);
+
+CREATE TABLE worker_categories (
+    ad_user_id  VARCHAR(255) PRIMARY KEY,
+    category    VARCHAR(100) NOT NULL,
+    updated_by   VARCHAR(255) NOT NULL,
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE audit_records (
+    id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    entity_type      VARCHAR(50) NOT NULL,
+    entity_id        UUID NOT NULL,
+    action           VARCHAR(20) NOT NULL,
+    author           VARCHAR(255) NOT NULL,
+    record_timestamp TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT chk_audit_entity_type CHECK (entity_type IN ('news_item', 'worker_category')),
+    CONSTRAINT chk_audit_action CHECK (action IN ('publish', 'edit', 'unpublish', 'assign_category'))
+);
+
+CREATE INDEX idx_audit_entity ON audit_records (entity_type, entity_id);
+CREATE INDEX idx_audit_timestamp ON audit_records (record_timestamp);
+```
+
+**Rollback strategy:**
+
+```sql
+-- Rollback: drop all tables (baseline — no data to preserve on initial migration)
+DROP TABLE IF EXISTS audit_records;
+DROP TABLE IF EXISTS worker_categories;
+DROP TABLE IF EXISTS news_items;
+DROP TABLE IF EXISTS clockings;
+```
+
+**Idempotency:** Migration uses `CREATE TABLE` without `IF NOT EXISTS` — EF Core migration framework ensures single execution. For manual application, wrap in `BEGIN; ... COMMIT;` with `IF NOT EXISTS` checks on `pg_class`.
+
+**Schema evolution policy:** Core schema (PKs, FKs, key entities) is stable by end of Elaboration. Construction iterations may add columns or tables but should not restructure existing tables. Every schema change requires a forward migration script with version sequence number.
+
+### Performance Baseline
+
+| Access Path | Expected Rows | Query Plan | Response Time Target | NFR |
+|---|---|---|---|---|
+| Clocking INSERT (UC-001) | 1 row | INSERT + unique index check on idempotency_key | <1s | NFR-002 |
+| Employee clocking history (UC-002) | ~20 rows/month | Index scan on idx_clockings_emp_ts | <3s page load | NFR-001 |
+| All employee clockings (UC-003) | ~4,000 rows/month (200 emp × ~20 days) | Index range scan on idx_clockings_ts | <3s page load | NFR-001 |
+| CSV export (UC-004) | ~4,000 rows | Sequential scan with timestamp filter, streaming response | <10s (streaming) | NFR-001 |
+| News feed (UC-008) | ≤50 rows | Index scan on idx_news_status_created (published, date DESC) | <3s page load | NFR-001 |
+| News filter by category (UC-008) | ≤50 rows | Index scan on idx_news_category_status | <3s page load | NFR-001 |
+| Featured news (UC-008) | ≤5 rows | Index scan on idx_news_featured_status | <3s page load | NFR-001 |
+| Worker category lookup (UC-010) | 1 row | PK lookup on ad_user_id | <1s | NFR-002 |
+| Audit record INSERT (UC-005/006/007/010) | 1 row | INSERT (append-only, no index conflict) | <1s | NFR-002 |
+
+**Row count estimates:** 200 employees × ~20 clockings/month = ~4,000 clockings/month = ~48,000/year. News items: ~10/month = ~120/year. Worker categories: ~200 rows (one per employee). Audit records: ~50/month = ~600/year. All tables remain small (<100K rows) for years — no partitioning required at this scale.
+
+### Normalization Assessment
+
+All tables are in **3NF**:
+- **clockings:** Every non-key column depends on the PK (id) and only the PK. No transitive dependencies.
+- **news_items:** Every non-key column depends on the PK (id). Category and status are atomic. No repeating groups.
+- **worker_categories:** Two-column table (ad_user_id + category) plus audit columns (updated_by, updated_at). No denormalization — updated_by/updated_at are metadata, not redundant data.
+- **audit_records:** Every non-key column depends on the PK (id). entity_type/entity_id form a logical reference but are not a physical FK (audit_records is append-only and must not be blocked by FK constraints if a referenced row is modified).
+
+**No denormalization decisions** — the schema is small and normalized. At 200 employees and <100K rows per table, query performance is met by B-tree indexes alone without any denormalization trade-offs.
+
+### Three-Level Mechanism Chain Resolution
+
+| Analysis Mechanism | Design Mechanism | Implementation Mechanism |
+|---|---|---|
+| Persistence (objects need to be stored between sessions) | Repository + Unit of Work; 3NF normalized relational schema; append-only audit; idempotency via unique index | EF Core 10 + Npgsql + PostgreSQL (CON-001, CON-003) |
+| Audit Trail (who did what, when) | Interceptor pattern — same transaction as the audited operation; append-only table; author from OIDC token subject claim; timestamp from server clock | EF Core SaveInterceptor + PostgreSQL audit_records table (CON-003) |
+| Offline Retry (AC-005 — 5-min network drop tolerance) | Idempotency key on clockings table; UNIQUE index prevents duplicate inserts; server accepts client timestamp | clocking-retry.js (CON-002) + PostgreSQL UNIQUE constraint (CON-003) |
 ## Boundary Classes and Navigation Map
 
 > **Contributed by:** User-Interface Designer (Analysis & Design Discipline)
