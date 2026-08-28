@@ -927,3 +927,9 @@ The IOC milestone is NOT achieved. The phase scope is incomplete (5 of 7 C1 obje
 | Project Health State Machine | All dimensions (scope/schedule/cost/quality) | Derives | Findings: Management Lens |
 | Stakeholder Consultation | STK-001, IOC milestone | Refines | Disposition: Management Lens verdict |
 | Management Lens Verdict | IOC exit criteria, stakeholder sanction REFUSED | Derives | Conditional — IOC NOT achieved |
+| Review Calendar | Iteration Plan (Construction C1/C2) | Derives | IOC Milestone Review scheduling |
+| Finding Tracker (consolidated) | All lens findings, MAJOR-1..MINOR-4, MR-F1..F4 | Derives | Resolutions and Actions section |
+| Consolidated Verdict | All lens findings, stakeholder sanction REFUSED | Derives | Auto-iterate to Construction C2 |
+| Review Effectiveness Metrics | All C1 review events, Test Case results | Derives | Process improvement recommendations |
+| Finding Lifecycle State Machine | All findings across lenses | Derives | Finding Tracker governance |
+| Review Event Sequence | Review Coordinator, Reviewer, Management Reviewer, Stakeholder | Derives | Review process interaction model |
