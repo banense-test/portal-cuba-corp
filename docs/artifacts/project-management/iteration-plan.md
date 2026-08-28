@@ -5,16 +5,18 @@
 | Phase | Inception |
 | Status | Draft |
 | Milestone Target | End-of-Inception (LCO) |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
+| Prior Iteration | 1 (Cycle 1) — all 4 objectives met; LCO blocked by 3 open findings (F-001, F-002, F-003) |
+| Stakeholder Sanction | REFUSED (iteration 1) — directed: "Fix all findings even if they are minor findings" |
+| Stakeholder Note (Cycle 2) | "Nothing else to add for this new iteration" — no additional scope beyond finding resolution |
 
 ## Iteration Objectives
 
-1. **Establish project viability:** Confirm that the declared scope (10 functional requirements, 4 NFRs, 5 acceptance criteria) is achievable within the technical constraints (.NET 10, Razor Pages, PostgreSQL, Keycloak OIDC, AD LDAP, internal Windows Server).
-2. **Identify and classify all project risks:** Produce a complete Risk List with probability, impact, magnitude, strategy, mitigation, and contingency for each risk — confronting the highest-magnitude risks (R001, R006) first.
-3. **Define the coarse cross-iteration roadmap:** Milestone sequence (LCO → LCA → IOC → PR), iteration count per phase, and agent role assignment profile — bounded by the 6±3 rule and the rubber profile.
-4. **Produce the fine-grained plan for Inception Iteration 1:** Work items, owners, and token budgets for the current iteration, bounded by the iteration's budget box.
-5. **Assess LCO readiness:** Determine whether the project is viable to proceed to Elaboration based on risk exposure, scope clarity, and stakeholder alignment.
+1. **Resolve all open findings from iteration 1 review:** F-001/F-002 (Vision FEAT-NNN → REQ-NNN, owner: System Analyst) and F-003 (Test Evaluation Summary TD-NNN → standard prefix, owner: Test Manager). Stakeholder directive: "Fix all findings even if they are minor findings."
+2. **Re-assess LCO milestone readiness:** Once all 3 findings are resolved, confirm that the LCO exit criteria are fully satisfied and present the corrected artifact set for stakeholder sanction.
+3. **Maintain project planning artifacts:** Evolve the Iteration Plan to reflect iteration 2's scope and update the Iteration Assessment to record iteration 1's outcome as the factual basis for this iteration's plan.
+4. **Preserve converged artifacts:** Risk List, Use-Case Model, Supplementary Specification, Software Architecture Document, and Development Case have no open findings — they are preserved unchanged.
 
 ## Plan and Milestones
 
@@ -22,9 +24,11 @@
 
 The project follows the RUP iterative lifecycle with **6 iterations** across 4 phases, consistent with the 6±3 rule for a moderate-complexity internal portal. The rubber profile starting point (Inception ~5%, Elaboration ~20%, Construction ~65%, Transition ~10%) is adjusted for this project's risk profile: R001 (AD LDAP, exposure=9) and R006 (offline operation, exposure=6) demand a robust Elaboration phase, so Elaboration receives 2 iterations rather than 1.
 
+> **Roadmap update (iteration 2):** Inception now spans 2 iterations (iteration 1: scope/risk/roadmap; iteration 2: finding resolution + LCO re-assessment). The total iteration count remains 6 — the second Inception iteration is a corrective cycle, not a net-new iteration. The coarse roadmap for Elaboration, Construction, and Transition is unchanged.
+
 | Phase | Iterations | Purpose | Milestone |
 |---|---|---|---|
-| Inception | 1 | Scope, risk identification, project viability, initial roadmap | LCO (Life-Cycle Objectives) |
+| Inception | 2 (Iter 1: scope/risk/roadmap; Iter 2: finding resolution + LCO re-assessment) | Scope, risk identification, project viability, initial roadmap | LCO (Life-Cycle Objectives) |
 | Elaboration | 2 | Architecture baseline, AD LDAP PoC, offline mechanism design, OIDC integration, critical use-case analysis | LCA (Life-Cycle Architecture) |
 | Construction | 2 | Implement all 10 functional requirements, audit trail, UI per CON-011, load testing | IOC (Initial Operational Capability) |
 | Transition | 1 | User documentation, deployment to Windows Server, adoption tracking, stakeholder sign-off | PR (Product Release) |
@@ -35,7 +39,7 @@ The project follows the RUP iterative lifecycle with **6 iterations** across 4 p
 
 | Milestone | Gate Review | Human Queue Time | Decision |
 |---|---|---|---|
-| LCO | End of Inception Iter 1 | 2 days | Proceed to Elaboration? |
+| LCO | End of Inception Iter 2 | 2 days | Proceed to Elaboration? |
 | LCA | End of Elaboration Iter 2 | 2 days | Architecture baseline stable? |
 | IOC | End of Construction Iter 2 | 2 days | System operational for deployment? |
 | PR | End of Transition Iter 1 | 2 days | Acceptance criteria met? Release? |
@@ -44,14 +48,18 @@ The project follows the RUP iterative lifecycle with **6 iterations** across 4 p
 @startgantt
 title Portal Cuba Corp — Iteration Roadmap (Unanchored)
 
-[Inception Iter 1] lasts 1 days
+[Inception Iter 1: scope, risk, roadmap] lasts 1 days
+[Inception Iter 2: finding resolution, LCO re-assessment] lasts 1 days
+[Inception Iter 2] happens at [Inception Iter 1: scope, risk, roadmap]'s end
 [LCO Gate] lasts 2 days
-[LCO Gate] happens at [Inception Iter 1]'s end
+[LCO Gate] happens at [Inception Iter 2]'s end
 
-[Elaboration Iter 1] lasts 1 days
-[Elaboration Iter 1] happens at [LCO Gate]'s end
+[Elaboration Iter 1: AD LDAP PoC, OIDC, offline design] lasts 1 days
+[Elaboration Iter 1: AD LDAP PoC, OIDC, offline design] happens at [LCO Gate]'s end
+[Elaboration Iter 2: architecture baseline] lasts 1 days
+[Elaboration Iter 2: architecture baseline] happens at [Elaboration Iter 1: AD LDAP PoC, OIDC, offline design]'s end
 [LCA Gate] lasts 2 days
-[LCA Gate] happens at [Elaboration Iter 1]'s end
+[LCA Gate] happens at [Elaboration Iter 2: architecture baseline]'s end
 
 [Construction Iter 1] lasts 1 days
 [Construction Iter 1] happens at [LCA Gate]'s end
@@ -60,39 +68,61 @@ title Portal Cuba Corp — Iteration Roadmap (Unanchored)
 [IOC Gate] lasts 2 days
 [IOC Gate] happens at [Construction Iter 2]'s end
 
-[Transition Iter 1] lasts 1 days
-[Transition Iter 1] happens at [IOC Gate]'s end
+[Transition Iter 1: deployment, training] lasts 1 days
+[Transition Iter 1: deployment, training] happens at [IOC Gate]'s end
 [PR Gate] lasts 2 days
-[PR Gate] happens at [Transition Iter 1]'s end
+[PR Gate] happens at [Transition Iter 1: deployment, training]'s end
 
 @endgantt
 ```
 
-> **Note on units:** Iteration durations in the Gantt are relative ordering markers, not calendar projections. Agent work is measured in tokens and elapsed time; human gates are measured in days of queue time. No absolute dates are projected — the Gantt is unanchored by design. The "1 days" per iteration is a sequencing unit, not a duration estimate.
+> **Note on units:** Iteration durations in the Gantt are relative ordering markers, not calendar projections. Agent work is measured in tokens and elapsed time; human gates are measured in days of queue time. No absolute dates are projected — the Gantt is unanchored by design.
 
-### Fine Plan — Inception Iteration 1
+### Fine Plan — Inception Iteration 2
 
-This iteration is the project's first. Its scope is bounded by a **budget box of ~40K tokens** (assumption — no prior measured actuals exist; basis: 4 agent stretches with typical Inception artifact sizes for a moderate-complexity project).
+This iteration is a **corrective cycle** triggered by the LCO review's 3 open findings and the stakeholder's refusal to sanction until all findings are resolved. Its scope is bounded by a **budget box of ~45K tokens** (assumption — iteration 1 measured actuals not yet available in this session; basis: 3 parallel finding-resolution stretches + PM plan evolution + review coordinator re-evaluation).
 
 ```plantuml
 @startuml
-title Inception Iteration 1 — Critical Chain (Agent Stretches)
+title Inception Iteration 2 — Critical Chain (Finding Resolution → LCO Re-assessment)
 
 start
 
-:Project Manager\nS1: Discover existing context\n(list_artifacts, read Development Case)\nBudget: ~2K tokens;
-note right: Sequential — no upstream artifacts yet
+partition "Parallel Finding Resolution" {
+  :System Analyst: Fix F-001/F-002
+  Replace FEAT-NNN -> REQ-NNN
+  in Vision traceability table
+  [Budget: ~15K tokens];
+  
+  :Test Manager: Fix F-003
+  Replace TD-NNN -> standard prefix
+  in Test Evaluation Summary
+  [Budget: ~10K tokens];
+}
 
-:Project Manager\nS2: Conceive project — Risk List\n(identify risks, classify, generate UML, upsert)\nBudget: ~8K tokens;
+:Project Manager: Update Iteration Plan
+for Inception Iteration 2
+[Budget: ~20K tokens];
 
-:System Analyst\nVision Document\n(project vision, stakeholders, scope, business goals)\nBudget: ~15K tokens;
-note right: PM depends on Vision for scope confirmation
+:Review Coordinator: Re-evaluate
+LCO milestone gate
+Check all 3 findings resolved
+[Gate: 1 day queue time];
 
-:Project Manager\nS3: Iteration Plan\n(coarse roadmap + fine Gantt, evaluation criteria)\nBudget: ~10K tokens;
-note right: PM reads Vision + Risk List before planning
-
-:Review Coordinator\nLCO Milestone Review\n(evaluate artifacts against AC-NNN, issue verdict)\nBudget: ~5K tokens;
-note right: Human gate — 2 days queue time
+if (All findings resolved?) then (yes)
+  :Stakeholder sanction
+  [Gate: 1 day queue time];
+  if (Sanction granted?) then (yes)
+    :LCO ACHIEVED
+    Proceed to Elaboration;
+  else (no)
+    :Iterate again
+    New findings logged;
+  endif
+else (no)
+  :Findings remain open
+  Iterate again;
+endif
 
 stop
 
@@ -101,25 +131,27 @@ stop
 
 | Work Item | Owner (Agent Role) | Token Budget | Depends On | Output |
 |---|---|---|---|---|
-| Discover existing context | Project Manager | ~2K | — | Artifact index, Development Case read |
-| Risk List | Project Manager | ~8K | Development Case | Risk List artifact (6 risks classified) |
-| Vision Document | System Analyst | ~15K | Development Case, Declared Scope | Vision Document artifact |
-| Iteration Plan | Project Manager | ~10K | Risk List, Vision Document | Iteration Plan artifact (coarse + fine) |
-| LCO Milestone Review | Review Coordinator | ~5K | All Inception artifacts | Milestone verdict |
+| Fix F-001/F-002: Vision FEAT-NNN → REQ-NNN | System Analyst | ~15K | Review Record findings | Corrected Vision traceability table |
+| Fix F-003: Test Eval Summary TD-NNN → standard prefix | Test Manager | ~10K | Review Record findings | Corrected Test Evaluation Summary traceability table |
+| Evolve Iteration Plan for iteration 2 | Project Manager | ~20K | Review Record, prior Iteration Plan | Updated Iteration Plan (this artifact) |
+| LCO re-evaluation | Review Coordinator | ~5K | All corrected artifacts | LCO milestone verdict (re-assessed) |
 
-**Budget box total: ~40K tokens** (assumption — first iteration, no measured actuals). Human gate: LCO review = 2 days queue time.
+**Budget box total: ~50K tokens** (assumption — no measured actuals from iteration 1 available in this session). Human gates: LCO re-evaluation = 1 day queue time; stakeholder sanction = 1 day queue time.
 
-### LCO Readiness Assessment
+### LCO Readiness Assessment (Updated for Iteration 2)
 
 The project is viable to proceed to Elaboration if:
-- All 6 risks are classified with strategies and mitigation plans ✓ (Risk List produced)
+- All 6 risks are classified with strategies and mitigation plans ✓ (Risk List produced, preserved)
 - Scope is clearly bounded by 10 FRs, 4 NFRs, 5 ACs, 13 constraints ✓ (Declared Scope)
-- Coarse roadmap with 6 iterations across 4 phases is defined ✓ (this plan)
-- No open SCOPE_QUESTION blocks the LCO gate
+- Coarse roadmap with 6 iterations across 4 phases is defined ✓ (this plan, updated)
+- No open SCOPE_QUESTION blocks the LCO gate ✓ (none raised)
+- **All review findings resolved** ⏳ (3 open findings — F-001, F-002, F-003 — being resolved this iteration by System Analyst and Test Manager)
+- **Stakeholder sanction granted** ⏳ (refused in iteration 1; pending finding resolution)
 
-**Open items for LCO review:**
-- AC-005 (offline operation with sync) is the most architecturally significant acceptance criterion. R006 captures this risk. The Elaboration phase must investigate the offline mechanism design before Construction commits to an implementation approach.
-- R001 (AD LDAP attribute consistency) may trigger an Architectural PoC in Elaboration — the Development Case currently has this NOT TRIGGERED but re-evaluation is pending.
+**Open items for LCO re-evaluation:**
+- F-001/F-002 (Vision FEAT-NNN prefix) — System Analyst resolves this iteration
+- F-003 (Test Evaluation Summary TD-NNN prefix) — Test Manager resolves this iteration
+- Once both are resolved, the Review Coordinator re-evaluates the LCO gate and the stakeholder is re-approached for sanction
 
 ## Resources
 
@@ -127,22 +159,23 @@ The project is viable to proceed to Elaboration if:
 
 | Phase | Iteration | Active Agent Roles | Budget Split |
 |---|---|---|---|
-| Inception | Iter 1 | Project Manager, System Analyst, Review Coordinator | PM: ~20K, SA: ~15K, RC: ~5K |
+| Inception | Iter 1 | Project Manager, System Analyst, Software Architect, Test Manager, Review Coordinator | PM: ~20K, SA: ~15K, Arch: ~10K, TM: ~5K, RC: ~5K [ASSUMPTION — first iteration, no measured actuals] |
+| Inception | Iter 2 | System Analyst, Test Manager, Project Manager, Review Coordinator | SA: ~15K (F-001/F-002 fix), TM: ~10K (F-003 fix), PM: ~20K (plan evolution), RC: ~5K (re-evaluation) [ASSUMPTION — based on finding complexity] |
 | Elaboration | Iter 1 | Software Architect, System Analyst, Designer, Project Manager, Review Coordinator | [ASSUMPTION — to be sized from Inception measured actuals] |
 | Elaboration | Iter 2 | Software Architect, Designer, Test Designer, Project Manager, Review Coordinator | [ASSUMPTION — to be sized from Elaboration Iter 1 measured actuals] |
 | Construction | Iter 1 | Designer, Implementer, Test Designer, Project Manager, Review Coordinator | [ASSUMPTION — to be sized from Elaboration measured actuals] |
 | Construction | Iter 2 | Implementer, Test Designer, Deployment Manager, Project Manager, Review Coordinator | [ASSUMPTION — to be sized from Construction Iter 1 measured actuals] |
 | Transition | Iter 1 | Deployment Manager, Test Designer, Technical Writer, Project Manager, Review Coordinator | [ASSUMPTION — to be sized from Construction measured actuals] |
 
-> **Budget basis:** Inception Iter 1 budget is an explicit assumption (no prior measured actuals exist). Every subsequent phase's budget will be sized from the MEASURED actuals of the phase that preceded it — not from this assumption. The rubber profile percentages (5/20/65/10) inform iteration COUNT only, not budget allocation.
+> **Budget basis:** Inception iterations' budgets are explicit assumptions (no prior measured actuals exist). Every subsequent phase's budget will be sized from the MEASURED actuals of the phase that preceded it — not from this assumption. The rubber profile percentages (5/20/65/10) inform iteration COUNT only, not budget allocation.
 
 ### Parallelism Assessment
 
-Inception Iteration 1 has minimal parallelism opportunity: the Project Manager produces the Risk List before the System Analyst produces the Vision, and the Iteration Plan depends on both. This is a sequential critical chain — appropriate for a first iteration establishing project foundations. Parallelism increases in Elaboration (Architect + Designer + System Analyst can work concurrently on different artifacts) and peaks in Construction (Implementer + Test Designer work in parallel per use case).
+Inception Iteration 2 has **two parallel finding-resolution stretches** (System Analyst fixing Vision, Test Manager fixing Test Evaluation Summary) that are independent of each other. The Project Manager's plan evolution runs concurrently with these. The Review Coordinator's re-evaluation is sequential — it depends on all three corrections being complete. This is a short critical chain appropriate for a corrective cycle.
 
 ## Use Cases and Scenarios Addressed
 
-This iteration does not implement use cases — it establishes the project framework. The following use cases are allocated to future iterations based on risk-driven sequencing:
+This iteration does not implement use cases — it is a corrective cycle resolving review findings. The use case allocation from iteration 1 is preserved unchanged:
 
 | Use Case | FR ID | Target Phase | Rationale |
 |---|---|---|---|
@@ -173,25 +206,25 @@ This iteration does not implement use cases — it establishes the project frame
 
 > No acceptance criteria are addressed in Inception — this is expected. Inception establishes viability and planning, not implementation. All ACs are allocated to future iterations with explicit target phases.
 
-### Layer 2: Inception Iteration 1 Exit Criteria
+### Layer 2: Inception Iteration 2 Exit Criteria
 
 | Criterion | Met? | Evidence |
 |---|---|---|
-| Risk List produced with all risks classified (P, I, magnitude, strategy, mitigation, contingency) | Yes | Risk List artifact (6 risks: R001–R006) |
-| Coarse cross-iteration roadmap defined with milestone sequence | Yes | This artifact, "Plan and Milestones" section |
-| Fine-grained plan for Inception Iteration 1 with work items, owners, token budgets | Yes | This artifact, "Fine Plan" subsection |
-| Agent role assignment profile defined per iteration | Yes | This artifact, "Resources" section |
-| Use cases allocated to iterations based on risk-driven sequencing | Yes | This artifact, "Use Cases and Scenarios Addressed" section |
-| LCO readiness assessed | Yes | This artifact, "LCO Readiness Assessment" subsection |
-| No open SCOPE_QUESTION blocking the gate | Pending review | No SCOPE_QUESTION raised — all scope is declared |
+| F-001/F-002 resolved: Vision FEAT-NNN replaced with REQ-NNN | Pending | System Analyst to correct Vision traceability table this iteration |
+| F-003 resolved: Test Evaluation Summary TD-NNN replaced with standard prefix | Pending | Test Manager to correct Test Evaluation Summary traceability table this iteration |
+| Iteration Plan evolved for iteration 2 | Yes | This artifact — Document Control, Objectives, Fine Plan, Resources, Evaluation Criteria updated |
+| Risk List preserved (no findings target it) | Yes | PRESERVED — no changes needed |
+| LCO re-assessment ready for Review Coordinator | Yes | LCO Readiness Assessment subsection updated with finding resolution status |
+| No open SCOPE_QUESTION blocking the gate | Yes | No SCOPE_QUESTION raised — all scope is declared |
 
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| Iteration Plan | Development Case | Derives | Iteration Assessment (post-iteration) |
-| Risk List (R001–R006) | Work Order R001, R002, CON-004, NFR-002, NFR-003, CON-011, CON-002, AC-005 | Refines | Elaboration Iteration Plan, Construction Iteration Plans |
-| Coarse Roadmap | Development Case (rubber profile, 6±3 rule) | Derives | All subsequent Iteration Plans |
+| Iteration Plan (Iter 2) | Iteration Plan (Iter 1), Review Record (F-001, F-002, F-003) | Refines | Iteration Assessment (post-iteration), LCO Milestone Review (Review Coordinator) |
+| Iteration 2 Objectives | Review Record §Findings, Stakeholder Directive | Derives | System Analyst (F-001/F-002 fix), Test Manager (F-003 fix) |
+| Coarse Roadmap (updated) | Development Case (rubber profile, 6±3 rule) | Derives | All subsequent Iteration Plans |
 | Use Case Allocation (FR-001 to FR-010) | Work Order FR-001 to FR-010 | Refines | Elaboration and Construction Iteration Plans |
 | AC-001 to AC-005 | Work Order AC-001 to AC-005 | Refines | Construction and Transition Iteration Plans |
-| LCO Readiness Assessment | All Inception artifacts | Derives | LCO Milestone Review (Review Coordinator) |
+| LCO Readiness Assessment (updated) | All Inception artifacts, Review Record findings | Derives | LCO Milestone Re-evaluation (Review Coordinator) |
+| Risk List (R001–R006) | Work Order R001, R002, CON-004, NFR-002, NFR-003, CON-011, CON-002, AC-005 | Refines | Elaboration Iteration Plan, Construction Iteration Plans |
