@@ -1,11 +1,13 @@
 ## Document Control
 | Field | Value |
 |---|---|
-| Phase | Elaboration |
-| Status | Draft |
-| Milestone Target | End of Elaboration |
-| Iteration | 2 (Cycle 1) |
+| Phase | Construction |
+| Status | Approved (Preserved) |
+| Milestone Target | End of Construction |
+| Iteration | 1 (Cycle 1) |
 | Date | 2026-08-28 |
+| Prior Phase | Elaboration (LCA achieved — 0 Critical, 0 Major open; stakeholder sanction GRANTED) |
+| Evolution | Construction Iter 1: NFR baseline preserved — no approved CR introduces new quality attributes. All FURPS+ categories addressed in Elaboration baseline. Document Control updated to Construction phase. |
 ## Functionality
 
 ### Security
