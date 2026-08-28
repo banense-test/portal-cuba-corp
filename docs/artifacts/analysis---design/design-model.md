@@ -2439,6 +2439,12 @@ The design exposes dependency injection seams and observable state at every laye
 | INT-005 (IAuditLogger) | COMP-008, SAD | Derives | CLS-005 |
 | INT-006 (ILdapGateway) | COMP-005, SAD | Derives | CLS-006 |
 | INT-007 (IPersistence) | COMP-006, SAD | Derives | CLS-007 |
+| **State Machines** | | | |
+| NewsItem Lifecycle | CLS-017, CON-013, NFR-004 | Derives | CLS-002, CLS-005 |
+| **Testability Entry Points** | | | |
+| DI Seam: IPersistence | INT-007, CLS-007 | Derives | Test harness (in-memory DbContext) |
+| DI Seam: ILdapGateway | INT-006, CLS-006 | Derives | Test harness (mock LDAP) |
+| DI Seam: IAuditLogger | INT-005, CLS-005 | Derives | Test harness (audit spy) |
 | **UI Elements (from UI Designer)** | | | |
 | V001 (MainPageModel) | UC-001, UC-008, CON-011 | Derives | CLS-001, CLS-002 |
 | V002 (ClockingPageModel) | UC-002 | Derives | CLS-001 |
@@ -2451,8 +2457,6 @@ The design exposes dependency injection seams and observable state at every laye
 | Navigation Topology | All UCs, CON-011 | Derives | V001–V008 |
 | UI Patterns | CON-011, USA-001–USA-006 | Refines | V001–V008, Implementer |
 | Wireframes | CON-011, All UCs | Derives | V001–V008 |
-| **State Machines** | | | |
-| NewsItem Lifecycle | CLS-017, CON-013, NFR-004 | Derives | CLS-002, CLS-005 |
 | **Database Tables** | | | |
 | T1 (clockings) | CLS-016, AC-005 | Derives | PostgreSQL (CON-003) |
 | T2 (news_items) | CLS-017, CON-013 | Derives | PostgreSQL (CON-003) |
