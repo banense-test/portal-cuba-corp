@@ -4,11 +4,12 @@
 
 | Field | Value |
 |---|---|
-| Phase | Inception |
+| Phase | Elaboration |
 | Status | Active |
-| Milestone Target | End of Inception |
+| Milestone Target | End of Elaboration (LCA) |
 | Owner | Configuration Manager |
 | Last Updated | 2026-08-28 |
+| Prior Phase | Inception — baseline strategy established |
 
 ---
 
@@ -44,319 +45,206 @@ downstream consumers.
 | Pattern | Phase | Purpose |
 |---|---|---|
 | `feature/E{n}-{risk-id}[-{mechanism}]` | Elaboration | Evolutionary architectural mechanism — real code in `src/`, based on `iteration/E{n}` |
-| `feature/C{n}-{uc-id}-{subject}` | Construction | Use-case realization, based on `iteration/C{n}` |
-| `iteration/E{n}` | Elaboration | Integration workspace per Elaboration iteration |
-| `iteration/C{n}` | Construction | Integration workspace per Construction iteration |
-| `hotfix/{issue-id}` | Transition | Hotfix from `main`, express review |
-| `chore/{subject}` | Any | Non-functional repo maintenance (this file, CI config) |
+| `feature/C{n}-{uc-id}-{subject}` | Construction | Use-case realization — based on `iteration/C{n}` |
+| `iteration/E{n}` | Elaboration | Integration workspace per iteration |
+| `iteration/C{n}` | Construction | Integration workspace per iteration |
+| `hotfix/{issue-id}` | Transition | Hotfix from main, express review |
+| `chore/{subject}` | All phases | Non-functional repo maintenance (branching strategy updates, CI config) |
 
-**Non-conforming branches** are surfaced as SCM issues with labels
-`severity:minor`, `nature:defect`, `naming-violation`. The Configuration Manager
-does NOT auto-rename branches.
+**Non-conforming branches** are surfaced as SCM issues with `severity:minor` +
+`nature:defect` + `naming-violation` labels. The Configuration Manager does NOT
+auto-rename; the branch owner must correct the name.
 
 ---
 
-## 4. Branch Topology
+## 4. Elaboration Branching Model — Evolutionary Architectural Mechanism
 
-The workspace hierarchy follows a three-tier model: **developer → integration →
-trunk**. Only the Integrator writes to `iteration/*` and `main`; no other role
-pushes there directly.
+The Elaboration phase uses an **evolutionary** architectural prototype — the code
+becomes the Construction baseline, NOT throwaway sample code. There is **no**
+`samples/poc/` directory and **no** ephemeral `poc/*` branch.
+
+### 4.1 Branching Topology
 
 ```plantuml
 @startuml
-title Branch Topology — IARI Workspace Hierarchy
+title Portal Cuba Corp — Elaboration Branching Topology
 
 skinparam componentStyle rectangle
-skinparam packageStyle rectangle
+skinparam nodesep 60
+skinparam ranksep 60
 
-package "main (baseline trunk)" {
-  component "main" as MAIN <<trunk>>
+node "main" as main {
+  component "baseline-elaboration-E1-v1\n(target — after LAM close)" as baseline
 }
 
-package "Elaboration" {
-  component "iteration/E{n}" as ITER_E <<integration>>
-  component "feature/E{n}-{risk-id}[-{mechanism}]" as FEAT_E <<feature>>
+node "iteration/E1\n(integration workspace)" as iterE1 {
+  component "Integrator merges\nAPPROVED mechanism PRs" as integrator
 }
 
-package "Construction" {
-  component "iteration/C{n}" as ITER_C <<integration>>
-  component "feature/C{n}-{uc-id}-{subject}" as FEAT_C <<feature>>
-}
+component "feature/E1-R001-ldap-attributes" as featR001
+component "feature/E1-R006-offline-retry" as featR006
 
-package "Transition" {
-  component "hotfix/{issue-id}" as HOTFIX <<hotfix>>
-}
+featR001 --> iterE1 : PR (Code Reviewer reviews)
+featR006 --> iterE1 : PR (Code Reviewer reviews)
+iterE1 --> main : LAM-close PR\n(Architect reviews)
 
-package "Maintenance" {
-  component "chore/{subject}" as CHORE <<chore>>
-}
-
-FEAT_E --> ITER_E : Implementer creates\nCode Reviewer reviews\nIntegrator merges
-ITER_E --> MAIN : Integrator opens PR\nArchitect reviews at LAM\nDeliver merges
-
-FEAT_C --> ITER_C : Implementer creates\nCode Reviewer reviews\nIntegrator merges
-ITER_C --> MAIN : Integrator opens PR\nArchitect reviews at IOC\nDeliver merges
-
-HOTFIX --> MAIN : Express review\nMerge to main\nPatch baseline tag
-
-CHORE --> MAIN : Direct commit\ndocs/config-as-code\nNo PR required
-
-note right of MAIN
-  Baseline tags:
-  baseline-elaboration-E{n}-v{x}
-  baseline-construction-C{n}-v{x}
-  baseline-transition-T{n}-v{x}
-  Tag ONLY when:
-  1. PR review state = APPROVED
-  2. main CI = GREEN
+note right of featR001
+  Evolutionary architectural mechanism:
+  real code in src/, NOT throwaway.
+  Based on iteration/E1.
+  Code Reviewer opens + reviews.
+  Integrator merges APPROVED.
 end note
 
-note right of FEAT_E
-  Evolutionary mechanism:
-  real code in src/
-  NOT throwaway PoC
-  Architect records decision:
-  analysis-only | single-mechanism | candidates
+note right of featR006
+  Competing candidates if Architect
+  selects candidates path:
+  Integrator closes loser's PR
+  per recorded decision.
 end note
 
-note right of HOTFIX
-  From main, not from iteration
-  Express review cycle
-  Triggers patch baseline
-  (v2, v3, ...)
+note bottom of main
+  Pre-Tag Gate (CM verifies):
+  1. scm_get_pull_request_review_state == APPROVED
+  2. scm_get_build_status("main") == green
+  Both pass → scm_create_tag
+  Either fails → Issue(severity:blocker)
 end note
 
 @enduml
 ```
 
-### 4.1 Per-Phase Branching Model
+### 4.2 Mechanism Workflow
 
-**Inception:**
-- Documentation only; normally no implementation code.
-- A feasibility mechanism, if genuinely required for risk reduction, is built
-  evolutionarily in `src/` on `feature/I{n}-{subject}` (never throwaway).
-- No baseline tags are written during Inception — architecture is not yet stable.
+1. **Architect** identifies a technical risk (e.g., R001 — AD LDAP attribute
+   consistency) and records the decision: `analysis-only` | `single-mechanism` |
+   `candidates`.
+2. **Implementer** creates `feature/E{n}-{risk-id}[-{mechanism}]` from
+   `iteration/E{n}` and builds the REAL mechanism in `src/`.
+3. **Code Reviewer** opens and reviews each mechanism PR (base `iteration/E{n}`)
+   as production code.
+4. **Integrator** merges the APPROVED mechanism into `iteration/E{n}`.
+5. For competing `candidates`, the **Architect** selects the winner and the
+   **Integrator** closes the loser's PR per the recorded decision.
+6. At **LAM close**, the **Integrator** opens `iteration/E{n} → main`.
+7. **Architect** reviews the LAM-close PR.
+8. **Configuration Manager** verifies the pre-tag gate (see §6) and writes
+   `baseline-elaboration-E{n}-v1`.
 
-**Elaboration — Evolutionary Architectural Mechanism:**
-- The architectural prototype is EVOLUTIONARY — it becomes the Construction
-  baseline, not throwaway sample code.
-- A technical risk is retired by ANALYSIS (the Software Architect reasons
-  feasibility — no code) or by building the REAL mechanism in `src/` on
-  `feature/E{n}-{risk-id}[-{mechanism}]` based on `iteration/E{n}`.
-- The Architect records the decision: `analysis-only` | `single-mechanism` |
-  `candidates`.
-- The Code Reviewer opens + reviews each mechanism PR (base `iteration/E{n}`)
-  as production code.
-- The Integrator merges the APPROVED mechanism into `iteration/E{n}`.
-- For competing `candidates`, the Architect selects the winner and the
-  Integrator closes the loser's PR per the recorded decision.
-- At LAM close, the Integrator opens `iteration/E{n} → main`; the Deliver
-  bookend merges the reviewed baseline.
-- There is **no** `samples/poc/` directory and **no** ephemeral `poc/*` branch.
+### 4.3 Active Iteration Workspace
 
-**Construction — Feature Branches:**
-- UC realizations on `feature/C{n}-{uc-id}-{subject}` based on `iteration/C{n}`.
-- The Code Reviewer reviews each feature PR.
-- The Integrator merges APPROVED features into `iteration/C{n}`.
-- At IOC, the Integrator opens `iteration/C{n} → main`.
-
-**Transition — Hotfixes:**
-- `hotfix/{issue-id}` from `main`, express review.
-- Merge to `main` with a patch baseline tag.
+| Branch | Status | Purpose |
+|---|---|---|
+| `iteration/E1` | **Active** | Elaboration iteration 1 integration workspace |
+| `main` | Protected | Receives APPROVED LAM-close PR; carries baseline tag |
 
 ---
 
-## 5. Baseline Pedigree
+## 5. Baseline Tag Naming Convention
 
-A baseline tag is written **only** at iteration close, never mid-iteration. The
-pre-tag gate verifies two conditions before any `scm_create_tag`:
+| Phase | Tag Pattern | Example |
+|---|---|---|
+| Elaboration | `baseline-elaboration-E{n}-v{patch}` | `baseline-elaboration-E1-v1` |
+| Construction | `baseline-construction-C{n}-v{patch}` | `baseline-construction-C1-v1` |
+| Transition | `baseline-transition-T{n}-v{patch}` | `baseline-transition-T1-v1` |
 
-1. **Review gate:** `scm_get_pull_request_review_state` on the iteration-close PR
-   returns `APPROVED`.
-2. **CI gate:** `scm_get_build_status("main")` returns `green` after the merge.
+`{patch}` starts at `1`; re-tag `v2, v3…` only after an explicit rollback or
+post-baseline critical fix. Routine iteration work targets the NEXT iteration's
+tag, not a re-tag of the previous.
 
-Either fails → the Configuration Manager files an SCM issue
-(`severity:blocker` + `nature:defect`) and **does NOT tag**.
+### 5.1 Baseline Pedigree State Machine
 
 ```plantuml
 @startuml
-title Baseline Pedigree — Pre-Tag Gate State Machine
+title Baseline Pedigree State Machine — Elaboration
 
-[*] --> IterationWork
-
-state "Iteration Work" as IterationWork {
-  IterationWork : Feature branches developed
-  IterationWork : Code Reviewer reviews each feature PR
-  IterationWork : Integrator merges APPROVED features
-  IterationWork : into iteration/{phase}{n}
+[*] --> S1_DISCOVER
+state "S1: Load Architecture + SCM State" as S1_DISCOVER {
+  S1_DISCOVER : list_artifacts, read SAD
+  S1_DISCOVER : scm_get_file_content(BRANCHING_STRATEGY.md)
+  S1_DISCOVER : scm_list_issues(blocker)
+  S1_DISCOVER : scm_list_pull_requests(open)
+  S1_DISCOVER : scm_create_branch(iteration/E1, main)
 }
+S1_DISCOVER --> c_lam_pr
+state c_lam_pr <<choice>>
+c_lam_pr --> S2_GATE : [LAM-close PR exists]
+c_lam_pr --> [*] : [no LAM-close PR — CM idle]
 
-IterationWork --> IntegrationPR : All features merged\nIntegrator opens\niteration/{phase}{n} -> main
-
-state "Integration PR Open" as IntegrationPR {
-  IntegrationPR : Architect reviews
-  IntegrationPR : consolidated review state
+state "S2: Pre-Tag Gate Verification" as S2_GATE {
+  S2_GATE : scm_get_pull_request_review_state(pr)
+  S2_GATE : scm_get_build_status(main)
 }
+S2_GATE --> c_gates
+state c_gates <<choice>>
+c_gates --> S3_TAG : [APPROVED AND green]
+c_gates --> S_ESCALATE : [NOT APPROVED OR red]
 
-IntegrationPR --> GateCheck : Architect submits review
-
-state "Pre-Tag Gate Check" as GateCheck {
-  GateCheck : scm_get_pull_request_review_state
-  GateCheck : scm_get_build_status("main")
+state "S3: Write Baseline Tag" as S3_TAG {
+  S3_TAG : scm_create_tag("baseline-elaboration-E1-v1")
+  S3_TAG : audit message: PR#, SHA,
+  S3_TAG :   review ID, CI URL, findings
 }
+S3_TAG --> [*]
 
-GateCheck --> TagBaseline : [APPROVED AND CI GREEN]
-GateCheck --> Escalate : [CHANGES_REQUESTED OR CI RED]
-GateCheck --> Escalate : [NONE (no review yet)]
-
-state "Escalate: File Issue" as Escalate {
-  Escalate : scm_create_issue
-  Escalate : labels: severity:blocker
-  Escalate :         + nature:defect
-  Escalate : DO NOT TAG
+state "S_ESCALATE: File Gate-Failure Issue" as S_ESCALATE {
+  S_ESCALATE : scm_create_issue(
+  S_ESCALATE :   severity:blocker, nature:defect)
 }
-
-Escalate --> IterationWork : Fix issues\nre-open PR\nre-verify gates
-
-state "Tag Baseline" as TagBaseline {
-  TagBaseline : scm_create_tag
-  TagBaseline : Name: baseline-{phase}{n}-v{x}
-  TagBaseline : Message: PR number + SHA
-  TagBaseline :         + review approval ID
-  TagBaseline :         + CI run URL
-  TagBaseline :         + notable findings
-}
-
-TagBaseline --> [*] : Baseline frozen\npedigree recorded
-
-note right of GateCheck
-  Two gates MUST pass:
-  1. Review state == APPROVED
-  2. Build status == green
-  Either fails → Issue, no tag
-end note
-
-note right of TagBaseline
-  Patch version starts at v1.
-  Re-tag v2, v3 only after
-  rollback or post-baseline
-  critical fix.
-end note
+S_ESCALATE --> [*]
 
 @enduml
 ```
 
-### 5.1 Tag Naming
+---
 
-| Tag Pattern | Phase | Example |
+## 6. Pre-Tag Gate Procedure
+
+The Configuration Manager verifies **two gates** before writing any baseline tag:
+
+| Gate | Tool Call | Pass Condition |
 |---|---|---|
-| `baseline-elaboration-E{n}-v{x}` | Elaboration | `baseline-elaboration-E1-v1` |
-| `baseline-construction-C{n}-v{x}` | Construction | `baseline-construction-C1-v1` |
-| `baseline-transition-T{n}-v{x}` | Transition | `baseline-transition-T1-v1` |
+| Review Approval | `scm_get_pull_request_review_state(projectId, prNumber)` | `APPROVED` |
+| CI Build | `scm_get_build_status(projectId, "main")` | `green` |
 
-- `{n}` = iteration number (integer, starting at 1)
-- `{x}` = patch version (integer, starting at 1)
-- Re-tag (`v2`, `v3`, …) only after an explicit rollback or post-baseline
-  critical fix. Routine iteration work targets the NEXT iteration's tag.
+**Either gate fails** → file an Issue with `severity:blocker` + `nature:defect` +
+`missing-approval` or `ci-broken-on-main` label. DO NOT tag.
 
-### 5.2 Tag Message (Audit Record)
+**Both gates pass** → write `baseline-elaboration-E{n}-v1` via `scm_create_tag`.
 
-Every baseline tag message MUST contain:
+### 6.1 Tag Message Audit Record
+
+The tag message MUST contain:
 
 - Iteration-close PR number and head commit SHA
 - Architect approval review ID
 - `main` CI run URL at tag time
-- Notable findings (naming violations, deferred items, re-tag justifications)
+- Any notable findings (naming violations, deferred items, re-tag justifications)
 
 ---
 
-## 6. Cross-Phase Invariants
+## 7. Cross-Phase Invariants
 
-1. **Only the Integrator writes `iteration/*` and `main`** — no other role
-   pushes there directly.
-2. **`ready-for-review`** is the Implementer → Code Reviewer handoff label.
-3. **A baseline tag freezes only an APPROVED + CI-green commit** — no exceptions.
-4. **`docs/BRANCHING_STRATEGY.md` updates go direct to `main`** via
-   `scm_commit_files` — no PR, no review label.
-5. **No `poc/` branches or `samples/poc/` directories** — evolutionary code
-   lives in `src/` on `feature/` branches.
-6. **Non-conforming branch names** yield an SCM issue, not an auto-rename.
-
----
-
-## 7. Change Control Integration
-
-The Change Control Manager (CCM) owns the Change Request state machine
-(`cr:new` → `cr:approved` → `cr:complete`). The Configuration Manager does NOT
-triage CRs or evaluate impact — that is the CCM's responsibility.
-
-The Configuration Manager consumes CCM-triaged outcomes indirectly via the
-branches and PRs they authorize:
-
-- A CR approved by the CCB authorizes a feature branch or hotfix branch.
-- The branch naming encodes the CR origin (`hotfix/{issue-id}`).
-- The baseline tag message records which CRs were addressed in the iteration.
-
-### 7.1 Escalation Paths
-
-| Condition | Action | Issue Labels |
-|---|---|---|
-| Iteration-close PR not approved | File issue, do NOT tag | `severity:blocker`, `nature:defect` |
-| `main` CI red after merge | File issue, do NOT tag | `severity:blocker`, `nature:defect` |
-| Branch name violates convention | File issue, do NOT auto-rename | `severity:minor`, `nature:defect`, `naming-violation` |
-
----
-
-## 8. Tooling
-
-| Tool | Purpose |
+| Invariant | Enforcement |
 |---|---|
-| Git (SCM) | Version control, branching, tagging |
-| GitHub Issues | Change Requests, gate-failure escalations |
-| GitHub PR Reviews | Code Reviewer + Architect approval chain |
-| CI/CD (GitHub Actions) | Build + test gating on `main` and feature branches |
-| `scm_commit_files` | Direct commit of docs/config-as-code to `main` |
-| `scm_create_tag` | Baseline tag creation (post-gate verification) |
-| `scm_get_pull_request_review_state` | Pre-tag review gate check |
-| `scm_get_build_status` | Pre-tag CI gate check |
+| Only the Integrator writes `iteration/*` and `main` | No other role pushes there |
+| `ready-for-review` is the Implementer→Code Reviewer handoff label | `scm_add_label` on feature branch |
+| A baseline tag freezes only an APPROVED + CI-green commit | Pre-tag gate (§6) verified before every `scm_create_tag` |
+| `docs/BRANCHING_STRATEGY.md` updates go direct to `main` | `scm_commit_files` — no PR |
+| No `poc/` branches or `samples/poc/` directory | Evolutionary mechanism is real code in `src/` |
 
 ---
 
-## 9. Project-Specific Context
+## 8. Change Control Integration
 
-| Constraint | Impact on CM |
-|---|---|
-| CON-001: .NET 10 backend | CI must build .NET 10 projects |
-| CON-002: Razor Pages frontend | No SPA build pipeline needed |
-| CON-003: PostgreSQL database | CI must provision a test database |
-| CON-004: Keycloak OIDC client | OIDC client registration must exist before integration testing |
-| CON-006: Internal Windows Server | No cloud deployment CI targets |
-| CON-007: No external network access | CI runs within corporate network |
-| CON-011: Mandatory custom design | `docs/inputs/employee-portal-design.html` is a read-only CI |
-| R001: AD LDAP attribute consistency | May trigger Elaboration evolutionary mechanism on `feature/E{n}-R001-ldap-attributes` |
-
----
-
-## 10. Audit Procedures
-
-### 10.1 Functional Configuration Audit (FCA)
-
-Performed at each baseline tag: verify the tagged commit's features trace to the
-use cases and requirements declared for the iteration. The tag message records
-the PR that demonstrates the iteration's UCs.
-
-### 10.2 Physical Configuration Audit (PCA)
-
-Performed at each baseline tag: verify the tagged commit matches the approved
-design (Architecture Document, Design Model). The Architect's APPROVED review on
-the iteration-close PR is the PCA sign-off.
-
-### 10.3 Status Accounting
+Change Requests flow through the Change Control Manager (CCM) state machine:
+`cr:new` → `cr:approved` → `cr:complete`. The Configuration Manager does NOT triage
+CRs or evaluate impact — that is the CCM's responsibility. The CM consumes
+CCM-triaged outcomes indirectly via the branches and PRs they authorize.
 
 Status and measurement data (progress, aging, distribution, trends) flows to
-dashboards that query the branch/PR/tag/Issue graph directly. The Configuration
-Manager ensures that graph is queryable by keeping labels, branch naming, and tag
-conventions consistent. No status report artifact is produced.
+dashboards that query the branch/PR/tag/Issue graph directly. No status report
+artifact is produced.
 
 ---
 
@@ -367,7 +255,10 @@ conventions consistent. No status report artifact is produced.
 | Branch naming conventions | RUP Ch.13 (Manage Baselines and Releases) | Refines | All feature/iteration/hotfix branches |
 | Baseline tag procedure | RUP Ch.13 (Manage Baselines and Releases) | Refines | `scm_create_tag`, `scm_get_pull_request_review_state`, `scm_get_build_status` |
 | `feature/E{n}-R001-ldap-attributes` | R001 (AD LDAP risk) | Derives | Elaboration evolutionary mechanism |
+| `feature/E{n}-R006-offline-retry` | AC-005 (offline sync), R006 | Derives | Elaboration evolutionary mechanism |
 | CI gating on .NET 10 | CON-001 | DependsOn | `.github/workflows/` |
 | OIDC client pre-requisite | CON-004 | DependsOn | Integration test environment |
 | Mandatory design CI | CON-011 | DependsOn | `docs/inputs/employee-portal-design.html` |
 | Audit trail requirement | NFR-004 | Refines | Tag message audit record, PCA sign-off |
+| Elaboration branching topology | RUP Ch.13 + IARI convention | Refines | `iteration/E1`, `feature/E1-*`, `main` |
+| Baseline pedigree state machine | RUP Ch.13 baseline discipline | Refines | Pre-tag gate, `scm_create_tag` |
