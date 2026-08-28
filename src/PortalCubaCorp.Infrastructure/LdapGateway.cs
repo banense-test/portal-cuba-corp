@@ -1,5 +1,6 @@
 using Novell.Directory.Ldap;
 using PortalCubaCorp.Domain;
+using DomainLdapSearchResult = PortalCubaCorp.Domain.LdapSearchResult;
 
 namespace PortalCubaCorp.Infrastructure;
 
@@ -17,9 +18,9 @@ public class LdapGateway : ILdapGateway
         _options = options;
     }
 
-    public List<LdapSearchResult> SearchEntries(string filter)
+    public List<DomainLdapSearchResult> SearchEntries(string filter)
     {
-        var results = new List<LdapSearchResult>();
+        var results = new List<DomainLdapSearchResult>();
 
         using var conn = new LdapConnection();
         conn.Connect(_options.Host, _options.Port);
@@ -41,7 +42,7 @@ public class LdapGateway : ILdapGateway
         return results;
     }
 
-    public LdapSearchResult? GetEntryByUserId(string adUserId)
+    public DomainLdapSearchResult? GetEntryByUserId(string adUserId)
     {
         var results = SearchEntries($"(sAMAccountName={EscapeFilter(adUserId)})");
         return results.FirstOrDefault();
@@ -58,9 +59,9 @@ public class LdapGateway : ILdapGateway
         return mapping;
     }
 
-    private static LdapSearchResult MapEntry(LdapEntry entry)
+    private static DomainLdapSearchResult MapEntry(LdapEntry entry)
     {
-        return new LdapSearchResult
+        return new DomainLdapSearchResult
         {
             AdUserId = GetAttribute(entry, "sAMAccountName"),
             DisplayName = GetAttributeOrNull(entry, "cn"),

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using PortalCubaCorp.Domain;
 
 namespace PortalCubaCorp.Infrastructure;
