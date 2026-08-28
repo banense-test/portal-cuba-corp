@@ -73,7 +73,7 @@ note bottom of UC005
   applies to UC-005, UC-006,
   UC-007, UC-010
   CR-010: IsFeatured flag
-  [DERIVED — from FR-008]
+  CCB-APPROVED (Construction C1)
 end note
 
 @enduml
