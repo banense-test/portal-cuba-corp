@@ -935,3 +935,8 @@ No iteration-baseline PR (iteration/C1 → main) was open at the time of this go
 | PoC-R003 (OIDC Analysis) | R003, ADR-005, CON-004 | Derives | COMP-007, STK-003, Architectural Proof-of-Concept |
 | INT-005 (IAuditLogger) | NFR-004, CON-013 | Derives | COMP-008, Design Model INT-005 |
 | INT-007 (IPersistence) | CON-003, CON-001 | Derives | COMP-006, Design Model INT-007 |
+| ILdapConnection (testability abstraction) | COMP-005, ADR-003 | Derives | NovellLdapConnectionAdapter, LdapGateway |
+| Construction C1 Governance — CR-001 concurrence | CR-001 (#1), R001, COMP-005 | Realizes | PoC-R001 execution |
+| Construction C1 Governance — CR-002 concurrence | CR-002 (#2), R006, AC-005, COMP-002 | Realizes | PoC-R006 execution |
+| Construction C1 Governance — Implementation View refinement | ADR-001, CON-001 | Refines | All components (project naming, ILdapConnection, domain entities) |
+| Construction C1 Governance — Audit transaction observation | NFR-004, COMP-008, COMP-003 | DependsOn | Implementer (transaction boundary enforcement) |
