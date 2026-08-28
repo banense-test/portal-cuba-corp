@@ -1,0 +1,49 @@
+@page
+@model PortalCubaCorp.Pages.DirectoryModel
+@{
+    ViewData["Title"] = "Employee Directory";
+}
+
+<div class="card">
+    <h2 class="card-title">Employee Directory</h2>
+    <p class="text-muted">Search for colleagues by name, department, or office. Data from Active Directory (read-only).</p>
+    <form method="get" class="mb-md">
+        <input type="text" name="query" value="@Model.Query" placeholder="Search by name, department, or office..." class="search-box" />
+    </form>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Query))
+    {
+        @if (!Model.Results.Any())
+        {
+            <p class="text-muted">No results found for "@Model.Query".</p>
+        }
+        else
+        {
+            <table class="directory-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Job Title</th>
+                        <th>Department</th>
+                        <th>Office</th>
+                        <th>Email</th>
+                        <th>Extension</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in Model.Results)
+                    {
+                        <tr>
+                            <td>@entry.DisplayName</td>
+                            <td>@entry.JobTitle</td>
+                            <td>@entry.Department</td>
+                            <td>@entry.Office</td>
+                            <td>@entry.Email</td>
+                            <td>@entry.Extension</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+</div>

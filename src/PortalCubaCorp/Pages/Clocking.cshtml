@@ -1,0 +1,69 @@
+@page
+@model PortalCubaCorp.Pages.ClockingModel
+@{
+    ViewData["Title"] = "Clocking";
+}
+
+<div class="card">
+    <h2 class="card-title">Clock In / Clock Out</h2>
+    <div class="clocking-status">
+        Status: 
+        @if (Model.CurrentStatus == ClockStatus.ClockedIn)
+        {
+            <span class="status-in">Clocked In</span>
+        }
+        else
+        {
+            <span class="status-out">Clocked Out</span>
+        }
+    </div>
+    <button id="clockingBtn" 
+            class="clocking-button @(Model.CurrentStatus == ClockStatus.ClockedIn ? "clock-out" : "clock-in")"
+            onclick="submitClocking()">
+        @(Model.CurrentStatus == ClockStatus.ClockedIn ? "Clock Out" : "Clock In")
+    </button>
+</div>
+
+<div class="card">
+    <h2 class="card-title">Clocking History — @DateTime.UtcNow.ToString("MMMM yyyy")</h2>
+    @if (!Model.History.Any())
+    {
+        <p class="text-muted">No clocking records for this month.</p>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Direction</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var record in Model.History)
+                {
+                    <tr>
+                        <td>@record.Timestamp.ToString("yyyy-MM-dd")</td>
+                        <td>@record.Timestamp.ToString("HH:mm:ss")</td>
+                        <td>@(record.Type == ClockType.In ? "IN" : "OUT")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<script>
+    function submitClocking() {
+        var btn = document.getElementById('clockingBtn');
+        var isClockIn = btn.classList.contains('clock-in');
+        var clockType = isClockIn ? 'In' : 'Out';
+        var timestamp = new Date().toISOString();
+        var employeeId = '@Model.EmployeeId';
+
+        if (window.ClockingRetry) {
+            window.ClockingRetry.submit(employeeId, timestamp, clockType);
+        }
+    }
+</script>

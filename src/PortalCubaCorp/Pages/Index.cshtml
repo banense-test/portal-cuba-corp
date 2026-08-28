@@ -1,8 +1,76 @@
 @page
+@model PortalCubaCorp.Pages.IndexModel
 @{
     ViewData["Title"] = "Home";
 }
-<div class="text-center">
-    <h1>Portal Cuba Corp</h1>
-    <p>Employee Portal</p>
+
+<div class="card">
+    <h2 class="card-title">Clock In / Clock Out</h2>
+    <div class="clocking-status">
+        Status: 
+        @if (Model.CurrentStatus == ClockStatus.ClockedIn)
+        {
+            <span class="status-in">Clocked In</span>
+        }
+        else
+        {
+            <span class="status-out">Clocked Out</span>
+        }
+    </div>
+    <button id="clockingBtn" 
+            class="clocking-button @(Model.CurrentStatus == ClockStatus.ClockedIn ? "clock-out" : "clock-in")"
+            onclick="submitClocking()">
+        @(Model.CurrentStatus == ClockStatus.ClockedIn ? "Clock Out" : "Clock In")
+    </button>
 </div>
+
+@if (Model.FeaturedNews.Any())
+{
+    <div class="news-featured">
+        <h2>@Model.FeaturedNews[0].Title</h2>
+        <p>@Model.FeaturedNews[0].Body</p>
+    </div>
+}
+
+<div class="card">
+    <h2 class="card-title">News & Announcements</h2>
+    <div class="category-filter">
+        <a href="/?category="><span class="category-chip @(Model.SelectedCategory == null ? "active" : "")">All</span></a>
+        @foreach (var cat in Model.Categories)
+        {
+            <a href="/?category=@cat"><span class="category-chip @(Model.SelectedCategory == cat ? "active" : "")">@cat</span></a>
+        }
+    </div>
+    @if (!Model.News.Any())
+    {
+        <p class="text-muted">No news items found.</p>
+    }
+    else
+    {
+        @foreach (var item in Model.News)
+        {
+            <div class="news-item">
+                <h3>@item.Title</h3>
+                <div class="news-meta">
+                    <span class="category-chip">@item.Category</span>
+                    <span> @item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+                </div>
+                <div class="news-body">@item.Body</div>
+            </div>
+        }
+    }
+</div>
+
+<script>
+    function submitClocking() {
+        var btn = document.getElementById('clockingBtn');
+        var isClockIn = btn.classList.contains('clock-in');
+        var clockType = isClockIn ? 'In' : 'Out';
+        var timestamp = new Date().toISOString();
+        var employeeId = '@Model.EmployeeId';
+
+        if (window.ClockingRetry) {
+            window.ClockingRetry.submit(employeeId, timestamp, clockType);
+        }
+    }
+</script>
