@@ -1,12 +1,14 @@
 ## Document Control
 | Field | Value |
 |---|---|
-| Phase | Elaboration |
+| Phase | Construction |
 | Status | Draft |
-| Milestone Target | End of Elaboration (LCA) |
-| Iteration | 2 (Cycle 1) |
+| Milestone Target | End-of-Construction |
+| Iteration | 1 (Cycle 1) |
 | Date | 2026-08-28 |
-| Contributors | Designer (Analysis Classes, Use-Case Realizations, Design Classes, Interface Contracts, State Machines — M1/M2 resolution); User-Interface Designer (Boundary Classes and Navigation Map, UI Classes, UI Patterns) |
+| Prior Phase | Elaboration (LCA achieved, 0 open Critical/Major findings, stakeholder sanction GRANTED) |
+| Evolution | Construction C1: Designer class diagrams added (Portal.Services, Portal.Infrastructure, Portal.Domain) with full method signatures; NewsItem state machine added; subsystem interface dependency diagram added; testability entry points defined. UI Designer and Database Designer sections preserved. |
+| Contributors | Designer (Analysis Classes, Use-Case Realizations, Design Classes, Interface Contracts, State Machines, Testability); User-Interface Designer (UI View/Controller Classes, UI Patterns, Boundary Classes and Navigation Map); Database Designer (Persistent Data Classes) |
 ## Design Overview
 | Field | Value |
 |---|---|
