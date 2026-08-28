@@ -322,7 +322,6 @@ end note
 ```
 
 ## Guidelines and Procedures
-
 ### Project-Specific Guidelines (Referenced, Not Authored Here)
 
 Guideline content is authored by discipline experts in `CONTRIBUTING.md` and lint configuration files. The Development Case references these — it does not duplicate them.
@@ -335,6 +334,28 @@ Guideline content is authored by discipline experts in `CONTRIBUTING.md` and lin
 | UI design implementation | UserInterfaceDesigner | `docs/inputs/employee-portal-design.html` (CON-011) | Provided by stakeholder — authoritative |
 | Test conventions | TestDesigner / TestManager | `CONTRIBUTING.md` (test section) | **In progress — Elaboration Iter 1** |
 
+### ID Convention Declaration (F1 Finding Resolution)
+
+**Finding F1 (Minor, Reviewer lens):** The Test Case artifact used `TD-NNN` as a test case ID prefix, which is not in the IARI baseline ID convention table. The Inception Review Record already resolved this (P3: replaced TD-NNN with TC-NNN), but the Elaboration Test Case reintroduced TD-NNN.
+
+**Declaration:** The canonical test case ID prefix for this project is **`TC-NNN`**, per the IARI baseline ID convention table (Test Case → `TC-NNN` → Example: `TC-001` → Authority: TestDesigner). The prefix `TD-NNN` is **NOT a valid ID prefix** in this project. All test case artifacts MUST use `TC-NNN` exclusively. This declaration is binding on the TestDesigner role.
+
+| Element Type | Valid ID Format | Invalid Variants | Authority |
+|---|---|---|---|
+| Test Case | `TC-NNN` | ~~TD-NNN~~ | TestDesigner |
+
+### Process Improvement Notes (Elaboration Iter 2 — Assessment-Driven)
+
+The following process adjustments are derived from the Iteration Assessment lessons learned (Elaboration Iter 1) and are recorded here as binding tailoring decisions:
+
+| # | Lesson Learned | Process Adjustment | Affected Roles |
+|---|---|---|---|
+| 1 | Elaboration cost is 2.78× Inception — cost driver is reasoning over accumulated artifact surface, not new artifact volume | Budget boxes for remaining Elaboration iterations must be sized from Elaboration measured actuals, not Inception rates. The Iteration Plan must reference Elaboration token consumption as the baseline. | ProjectManager, all roles |
+| 2 | Interface divergences between Design Model and implementation block both testing and architecture baselining | The Design Model is the contract. Implementation MUST conform to the Design Model interfaces — not the reverse. Any implementation deviation from a Design Model interface requires a CR to update the Design Model first, then the implementation. The Code Reviewer must verify interface conformance as a mandatory review checkpoint. | Implementer, Designer, CodeReviewer |
+| 3 | PoC planning without execution is insufficient for risk retirement | Risk status `MITIGATING` without PoC results is a claim, not evidence. Risks may only be marked `RESOLVED` when empirical PoC evidence is documented. The Iteration Assessment must verify PoC execution status. | SoftwareArchitect, ProjectManager |
+| 4 | Stakeholder demands all findings resolved — even minor | All open findings (Major AND Minor) must be resolved before the stakeholder sanctions the milestone. Minor findings cannot be deferred. This is a project constraint (STK-001 directive), not a preference. | All roles |
+| 5 | Quality (9.9) and scope completion are independent dimensions | High artifact quality does not compensate for incomplete risk retirement. The LCA gate evaluates whether the architecture is baselined and risks are retired — not whether artifacts are well-written. Process must track both dimensions separately. | ProjectManager, Reviewer |
+
 ### Measurement Policy
 
 This project tracks the two IARI baseline metrics — **tokens consumed** and **elapsed time** (split into agent time and human queue time) — and applies them as follows:
@@ -345,6 +366,8 @@ This project tracks the two IARI baseline metrics — **tokens consumed** and **
 | Elapsed time: agent vs. human queue | Identify human-gate bottlenecks (e.g., stakeholder review waiting); bound human gates at 14-day ceiling per IARI rule | ProjectManager (Risk List, Iteration Plan), ProcessEngineer (process improvement) |
 
 **Inception actuals (measured):** 22 min agent time, 0s stakeholder queue, 4,382,313 tokens, 11 agent runs, 10 artifacts across 2 iterations. These figures inform Elaboration budget-boxing — no per-iteration velocity is quoted (IARI rule: iterations inside a phase are not recorded separately).
+
+**Elaboration Iter 1 actuals (measured):** Elaboration Iter 1 consumed 2.78× the tokens of the entire Inception phase. The cost driver is reasoning over the accumulated artifact surface (12 artifacts, each re-read and cross-referenced), not the volume of new artifacts. Future budget boxes must be sized from Elaboration measured actuals, not Inception rates.
 
 ### Version Policy
 
@@ -364,76 +387,81 @@ No library pins were declared by the stakeholder. The SAD references Novell.Dire
 | Lint configuration | `.editorconfig` / `dotnet-format` | Implementer | **In progress — Elaboration Iter 1** |
 | UI design source | `docs/inputs/employee-portal-design.html` | UserInterfaceDesigner | CON-011 — mandatory, authoritative |
 
-### Tool Environment Verification (Elaboration)
+### Tool Environment Verification (Elaboration Iter 2)
 
 | Item | Status | Verification Notes |
 |---|---|---|
-| Git SCM | **Verified** | Repository active, artifacts persisting correctly |
+| Git SCM | **Verified** | Repository active, artifacts persisting correctly, PR #4 reviewed |
 | .NET 10 SDK | **Declared** | CON-001 — framework pinned; SAD confirms |
 | PostgreSQL | **Declared** | CON-003 — SAD baselined schema |
 | Keycloak OIDC | **External dependency** | CON-004 — STK-003 must provide OIDC client registration before login testing |
 | Active Directory LDAP | **External dependency** | CON-005 — STK-003 must provide test AD for PoC (R001) |
-| CI pipeline | **Pending** | ConfigurationManager to configure `.github/workflows/` |
-| CONTRIBUTING.md | **Pending** | Discipline experts to author in Elaboration Iter 1 |
-| Lint config | **Pending** | Implementer to configure `.editorconfig` |
+| CI pipeline | **Pending** | ConfigurationManager to configure `.github/workflows/` — not yet verified working |
+| CONTRIBUTING.md | **Pending** | Discipline experts to author — not yet created |
+| Lint config | **Pending** | Implementer to configure `.editorconfig` — not yet created |
 | Cross-browser (Chrome/Edge) | **Declared** | CON-008 — testing target for TestDesigner |
+| PR #4 (E1 prototype) | **Reviewed — changes requested** | Code Reviewer found M1 (IAuditLogger mismatch) and M2 (IPersistence transaction API mismatch) — Implementer must fix in Iter 2 |
 
 **Gaps flagged for discipline experts:**
 - CONTRIBUTING.md not yet created — each discipline expert must author their section. The DC references it; it does not author content.
 - CI pipeline not yet configured — ConfigurationManager must configure build, test, and lint automation.
 - STK-003 dependency: test AD and OIDC client registration are prerequisites for PoC execution and login testing. Flagged as assumption in Iteration Assessment.
+- PR #4 interface mismatches (M1, M2) must be resolved by Implementer before architecture can be baselined.
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Elaboration Discipline Workflow (Refined)
+title Elaboration Iter 2 — Process Improvement Workflow (Assessment-Driven)
 
 start
 
-:Read Inception baseline (DC, SAD, UC Model, Risk List);
-note right: S1: Load all Inception artifacts\nand Review Record findings
+:Read Iteration Assessment lessons learned;
+note right
+  5 lessons from Elaboration Iter 1:
+  1. Elaboration cost 2.78x Inception
+  2. Interface divergences block testing
+  3. PoC planning without execution insufficient
+  4. Stakeholder demands all findings resolved
+  5. Quality != scope completion
+end note
 
-:Evaluate OPTIONAL artifact triggers for Elaboration;
-note right: Architectural PoC: re-evaluate for R001\n(AD LDAP attribute consistency)
+:Read Review Record open findings;
+note right
+  F1 (Minor): TD-NNN prefix non-standard
+  Owner: Test Designer / Process Engineer
+  Action: Declare TC-NNN as canonical
+  test case ID prefix in Dev Case
+end note
 
-if (R001 requires empirical validation?) then (Yes — trigger FIRED)
-  :Architectural PoC: TRIGGERED;
-  note right: R001 exposure=9, LDAP attributes\nmay be inconsistent across 3 offices.\nPoC validates attribute mapping empirically.
-else (No)
-  :Architectural PoC: NOT TRIGGERED;
-endif
-
-:Confirm discipline intensity per canonical matrix (Elaboration);
-note right: Requirements=High, A&D=Critical,\nImplementation=Medium, Test=Medium,\nDeployment=Low, CCM=Medium,\nPM=Medium, Environment=Medium
-
-:Integrate discipline-expert tailoring input;
+:Identify DC sections requiring update;
 fork
-  :SoftwareArchitect: SAD baselined (4+1 views);
-  note right: 8 components, 5 ADRs,\n3 sequence diagrams
+  :Document Control — update to Iter 2;
 fork again
-  :SystemAnalyst: UC Model detailed;
-  note right: 10 UCs with activity diagrams,\nall scenarios elaborated
+  :Guidelines and Procedures — add ID convention;
+  note right: F1 resolution: TC-NNN is canonical,\nTD-NNN is NOT a valid prefix
 fork again
-  :Designer: Design Model evolving;
-  note right: Class diagrams, UC realizations
+  :Tailoring Overview — update tool assessment;
+  note right: CI pipeline, CONTRIBUTING.md,\nlint config status from Iter 1
 fork again
-  :TestDesigner: Test cases per UC;
-  note right: R001 and R006 are critical test paths
+  :Traceability — add F1 finding trace;
 end fork
 
-:Verify tool environment for Elaboration;
-note right: CI pipeline, build, test framework,\nCONTRIBUTING.md, lint config
+:Generate updated process improvement diagram;
+note right: This diagram — assessment-driven\ncycle for Iter 2
 
-:Update Development Case with Elaboration deltas;
-note right: PoC trigger fired, tool status updated,\nguideline references refreshed
+:Upsert Development Case sections;
+note right: Section-by-section updates\npreserving valid Iter 1 content
 
-:Support environment during iteration;
-note right: Collect metrics, address process questions,\nimprove based on iteration assessment
+:Verify all F1-affected sections updated;
+if (F1 resolved in all sections?) then (Yes)
+  :F1 finding closed;
+else (No)
+  :Re-check affected sections;
+endif
 
 stop
 
 @enduml
 ```
-
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
