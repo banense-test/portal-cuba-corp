@@ -7,8 +7,40 @@
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
-    <main role="main" class="container">
+    <header class="portal-header">
+        <div class="header-content">
+            <a href="/" class="brand">
+                <span class="brand-icon">CC</span>
+                <span class="brand-text">Portal Cuba Corp</span>
+            </a>
+            <nav class="portal-nav">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/Clocking" class="nav-link">Clocking</a>
+                <a href="/Directory" class="nav-link">Directory</a>
+                @if (User?.IsInRole("hr") == true)
+                {
+                    <a href="/HR/AllClockings" class="nav-link">All Clockings</a>
+                    <a href="/HR/NewsManagement" class="nav-link">News Mgmt</a>
+                    <a href="/HR/WorkerCategory" class="nav-link">Categories</a>
+                }
+            </nav>
+            <div class="header-user">
+                @if (User?.Identity?.IsAuthenticated == true)
+                {
+                    <span class="user-name">@User.Identity.Name</span>
+                }
+            </div>
+        </div>
+    </header>
+    <main role="main" class="portal-main">
         @RenderBody()
     </main>
+    <footer class="portal-footer">
+        <div class="footer-content">
+            <span>Portal Cuba Corp &mdash; Employee Portal</span>
+        </div>
+    </footer>
+    <script src="~/js/clocking-retry.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
