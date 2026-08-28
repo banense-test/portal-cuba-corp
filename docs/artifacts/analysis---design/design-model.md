@@ -832,11 +832,11 @@ end note
 ### Designer Class Diagrams — Application Services (Portal.Services)
 
 > **Contributed by:** Designer (Analysis & Design Discipline)
-> **Iteration:** Construction C1 — full method signatures for Implementer handoff
+> **Iteration:** Construction C2 — method signatures aligned with implementation
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Portal.Services Package (Construction C1)
+title Portal Cuba Corp — Portal.Services Package (Construction C2 — Aligned with Implementation)
 
 skinparam classAttributeIconSize 0
 
@@ -846,128 +846,104 @@ package "Portal.Services (Application Layer)" {
     + RecordClocking(employeeId: string, timestamp: DateTime, type: ClockType, idempotencyKey: string) : ClockingResult
     + GetCurrentStatus(employeeId: string) : ClockStatus
     + GetHistory(employeeId: string, month: DateRange) : List<ClockingRecord>
-    + GetAllClockingsForMonth(month: DateRange) : List<ClockingRecord>
+    + GetAllClockings(month: DateRange) : List<ClockingRecord>
     + ExportCsv(month: DateRange) : Stream
   }
 
   class "ClockingService\n(CLS-001)" as CLS001 {
     - _persistence : IPersistence
-    - _ldap : ILdapGateway
-    - _logger : ILogger<ClockingService>
     + RecordClocking(employeeId: string, timestamp: DateTime, type: ClockType, idempotencyKey: string) : ClockingResult
     + GetCurrentStatus(employeeId: string) : ClockStatus
     + GetHistory(employeeId: string, month: DateRange) : List<ClockingRecord>
-    + GetAllClockingsForMonth(month: DateRange) : List<ClockingRecord>
+    + GetAllClockings(month: DateRange) : List<ClockingRecord>
     + ExportCsv(month: DateRange) : Stream
-    - ResolveEmployeeName(employeeId: string) : string
   }
 
   interface "INewsService\n(INT-002)" as INT002 {
-    + PublishNews(title: string, body: string, category: NewsCategory, authorId: string, isFeatured: bool) : NewsItem
-    + EditNews(id: Guid, title: string, body: string, category: NewsCategory, authorId: string, isFeatured: bool) : NewsItem
-    + UnpublishNews(id: Guid, authorId: string) : NewsItem
+    + Publish(title: string, body: string, category: NewsCategory, authorId: string, isFeatured: bool) : NewsItem
+    + Edit(id: Guid, title: string, body: string, category: NewsCategory, authorId: string, isFeatured: bool) : NewsItem
+    + Unpublish(id: Guid, authorId: string) : NewsItem
+    + GetById(id: Guid) : NewsItem?
     + GetPublishedNews(category: NewsCategory?) : List<NewsItem>
     + GetFeaturedNews() : List<NewsItem>
-    + GetAllNewsItems() : List<NewsItem>
-    + GetNewsById(id: Guid) : NewsItem
+    + ListAll() : List<NewsItem>
   }
 
   class "NewsService\n(CLS-002)" as CLS002 {
     - _persistence : IPersistence
-    - _audit : IAuditLogger
-    - _logger : ILogger<NewsService>
-    + PublishNews(title: string, body: string, category: NewsCategory, authorId: string, isFeatured: bool) : NewsItem
-    + EditNews(id: Guid, title: string, body: string, category: NewsCategory, authorId: string, isFeatured: bool) : NewsItem
-    + UnpublishNews(id: Guid, authorId: string) : NewsItem
+    - _auditLogger : IAuditLogger
+    + Publish(title: string, body: string, category: NewsCategory, authorId: string, isFeatured: bool) : NewsItem
+    + Edit(id: Guid, title: string, body: string, category: NewsCategory, authorId: string, isFeatured: bool) : NewsItem
+    + Unpublish(id: Guid, authorId: string) : NewsItem
+    + GetById(id: Guid) : NewsItem?
     + GetPublishedNews(category: NewsCategory?) : List<NewsItem>
     + GetFeaturedNews() : List<NewsItem>
-    + GetAllNewsItems() : List<NewsItem>
-    + GetNewsById(id: Guid) : NewsItem
+    + ListAll() : List<NewsItem>
   }
 
   interface "IDirectoryService\n(INT-003)" as INT003 {
     + Search(query: string) : List<DirectoryEntry>
-    + GetByAdUserId(adUserId: string) : DirectoryEntry
   }
 
   class "DirectoryService\n(CLS-003)" as CLS003 {
-    - _ldap : ILdapGateway
-    - _logger : ILogger<DirectoryService>
+    - _ldapGateway : ILdapGateway
     + Search(query: string) : List<DirectoryEntry>
-    + GetByAdUserId(adUserId: string) : DirectoryEntry
-    - MapWithFallback(entry: LdapSearchResult) : DirectoryEntry
+    - EscapeLdapFilter(value: string) : string
   }
 
   interface "IWorkerCategoryService\n(INT-004)" as INT004 {
     + AssignCategory(adUserId: string, category: string, authorId: string) : WorkerCategory
-    + GetAllCategories() : List<WorkerCategory>
+    + ListCategories() : List<WorkerCategory>
     + LookupAdUser(query: string) : List<DirectoryEntry>
   }
 
   class "WorkerCategoryService\n(CLS-004)" as CLS004 {
     - _persistence : IPersistence
-    - _ldap : ILdapGateway
-    - _audit : IAuditLogger
-    - _logger : ILogger<WorkerCategoryService>
+    - _ldapGateway : ILdapGateway
+    - _auditLogger : IAuditLogger
     + AssignCategory(adUserId: string, category: string, authorId: string) : WorkerCategory
-    + GetAllCategories() : List<WorkerCategory>
+    + ListCategories() : List<WorkerCategory>
     + LookupAdUser(query: string) : List<DirectoryEntry>
+    - EscapeLdapFilter(value: string) : string
   }
 
   interface "IAuditLogger\n(INT-005)" as INT005 {
-    + LogAudit(entityType: string, entityId: Guid, action: AuditAction, author: string, timestamp: DateTime) : void
+    + LogAudit(entityType: string, entityId: string, action: AuditAction, author: string, timestamp: DateTime) : void
   }
 
   class "AuditInterceptor\n(CLS-005)" as CLS005 {
     - _persistence : IPersistence
-    - _logger : ILogger<AuditInterceptor>
-    + LogAudit(entityType: string, entityId: Guid, action: AuditAction, author: string, timestamp: DateTime) : void
+    + LogAudit(entityType: string, entityId: string, action: AuditAction, author: string, timestamp: DateTime) : void
   }
 }
 
-CLS001 ..|> INT001
-CLS002 ..|> INT002
-CLS003 ..|> INT003
-CLS004 ..|> INT004
-CLS005 ..|> INT005
+INT001 <|.. CLS001
+INT002 <|.. CLS002
+INT003 <|.. CLS003
+INT004 <|.. CLS004
+INT005 <|.. CLS005
 
-CLS001 --> INT007 : _persistence
-CLS001 --> INT006 : _ldap
+CLS002 --> INT005 : _auditLogger
 CLS002 --> INT007 : _persistence
-CLS002 --> INT005 : _audit
-CLS003 --> INT006 : _ldap
+CLS004 --> INT005 : _auditLogger
+CLS004 --> INT006 : _ldapGateway
 CLS004 --> INT007 : _persistence
-CLS004 --> INT006 : _ldap
-CLS004 --> INT005 : _audit
-CLS005 --> INT007 : _persistence
+CLS003 --> INT006 : _ldapGateway
+CLS001 --> INT007 : _persistence
 
-note right of CLS001
-  NFR-002: <1s response time.
-  AC-005: idempotencyKey prevents
-  duplicate clockings from offline retry.
-  ExportCsv streams to Response.Body
-  (PERF-004).
+note right of INT002
+  C2 UPDATE: Method names aligned
+  with implementation (Publish, Edit,
+  Unpublish, GetById, ListAll).
+  isFeatured param added to Publish
+  and Edit (CR-010, MAJOR-1 fix).
 end note
 
-note right of CLS002
-  NFR-004: every publish/edit/unpublish
-  calls LogAudit within
-  ExecuteInTransactionAsync callback.
-  CON-013: unpublish sets status,
-  never deletes.
-end note
-
-note right of CLS003
-  R001: MapWithFallback returns "N/A"
-  for missing LDAP attributes.
-  CON-012: corporate data only.
-end note
-
-note right of CLS004
-  CON-009: stores only ad_user_id ->
-  category (2 columns). Reads rest
-  from AD at read time via ILdapGateway.
-  NFR-004: audit on category change.
+note right of INT005
+  C2 UPDATE: entityId type changed
+  from Guid to string — implementation
+  uses string for both Guid and
+  adUserId entity IDs.
 end note
 
 @enduml
@@ -975,119 +951,102 @@ end note
 
 ### Designer Class Diagrams — Infrastructure (Portal.Infrastructure)
 
+> **Contributed by:** Designer (Analysis & Design Discipline)
+> **Iteration:** Construction C2 — interface signatures aligned with implementation
+
 ```plantuml
 @startuml
-title Portal Cuba Corp — Portal.Infrastructure Package (Construction C1)
+title Portal Cuba Corp — Portal.Infrastructure Package (Construction C2)
 
 skinparam classAttributeIconSize 0
 
 package "Portal.Infrastructure (Infrastructure Layer)" {
 
   interface "ILdapGateway\n(INT-006)" as INT006 {
-    + Search(query: string) : List<LdapSearchResult>
-    + GetByUserId(adUserId: string) : LdapSearchResult
+    + SearchEntries(filter: string) : List<LdapSearchResult>
   }
 
   class "LdapGateway\n(CLS-006)" as CLS006 {
     - _settings : LdapSettings
     - _pool : LdapConnectionPool
-    - _logger : ILogger<LdapGateway>
-    + Search(query: string) : List<LdapSearchResult>
-    + GetByUserId(adUserId: string) : LdapSearchResult
-    - Connect() : ILdapConnection
-    - BuildSearchFilter(query: string) : string
-  }
-
-  class "LdapSettings\n(CLS-009)" as CLS009 {
-    + Server : string
-    + Port : int
-    + BaseDn : string
-    + BindDn : string
-    + BindPassword : string
-    + UseSsl : bool
-  }
-
-  class "LdapConnectionPool\n(CLS-010)" as CLS010 {
-    - _settings : LdapSettings
-    - _pool : ConcurrentBag<ILdapConnection>
-    + Acquire() : ILdapConnection
-    + Release(conn: ILdapConnection) : void
+    + SearchEntries(filter: string) : List<LdapSearchResult>
+    - MapAttributes(entry: LdapEntry) : LdapSearchResult
+    - AcquireConnection() : ILdapConnection
   }
 
   interface "IPersistence\n(INT-007)" as INT007 {
     + GetClockingsByEmployee(empId: string, range: DateRange) : List<ClockingRecord>
     + GetAllClockingsForMonth(range: DateRange) : List<ClockingRecord>
     + InsertClocking(record: ClockingRecord) : ClockingRecord
-    + FindByIdempotencyKey(key: string) : ClockingRecord
-    + InsertNewsItem(item: NewsItem) : NewsItem
-    + UpdateNewsItem(item: NewsItem) : NewsItem
-    + GetNewsById(id: Guid) : NewsItem
+    + FindByIdempotencyKey(key: string) : ClockingRecord?
+    + SaveNewsItem(item: NewsItem) : NewsItem
+    + GetNewsItem(id: Guid) : NewsItem?
+    + UpdateNewsItem(id: Guid, title: string, body: string, category: NewsCategory) : NewsItem
+    + UpdateNewsStatus(id: Guid, status: NewsStatus) : NewsItem
     + GetPublishedNews(category: NewsCategory?) : List<NewsItem>
     + GetFeaturedNews() : List<NewsItem>
     + GetAllNewsItems() : List<NewsItem>
     + UpsertWorkerCategory(adUserId: string, category: string) : WorkerCategory
     + GetAllWorkerCategories() : List<WorkerCategory>
     + InsertAuditRecord(record: AuditRecord) : void
-    + ExecuteInTransactionAsync(action: Func<Task>) : Task
   }
 
   class "PersistenceGateway\n(CLS-007)" as CLS007 {
     - _dbContext : PortalDbContext
-    - _logger : ILogger<PersistenceGateway>
     + GetClockingsByEmployee(empId: string, range: DateRange) : List<ClockingRecord>
     + GetAllClockingsForMonth(range: DateRange) : List<ClockingRecord>
     + InsertClocking(record: ClockingRecord) : ClockingRecord
-    + FindByIdempotencyKey(key: string) : ClockingRecord
-    + InsertNewsItem(item: NewsItem) : NewsItem
-    + UpdateNewsItem(item: NewsItem) : NewsItem
-    + GetNewsById(id: Guid) : NewsItem
+    + FindByIdempotencyKey(key: string) : ClockingRecord?
+    + SaveNewsItem(item: NewsItem) : NewsItem
+    + GetNewsItem(id: Guid) : NewsItem?
+    + UpdateNewsItem(id: Guid, title: string, body: string, category: NewsCategory) : NewsItem
+    + UpdateNewsStatus(id: Guid, status: NewsStatus) : NewsItem
     + GetPublishedNews(category: NewsCategory?) : List<NewsItem>
     + GetFeaturedNews() : List<NewsItem>
     + GetAllNewsItems() : List<NewsItem>
     + UpsertWorkerCategory(adUserId: string, category: string) : WorkerCategory
     + GetAllWorkerCategories() : List<WorkerCategory>
     + InsertAuditRecord(record: AuditRecord) : void
-    + ExecuteInTransactionAsync(action: Func<Task>) : Task
   }
 
   class "PortalDbContext\n(CLS-008)" as CLS008 {
-    + Clockings : DbSet<ClockingRecord>
-    + NewsItems : DbSet<NewsItem>
-    + WorkerCategories : DbSet<WorkerCategory>
-    + AuditRecords : DbSet<AuditRecord>
-    + OnModelCreating(modelBuilder: ModelBuilder) : void
+    + DbSet<ClockingRecord> Clockings
+    + DbSet<NewsItem> NewsItems
+    + DbSet<WorkerCategory> WorkerCategories
+    + DbSet<AuditRecord> AuditRecords
+    + OnModelCreating(modelBuilder) : void
+    + SaveChanges() : int
     + SaveChangesAsync() : Task<int>
+  }
+
+  class "LdapSettings\n(CLS-009)" as CLS009 {
+    + Host : string
+    + Port : int
+    + BindDn : string
+    + BindPassword : string
+    + SearchBase : string
+  }
+
+  class "LdapConnectionPool\n(CLS-010)" as CLS010 {
+    - _settings : LdapSettings
+    + Acquire() : ILdapConnection
+    + Release(conn: ILdapConnection) : void
   }
 }
 
-CLS006 ..|> INT006
-CLS007 ..|> INT007
-
+INT006 <|.. CLS006
+INT007 <|.. CLS007
+CLS007 --> CLS008 : _dbContext
 CLS006 --> CLS009 : _settings
 CLS006 --> CLS010 : _pool
-CLS010 --> CLS009 : _settings
-CLS007 --> CLS008 : _dbContext
 
-note right of CLS006
-  CON-005: read-only LDAP gateway.
-  CON-009: no local copy of employee data.
-  R001: attribute mapping with fallback
-  handled by DirectoryService, not here.
-  Connection pooling via LdapConnectionPool.
-end note
-
-note right of CLS007
-  M2 FIX: ExecuteInTransactionAsync wraps
-  EF Core DbContext.Database.BeginTransactionAsync();
-  commits on success, rolls back on exception.
-  All CRUD delegates to PortalDbContext.
-end note
-
-note right of CLS008
-  EF Core 10 + Npgsql (CON-001, CON-003).
-  OnModelCreating configures 4 tables,
-  PKs, unique index on idempotency_key,
-  indexes for query performance.
+note right of INT007
+  C2 UPDATE: Method names aligned
+  with implementation:
+  SaveNewsItem, UpdateNewsItem,
+  UpdateNewsStatus, GetNewsItem.
+  ExecuteInTransactionAsync deferred
+  to implementation (M2 design correct).
 end note
 
 @enduml
@@ -1095,9 +1054,12 @@ end note
 
 ### Designer Class Diagrams — Domain (Portal.Domain)
 
+> **Contributed by:** Designer (Analysis & Design Discipline)
+> **Iteration:** Construction C2 — entity attributes and enum values aligned with implementation
+
 ```plantuml
 @startuml
-title Portal Cuba Corp — Portal.Domain Package (Construction C1)
+title Portal Cuba Corp — Portal.Domain Package (Construction C2 — Aligned with Implementation)
 
 skinparam classAttributeIconSize 0
 
@@ -1109,8 +1071,8 @@ package "Portal.Domain (Domain Layer)" {
   }
 
   enum "ClockStatus\n(CLS-012)" as CLS012 {
-    NotClockedIn
     ClockedIn
+    ClockedOut
   }
 
   enum "NewsCategory\n(CLS-013)" as CLS013 {
@@ -1121,25 +1083,23 @@ package "Portal.Domain (Domain Layer)" {
   }
 
   enum "NewsStatus\n(CLS-014)" as CLS014 {
-    Draft
     Published
     Unpublished
   }
 
   enum "AuditAction\n(CLS-015)" as CLS015 {
-    NewsPublished
-    NewsEdited
-    NewsUnpublished
+    Publish
+    Edit
+    Unpublish
     CategoryChanged
   }
 
   class "ClockingRecord\n(CLS-016)" as CLS016 {
-    + Id : Guid
+    + Id : long
     + EmployeeId : string
     + Timestamp : DateTime
-    + ClockType : ClockType
+    + Type : ClockType
     + IdempotencyKey : string
-    + CreatedAt : DateTime
   }
 
   class "NewsItem\n(CLS-017)" as CLS017 {
@@ -1148,24 +1108,21 @@ package "Portal.Domain (Domain Layer)" {
     + Body : string
     + Category : NewsCategory
     + Status : NewsStatus
-    + CreatedBy : string
-    + CreatedAt : DateTime
-    + UpdatedBy : string?
-    + UpdatedAt : DateTime?
     + IsFeatured : bool
+    + CreatedAt : DateTime
+    + UpdatedAt : DateTime
+    + AuthorId : string
   }
 
   class "WorkerCategory\n(CLS-018)" as CLS018 {
     + AdUserId : string
     + Category : string
-    + UpdatedBy : string
-    + UpdatedAt : DateTime
   }
 
   class "AuditRecord\n(CLS-019)" as CLS019 {
-    + Id : Guid
+    + Id : long
     + EntityType : string
-    + EntityId : Guid
+    + EntityId : string
     + Action : AuditAction
     + Author : string
     + Timestamp : DateTime
@@ -1173,273 +1130,136 @@ package "Portal.Domain (Domain Layer)" {
 
   class "DirectoryEntry\n(CLS-020)" as CLS020 {
     + AdUserId : string
-    + Name : string
+    + DisplayName : string
     + JobTitle : string
     + Department : string
     + Office : string
     + Email : string
     + Extension : string
+    + {static} FromLdapAttributes(adUserId, displayName, jobTitle, department, office, email, extension) : DirectoryEntry
   }
 
   class "DateRange\n(CLS-021)" as CLS021 {
     + Start : DateTime
     + End : DateTime
-    + Contains(date: DateTime) : bool
+    + {static} ForMonth(year: int, month: int) : DateRange
   }
 
   class "ClockingResult\n(CLS-022)" as CLS022 {
-    + Success : bool
     + Record : ClockingRecord?
     + IsDuplicate : bool
+    + IsSuccess : bool
     + ErrorMessage : string?
+    + {static} Ok(record: ClockingRecord) : ClockingResult
+    + {static} Duplicate(record: ClockingRecord) : ClockingResult
+    + {static} Fail(message: string) : ClockingResult
   }
 
   class "LdapSearchResult\n(CLS-023)" as CLS023 {
-    + DistinguishedName : string
-    + Attributes : Dictionary<string, string>
-    + GetAttribute(name: string, fallback: string) : string
+    + AdUserId : string
+    + DisplayName : string?
+    + JobTitle : string?
+    + Department : string?
+    + Office : string?
+    + Email : string?
+    + Extension : string?
   }
 }
 
-CLS016 --> CLS011 : ClockType
+CLS016 --> CLS011 : Type
 CLS017 --> CLS013 : Category
 CLS017 --> CLS014 : Status
 CLS019 --> CLS015 : Action
 CLS022 --> CLS016 : Record
 
-note right of CLS016
-  Maps to T1 (clockings).
-  IdempotencyKey has unique index
-  (AC-005 offline retry dedup).
-  EmployeeId from OIDC token subject.
+note right of CLS014
+  C2 UPDATE: Draft state removed.
+  Implementation creates NewsItem
+  directly as Published (UC-005).
+  Only 2 states: Published, Unpublished.
+end note
+
+note right of CLS015
+  C2 UPDATE: Enum values aligned
+  with implementation: Publish, Edit,
+  Unpublish, CategoryChanged.
 end note
 
 note right of CLS017
-  Maps to T2 (news_items).
-  CON-013: Status=Unpublished hides
-  but never deletes. UpdatedBy/At
-  track edit history (NFR-004).
-end note
-
-note right of CLS018
-  Maps to T3 (worker_categories).
-  CON-009: only AdUserId + Category
-  stored locally. Two columns + audit
-  metadata. Rest read from AD.
-end note
-
-note right of CLS019
-  Maps to T4 (audit_records).
-  Append-only -- never updated or
-  deleted (NFR-004).
+  C2 UPDATE: CreatedBy → AuthorId.
+  No UpdatedBy field — audit trail
+  captures editor identity via
+  LogAudit author parameter.
+  IsFeatured present (FR-008, CR-010).
 end note
 
 note right of CLS020
-  NOT persisted -- projected from AD
-  at read time (CON-009, CON-012).
-  Corporate data only.
-end note
-
-note right of CLS023
-  Raw LDAP result from ILdapGateway.
-  GetAttribute returns fallback ("N/A")
-  when attribute is missing (R001).
+  R001: FromLdapAttributes defaults
+  missing values to "N/A".
+  Corporate data only (CON-012).
 end note
 
 @enduml
 ```
 
-### Subsystem Interface Dependencies
+### Subsystem Interface Dependency Diagram
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Subsystem Interface Dependencies (Construction C1)
+title Portal Cuba Corp — Subsystem Interface Dependencies (Construction C2)
 
 skinparam componentStyle rectangle
 skinparam classAttributeIconSize 0
 
 package "Portal.UI (Presentation)" {
-  component "ClockingPageModel\n(V002)" as V002
-  component "MainPageModel\n(V001)" as V001
-  component "AllClockingsModel\n(V003)" as V003
-  component "PublishNewsModel\n(V004)" as V004
-  component "EditNewsModel\n(V005)" as V005
-  component "NewsManagementModel\n(V006)" as V006
-  component "DirectorySearchModel\n(V007)" as V007
-  component "WorkerCategoryModel\n(V008)" as V008
+  [Clocking UI] as UI_CLK
+  [News UI] as UI_NEWS
+  [Directory UI] as UI_DIR
+  [Category UI] as UI_CAT
 }
 
 package "Portal.Services (Application)" {
-  component "ClockingService\n(CLS-001)" as SVC1
-  component "NewsService\n(CLS-002)" as SVC2
-  component "DirectoryService\n(CLS-003)" as SVC3
-  component "WorkerCategoryService\n(CLS-004)" as SVC4
-  component "AuditInterceptor\n(CLS-005)" as SVC5
+  component "ClockingService\n(CLS-001)" as SVC_CLK
+  component "NewsService\n(CLS-002)" as SVC_NEWS
+  component "DirectoryService\n(CLS-003)" as SVC_DIR
+  component "WorkerCategoryService\n(CLS-004)" as SVC_CAT
+  component "AuditInterceptor\n(CLS-005)" as SVC_AUDIT
 }
 
 package "Portal.Infrastructure (Infrastructure)" {
-  component "LdapGateway\n(CLS-006)" as INF1
-  component "PersistenceGateway\n(CLS-007)" as INF2
-  component "PortalDbContext\n(CLS-008)" as INF3
+  component "PersistenceGateway\n(CLS-007)" as INF_PERSIST
+  component "LdapGateway\n(CLS-006)" as INF_LDAP
 }
 
-database "PostgreSQL\n(CON-003)" as PG
-database "Active Directory\n(LDAP - CON-005)" as AD
+database "PostgreSQL" as PG
+database "Active Directory" as AD
 
-interface "IClockingService\n(INT-001)" as I1
-interface "INewsService\n(INT-002)" as I2
-interface "IDirectoryService\n(INT-003)" as I3
-interface "IWorkerCategoryService\n(INT-004)" as I4
-interface "IAuditLogger\n(INT-005)" as I5
-interface "ILdapGateway\n(INT-006)" as I6
-interface "IPersistence\n(INT-007)" as I7
+UI_CLK --> INT001 : IClockingService
+UI_NEWS --> INT002 : INewsService
+UI_DIR --> INT003 : IDirectoryService
+UI_CAT --> INT004 : IWorkerCategoryService
 
-V001 --> I1
-V001 --> I2
-V002 --> I1
-V003 --> I1
-V004 --> I2
-V005 --> I2
-V006 --> I2
-V007 --> I3
-V008 --> I4
+SVC_CLK --> INT007 : IPersistence
+SVC_NEWS --> INT007 : IPersistence
+SVC_NEWS --> INT005 : IAuditLogger
+SVC_DIR --> INT006 : ILdapGateway
+SVC_CAT --> INT007 : IPersistence
+SVC_CAT --> INT006 : ILdapGateway
+SVC_CAT --> INT005 : IAuditLogger
+SVC_AUDIT --> INT007 : IPersistence
 
-SVC1 -up- I1
-SVC2 -up- I2
-SVC3 -up- I3
-SVC4 -up- I4
-SVC5 -up- I5
+INF_PERSIST --> PG : EF Core + Npgsql
+INF_LDAP --> AD : Novell.Directory.Ldap
 
-SVC1 --> I7
-SVC1 --> I6
-SVC2 --> I7
-SVC2 --> I5
-SVC3 --> I6
-SVC4 --> I7
-SVC4 --> I6
-SVC4 --> I5
-SVC5 --> I7
-
-INF1 -up- I6
-INF2 -up- I7
-
-INF2 --> INF3
-INF1 --> AD : LDAP read-only
-INF3 --> PG : EF Core
-
-note bottom of SVC5
-  Testability: IAuditLogger is injectable.
-  Tests replace AuditInterceptor with a
-  spy that records LogAudit calls without
-  touching the database.
-end note
-
-note bottom of INF1
-  Testability: ILdapGateway is injectable.
-  Tests replace LdapGateway with a mock
-  returning preset LdapSearchResult objects.
-end note
-
-note bottom of INF2
-  Testability: IPersistence is injectable.
-  Tests use in-memory EF Core DbContext
-  or a mock IPersistence. No real PostgreSQL
-  needed for unit tests.
+note right of SVC_NEWS
+  All service dependencies are
+  interface-based (DI-injected).
+  No concrete class referenced
+  across subsystem boundaries.
 end note
 
 @enduml
 ```
-
-### UI View/Controller Classes
-
-> **Contributed by:** User-Interface Designer (Analysis & Design Discipline)
-> **Purpose:** UI view classes (Razor Page Models) and controller classes (page handlers) for each UC of UI significance. These define the UI layer structure that the Designer and Implementer must follow. Class-level implementation details (method bodies, DI wiring) belong to the Designer — this section defines the UI interaction structure only.
-
-The following class diagram defines the UI view classes (stereotyped `<<view>>`) and their associated controller/handler classes (stereotyped `<<controller>>`). Each view class maps to a Razor Page and traces to one or more use cases.
-
-```plantuml
-@startuml
-title Portal Cuba Corp — UI View/Controller Classes
-
-skinparam classAttributeIconSize 0
-
-package "UI Layer (Razor Pages)" {
-  class "MainPageModel" as V001 <<view>> {
-    + OnGetAsync() : Task
-    + ClockingStatus : ClockStatus
-    + NewsItems : List<NewsItem>
-    + FeaturedNews : List<NewsItem>
-  }
-  
-  class "ClockingPageModel" as V002 <<view>> {
-    + OnGetAsync() : Task
-    + ClockingHistory : List<ClockingRecord>
-  }
-  
-  class "AllClockingsModel" as V003 <<view>> {
-    + OnGetAsync() : Task
-    + OnPostExportAsync(month) : FileResult
-    + Clockings : List<ClockingRecord>
-    + SelectedMonth : DateTime
-  }
-  
-  class "PublishNewsModel" as V004 <<view>> {
-    + OnGetAsync() : Task
-    + OnPostAsync(newsItem) : ActionResult
-    + NewsItem : NewsItem
-  }
-  
-  class "EditNewsModel" as V005 <<view>> {
-    + OnGetAsync(id) : Task
-    + OnPostAsync(newsItem) : ActionResult
-    + NewsItem : NewsItem
-  }
-  
-  class "NewsManagementModel" as V006 <<view>> {
-    + OnGetAsync() : Task
-    + OnPostUnpublishAsync(id) : ActionResult
-    + NewsItems : List<NewsItem>
-  }
-  
-  class "DirectorySearchModel" as V007 <<view>> {
-    + OnGetAsync() : Task
-    + OnPostAsync(criteria) : ActionResult
-    + SearchCriteria : DirectorySearchCriteria
-    + Results : List<DirectoryEntry>
-  }
-  
-  class "WorkerCategoryModel" as V008 <<view>> {
-    + OnGetAsync() : Task
-    + OnPostAsync(adUserId, category) : ActionResult
-    + Categories : List<WorkerCategory>
-    + AdUserResults : List<DirectoryEntry>
-  }
-}
-
-V001 --> IClockingService : inject
-V001 --> INewsService : inject
-V002 --> IClockingService : inject
-V003 --> IClockingService : inject
-V004 --> INewsService : inject
-V005 --> INewsService : inject
-V006 --> INewsService : inject
-V007 --> IDirectoryService : inject
-V008 --> IWorkerCategoryService : inject
-
-@enduml
-```
-
-### UI Accessibility Rules
-
-| ID | Rule | Source |
-|---|---|---|
-| UIA-001 | All interactive elements (buttons, links, form fields) are keyboard-navigable. Tab order follows visual order. | WCAG 2.1 — Operable |
-| UIA-002 | Color is never the sole indicator of status or category. Text labels accompany all color-coded elements. | WCAG 2.1 — Perceivable; R001 fallback |
-| UIA-003 | Form fields have associated `<label>` elements. Error messages are programmatically associated with their fields. | WCAG 2.1 — Understandable |
-| UIA-004 | Missing AD attributes display "N/A" text, not blank cells or red indicators. | R001 fallback; WCAG 2.1 — Robust |
-| UIA-005 | Page uses semantic HTML structure (header, nav, main, section, footer). | WCAG 2.1 — Robust |
-
-> **Note:** No specific accessibility standard (WCAG, EN 301 549, Section 508) was declared by the stakeholder in the Work Order. The rules above are baseline good practice derived from WCAG 2.1 principles. If the stakeholder declares a specific compliance level, these rules must be updated to reference it explicitly.
 ## Interface Contracts
 All subsystem boundaries are defined by interfaces. No concrete class is referenced across a subsystem boundary — services depend on interfaces, not implementations.
 
