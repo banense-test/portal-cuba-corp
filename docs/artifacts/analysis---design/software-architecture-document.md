@@ -869,6 +869,40 @@ stop
 ```
 
 **Current LAM verdict:** Architecture is stable (criterion 2 PASS — SAD BASELINED). Risks are improving (criterion 3 PARTIAL → IMPROVING — PoC decisions recorded for R001/R006/R003; M1/M2 interface consistency verified). Construction plan and stakeholder agreement are PENDING completion of Implementer code alignment and end-of-iteration review. The milestone is NOT yet achieved — this is a working assessment for Elaboration Iteration 2.
+
+---
+
+### Construction C1 Governance Record (2026-08-28)
+
+#### CR Concurrence Decisions
+
+| Issue | CR Title | Verdict | Rationale |
+|---|---|---|---|
+| #1 | CR-001: Execute LDAP Attribute Mapping PoC (R001 — exposure=9) | **CONCUR** | Validates existing COMP-005 / ILdapGateway (INT-006) within its subsystem boundary. No new subsystem, interface, or layering change. LdapGateway implementation already maps 7 AD attributes with null fallback. Depends on STK-003 for real AD access — coordination, not architecture change. CON-012 enforced by attribute whitelist. |
+| #2 | CR-002: Validate Offline Clocking Retry Design (AC-005, R006 — exposure=6) | **CONCUR** | Validates existing COMP-002 (ClockingService) + clocking-retry.js within their documented boundaries. SAD Process View documents the mechanism. Implementation matches SAD: localStorage, 10s retry, 5min max, idempotency key, server-side deduplication via FindByIdempotencyKey. No interface changes permitted. |
+
+#### Refinement Findings
+
+| Finding | Type | SAD Section | Resolution |
+|---|---|---|---|
+| Implementation View project naming: SAD said `src/PortalCubaCorp.Web`, actual is `src/PortalCubaCorp` | MINOR-LOCAL | Implementation View | **Applied** — Implementation View diagram and build structure table updated to reflect actual project name |
+| ILdapConnection testability abstraction not in SAD Implementation View | MINOR-LOCAL | Implementation View | **Applied** — Added to Infrastructure Interfaces package in updated diagram |
+| Domain entities incomplete in SAD: listed 5, actual has 9 (ClockingResult, LdapSearchResult, DateRange, Enums added) | MINOR-LOCAL | Implementation View | **Applied** — All 9 domain entities listed in updated diagram and build structure table |
+| NuGet package inventory not in SAD | MINOR-LOCAL | Implementation View | **Applied** — Package inventory table added with versions and constraint mappings |
+| Audit transaction boundary: NewsService calls LogAudit() after SaveNewsItem() without ExecuteInTransactionAsync wrapper | OBSERVATION | Quality (Auditability) | **Flagged** — SAD states "audit within same DB transaction as business operation." Implementation does not wrap both in ExecuteInTransactionAsync. This is an implementation-level finding for the Implementer to resolve — the architectural intent is correct, the code does not yet enforce it. Not a boundary violation. |
+
+#### Iteration-Baseline PR Review
+
+No iteration-baseline PR (iteration/C1 → main) was open at the time of this governance run. The iteration has not reached its close. Architectural review will be performed when the Integrator opens the PR.
+
+#### Open Architectural Issues for Next Iteration
+
+| Issue | Priority | Owner | Description |
+|---|---|---|---|
+| Audit transaction boundary enforcement | Medium | Implementer | NewsService and WorkerCategoryService should wrap business operation + audit log in ExecuteInTransactionAsync to ensure atomicity (SAD Quality: Auditability tactic) |
+| CR-001 LDAP PoC execution | High | Implementer + STK-003 | Execute LDAP PoC against real AD to retire R001 (architect concurred) |
+| CR-002 Offline retry validation | High | Implementer | Validate offline retry end-to-end to retire R006 (architect concurred) |
+| Iteration-baseline PR review | High | Architect | Review iteration/C1 → main PR when opened by Integrator |
 ## Traceability
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
