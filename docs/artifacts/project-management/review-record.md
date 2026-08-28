@@ -306,7 +306,6 @@ Business Modeling discipline is correctly INACTIVE per DC §4. The project is no
 
 The project is viable to proceed to Elaboration upon ReviewCoordinator consolidation.
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | Review Record | All 8 Inception artifacts | Derives | LCO Milestone Review (ReviewCoordinator) |
@@ -318,3 +317,6 @@ The project is viable to proceed to Elaboration upon ReviewCoordinator consolida
 | SAD Volatility Check | SAD component decomposition | Derives | Software Architecture Document artifact |
 | Risk List Check | R001, R002 (Work Order) | Derives | Risk List artifact |
 | Iteration Plan Check | 6±3 rule, rubber profile | Derives | Iteration Plan artifact |
+| BR-OK-INACTIVE verdict | DC §4 classification (Process Engineer) | Derives | LCO Milestone Review (ReviewCoordinator) |
+| BM Artifact Coverage Check | All 9 project artifacts (list_artifacts) | Derives | Review Record (cumulative) |
+| DC §4 Criteria Evaluation | Vision, Use-Case Model, DC classification | Derives | Review Record (cumulative) |
