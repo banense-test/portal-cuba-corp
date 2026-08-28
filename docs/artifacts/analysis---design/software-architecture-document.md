@@ -732,7 +732,6 @@ end note
 | AC-003 | Directory search < 10s | LDAP query to AD on demand; results not cached locally (CON-009); LDAP query performance depends on AD infrastructure (R001 risk) |
 
 ## Quality
-
 | Quality Attribute | Tactic | Status |
 |---|---|---|
 | Security | OIDC authentication via Keycloak (CON-004); role-based authorization from token claims; no access outside corporate network (CON-007); read-only LDAP (CON-010) | Addressed in baseline architecture |
@@ -741,6 +740,76 @@ end note
 | Performance | Local PostgreSQL (no network hop); server-rendered pages (no SPA overhead); LDAP query for directory (R001 risk) | Addressed; LDAP performance to be validated against real AD |
 | Maintainability | Interface-based subsystem boundaries; each subsystem encapsulates one volatility area; layered monolith (simple to deploy and debug); 4-project solution structure | Addressed in baseline architecture |
 
+### Lifecycle Architecture Milestone Assessment
+
+The following table assesses all 6 LAM criteria for the Elaboration iteration. This is a working assessment — the milestone is NOT yet achieved (per Work Order instructions). This section will be updated as the iteration progresses and reviewed at the end-of-Elaboration gate.
+
+| # | Criterion | Status | Assessment |
+|---|---|---|---|
+| 1 | Vision stable | PASS | Vision Document approved at LCO. Scope statement, stakeholders, and business goals unchanged. No CRs affecting vision. |
+| 2 | Architecture stable | PASS | SAD baselined with all 4+1 views. 8 components with full interface specifications. 5 ADRs with alternatives documented. 6 design mechanisms mapped from analysis mechanisms. Component, deployment, process, implementation, and 3 sequence diagrams validated. |
+| 3 | Risks resolved | PARTIAL | R001 (LDAP, exposure=9): addressed architecturally via ADR-003 (attribute mapping with fallback) and validated in UC-009 sequence diagram. Risk is mitigated by design but not yet empirically validated against real AD — requires testing with actual AD infrastructure (STK-003 dependency). R006 (offline clocking, exposure=6): addressed via ADR-004 (localStorage + POST retry) and validated in UC-001 sequence diagram + Process View activity diagram. Design is complete; implementation validation pending. |
+| 4 | Construction plan credible | PENDING | Iteration Plan from Inception provides construction planning basis. SAD prioritized UC list available for PM to plan from. Detailed estimates depend on Designer completing UC realizations and Database Designer completing schema. |
+| 5 | Stakeholders agree | PENDING | LCO stakeholder sanction granted (GO to Elaboration). Elaboration review pending — stakeholders have not yet reviewed the baselined architecture. |
+| 6 | Expenditure acceptable | PASS | Inception cost: 22 min agent time, 0s stakeholder queue, 4.38M tokens, 11 agent runs, 10 artifacts. Proportional to scope. Elaboration costs tracking within budget. |
+
+### Open Architecture Issues
+
+| Issue | Status | Resolution Path |
+|---|---|---|
+| R001 LDAP attribute consistency | Mitigated by design, not empirically validated | Requires test against real AD with 3 offices' data. STK-003 must provide test AD access. |
+| R006 Offline retry mechanism | Designed, not implemented | Implementer builds clocking-retry.js + idempotency key handling in Construction. |
+| Designer UC realizations | In progress | Design Model has UI classes; Designer must complete UC realizations and class diagrams. |
+| Database schema | Not yet produced | Database Designer must produce schema from Data View entities. |
+
+### Risk Resolution Status
+
+| Risk | Exposure | Strategy | Status |
+|---|---|---|---|
+| R001 | 9 (HIGH) | Mitigate via ADR-003 (attribute mapping + fallback) | Design complete — empirical validation pending |
+| R006 | 6 (SIGNIFICANT) | Mitigate via ADR-004 (localStorage + POST retry) | Design complete — implementation pending |
+| R003 | — | Accept (Keycloak already running) | Addressed by ADR-005 |
+| R004 | — | Mitigate (local PostgreSQL, no network hop) | Addressed in Size & Performance |
+| R005 | — | Mitigate (mandatory custom UI design CON-011) | Addressed in Design Model UI Patterns |
+
+```plantuml
+@startuml
+title LAM Review — 6 Criteria Assessment
+
+skinparam activityStyle rounded
+
+start
+if (1. Vision stable?) then (yes)
+  if (2. Architecture stable?) then (yes)
+    if (3. Risks resolved?) then (yes)
+      if (4. Construction plan credible?) then (yes)
+        if (5. Stakeholders agree?) then (yes)
+          if (6. Expenditure acceptable?) then (yes)
+            :LCA Milestone: PASS;
+          else (no)
+            :LCA: FAIL — expenditure;
+          endif
+        else (no)
+          :LCA: FAIL — stakeholder;
+        endif
+      else (no)
+        :LCA: FAIL — plan;
+      endif
+    else (no)
+      :LCA: FAIL — risks;
+    endif
+  else (no)
+    :LCA: FAIL — architecture;
+  endif
+else (no)
+  :LCA: FAIL — vision;
+endif
+stop
+
+@enduml
+```
+
+**Current LAM verdict:** Architecture is stable (criterion 2 PASS). Risks are mitigated by design but not yet empirically validated (criterion 3 PARTIAL). Construction plan and stakeholder agreement are PENDING completion of parallel design activities and end-of-iteration review. The milestone is NOT yet achieved — this is a working assessment for the Elaboration iteration in progress.
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
