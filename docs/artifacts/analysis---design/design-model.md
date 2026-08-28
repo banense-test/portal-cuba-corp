@@ -10,9 +10,46 @@
 | Contributors | User-Interface Designer (Boundary Classes and Navigation Map, UI Classes, UI Patterns) |
 
 ## Design Overview
+| Field | Value |
+|---|---|
+| Phase | Elaboration |
+| Status | Draft |
+| Milestone Target | End of Elaboration (LCA) |
+| Iteration | 1 (Cycle 1) |
+| Date | 2026-08-28 |
+| Contributors | Designer (Analysis Classes, Use-Case Realizations, Design Classes, Interface Contracts, State Machines); User-Interface Designer (UI View/Controller Classes, UI Patterns, Boundary Classes and Navigation Map) |
 
-> Placeholder — Designer owns this section. Will be populated with design architecture overview, layer mapping, and technology stack alignment in Elaboration.
+### Technology Stack Alignment
 
+| Layer | Technology | Constraint | Design Mechanism |
+|---|---|---|---|
+| Presentation | Razor Pages (.NET 10) | CON-002 | Server-rendered HTML; no SPA; clocking-retry.js for offline retry only |
+| Application Services | .NET 10 REST API | CON-001 | DI-injected services implementing component interfaces |
+| Persistence | EF Core + PostgreSQL | CON-003 | Repository pattern via IPersistence; EF Core DbContext |
+| Authentication | Keycloak OIDC client | CON-004 | OIDC middleware pipeline; role claims from token |
+| Directory | AD over LDAP (Novell.Directory.Ldap) | CON-005, CON-009 | Read-only LDAP gateway; no local copy of employee data |
+| Hosting | Internal Windows Server | CON-006, CON-007 | Single-server deployment; intranet-only |
+
+### Layer Mapping
+
+The design follows a three-layer architecture as defined in the SAD Logical View:
+
+| Layer | Package | Design Classes | Interfaces |
+|---|---|---|---|
+| Presentation | Portal.UI | MainPageModel, ClockingPageModel, AllClockingsModel, PublishNewsModel, EditNewsModel, NewsManagementModel, DirectorySearchModel, WorkerCategoryModel | (Razor Page Models — see UI View/Controller Classes section) |
+| Application Services | Portal.Services | ClockingService, NewsService, DirectoryService, WorkerCategoryService, AuditInterceptor | IClockingService, INewsService, IDirectoryService, IWorkerCategoryService, IAuditLogger |
+| Infrastructure | Portal.Infrastructure | LdapGateway, PersistenceGateway, ClockingRepository, NewsRepository, CategoryRepository, AuditRepository | ILdapGateway, IPersistence |
+
+### Design Mechanism Resolution (Three-Level Chain)
+
+| Analysis Mechanism | Design Mechanism (Pattern + Properties) | Implementation Mechanism | Component |
+|---|---|---|---|
+| Persistence | Repository + Unit of Work via EF Core DbContext; transactional, with unique index on clockings.idempotency_key | EF Core 10 + Npgsql (PostgreSQL) | COMP-006 |
+| LDAP Directory Access | Gateway pattern; read-only; connection pooling; attribute mapping with fallback for missing fields (R001) | Novell.Directory.Ldap.NETStandard | COMP-005 |
+| Authentication | OIDC client; token validation; role extraction from claims; no local user store | Keycloak (existing) + ASP.NET Core OIDC middleware | COMP-007 |
+| Audit Trail | Interceptor pattern; append-only; same DB transaction as business operation; author from OIDC token | EF Core SaveInterceptor + audit_records table | COMP-008 |
+| Offline Retry | Client-side localStorage + POST retry with idempotency key; 5-min window; server accepts client timestamp | clocking-retry.js + IClockingService idempotencyKey param | COMP-002 |
+| CSV Export | Streaming response; HR-only; date-range filtered | IClockingService.ExportCsv returns Stream → Razor Page writes to Response.Body | COMP-002 |
 ## Domain Model
 
 > Placeholder — Designer owns this section. Will be populated with domain class diagram and entity relationships.
