@@ -2,168 +2,166 @@
 
 | Field | Value |
 |---|---|
-| Phase | Elaboration |
-| Status | Draft |
-| Milestone Target | End-of-Elaboration (LCA) |
-| Iteration | 2 (Cycle 1) |
+| Phase | Construction |
+| Status | Active |
+| Milestone Target | End-of-Construction (IOC) |
+| Iteration | 1 (Cycle 1) |
 | Date | 2026-08-28 |
-| Prior Phase | Inception (LCO achieved, 0 open findings, stakeholder sanction GRANTED) |
-| Evolution | Elaboration Iter 1 Plan evolved for Iter 2: MR-F2 resolved (iteration count corrected 6→7); Iter 2 objectives defined to resolve all open findings and close LCA conditions; fine Gantt replaced with Iter 2 scope; coarse roadmap updated with Iter 1 measured status |
-| Review Finding Resolved | MR-F2 (Minor) — Iteration count mismatch: narrative said "6 iterations" but roadmap table showed 7 (2+2+2+1). RESOLVED: narrative corrected to "7 iterations" |
-| Measured Baseline | Inception: 2 iterations, 4,382,313 tokens, 22 min agent time, 11 runs, 10 artifacts. Elaboration Iter 1: [ASSUMPTION — requires validation; measured at iteration close] |
+| Prior Phase | Elaboration (LCA achieved, 0 open Critical/Major, stakeholder sanction GRANTED) |
+| Evolution | Elaboration Iter 2 Plan evolved for Construction Iter 1: coarse roadmap baselined with measured Elaboration actuals; fine plan replaced with C1 scope (fix PR #8 findings + implement application/persistence/LDAP/audit layers); budget box sized from measured Elaboration per-iteration cost (~10.4M tokens average) |
+| Measured Baseline | Inception: 2 iters, 4.38M tokens, 22 min, 11 runs, 10 artifacts. Elaboration: 2 iters, 20.87M tokens, 1.0h, 21 runs, 13 artifacts. Cumulative: 25.25M tokens, 2.5h, 53 runs, 23 artifacts. |
 
 ## Iteration Objectives
 
-1. **Resolve all open Review Record findings (LCA conditions):** Close M1 (IAuditLogger signature mismatch), M2 (IPersistence transaction API mismatch), MR-F1 (risk evidence gap — RESOLVED in Risk List), MR-F2 (iteration count mismatch — RESOLVED in this plan), F1 (TD-NNN prefix convention). All 5 findings targeted for closure this iteration.
-2. **Confirm PoC decisions for R001 and R006:** PoC decisions recorded in Architectural Proof-of-Concept artifact. Risk List updated: R001→MITIGATED, R006→MITIGATED. SAD status changed from DRAFT to BASELINED.
-3. **Confirm R003 OIDC registration status:** PoC mode analysis-only. Mock auth contingency active. Monitor STK-003 registration timeline — escalate if not confirmed by Construction Iter 1.
-4. **Baseline the architecture (LCA target):** SAD status changed from DRAFT to BASELINED. All 4+1 views addressed, 8 components, 5 ADRs. Design Model interface mismatches (M1/M2) resolved by Implementer aligning code to Design Model INT-005/INT-007.
-5. **Design remaining UCs for Iter 2 scope:** UC-010 (Manage Worker Category), UC-004 (Export CSV), UC-002 (Clocking History), UC-003 (View All Clockings). These bridge local DB + LDAP and exercise read-only views.
-6. **Produce Iteration Assessment for Iter 2:** Record variance analysis, objective achievement, and LCA gate readiness.
+1. **Resolve all open Review Record findings from PR #8:** MAJOR-1 (IsFeatured flag never set — FR-008 featured banner non-functional) blocks merge. MINOR-1 (DirectoryModel naming), MINOR-2 (dead EmployeeId field), MINOR-3 (idempotency key not scoped by employee), MINOR-4 (test codifies MINOR-3 behavior). All 5 findings targeted for closure this iteration.
+2. **Implement application services layer:** NewsService (publish/edit/unpublish with audit), ClockingService (record with idempotency + offline retry), DirectoryService (LDAP read), WorkerCategoryService (AD user id → category CRUD with audit).
+3. **Implement persistence layer:** PostgreSQL repositories for Clocking, News, NewsAudit, WorkerCategory tables per SAD schema baseline.
+4. **Implement LDAP gateway:** LdapGateway using Novell.Directory.Ldap (ADR-003) with ILdapConnection abstraction for testability. Missing AD attributes default to "N/A" (R001 mitigation).
+5. **Implement audit logging:** AuditLogger (INT-005) for all publish/edit/unpublish/category operations per NFR-004.
+6. **Expand test coverage:** Unit tests for new application services; integration tests for LDAP and persistence layers.
+7. **Re-review and merge PR #8:** After fixes, Reviewer re-evaluates; CI must pass green.
 
 ## Plan and Milestones
 
 ### Coarse Cross-Iteration Roadmap
 
-The project follows the RUP iterative lifecycle with **7 iterations** across 4 phases, consistent with the 6±3 rule for a moderate-complexity internal portal. The rubber profile starting point (Inception ~5%, Elaboration ~20%, Construction ~65%, Transition ~10%) is adjusted for this project's risk profile: R001 (AD LDAP, exposure=9) and R006 (offline operation, exposure=6) demand a robust Elaboration phase, so Elaboration receives 2 iterations rather than 1.
-
-> **Roadmap update (Elaboration Iter 2):** Inception is CLOSED with measured actuals: 2 iterations, 4,382,313 tokens, 22 min agent time, 11 agent runs, 10 artifacts. Elaboration Iter 1 is complete with findings — 5 open findings (3 Major, 2 Minor) targeted for Iter 2 resolution. Elaboration is allocated 2 iterations; Construction 2; Transition 1. The coarse roadmap for Construction and Transition is provisional — it will be baselined at LCA using measured Elaboration actuals.
+The project follows the RUP iterative lifecycle with **7 iterations** across 4 phases. Inception and Elaboration are CLOSED with measured actuals. Construction is allocated 2 iterations; Transition 1. The coarse roadmap is now baselined from measured Elaboration actuals.
 
 | Phase | Iterations | Measured Tokens | Measured Agent Time | Agent Runs | Artifacts | Milestone |
 |---|---|---|---|---|---|---|
 | Inception (CLOSED) | 2 | 4,382,313 | 22 min | 11 | 10 | LCO ✅ ACHIEVED |
-| Elaboration (CURRENT) | 2 | [ASSUMPTION — ~5M tokens; basis: Inception measured 4.38M for 2 iters of lower-intensity scope; Elaboration is higher-intensity (PoC + architecture baseline + design model), so ~2.5M per iteration × 2] | [ASSUMPTION — ~30 min; basis: Inception 22 min for 2 iters; Elaboration has more agent roles active in parallel] | [ASSUMPTION — ~15 runs; basis: Inception 11 runs, Elaboration activates more roles] | [ASSUMPTION — ~8 artifacts; basis: SAD evolution, Design Model, Risk List, Iteration Plan, Iteration Assessment + upstream artifacts] | LCA (target) |
-| Construction (PLANNED) | 2 | [ASSUMPTION — requires validation at LCA] | [ASSUMPTION — requires validation at LCA] | [ASSUMPTION] | [ASSUMPTION] | IOC (target) |
-| Transition (PLANNED) | 1 | [ASSUMPTION — requires validation at IOC] | [ASSUMPTION — requires validation at IOC] | [ASSUMPTION] | [ASSUMPTION] | PR (target) |
-| **Total** | **7** | | | | | |
+| Elaboration (CLOSED) | 2 | 20,867,327 | 1.0 h | 21 | 13 | LCA ✅ ACHIEVED |
+| Construction (CURRENT) | 2 | [ASSUMPTION — ~10.4M tokens/iter; basis: Elaboration measured average per-iteration cost] | [ASSUMPTION — ~30 min/iter; basis: Elaboration measured average] | [ASSUMPTION — ~15 runs/iter] | [ASSUMPTION — ~10 artifacts] | IOC (target) |
+| Transition (PLANNED) | 1 | [ASSUMPTION — ~5M tokens; basis: Transition is lighter, fewer architectural decisions] | [ASSUMPTION — ~15 min] | [ASSUMPTION — ~8 runs] | [ASSUMPTION — ~5 artifacts] | PR (target) |
+| **Total** | **7** | **~51M (forecast)** | | | | |
 
 ### Iteration Sequence + Human Gates
 
 ```plantuml
-@startuml
-title Elaboration Iter 2 — Iteration Sequence + Human Gates (UNANCHORED)
+@startgantt
+title Portal Cuba Corp — Iteration Sequence + Human Gates (UNANCHORED)
 
-skinparam activity {
-  BackgroundColor #ECF0F1
-  BorderColor #2C3E50
-}
-
-|Elaboration|
-start
-:Elaboration Iter 1\n(2 iterations, 4.38M tokens measured);
-:Elaboration Iter 2\n(CURRENT — resolving findings);
-:Human Gate: Stakeholder Sanction\n(queue time: ~1 day);
-:Human Gate: LCA Gate Decision\n(queue time: ~1 day);
-
-|Construction|
-:Construction Iter 1;
-:Construction Iter 2;
-:Human Gate: IOC Review\n(queue time: ~1 day);
-
-|Transition|
-:Transition Iter 1;
-:Human Gate: PR Approval\n(queue time: ~1 day);
-stop
-
-@enduml
+[Inception CLOSED] lasts 2 days
+[LCO Gate] lasts 1 day
+[Elaboration CLOSED] lasts 2 days
+[LCA Gate] lasts 1 day
+[Construction Iter 1 CURRENT] lasts 1 day
+[Construction Iter 2] lasts 1 day
+[IOC Gate] lasts 1 day
+[Transition Iter 1] lasts 1 day
+[PR Gate] lasts 1 day
+@endgantt
 ```
 
-### Fine Gantt — Elaboration Iteration 2
+> Gates are quoted in **days of queue time** (human waiting, not agent working). Agent work is denominated in tokens and measured elapsed time — never added to gate time.
+
+### Fine Gantt — Construction Iteration 1 Critical Chain
 
 ```plantuml
 @startuml
-title Elaboration Iter 2 — Critical Chain (Sequential Agent Stretches)
+title Construction Iter 1 — Critical Chain (Sequential Agent Stretches to Gate)
 
 |Project Manager|
 start
-:Read Review Record findings\n(MR-F1, MR-F2)\n[~8K tokens];
-:Update Risk List\n(MR-F1: R001/R006/R003 status)\n[~12K tokens];
-:Evolve Iteration Plan\n(MR-F2: fix count, Iter 2 scope)\n[~15K tokens];
-
-|Software Architect|
-:Resolve M1/M2 interface mismatches\n(Design Model INT-005/INT-007)\n[~20K tokens];
-:Confirm PoC decisions recorded\n(R001/R006/R003)\n[~10K tokens];
-:Update SAD status DRAFT -> BASELINED\n[~8K tokens];
+:Read Review Record findings\n(MAJOR-1, MINOR-1..4)\nPlan Construction Iter 1\n[~8K tokens];
 
 |Implementer|
-:Fix PR #4 code alignment\n(IAuditLogger, IPersistence)\n[~15K tokens];
+:Fix MAJOR-1: IsFeatured flag\nin PublishNews + NewsService\n[~10K tokens];
+:Fix MINOR-1: Rename DirectoryModel\nto DirectorySearchModel\n[~3K tokens];
+:Fix MINOR-2: Remove EmployeeId\nfrom RecordClockingRequest\n[~2K tokens];
+:Fix MINOR-3: Scope idempotency key\nby employee\n[~5K tokens];
 
 |Test Designer|
-:Resolve F1 (TD-NNN prefix)\n[~5K tokens];
+:Fix MINOR-4: Update\nOfflineRetryTests\n[~5K tokens];
+
+|Implementer|
+:Implement application services\nNewsService, ClockingService,\nDirectoryService, WorkerCategoryService\n[~25K tokens];
+:Implement persistence layer\nPostgreSQL repositories\n[~15K tokens];
+:Implement LDAP gateway\nLdapGateway + AD read\n[~10K tokens];
+:Implement audit logging\nAuditLogger NFR-004\n[~8K tokens];
+
+|Test Designer|
+:Write unit tests for\nnew application services\n[~12K tokens];
+:Write integration tests\nLDAP, persistence\n[~8K tokens];
+
+|Reviewer|
+:Re-review PR #8 fixes\n+ review new code\n[~10K tokens];
 
 |Project Manager|
-:Evolve Iteration Assessment\n(Iter 2 variance analysis)\n[~10K tokens];
-:Prepare LCA gate submission\n[~5K tokens];
+:Iteration Assessment\nvariance analysis\n[~10K tokens];
 stop
 
 @enduml
 ```
 
-### Elaboration Iter 2 — Work Items
+### Construction Iter 1 — Work Items
 
-| # | Work Item | Owner | Token Budget | Depends On | LCA Condition |
+| # | Work Item | Owner | Token Budget | Depends On | Acceptance Criterion |
 |---|---|---|---|---|---|
-| 1 | Resolve MR-F1: Update Risk List with PoC decisions for R001/R006/R003 | Project Manager | ~12K | PoC artifact | Condition 1, 2, 3 |
-| 2 | Resolve MR-F2: Fix iteration count mismatch in Iteration Plan | Project Manager | ~5K | — | — |
-| 3 | Resolve M1: Align IAuditLogger (INT-005) implementation with Design Model | Implementer | ~10K | Design Model | Condition 3 |
-| 4 | Resolve M2: Align IPersistence (INT-007) transaction API with Design Model | Implementer | ~10K | Design Model | Condition 3 |
-| 5 | Confirm PoC decisions recorded for R001 (LDAP attribute consistency) | Software Architect | ~8K | PoC artifact | Condition 1 |
-| 6 | Confirm PoC decisions recorded for R006 (offline retry mechanism) | Software Architect | ~8K | PoC artifact | Condition 2 |
-| 7 | Confirm R003 OIDC registration status (analysis-only, mock auth active) | Software Architect | ~5K | STK-003 | Condition 4 |
-| 8 | Update SAD status from DRAFT to BASELINED | Software Architect | ~5K | Items 3-6 | Condition 4 |
-| 9 | Resolve F1: Fix TD-NNN prefix in Test Case (replace with TC-NNN or declare in Dev Case) | Test Designer | ~5K | — | — |
-| 10 | Design UC-010 (Manage Worker Category), UC-004 (Export CSV), UC-002 (Clocking History), UC-003 (View All Clockings) | Designer | ~30K | SAD, Design Model | — |
-| 11 | Evolve Iteration Assessment for Iter 2 | Project Manager | ~10K | All above | — |
-| 12 | Prepare LCA gate submission package | Project Manager | ~5K | All above | — |
+| 1 | Fix MAJOR-1: Add isFeatured param to INewsService.Publish, set item.IsFeatured, update PublishNewsModel.OnPost | Implementer | ~10K | Review Record | FR-008 featured banner functional |
+| 2 | Fix MINOR-1: Rename DirectoryModel → DirectorySearchModel (V007 conformance) | Implementer | ~3K | — | Design Model conformance |
+| 3 | Fix MINOR-2: Remove EmployeeId from RecordClockingRequest DTO | Implementer | ~2K | — | No dead code in DTO |
+| 4 | Fix MINOR-3: Scope idempotency key by employee (FindByIdempotencyKey(employeeId, key)) | Implementer | ~5K | — | Cross-employee collision impossible |
+| 5 | Fix MINOR-4: Update OfflineRetryTests to assert both employees succeed independently | Test Designer | ~5K | Item 4 | Test validates correct behavior |
+| 6 | Implement NewsService: publish/edit/unpublish with audit trail (NFR-004, CON-013) | Implementer | ~8K | Item 1 | AC-002, FR-005/006/007 |
+| 7 | Implement ClockingService: record with idempotency + offline retry (AC-005) | Implementer | ~6K | Item 4 | AC-001, FR-001 |
+| 8 | Implement DirectoryService: LDAP read with "N/A" fallback (R001 mitigation) | Implementer | ~5K | SAD COMP-005 | AC-003, FR-009 |
+| 9 | Implement WorkerCategoryService: AD user id → category CRUD with audit | Implementer | ~5K | — | FR-010, NFR-004 |
+| 10 | Implement persistence layer: PostgreSQL repositories (Clocking, News, NewsAudit, WorkerCategory) | Implementer | ~15K | SAD schema | NFR-002 response time |
+| 11 | Implement LdapGateway: Novell.DirectoryLdap + ILdapConnection abstraction | Implementer | ~10K | SAD COMP-005, ADR-003 | R001 mitigation active |
+| 12 | Implement AuditLogger: INT-005 conformance, all operations audited | Implementer | ~8K | Design Model INT-005 | NFR-004 compliance |
+| 13 | Write unit tests for application services | Test Designer | ~12K | Items 6-9 | Dual coverage (black-box + white-box) |
+| 14 | Write integration tests for LDAP + persistence | Test Designer | ~8K | Items 10-11 | Integration paths covered |
+| 15 | Re-review PR #8 + new code | Reviewer | ~10K | All above | 0 Critical, 0 Major open |
+| 16 | Iteration Assessment (variance analysis) | Project Manager | ~10K | All above | Objectives met/missed documented |
 
-### Construction Roadmap (Provisional — baselined at LCA)
+**Budget box: ~10.4M tokens** [ASSUMPTION — basis: Elaboration measured average per-iteration cost was ~10.4M tokens; Construction has more code volume but fewer architectural decisions, so this is a reasonable starting estimate. This figure will be replaced by measured actuals at iteration close.]
 
-| Iteration | Use Cases | Purpose |
-|---|---|---|
-| Construction Iter 1 | UC-001–UC-005 (clocking cluster + news publish) | Core implementation: clocking, news publishing, audit trail, directory search |
-| Construction Iter 2 | UC-006–UC-010 (news edit/unpublish, news read/filter, worker category) + load testing | Remaining UCs, integration, NFR-001/NFR-002 performance validation |
-
-> This Construction roadmap is PROVISIONAL. It will be baselined at LCA using measured Elaboration actuals. Detailed work items for Construction iterations are NOT planned here — planning beyond the current horizon is waste.
+> The budget box is fixed. If work does not fit, overflow defers to Construction Iter 2 backlog. Scope adapts to the box; the box does not grow to fit scope.
 
 ## Resources
 
-### Agent Role Profile — Elaboration Iteration 2
+### Agent Role Profile — Construction Iter 1
 
-| Agent Role | Discipline | Active This Iteration | Token Budget | Parallelism |
+| Role | Active | Work Items | Token Budget | Rationale |
 |---|---|---|---|---|
-| Project Manager | Project Management | Yes | ~200K (plan + risk + assessment) | Track 1 (PM track) |
-| Software Architect | Analysis & Design | Yes | ~300K (SAD baseline + PoC confirm + M1/M2 resolution) | Track 2 (architecture track) |
-| Implementer | Implementation | Yes | ~150K (PR #4 code alignment) | Track 3 (implementation track) — depends on Track 2 |
-| Test Designer | Test | Yes | ~50K (F1 fix + test case evolution) | Track 4 (test track) — depends on Track 3 |
-| Designer | Analysis & Design | Yes | ~200K (UC-010/UC-004/UC-002/UC-003 design) | Track 5 (design track) — depends on Track 2 |
+| Project Manager | Yes | 1, 16 | ~18K | Plan, monitor, assess iteration |
+| Implementer | Yes | 1-4, 6-12 | ~74K | Primary code production + finding fixes |
+| Test Designer | Yes | 5, 13, 14 | ~25K | Test fixes + new test coverage |
+| Reviewer | Yes | 15 | ~10K | Re-review PR #8 + new code |
+| Software Architect | Advisory | — | ~0K | Architecture baseline stable; consultation only |
+| UI Designer | Advisory | — | ~0K | Design Model complete; consultation only |
 
-**Budget split across agent roles:**
+> **Parallelism discipline:** 4 active roles. No increase in parallelism is proposed to address schedule pressure. If the iteration falls behind, the first lever is scope reduction (defer work items to C2), not additional agent roles.
 
-| Track | Agent Role(s) | Token Budget | % of Box |
-|---|---|---|---|
-| PM Track | Project Manager | 200K | 22.2% |
-| Architecture Track | Software Architect | 300K | 33.3% |
-| Implementation Track | Implementer | 150K | 16.7% |
-| Test Track | Test Designer | 50K | 5.6% |
-| Design Track | Designer | 200K | 22.2% |
-| **Total** | **5 roles** | **900K** | **100%** |
+### Budget Split Across Agent Roles
 
-> **Basis for budget:** Elaboration Iter 2 is a resolution iteration — fewer agent roles active (5 vs 8 in Iter 1) because the primary work is resolving findings and closing LCA conditions, not new artifact creation. The architecture track receives the largest share (33%) because M1/M2 interface resolution and SAD baselining are the critical-path items. This is an ASSUMPTION — it will be replaced by measured actuals at iteration close.
+| Role | Token Share | % of Budget Box |
+|---|---|---|
+| Implementer | ~74K | 71% |
+| Test Designer | ~25K | 24% |
+| Reviewer | ~10K | 10% |
+| Project Manager | ~18K | 17% |
+| **Total planned** | **~127K** | **(planned work items only; full budget box ~10.4M includes all agent reasoning over artifact surface)** |
+
+> The token budgets above are for the **planned work items** — the specific code, test, and review tasks. The full budget box (~10.4M) accounts for all agent reasoning including re-reading accumulated artifacts, cross-referencing, and verification overhead. The Elaboration measured actuals showed that work-item budgets were ~1% of actual token spend; the cost driver is reasoning over the accumulated artifact surface, not the volume of new output.
 
 ## Use Cases and Scenarios Addressed
 
-| UC ID | Use Case | FR | Iteration | Status | Risk Addressed |
-|---|---|---|---|---|---|
-| UC-009 | Search Employee Directory | FR-009 | Elaboration Iter 1 | Design + PoC (COMPLETE) | R001 (LDAP attribute consistency) |
-| UC-001 | Clock In / Clock Out | FR-001 | Elaboration Iter 1 | Design + PoC (COMPLETE) | R006 (offline retry mechanism) |
-| UC-005 | Publish News | FR-005 | Elaboration Iter 1 | Design (COMPLETE — audit trail pattern) | NFR-004 (audit trail) |
-| UC-010 | Manage Worker Category | FR-010 | Elaboration Iter 2 | Design (NEW) | R001 (LDAP + local DB bridge) |
-| UC-004 | Export Monthly Clocking Report | FR-004 | Elaboration Iter 2 | Design (NEW) | NFR-001 (performance) |
-| UC-002 | View Own Clocking History | FR-002 | Elaboration Iter 2 | Design (NEW) | — |
-| UC-003 | View All Employee Clockings | FR-003 | Elaboration Iter 2 | Design (NEW) | — |
-| UC-006 | Edit Published News | FR-006 | Construction | Deferred | — |
-| UC-007 | Unpublish News | FR-007 | Construction | Deferred | — |
-| UC-008 | Read and Filter News | FR-008 | Construction | Deferred | — |
+| UC ID | Use Case | FR ID | Iteration Scope | Status |
+|---|---|---|---|---|
+| UC-001 | Clock In and Clock Out | FR-001 | Presentation layer implemented (PR #8); application + persistence + audit this iteration | Fix MINOR-2/3 + implement service |
+| UC-002 | View Own Clocking History | FR-002 | Presentation layer implemented (PR #8); application + persistence this iteration | Implement service |
+| UC-003 | View All Employee Clockings | FR-003 | Presentation layer implemented (PR #8); application + persistence this iteration | Implement service |
+| UC-004 | Export Monthly Clocking Report | FR-004 | Presentation layer implemented (PR #8); application + persistence this iteration | Implement service |
+| UC-005 | Publish News | FR-005 | Presentation layer implemented (PR #8); **MAJOR-1 fix required** + application + audit this iteration | Fix MAJOR-1 + implement service |
+| UC-006 | Edit Published News | FR-006 | Presentation layer implemented (PR #8); application + audit this iteration | Implement service |
+| UC-007 | Unpublish News | FR-007 | Presentation layer implemented (PR #8); application + audit this iteration | Implement service |
+| UC-008 | Read and Filter News | FR-008 | Presentation layer implemented (PR #8); **MAJOR-1 blocks featured banner** + application this iteration | Fix MAJOR-1 + implement service |
+| UC-009 | Search Employee Directory | FR-009 | Presentation layer implemented (PR #8); **MINOR-1 naming fix** + LDAP gateway this iteration | Fix MINOR-1 + implement LDAP |
+| UC-010 | Manage Worker Category | FR-010 | Presentation layer implemented (PR #8); application + audit this iteration | Implement service |
+
+> **Scope variance note:** The prior provisional roadmap assigned UC-001–UC-005 to C1 and UC-006–UC-010 to C2. The Implementer produced presentation-layer code for all 10 UCs in PR #8. This iteration addresses finding fixes across all 10 UCs plus application/persistence/LDAP/audit service implementation. The C1/C2 split is re-baselined: C1 = fix findings + implement all service/persistence/audit layers; C2 = integration testing, NFR validation (NFR-001/NFR-002 load testing), OIDC integration (if STK-003 confirms), end-to-end test scenarios.
 
 ## Evaluation Criteria
 
@@ -171,47 +169,48 @@ stop
 
 | AC ID | Description | Addressed This Iteration? | Evidence / Reason |
 |---|---|---|---|
-| AC-001 | Employee can clock in/out without help | Partially — design + PoC for UC-001 validates the mechanism; full implementation in Construction | SAD Process View, Design Model UC-001, PoC code |
-| AC-002 | HR can publish a news item without technical assistance | Partially — design for UC-005 establishes the audit trail pattern; full implementation in Construction | Design Model UC-005, SAD COMP-003/COMP-008 |
-| AC-003 | Employee finds colleague's phone/email in under 10 seconds | Partially — PoC for UC-009 validates LDAP query performance; full implementation in Construction | PoC LDAP query results, SAD COMP-005 |
+| AC-001 | Employee can clock in/out without help | Partially — application + persistence + audit implemented; full end-to-end validation in C2 | ClockingService, ClockingRepository, AuditLogger |
+| AC-002 | HR can publish a news item without technical assistance | Partially — MAJOR-1 fix makes featured banner functional; NewsService + AuditLogger implemented; full validation in C2 | MAJOR-1 fix, NewsService, AuditLogger |
+| AC-003 | Employee finds colleague's phone/email in under 10 seconds | Partially — LdapGateway implemented with "N/A" fallback; performance validation in C2 | LdapGateway, DirectoryService |
 | AC-004 | 80% of employees complete at least one clocking with no prior training | Not addressed — Transition phase (adoption tracking) | Deferred to Transition |
-| AC-005 | System works temporarily offline (5-min network drop, data syncs on recovery) | **Yes — PoC decisions recorded.** PoC for R006 validates localStorage clocking POST retry with idempotency key | PoC decisions, SAD Process View, Risk List R006 MITIGATED |
+| AC-005 | System works temporarily offline (5-min network drop, data syncs on recovery) | Partially — MINOR-3 fix scopes idempotency key by employee; ClockingService retry mechanism implemented; full offline test in C2 | MINOR-3/4 fixes, ClockingService |
 
-### Layer (b): Elaboration Iteration 2 Exit Criteria
+### Layer (b): Construction Iteration 1 Exit Criteria
 
-| # | Exit Criterion | Verification Method | LCA Condition |
+| # | Exit Criterion | Assessment Target | Evidence Required |
 |---|---|---|---|
-| 1 | R001 PoC decisions confirmed in Architectural PoC artifact | PoC artifact review — decisions recorded | Condition 1 |
-| 2 | R006 PoC decisions confirmed in Architectural PoC artifact | PoC artifact review — decisions recorded | Condition 2 |
-| 3 | M1 resolved — IAuditLogger (INT-005) implementation aligned with Design Model | Code review of PR #4 fix | Condition 3 |
-| 4 | M2 resolved — IPersistence (INT-007) transaction API aligned with Design Model | Code review of PR #4 fix | Condition 3 |
-| 5 | SAD status changed from DRAFT to BASELINED | SAD Document Control review | Condition 4 |
-| 6 | R003 OIDC registration status confirmed (analysis-only, mock auth active) | Risk List R003 status = MONITORING | Condition 5 |
-| 7 | MR-F1 resolved — Risk List updated with PoC decisions | Risk List review — R001/R006 = MITIGATED, R003 = MONITORING | Condition 6 |
-| 8 | MR-F2 resolved — Iteration Plan iteration count corrected (7, not 6) | This plan — narrative says "7 iterations" | — |
-| 9 | F1 resolved — TD-NNN prefix fixed in Test Case | Test Case artifact review | — |
-| 10 | Iteration Assessment produced for Iter 2 with variance analysis | Iteration Assessment artifact | Condition 7 |
+| 1 | MAJOR-1 resolved — IsFeatured flag set in Publish flow | MET | Code review confirms IsFeatured persisted; unit test verifies |
+| 2 | MINOR-1 resolved — DirectoryModel renamed to DirectorySearchModel | MET | Code review confirms V007 conformance |
+| 3 | MINOR-2 resolved — EmployeeId removed from RecordClockingRequest | MET | Code review confirms no dead code |
+| 4 | MINOR-3 resolved — Idempotency key scoped by employee | MET | Code review confirms FindByIdempotencyKey(employeeId, key) |
+| 5 | MINOR-4 resolved — OfflineRetryTests updated | MET | Test asserts both employees succeed independently |
+| 6 | Application services implemented (News, Clocking, Directory, WorkerCategory) | MET | Code review confirms service layer complete |
+| 7 | Persistence layer implemented (PostgreSQL repositories) | MET | Code review confirms repository pattern + schema conformance |
+| 8 | LDAP gateway implemented with ILdapConnection abstraction | MET | Code review confirms ADR-003 conformance |
+| 9 | Audit logging implemented (INT-005 conformance) | MET | Code review confirms NFR-004 compliance |
+| 10 | CI build passes green | MET | scm_get_build_status confirms PASS |
+| 11 | Re-review of PR #8 + new code: 0 Critical, 0 Major | MET | Review Record updated |
+| 12 | Iteration Assessment produced with variance analysis | MET | This artifact at iteration close |
 
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| Elaboration Iter 2 Plan | Elaboration Iter 1 Plan, Iter 1 Assessment, Review Record | Refines | Elaboration Iter 2 Assessment, LCA Milestone Review |
-| Coarse Roadmap (updated) | Inception measured actuals, Development Case (rubber profile, 6±3 rule) | Derives | All subsequent Iteration Plans |
-| MR-F2 (resolved) | Review Record Finding Tracker | Derives | Iteration Plan (iteration count corrected 6→7) |
-| MR-F1 (resolved) | Review Record Finding Tracker | Derives | Risk List (R001/R006/R003 status updates) |
-| M1 (targeted) | Review Record Finding Tracker | Derives | Design Model INT-005, PR #4 fix |
-| M2 (targeted) | Review Record Finding Tracker | Derives | Design Model INT-007, PR #4 fix |
-| F1 (targeted) | Review Record Finding Tracker | Derives | Test Case (TD-NNN prefix fix) |
-| UC-010 (Manage Worker Category) | FR-010, R001 | Refines | Design Model, SAD COMP-005 |
-| UC-004 (Export CSV) | FR-004, NFR-001 | Refines | Design Model |
-| UC-002 (Clocking History) | FR-002 | Refines | Design Model |
-| UC-003 (View All Clockings) | FR-003 | Refines | Design Model |
-| Budget Box (~900K tokens) | Elaboration Iter 1 plan (reduced scope — resolution iteration) | Derives | Elaboration Iter 2 Assessment (measured vs planned) |
-| R001 Mitigation (LDAP PoC) | Work Order R001, SAD COMP-005, ADR-003 | Refines | PoC decisions recorded, Risk List R001 MITIGATED |
-| R006 Mitigation (Offline PoC) | AC-005, SAD Process View | Refines | PoC decisions recorded, Risk List R006 MITIGATED |
-| R003 Mitigation (OIDC) | CON-004, SAD COMP-007, ADR-005 | Derives | Risk List R003 MONITORING, mock auth contingency |
-| AC-005 (offline) | Work Order AC-005 | Refines | PoC decisions (offline retry), SAD Process View |
-| AC-001 (clocking) | Work Order AC-001 | Refines | Design Model UC-001, Construction implementation |
-| AC-002 (news publish) | Work Order AC-002 | Refines | Design Model UC-005, Construction implementation |
-| AC-003 (directory search) | Work Order AC-003 | Refines | PoC UC-009, Construction implementation |
+| Construction Iter 1 Plan | Elaboration Iter 2 Plan (coarse roadmap), Elaboration Iteration Assessment (measured actuals) | Refines | Construction Iter 1 Assessment |
+| MAJOR-1 fix | Review Record MAJOR-1, FR-008, V004 (PublishNewsModel) | Derives | NewsService.Publish, PublishNews.cshtml.cs |
+| MINOR-1 fix | Review Record MINOR-1, V007 (DirectorySearchModel) | Derives | Directory.cshtml.cs |
+| MINOR-2 fix | Review Record MINOR-2, INT-001 (IClockingService) | Derives | ClockingApiController.cs |
+| MINOR-3 fix | Review Record MINOR-3, AC-005, R006 | Derives | ClockingService.cs, IPersistence |
+| MINOR-4 fix | Review Record MINOR-4, MINOR-3 | Derives | OfflineRetryTests.cs |
+| NewsService | FR-005, FR-006, FR-007, NFR-004, CON-013, INT-005 | Derives | src/PortalCubaCorp.Application/NewsService.cs |
+| ClockingService | FR-001, FR-002, AC-001, AC-005, R006 | Derives | src/PortalCubaCorp.Application/ClockingService.cs |
+| DirectoryService | FR-009, R001, COMP-005, ADR-003 | Derives | src/PortalCubaCorp.Application/DirectoryService.cs |
+| WorkerCategoryService | FR-010, NFR-004 | Derives | src/PortalCubaCorp.Application/WorkerCategoryService.cs |
+| Persistence layer | CON-003, SAD schema, INT-007 | Derives | src/PortalCubaCorp.Infrastructure/ |
+| LdapGateway | CON-005, CON-009, COMP-005, ADR-003, R001 | Derives | src/PortalCubaCorp.Infrastructure/LdapGateway.cs |
+| AuditLogger | NFR-004, INT-005, COMP-008 | Derives | src/PortalCubaCorp.Infrastructure/AuditLogger.cs |
+| Budget box (~10.4M tokens) | Elaboration measured actuals (per-iteration average) | Derives | Construction Iter 1 Assessment (measured vs planned) |
+| AC-001 (clocking) | Work Order AC-001 | Refines | ClockingService, ClockingRepository |
+| AC-002 (news publish) | Work Order AC-002 | Refines | NewsService, AuditLogger, MAJOR-1 fix |
+| AC-003 (directory search) | Work Order AC-003 | Refines | LdapGateway, DirectoryService |
+| AC-005 (offline) | Work Order AC-005 | Refines | ClockingService, MINOR-3/4 fixes |
