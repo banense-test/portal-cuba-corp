@@ -574,7 +574,13 @@ The project must auto-iterate to Elaboration Iteration 2 to resolve all open fin
 | M1 (IAuditLogger mismatch) | INT-005, COMP-008, NFR-004 | Tests | PR #4 AuditInterceptor.cs |
 | M2 (IPersistence mismatch) | INT-007, COMP-006, CON-003 | Tests | PR #4 PersistenceGateway.cs |
 | F1 (TD-NNN prefix) | Test Case traceability table | Refines | Development Case (tool assessment) |
-| MR-F1 (iteration count) | Iteration Plan coarse roadmap | Refines | Iteration Plan (correction) |
-| MR-F2 (PoC results pending) | R001, R006, R003 (Risk List) | Derives | Elaboration Iter 2 PoC execution |
-| Stakeholder sanction (REFUSED) | STK-001 answer (LCA consultation) | Refines | LCA Milestone Decision (CONDITIONAL) |
+| MR-F1 (Risk List — PoC results pending) | R001, R006, R003 (Risk List) | Derives | Elaboration Iter 2 PoC execution |
+| MR-F2 (Iteration Plan — count mismatch) | Iteration Plan coarse roadmap | Refines | Iteration Plan (correction) |
+| Stakeholder sanction (REFUSED) | STK-001 answer (LCA consultation) | Refines | LCA Milestone Decision (NOT ACHIEVED) |
 | LCA Conditions (1-8) | MR-F1, MR-F2, M1, M2, R001, R003, R006, SAD status | Derives | Elaboration Iter 2 objectives |
+| Review Calendar (activity diagram) | Iteration Plan iteration schedule | Derives | LCA Milestone Review scheduling |
+| Finding Tracker | All lens findings (M1, M2, MR-F1, F1, MR-F2) | Derives | Elaboration Iter 2 action items |
+| Review Effectiveness Metrics | All Elaboration artifacts, all findings | Derives | Review process improvement |
+| Finding Lifecycle (state diagram) | Finding tracker entries | Refines | Finding closure process |
+| Review Process Framework | IARI DC review types, RUP workflow activities | Derives | Review Calendar, Review Record |
+| Lens Participation Record | Work Order (authoritative lens status) | Derives | Consolidated milestone decision |
