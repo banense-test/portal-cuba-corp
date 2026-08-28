@@ -429,17 +429,11 @@ The Construction C1 iteration is partially met:
 3. Integrator merges approved PR #8 into iteration/C1
 4. Integrator merges iteration/C1 into main via PR #9
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| Design Model review | Design Model (CLS-001..CLS-019, INT-001..INT-007) | Derives | This Review Record |
-| Test Case review | Test Case (TC-001..TC-030) | Derives | This Review Record |
-| SAD review | SAD (COMP-001..COMP-008) | Derives | This Review Record |
-| Use-Case Model review | UC-001..UC-010, FR-001..FR-010 | Derives | This Review Record |
-| Supplementary Spec review | NFR-001..NFR-004, CON-001..CON-013 | Derives | This Review Record |
-| User Documentation review | UC-001..UC-010, SAD | Derives | This Review Record |
-| Change Request review | CR-001..CR-018 | Derives | This Review Record |
-| PR #8 review | UC-001..UC-010, AC-005, CON-013, NFR-004, R001 | Implements | src/PortalCubaCorp/*, tests/PortalCubaCorp.Tests/* |
+| Review Record (Reviewer) | RUP Ch.11, Design Model, SAD, PR #8, PR #9 | Derives | This Review Record |
+| Document artifacts review | Design Model, Test Case, SAD, UCM, SuppSpec, UserDoc, CR | Derives | Findings section |
+| PR #8 code review | PR #8 (24 files, +1742 lines) | Derives | Findings section (MAJOR-1, MINOR-1..4) |
 | PR #9 review | Integration record | Derives | docs/iteration-c1-integration-record.md |
 | MAJOR-1 finding | FR-008, V004 (PublishNewsModel) | Tests | PublishNews.cshtml.cs, NewsService.cs, NewsItem.cs |
 | MINOR-1 finding | V007 (DirectorySearchModel), Design Model | Tests | Directory.cshtml.cs |
@@ -451,3 +445,7 @@ The Construction C1 iteration is partially met:
 | Test Coverage Matrix | TC-001..TC-030, UC-001..UC-010 | Derives | This Review Record |
 | CI Build Evidence | main branch | Derives | Build status 2026-08-28 15:10:26Z |
 | Prior F1 finding | Test Case traceability | Refines | Resolved in Elaboration iter 2 |
+| BR Lens — BM Status | DC §4 (business-process-led=false) | Derives | Findings: BM Lens section |
+| BR Lens — Stakeholder Coverage | STK-001..STK-004 | Refines | Findings: BM Lens section |
+| BR Lens — Derivation Bridge | FR-001..FR-010 → UC-001..UC-010 | Derives | N/A (BM inactive, direct trace) |
+| BR Lens — Verdict | Elaboration baseline (LCA achieved) | Refines | Disposition: PRESERVED |
