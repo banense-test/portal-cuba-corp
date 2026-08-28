@@ -1,4 +1,3 @@
-using Novell.Directory.Ldap;
 using PortalCubaCorp.Domain;
 using DomainLdapSearchResult = PortalCubaCorp.Domain.LdapSearchResult;
 
@@ -6,42 +5,36 @@ namespace PortalCubaCorp.Infrastructure;
 
 /// <summary>
 /// LDAP gateway implementation (COMP-005).
-/// Read-only access to Active Directory via Novell.Directory.Ldap (CON-005).
+/// Read-only access to Active Directory via LDAP (CON-005).
 /// Never writes to AD (CON-010). Missing attributes return null (R001 fallback).
+/// Uses ILdapConnection abstraction for testability.
 /// </summary>
 public class LdapGateway : ILdapGateway
 {
     private readonly LdapGatewayOptions _options;
+    private readonly ILdapConnection _connection;
 
-    // LDAP search scope constants (Novell.Directory.Ldap.NETStandard)
-    private const int SCOPE_SUB = 2;
+    private static readonly string[] DirectoryAttributes =
+    {
+        "sAMAccountName", "cn", "title", "department",
+        "physicalDeliveryOfficeName", "mail", "telephoneNumber"
+    };
 
-    public LdapGateway(LdapGatewayOptions options)
+    public LdapGateway(LdapGatewayOptions options, ILdapConnection connection)
     {
         _options = options;
+        _connection = connection;
     }
 
     public List<DomainLdapSearchResult> SearchEntries(string filter)
     {
-        var results = new List<DomainLdapSearchResult>();
+        _connection.Connect(_options.Host, _options.Port);
+        _connection.Bind(_options.BindDn, _options.BindPassword);
 
-        using var conn = new LdapConnection();
-        conn.Connect(_options.Host, _options.Port);
-        conn.Bind(_options.BindDn, _options.BindPassword);
+        var rawEntries = _connection.Search(_options.SearchBase, filter, DirectoryAttributes);
+        var results = rawEntries.Select(MapEntry).ToList();
 
-        var searchResults = conn.Search(
-            _options.SearchBase,
-            SCOPE_SUB,
-            filter,
-            new[] { "sAMAccountName", "cn", "title", "department", "physicalDeliveryOfficeName", "mail", "telephoneNumber" },
-            false);
-
-        while (searchResults.HasMore())
-        {
-            var entry = searchResults.Next();
-            results.Add(MapEntry(entry));
-        }
-
+        _connection.Disconnect();
         return results;
     }
 
@@ -62,24 +55,18 @@ public class LdapGateway : ILdapGateway
         return mapping;
     }
 
-    private static DomainLdapSearchResult MapEntry(LdapEntry entry)
+    private static DomainLdapSearchResult MapEntry(LdapRawEntry entry)
     {
-        var attrSet = entry.getAttributeSet();
         return new DomainLdapSearchResult
         {
-            AdUserId = GetAttrValue(attrSet, "sAMAccountName") ?? string.Empty,
-            DisplayName = GetAttrValue(attrSet, "cn"),
-            JobTitle = GetAttrValue(attrSet, "title"),
-            Department = GetAttrValue(attrSet, "department"),
-            Office = GetAttrValue(attrSet, "physicalDeliveryOfficeName"),
-            Email = GetAttrValue(attrSet, "mail"),
-            Extension = GetAttrValue(attrSet, "telephoneNumber")
+            AdUserId = entry.GetAttribute("sAMAccountName") ?? string.Empty,
+            DisplayName = entry.GetAttribute("cn"),
+            JobTitle = entry.GetAttribute("title"),
+            Department = entry.GetAttribute("department"),
+            Office = entry.GetAttribute("physicalDeliveryOfficeName"),
+            Email = entry.GetAttribute("mail"),
+            Extension = entry.GetAttribute("telephoneNumber")
         };
-    }
-
-    private static string? GetAttrValue(LdapAttributeSet attrSet, string name)
-    {
-        return attrSet.getAttribute(name)?.StringValue;
     }
 
     private static string EscapeFilter(string value)
