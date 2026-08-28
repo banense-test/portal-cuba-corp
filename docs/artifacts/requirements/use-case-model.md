@@ -2,12 +2,12 @@
 | Field | Value |
 |---|---|
 | Phase | Construction |
-| Status | Approved (Preserved) |
+| Status | Draft |
 | Milestone Target | End of Construction |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
 | Prior Phase | Elaboration (LCA achieved — 0 Critical, 0 Major open; stakeholder sanction GRANTED) |
-| Evolution | Construction Iter 1: Requirements baseline preserved — no approved CR affects scope or NFRs. All Elaboration implementation decisions (offline retry with idempotency key in UC-001, audit trail in UC-005/006/007/010, AD read-only in UC-009/010) already reflected in Elaboration baseline. Document Control updated to Construction phase. |
+| Evolution | Construction Iter 1: Requirements baseline preserved — no approved CR affects scope or NFRs. All Elaboration implementation decisions (offline retry with idempotency key in UC-001, audit trail in UC-005/006/007/010, AD read-only in UC-009/010) already reflected in Elaboration baseline. Document Control updated to Construction phase. Construction Iter 2: CR-010 (IsFeatured flag) applied to UC-005 and UC-006 — IsFeatured is [DERIVED — from FR-008, awaiting stakeholder confirmation] enabling the featured news banner in UC-008. Use-Case Diagram title updated to Construction. |
 ## Use-Case Diagram
 
 ```plantuml
