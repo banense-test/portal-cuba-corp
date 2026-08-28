@@ -30,6 +30,7 @@ Cuba Corp (200 employees, 3 offices) manages three core HR processes with fragme
 - AC-002: HR publishes news without technical assistance
 - AC-003: Employee finds colleague's phone/email in under 10 seconds
 - AC-004: 80% of employees complete a clocking with no prior training
+- AC-005: System tolerates brief network drops (5 min) for clocking via client-side retry; other features show "no connection"
 
 ## Product Position Statement
 
@@ -85,7 +86,7 @@ Cuba Corp (200 employees, 3 offices) manages three core HR processes with fragme
 
 | Feature ID | Feature | Source | MoSCoW | Volatility | Success Metric |
 |---|---|---|---|---|---|
-| FEAT-001 | Clock In/Out with confirmation | FR-001 | Must | Low | AC-001, AC-004 |
+| FEAT-001 | Clock In/Out with confirmation | FR-001 | Must | Low | AC-001, AC-004, AC-005 |
 | FEAT-002 | Personal clocking history | FR-002 | Must | Low | Employee self-service |
 | FEAT-003 | HR clocking overview | FR-003 | Must | Low | BG-001 (50% HR time reduction) |
 | FEAT-004 | CSV clocking export | FR-004 | Must | Low | BG-002 (eliminate Excel) |
@@ -161,16 +162,14 @@ end note
 | A-003 | Corporate network is available during working hours (7:00–19:00 Mon–Fri) | NFR-003 — no 24/7 requirement |
 | A-004 | Employees have Chrome or Edge installed on their workstations | CON-008 |
 
-### [SCOPE_QUESTION — AC-005 offline tolerance]
+### AC-005 Offline Tolerance — Resolved
 
-AC-005 states: "The system works temporarily offline: if the network drops for 5 minutes, the data syncs once it is back." This conflicts with:
-- CON-002 (Razor Pages, server-rendered — no SPA, no client-side offline capability)
-- CON-006 (internal Windows Server hosting)
-- CON-007 (no access from outside corporate network)
+AC-005 is satisfied by **server-side fault tolerance** plus **one bounded client-side mechanism for clocking only**:
 
-A server-rendered Razor Pages application cannot function during a network outage because the browser cannot reach the server. "Offline" in this context likely means **server-side fault tolerance** (the server stays up during a brief network partition and data is eventually consistent), not client-side offline operation. However, the declared scope also excludes "sync job / reconciliation / conflict resolution" — which is what "data syncs once it is back" implies.
-
-This is a consequential gap affecting architecture and scope. Escalating to stakeholder.
+- The clocking button keeps the press in the browser (localStorage) and retries its POST for up to 5 minutes. The server accepts the timestamp the client sends — the moment the employee pressed — and rejects duplicates by an idempotency key.
+- This does not override CON-002. "No SPA" means no client-side framework and no client-side router; it does not mean no JavaScript. A page-level script on an already-rendered Razor page is Razor Pages as normal.
+- This is not the excluded sync work. The scope-out forbids synchronising copies of employee data — not retrying one POST. This is one action, one queue, one entity: two clocking presses by the same employee cannot conflict with anything, so there is nothing to reconcile and no conflict resolution to write.
+- Everything else stays offline-dead: the directory and the news need the network and show a "no connection" message. No PWA, no service worker, no client cache of anything else. Beyond 5 minutes the employee reports the clocking to HR.
 
 ## Constraints
 
@@ -196,6 +195,7 @@ This is a consequential gap affecting architecture and scope. Escalating to stak
 - **Audit Trail:** Mandatory for news publish/edit/unpublish and worker category changes (NFR-004). Author + timestamp recorded in every case.
 - **Mandatory UI Design:** The custom HTML design at `docs/inputs/employee-portal-design.html` is authoritative for the UI visual layer (CON-011). The portal MUST implement it.
 - **Responsive Web:** No native mobile app; the portal must be responsive and work in Chrome and Edge (CON-008).
+- **Offline Clocking Tolerance:** The clocking button retries its POST for up to 5 minutes via localStorage when the network drops. The server accepts the client-side timestamp and rejects duplicates by idempotency key. Other features (directory, news) show "no connection" when offline. No PWA, no service worker (AC-005, resolved).
 
 ## Traceability
 
@@ -214,5 +214,6 @@ This is a consequential gap affecting architecture and scope. Escalating to stak
 | FEAT-001..004 | BG-001, BG-002 | Derives | AC-001, AC-004 |
 | FEAT-005..008 | BG-003 | Derives | AC-002 |
 | FEAT-009 | BG-002 | Derives | AC-003 |
+| FEAT-001 | AC-005 | Derives | UC-001 (offline retry) |
 | A-002 | R001 | DependsOn | UC-009 |
 | A-001 | CON-004 | DependsOn | All UCs (auth) |
