@@ -5,7 +5,8 @@
 | Phase | Inception |
 | Status | Draft |
 | Milestone Target | End of Inception |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
+| Date | 2026-08-28 |
 
 ## Use-Case Diagram
 
@@ -75,23 +76,7 @@ end note
 |---|---|---|---|---|
 | ACT-001 | Employee | Human (primary) | Any authenticated Cuba Corp employee (200 across 3 offices). Uses the portal for clocking, news reading, and directory search. | STK-004 |
 | ACT-002 | HR Administrator | Human (primary) | HR staff member with elevated permissions (determined by OIDC role claims from Keycloak). Manages news, views all clockings, exports reports, manages worker categories. | STK-001 |
-| ACT-003 | Active Directory (LDAP) | External system | System of record for employee corporate data (name, job title, department, office, email, extension). Read-only access from portal. | CON-005, CON-009 |
-| ACT-004 | Keycloak (OIDC) | External system (cross-cutting) | Provides authentication and authorization via OIDC. NOT a use case actor — cross-cutting mechanism specified in Supplementary Specification. | CON-004 |
-
-### Actor-Goal Matrix
-
-| Actor | Goal | Use Case |
-|---|---|---|
-| Employee | Record work time | UC-001 |
-| Employee | Review own clocking history | UC-002 |
-| Employee | Stay informed about company news | UC-008 |
-| Employee | Find a colleague's contact info | UC-009 |
-| HR Administrator | Monitor all employee clockings | UC-003 |
-| HR Administrator | Generate monthly clocking report | UC-004 |
-| HR Administrator | Publish internal news | UC-005 |
-| HR Administrator | Correct a published news item | UC-006 |
-| HR Administrator | Retire a news item without deleting it | UC-007 |
-| HR Administrator | Assign worker categories | UC-010 |
+| ACT-003 | Active Directory (LDAP) | External system | Corporate directory accessed over LDAP for employee data (job title, department, office, email, extension). Read-only — the portal never writes to AD. | CON-005, CON-009 |
 
 ## Use-Case Survey
 
@@ -142,40 +127,39 @@ end note
 
 ```plantuml
 @startuml
-title UC-001: Clock In / Clock Out — Activity Diagram (with offline retry)
-
 start
 :Employee opens portal main page;
-:System checks current clocking status\n(authenticated employee id from OIDC token);
-if (Currently clocked IN?) then (yes)
-  :Display "Clock Out" button;
-else (no)
+:System retrieves clocking status\n(employee id from OIDC token);
+if (Current status: clocked out?) then (yes)
   :Display "Clock In" button;
+else (no)
+  :Display "Clock Out" button;
 endif
-
 :Employee presses button;
-:Client records press timestamp + idempotency key\nin localStorage;
-:Client sends POST to server;
-
+:Client records timestamp +\nidempotency key in localStorage;
+:Client sends POST with timestamp\nand idempotency key;
 if (Network available?) then (yes)
-  :Server records clocking with client timestamp;
-  :Server rejects duplicates via idempotency key;
-  :System displays confirmation with recorded time;
-  stop
-else (no — network down)
-  :Client retries POST for up to 5 minutes;
+  :Server records clocking entry\nin PostgreSQL;
+  :Server returns confirmation;
+  :Employee sees confirmation;
+else (no — offline retry)
+  :Client stores press in localStorage;
+  :Client retries POST for up to 5 min;
   if (Network restored within 5 min?) then (yes)
-    :Server records clocking with original client timestamp;
-    :Server rejects duplicates via idempotency key;
-    :System displays confirmation with recorded time;
-    stop
-  else (no — timeout)
-    :Client stops retrying;
-    :Display "Clocking not recorded — report to HR";
-    stop
+    :Server accepts client timestamp;
+    :Server checks idempotency key;
+    if (Key already exists?) then (yes)
+      :Return original confirmation\n(no duplicate);
+    else (no)
+      :Record clocking entry;
+      :Return confirmation;
+    endif
+    :Employee sees confirmation;
+  else (no)
+    :Display "Clocking not recorded —\nreport to HR";
   endif
 endif
-
+stop
 @enduml
 ```
 
@@ -188,12 +172,12 @@ endif
 | Source | FR-002 |
 | Primary Actor | Employee (ACT-001) |
 | Trigger | Employee selects "My Clocking History" |
-| Preconditions | Employee authenticated |
-| Postconditions | Current month's clocking records displayed |
+| Preconditions | Employee is authenticated |
+| Postconditions | Employee sees their clocking records for the current month |
 | MoSCoW | Must |
 | Volatility | Low |
 
-**Outline:** Employee views their own clocking entries for the current month, sorted by date. Read-only display.
+**Outline:** Employee views their own clocking history for the current month. Data is read from the portal's PostgreSQL database (not AD). Display includes date, clock-in time, clock-out time per day.
 
 ---
 
@@ -203,13 +187,13 @@ endif
 |---|---|
 | Source | FR-003 |
 | Primary Actor | HR Administrator (ACT-002) |
-| Trigger | HR selects "All Employee Clockings" |
+| Trigger | HR selects "View All Clockings" |
 | Preconditions | HR Administrator authenticated with HR role |
-| Postconditions | All employees' clocking records displayed |
+| Postconditions | HR sees clocking records for all employees |
 | MoSCoW | Must |
 | Volatility | Low |
 
-**Outline:** HR views clocking entries for all employees. May filter by employee or date range. Read-only display.
+**Outline:** HR views all employees' clocking records. Display includes employee name (resolved from AD), date, clock-in/out times. Filterable by employee and date range.
 
 ---
 
@@ -220,12 +204,12 @@ endif
 | Source | FR-004 |
 | Primary Actor | HR Administrator (ACT-002) |
 | Trigger | HR selects "Export CSV" |
-| Preconditions | HR Administrator authenticated; clocking data exists for selected period |
-| Postconditions | CSV file downloaded to HR's workstation |
+| Preconditions | HR Administrator authenticated with HR role |
+| Postconditions | CSV file downloaded with monthly clocking data |
 | MoSCoW | Must |
 | Volatility | Low |
 
-**Outline:** HR selects a month and exports all employee clocking data as a CSV file. Format supports BG-002 (eliminate Excel).
+**Outline:** HR exports a monthly clocking report in CSV format. The report includes all employees' clocking data for the selected month. Employee names are resolved from AD at export time.
 
 ---
 
@@ -237,11 +221,11 @@ endif
 | Primary Actor | HR Administrator (ACT-002) |
 | Trigger | HR selects "Publish News" |
 | Preconditions | HR Administrator authenticated with HR role |
-| Postconditions | News item persisted as published; audit record created (author + timestamp) |
+| Postconditions | News item published with title, body, date, category; audit record created (author + timestamp) |
 | MoSCoW | Must |
 | Volatility | Medium |
 
-**Outline:** HR creates a news item with title, body, date, and category (General, HR, IT, Events). On publish, the system records the author identity and timestamp (NFR-004). The item becomes visible to employees (UC-008).
+**Outline:** HR publishes internal news with title, body, date, and category (General, HR, IT, Events). Publication is audited — author and timestamp recorded (NFR-004). Published news is visible to all employees.
 
 ---
 
@@ -252,12 +236,12 @@ endif
 | Source | FR-006 |
 | Primary Actor | HR Administrator (ACT-002) |
 | Trigger | HR selects "Edit" on a published news item |
-| Preconditions | News item exists and is published; HR Administrator authenticated |
+| Preconditions | HR Administrator authenticated with HR role; news item exists and is published |
 | Postconditions | News item updated; audit record created (editor + timestamp) |
 | MoSCoW | Must |
 | Volatility | Medium |
 
-**Outline:** HR edits title, body, date, or category of an already-published news item. Every edit is audited identically to the original publication (NFR-004). The item remains visible to employees.
+**Outline:** HR edits a published news item (title, body, category). Every edit is audited exactly like the original publication — who and when (NFR-004). A typo should not force a republish.
 
 ---
 
@@ -268,12 +252,12 @@ endif
 | Source | FR-007 |
 | Primary Actor | HR Administrator (ACT-002) |
 | Trigger | HR selects "Unpublish" on a news item |
-| Preconditions | News item is currently published; HR Administrator authenticated |
-| Postconditions | News item hidden from employees; record preserved with audit entry (who + when); NOT deleted |
+| Preconditions | HR Administrator authenticated with HR role; news item is published |
+| Postconditions | News item hidden from employees; record preserved (never deleted); audit record created |
 | MoSCoW | Must |
 | Volatility | Low |
 
-**Outline:** HR unpublishes a news item. The item is hidden from the employee view but the record is never deleted (CON-013). The audit trail records who unpublished and when (NFR-004).
+**Outline:** HR unpublishes a news item, which hides it from employees but never deletes it (CON-013). The record stays for traceability and audit (NFR-004). Unpublishing is audited — who and when.
 
 ---
 
@@ -284,12 +268,12 @@ endif
 | Source | FR-008 |
 | Primary Actor | Employee (ACT-001) |
 | Trigger | Employee opens the portal main page |
-| Preconditions | Employee authenticated |
-| Postconditions | Published news items displayed, sorted by date, with optional category filter and featured banners |
+| Preconditions | Employee is authenticated |
+| Postconditions | Employee sees published news sorted by date, optionally filtered by category |
 | MoSCoW | Must |
 | Volatility | Medium |
 
-**Outline:** Employee sees published news on the main page, sorted by date. Can filter by category (General, HR, IT, Events). Featured news items appear with a banner at the top. Read-only — no comments or reactions. When the network is down, news shows a "no connection" message (AC-005 resolved — only clocking has offline tolerance).
+**Outline:** Employees see news on the main page sorted by date. They can filter by category (General, HR, IT, Events). Featured news appears with a banner at the top. Read-only — no comments or reactions.
 
 ---
 
@@ -300,37 +284,45 @@ endif
 | Source | FR-009 |
 | Primary Actor | Employee (ACT-001) |
 | Trigger | Employee enters search criteria in the directory |
-| Preconditions | Employee authenticated; Active Directory reachable via LDAP |
-| Postconditions | Matching employee records displayed with corporate data only |
+| Preconditions | Employee is authenticated via Keycloak OIDC |
+| Postconditions | Matching employee entries displayed with corporate data from AD |
 | MoSCoW | Must |
 | Volatility | High |
 
 **Main Flow:**
-1. Employee enters search criteria (name, department, or office).
-2. System queries Active Directory via LDAP using the search filter on corporate attributes.
-3. AD returns matching entries.
-4. System maps each entry to display fields: name, job title, department, office, email, extension phone number.
-5. System displays the results list to the employee.
+1. Employee navigates to the directory page.
+2. Employee enters search criteria: name, department, or office.
+3. System queries Active Directory over LDAP with the search criteria.
+4. AD returns matching entries with corporate attributes (name, job title, department, office, email, extension).
+5. System displays results in a list.
+6. Employee views colleague's corporate contact information.
 
 **Alternative Flows:**
-- **A1: No results** — System displays "No results found" message.
-- **A2: AD LDAP attributes missing** — If an AD entry has empty attributes (e.g., no extension), the field is displayed as blank or "N/A". This is an AD data quality issue (R001), not a portal error. Per CON-010, the fix is in AD, not the portal.
-- **A3: AD unreachable** — System displays an error message indicating the directory is temporarily unavailable. When the network is down, directory shows "no connection" (AC-005 resolved — only clocking has offline tolerance).
+- **A1: No results found:** System displays "No results found" message.
+- **A2: LDAP attribute missing (R001):** If a corporate attribute (e.g., extension) is empty in AD for a given employee, the directory shows that field as blank or "N/A" — this is an AD data quality issue, not a portal bug (CON-010). The employee should report the gap to the Infrastructure team.
+- **A3: AD unavailable:** System displays "Directory unavailable — please try again later" message.
 
 **Activity Diagram:**
 
 ```plantuml
 @startuml
-title UC-009: Search Employee Directory — Activity Diagram
-
 start
+:Employee navigates to directory page;
 :Employee enters search criteria\n(name, department, or office);
-:System queries Active Directory via LDAP\nwith filter on corporate attributes;
-if (AD returns results?) then (yes)
-  :System maps results to display fields:\nname, job title, department,\noffice, email, extension;
-  :Display results list to employee;
-else (no)
-  :Display "No results found" message;
+:System queries AD over LDAP;
+if (AD responds?) then (yes)
+  :AD returns matching entries\n(corporate attributes);
+  if (Results found?) then (yes)
+    :Display results:\nname, job title, department,\noffice, email, extension;
+    note right
+      CON-012: corporate data only
+      No private personal information
+    end note
+  else (no)
+    :Display "No results found";
+  endif
+else (no — AD unavailable)
+  :Display "Directory unavailable";
 endif
 stop
 
@@ -366,16 +358,16 @@ end note
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| UC-001 | FR-001, AC-005 | Refines | FEAT-001, REL-003, REL-004 |
-| UC-002 | FR-002 | Refines | FEAT-002 |
-| UC-003 | FR-003 | Refines | FEAT-003 |
-| UC-004 | FR-004 | Refines | FEAT-004 |
-| UC-005 | FR-005, NFR-004 | Refines | FEAT-005 |
-| UC-006 | FR-006, NFR-004 | Refines | FEAT-006 |
-| UC-007 | FR-007, CON-013, NFR-004 | Refines | FEAT-007 |
-| UC-008 | FR-008 | Refines | FEAT-008 |
-| UC-009 | FR-009, CON-005, CON-012 | Refines | FEAT-009 |
-| UC-010 | FR-010, CON-009, NFR-004 | Refines | FEAT-010 |
+| UC-001 | FR-001, AC-005 | Refines | REQ-001, REL-003, REL-004 |
+| UC-002 | FR-002 | Refines | REQ-002 |
+| UC-003 | FR-003 | Refines | REQ-003 |
+| UC-004 | FR-004 | Refines | REQ-004 |
+| UC-005 | FR-005, NFR-004 | Refines | REQ-005 |
+| UC-006 | FR-006, NFR-004 | Refines | REQ-006 |
+| UC-007 | FR-007, CON-013, NFR-004 | Refines | REQ-007 |
+| UC-008 | FR-008 | Refines | REQ-008 |
+| UC-009 | FR-009, CON-005, CON-012 | Refines | REQ-009 |
+| UC-010 | FR-010, CON-009, NFR-004 | Refines | REQ-010 |
 | ACT-001 | STK-004 | Derives | UC-001, UC-002, UC-008, UC-009 |
 | ACT-002 | STK-001 | Derives | UC-003..UC-007, UC-010 |
 | ACT-003 | CON-005, CON-009 | Derives | UC-009, UC-010 |
