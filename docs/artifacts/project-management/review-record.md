@@ -16,7 +16,6 @@
 | Disposition | **REQUEST_CHANGES** — 1 Major (blocks merge), 4 Minor (stakeholder requires all resolved) |
 
 ## Review Scope and Criteria
-
 This review evaluates Construction C1 artifacts and code against the following checklists:
 
 **Document Artifacts (8 evaluated):**
@@ -48,6 +47,13 @@ This review evaluates Construction C1 artifacts and code against the following c
 2. CI status documentation
 3. Next actions appropriateness
 
+**Business Modeling Lens (Business Reviewer — Construction C1):**
+- DC §4 Classification: `business-process-led = false` — BM discipline INACTIVE
+- No Business Use-Case Model, Business Rules, or Business Object Model artifacts in project
+- No BM deltas in Construction C1 iteration (all objectives are implementation-focused)
+- Prior BR findings on Use-Case Model: 0 | Prior BR findings on Supplementary Specification: 0
+- Derivation bridge: N/A — system UCs trace directly to declared FR-001..FR-010 (no BUCs to derive from)
+- BR Verdict: **PRESERVED** — Elaboration baseline stands, zero findings to record
 ## Findings
 
 ### Prior Findings Reconciliation
