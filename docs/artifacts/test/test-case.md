@@ -1829,3 +1829,12 @@ FBT --> NSU
 | C1 Defect Pattern Analysis | Issues #10..#14, MAJOR-1, MINOR-1..4 | Derives | This Test Case artifact |
 | C2 Findings Coverage | C2-CRIT-1, C2-MAJ-1, C2-MAJ-2, C2-MIN-2, C2-MIN-4 | Derives | TC-031..TC-035 |
 | C2 Execution Results | Issues #22..#25, #12, #14 | Derives | This Test Case artifact |
+| **C2 Defect Pattern P1** | C2-CRIT-1, C2-MAJ-1, C2-MIN-4 | Derives | TC-031, TC-032, TC-035, TI-036, TI-037 |
+| **C2 Defect Pattern P2** | C2-MAJ-2, C2-MIN-2 | Derives | TC-033, TC-034, TI-038, TI-039 |
+| **C2 Defect Pattern P3** | C2-MIN-1, C2-MIN-3 | Derives | TC-028, UnitTest1.cs |
+| **TI-036** | C2-CRIT-1, Pattern P1 | Refines | TC-036 (route resolution integration test) |
+| **TI-037** | C2-MAJ-1, Pattern P1 | Refines | TC-037 (form binding round-trip test) |
+| **TI-038** | C2-MAJ-2, Pattern P2 | Refines | TC-038 (antiforgery token presence test) |
+| **TI-039** | C2-MIN-2, Pattern P2 | Refines | TC-039 (token-based identity enforcement test) |
+| **C2 Quality Dimension Assessment** | NFR-001..004, AC-001..005, SEC-001..002 | Derives | This Test Case artifact |
+| **C2 Regression Scope** | All TCs, C2 findings | Derives | C2 Cycle 2 test execution plan |
