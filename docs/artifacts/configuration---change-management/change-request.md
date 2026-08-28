@@ -217,71 +217,36 @@ stop
 | #26 | — | C2 baseline blocked — missing Architect approval on PR #21 | cr:approved | critical | blocker | defect | cross-cutting | software-architect | CCM |
 | #27 | C2-MAJ-1 | News/Edit form field names mismatch BindProperties | cr:approved | high | major | defect | local | implementer | C2 Review |
 ## Impact Analysis
+### C2 New CRs — Impact Analysis
 
-### Approved CRs — Detailed Impact
+| Issue # | CR | Affected UCs/FRs | Affected Artifacts | Cost | Schedule Impact | Architectural? |
+|---|---|---|---|---|---|---|
+| #22 | C2-CRIT-1 | UC-001, FR-001, AC-001 | clocking-retry.js, Index.cshtml, ClockingApi.cshtml | Low — route fix | None — C2 rework | No |
+| #23 | C2-MAJ-2 | UC-001, FR-001, AC-001 | clocking-retry.js, Index.cshtml | Low — token/attribute | None — C2 rework | No |
+| #24 | C2-MIN-2 | UC-001, CON-004 (OIDC) | ClockingApi.cshtml.cs | Low — claim extraction | None — C2 rework | No |
+| #25 | — | UC-002..UC-010, FR-002..FR-010 | All Razor Pages for 9 UCs, Design Model UI layer | Medium — 9 page pairs | Fits C2 rework | No |
+| #26 | — | All UCs (baseline gate) | PR #21, C2 baseline | Low — review effort | Blocks C2 close | No |
+| #27 | C2-MAJ-1 | UC-006, FR-006 | News/Edit.cshtml, News/Edit.cshtml.cs | Low — property rename | None — C2 rework | No |
 
-#### CR-001 (#1): LDAP Attribute Mapping PoC
-- **Affected Use Cases:** UC-009 (Search Employee Directory)
-- **Affected Requirements:** FR-009, R001 (exposure=9)
-- **Cost Impact:** Medium — PoC validation + fallback implementation
-- **Schedule Impact:** High — highest-exposure risk must be addressed early
-- **Architectural Impact:** Architectural — LDAP integration pattern, attribute fallback strategy
-- **Architect Concurrence:** Granted (label: `architect-concurred`)
-- **Executor:** software-architect
+### C1 Completed CRs — Impact Reconciliation
 
-#### CR-002 (#2): Offline Clocking Retry Design Validation
-- **Affected Use Cases:** UC-001 (Clock In and Clock Out)
-- **Affected Requirements:** AC-005, R006 (exposure=6)
-- **Cost Impact:** Medium — design validation + implementation verification
-- **Schedule Impact:** High — AC-005 is a declared acceptance criterion
-- **Architectural Impact:** Architectural — offline retry pattern, idempotency, localStorage
-- **Architect Concurrence:** Granted (label: `architect-concurred`)
-- **Executor:** software-architect
+| Issue # | CR | Original Impact | Resolution | Verified Via |
+|---|---|---|---|---|
+| #6 | CR-006 | All 20 test cases blocked by unmerged prototype | PR #4 merged to main | PR #4 closed/merged |
+| #10 | CR-010 | FR-008 featured banner broken | NewsService.Publish accepts isFeatured; full chain implemented | PR #20 closed/merged; Review Record MAJOR-1 RESOLVED |
+| #11 | CR-011 | Cross-employee idempotency collision | FindByIdempotencyKey(employeeId, key) with composite unique index | PR #20 closed/merged; Review Record MINOR-3 RESOLVED |
 
-#### CR-006 (#6): Architectural Prototype Not Merged
-- **Affected Use Cases:** UC-001 through UC-010 (all — baseline foundation)
-- **Affected Requirements:** All FR-001 through FR-010
-- **Cost Impact:** High — delays entire Construction iteration
-- **Schedule Impact:** Critical — no Construction progress until resolved
-- **Architectural Impact:** Cross-cutting — baseline affects all layers
-- **Executor:** implementer
-- **Note:** PR #4 is closed but merge status unconfirmed. PR #8 and #9 remain open. This CR stays `cr:approved` until a merged PR is verified.
+### Deferred CRs — Impact Summary (carried from C1)
 
-#### CR-010 (#10): IsFeatured Not Settable in NewsService.Publish
-- **Affected Use Cases:** UC-005 (Publish News), UC-008 (Read and Filter News)
-- **Affected Requirements:** FR-008 (featured news banner)
-- **Cost Impact:** Low — add parameter to Publish method, update page model
-- **Schedule Impact:** High — blocks PR #8 merge (MAJOR-1 finding from Review Record)
-- **Architectural Impact:** Local — single service method change
-- **Executor:** implementer
-
-#### CR-011 (#11): Idempotency Key Not Scoped Per Employee
-- **Affected Use Cases:** UC-001 (Clock In and Clock Out), AC-005 (offline retry)
-- **Cost Impact:** Low — scope lookup by employeeId
-- **Schedule Impact:** Medium — data loss risk, should fix in C1
-- **Architectural Impact:** Local — single service method + interface change
-- **Executor:** implementer
-
-#### CR-016 (#16): Construction C1 Baseline Blocked
-- **Affected Use Cases:** UC-001 through UC-010 (all — baseline is the foundation)
-- **Cost Impact:** High — delays entire Construction iteration
-- **Schedule Impact:** Critical — no Construction progress until resolved
-- **Architectural Impact:** Cross-cutting — baseline affects all layers
-- **Executor:** software-architect
-- **Note:** Process blocker — Architect must approve/reject PR #9 to unblock the Construction baseline.
-
-### Deferred CRs — Rationale
-
-| CR | Priority | Rationale for Deferral |
-|---|---|---|
-| CR-003 | medium | Audit trail validation (NFR-004) — medium priority, capacity allocated to high/critical CRs first |
-| CR-012 | medium | CSV export format — non-blocking, fixable in next iteration |
-| CR-013 | medium | Test assertion mismatch — non-blocking test quality issue |
-| CR-014 | low | Placeholder test — trivial, no functional impact |
-| CR-015 | medium | Naming violation — non-blocking convention issue |
-| CR-017 | medium | Dead code DTO field — non-blocking, low risk |
-| CR-018 | low | Test codifies bug — depends on CR-011 resolution first |
-
+| Issue # | CR | Affected UCs/FRs | Impact | Deferral Rationale |
+|---|---|---|---|---|
+| #3 | CR-003 | UC-005, UC-006, UC-007, UC-010 (NFR-004) | Cross-cutting | Medium priority — audit trail validation deferred to integration testing |
+| #12 | CR-012 | UC-004, FR-004 | Local | Medium priority — CSV format fix, not blocking UC functionality |
+| #13 | CR-013 | UC-009, FR-009 | Local | Medium priority — test assertion fix, not blocking UC functionality |
+| #14 | CR-014 | Test quality | Local | Low priority — placeholder test removal |
+| #15 | CR-015 | UC-009, Design Model V007 | Local | Medium priority — naming convention, not blocking |
+| #17 | CR-017 | UC-001, CON-004 | Local | Medium priority — dead code cleanup, related to #24 |
+| #18 | CR-018 | CR-011 dependency | Local | Low priority — test behavior codification, resolved by #11 completion |
 ## Decisions and Status
 
 ### CCB Decisions — Construction C1 (2026-08-28)
