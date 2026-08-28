@@ -17,7 +17,6 @@
 | Iter 2 Update | PR #4 **APPROVED** by Code Reviewer (M1/M2 resolved, 0 Critical, 0 Major, 1 Minor non-blocking). TCs transition from BLOCKED → READY pending merge to main. 6 test files reviewed: ClockingServiceTests, NewsServiceTests, DirectoryServiceTests, WorkerCategoryServiceTests, OfflineRetryTests, DomainTests. |
 | Iter 2 Finding Resolved | Traceability table TD-NNN prefix entries removed (Minor finding from Review Record Iter 1). |
 ## Test Scope
-
 ### Architecturally Significant Use Cases Under Test
 
 This Test Case artifact covers the **architecturally significant use-case scenarios** for the Elaboration baseline. Per the SAD Use-Case View, the top 3 architecturally significant UCs are:
@@ -48,264 +47,257 @@ Additional UCs covered at moderate depth for regression readiness:
 | TG-002 | Performance | Clock in/out response < 1 second (95th percentile) | System / Performance | NFR-002, PERF-002 |
 | TG-003 | Reliability | Offline clocking retry succeeds within 5-minute window when network drops | Integration / Fault Tolerance | AC-005, NFR-003 |
 | TG-004 | Functionality | Directory search returns results in < 10 seconds for any query | System / Performance | AC-003, PERF-003 |
-| TG-005 | Auditability | Every publish/edit/unpublish/category-change creates an audit record with author + timestamp | Integration | NFR-004, AUD-001, AUD-002, AUD-003 |
-| TG-006 | Security | HR-only functions reject Employee-role tokens; all endpoints require authentication | Integration / Security | SEC-002 |
-| TG-007 | Reliability | LDAP queries with missing attributes (empty jobTitle, empty telephoneNumber) do not crash and return graceful partial results | Integration / Fault Tolerance | R001, SUP-003 |
-| TG-008 | Functionality | Duplicate clock-in with same idempotency key returns original confirmation, does not create second record | Integration | UC-001 A3 |
+| TG-005 | Reliability | Audit trail records author + timestamp for every news publish/edit/unpublish and worker category change | Integration / Audit | NFR-004, AUD-001..AUD-003 |
+| TG-006 | Security | HR-only operations (UC-003..UC-007, UC-010) reject Employee-role tokens | System / Security | SEC-002 |
+| TG-007 | Reliability | LDAP attribute gaps (R001) do not crash directory search — missing fields show fallback | Integration / Fault Tolerance | R001, SUP-003 |
+| TG-008 | Functionality | Duplicate clock-in submission (same idempotency key) returns original record, not a duplicate | Integration / Data Integrity | UC-001 A3 |
 
-### E1 Iteration Findings — Architecture Validation
-
-#### Smoke Test
-
-| Check | Result | Evidence |
-|---|---|---|
-| CI Build Status (main) | ✅ PASS | Build success, completed 2026-08-28 10:50:54Z |
-| Solution Structure | ✅ Present | `PortalCubaCorp.sln` with `src/PortalCubaCorp/` and `tests/PortalCubaCorp.Tests/` |
-| Target Framework | ✅ .NET 10 | `net10.0` in both .csproj files |
-| Test Framework | ✅ xUnit | `xunit 2.9.3`, `Microsoft.NET.Test.Sdk 17.12.0` |
-| Test Suite Content | ⚠️ PLACEHOLDER | `UnitTest1.cs` — single `Assert.True(true)`, no real tests |
-| Source Implementation | ⚠️ SKELETON | `Program.cs` — bare-bones Razor Pages, no services, no DI, no interfaces |
-| OIDC Configuration | ❌ ABSENT | No `AddAuthentication` / `AddOpenIdConnect` in Program.cs |
-| LDAP Integration | ❌ ABSENT | No LDAP-related code or packages |
-| Audit Trail | ❌ ABSENT | No audit service or interceptor |
-| Persistence | ❌ ABSENT | No EF Core, no DbContext, no PostgreSQL provider |
-
-**Smoke Test Verdict:** Build is green but the implementation on main is the Inception bootstrap skeleton. The architectural prototype (PR #4, 43 files, +2958/-482) was reviewed with disposition REQUEST_CHANGES but has **not been merged to main**. All 20 Test Cases reference interfaces (INT-001 through INT-007) and services that do not exist on the testable branch.
-
-#### Per-Test-Case Verdict Matrix (E1 Iteration 1)
-
-| TC ID | UC Trace | Interface(s) Required | Status | Root Cause | Issue # |
-|---|---|---|---|---|---|
-| TC-001 | UC-001 (main) | INT-001, INT-007 | BLOCKED | IClockingService + IPersistence not on main | CR-006 |
-| TC-002 | UC-001 (main) | INT-001, INT-007 | BLOCKED | IClockingService + IPersistence not on main | CR-006 |
-| TC-003 | UC-001 (A1), AC-005 | INT-001, INT-007, clocking-retry.js | BLOCKED | IClockingService + offline retry JS not on main | CR-006 |
-| TC-004 | UC-001 (A2), AC-005 | clocking-retry.js | BLOCKED | Offline retry JS not on main | CR-006 |
-| TC-005 | UC-001 (A3) | INT-001, INT-007 | BLOCKED | IClockingService + IPersistence not on main | CR-006 |
-| TC-006 | UC-009, R001 | INT-003, INT-006 | BLOCKED | IDirectoryService + ILdapGateway not on main | CR-006 |
-| TC-007 | UC-009, CON-012 | INT-003, INT-006 | BLOCKED | IDirectoryService + ILdapGateway not on main | CR-006 |
-| TC-008 | UC-005, NFR-004 | INT-002, INT-005, INT-007 | BLOCKED | INewsService + IAuditLogger + IPersistence not on main | CR-006 |
-| TC-009 | UC-007, CON-013 | INT-002, INT-005, INT-007 | BLOCKED | INewsService + IAuditLogger + IPersistence not on main | CR-006 |
-| TC-010 | UC-006, NFR-004 | INT-002, INT-005, INT-007 | BLOCKED | INewsService + IAuditLogger + IPersistence not on main | CR-006 |
-| TC-011 | NFR-001 | All endpoints | BLOCKED | No application endpoints implemented | CR-006 |
-| TC-012 | UC-001, NFR-002 | INT-001, clock-in endpoint | BLOCKED | IClockingService + endpoint not on main | CR-006 |
-| TC-013 | SEC-002 | COMP-007 (OIDC) | BLOCKED | OIDC middleware not configured | CR-006 |
-| TC-014 | SEC-002 | COMP-007 (OIDC) | BLOCKED | OIDC middleware not configured | CR-006 |
-| TC-015 | UC-002 | INT-001, INT-007 | BLOCKED | IClockingService + IPersistence not on main | CR-006 |
-| TC-016 | UC-004, FR-004 | INT-001, INT-007 | BLOCKED | IClockingService + IPersistence not on main | CR-006 |
-| TC-017 | UC-008, FR-008 | INT-002, INT-007 | BLOCKED | INewsService + IPersistence not on main | CR-006 |
-| TC-018 | UC-010, NFR-004 | INT-004, INT-005, INT-007 | BLOCKED | IWorkerCategoryService + IAuditLogger + IPersistence not on main | CR-006 |
-| TC-019 | UC-010 (A1) | INT-004, INT-006 | BLOCKED | IWorkerCategoryService + ILdapGateway not on main | CR-006 |
-| TC-020 | UC-003, SEC-002 | INT-001, INT-006, COMP-007 | BLOCKED | IClockingService + ILdapGateway + OIDC not on main | CR-006 |
-
-**Summary:** 0 PASS, 0 FAIL, 20 BLOCKED, 0 SKIP
-
-#### Review Record Findings Status
-
-The Review Record (Elaboration E1) identified 2 Major findings in PR #4:
-
-| Finding | Severity | Description | Status | Impact on Testing |
-|---|---|---|---|---|
-| M1 | Major | IAuditLogger (INT-005) signature mismatch — implementation diverges from Design Model contract | Open (PR not merged) | TC-008, TC-009, TC-010, TC-018 cannot verify audit trail until M1 is fixed AND PR merged |
-| M2 | Major | IPersistence (INT-007) transaction API mismatch — implementation diverges from Design Model contract | Open (PR not merged) | TC-001..TC-005, TC-008..TC-010, TC-015..TC-019 cannot verify persistence until M2 is fixed AND PR merged |
-
-**Note:** Since PR #4 was not merged to main, M1 and M2 are not yet testable on the main branch. When the PR is reworked and merged, these findings must be re-verified before TCs can be unblocked.
-
-#### Risk-Driven Test Coverage Assessment
-
-| Risk | Exposure | TCs Covering Risk | E1 Status | Mitigation |
-|---|---|---|---|---|
-| R001 (LDAP attributes) | 9 | TC-006, TC-007 | BLOCKED | CR-001 tracks LDAP PoC; CR-006 tracks prototype not merged |
-| R002 (Clocking adoption) | 6 | TC-001..TC-005 | BLOCKED | CR-002 tracks offline retry design; CR-006 tracks prototype not merged |
-
-#### Acceptance Criteria Test Mapping
-
-| AC ID | TCs | E1 Status | Construction/Transition Plan |
-|---|---|---|---|
-| AC-001 | TC-001, TC-002, TC-005 | BLOCKED | Execute in Construction after prototype merge |
-| AC-002 | TC-008 | BLOCKED | Execute in Construction after prototype merge |
-| AC-003 | TC-006, TC-007, TC-019, TC-020 | BLOCKED | Execute in Construction after prototype merge |
-| AC-004 | TC-001..TC-005 (adoption) | BLOCKED | Measure in Transition (requires live users) |
-| AC-005 | TC-003, TC-004 | BLOCKED | Execute in Construction after prototype merge |
-
-#### E1 Test Execution Flow
+### Test Case Lifecycle (Iter 2 — PR #4 Approved)
 
 ```plantuml
 @startuml
-title Elaboration E1 — Test Evaluation Flow (Architecture Validation)
+title Test Case Lifecycle — Elaboration Iter 2
 
-skinparam activityBorderColor #333333
-skinparam activityBackgroundColor #F5F5F5
+skinparam state {
+  BackgroundColor #ECF0F1
+  BorderColor #2C3E50
+}
 
+[*] --> Designed
+
+Designed --> Scripted : Test code written\nin *.Tests/ project
+Scripted --> Ready : PR #4 approved\ninfrastructure available
+Ready --> Executed : Test run\nagainst SUT
+Executed --> Passed : All assertions\nhold
+Executed --> Failed : One or more\nassertions fail
+Executed --> Blocked : Infrastructure\nunavailable
+
+Blocked --> Ready : Blocker resolved\n(e.g. PR merged)
+Failed --> Scripted : Defect found\nfix & re-run
+Passed --> Regression : TC added to\nregression suite
+
+Regression --> Executed : Re-run in\nsubsequent iteration
+
+note right of Ready
+  Iter 2 Status:
+  PR #4 APPROVED by Code Reviewer
+  M1/M2 RESOLVED
+  TCs transition from BLOCKED
+  to READY pending merge to main
+end note
+
+note right of Blocked
+  Iter 1 Status (superseded):
+  All 20 TCs were BLOCKED because
+  PR #4 was not merged to main.
+  Iter 2: PR #4 approved, pending
+  merge — TCs are READY.
+end note
+
+@enduml
+```
+
+### Test Case Status Overview (Iter 2)
+
+```plantuml
+@startuml
+title Test Case Status — Elaboration Iter 2 (PR #4 Approved)
+
+skinparam rectangle {
+  BackgroundColor#D6EAF8
+  BorderColor#2C3E50
+}
+
+rectangle "TC-001: Clock In — Happy Path" as TC001 #D6EAF8
+rectangle "TC-002: Clock Out — Happy Path" as TC002 #D6EAF8
+rectangle "TC-003: Offline Clock-In Retry" as TC003 #D6EAF8
+rectangle "TC-004: Offline Clock-Out Retry" as TC004 #D6EAF8
+rectangle "TC-005: Duplicate Clock-In (Idempotency)" as TC005 #D6EAF8
+rectangle "TC-006: Directory Search — Missing Attrs (R001)" as TC006 #D6EAF8
+rectangle "TC-007: Directory Search — Private Data Filter" as TC007 #D6EAF8
+rectangle "TC-008: Publish News — Audit Trail" as TC008 #D6EAF8
+rectangle "TC-009: Unpublish News — No Hard Delete" as TC009 #D6EAF8
+rectangle "TC-010: Edit News — Audit on Edit" as TC010 #D6EAF8
+rectangle "TC-011: Page Load Performance" as TC011 #D6EAF8
+rectangle "TC-012: Clock Response Time" as TC012 #D6EAF8
+rectangle "TC-013: HR Role Authorization" as TC013 #D6EAF8
+rectangle "TC-014: Employee Role Rejected" as TC014 #D6EAF8
+rectangle "TC-015: View Own Clocking History" as TC015 #D6EAF8
+rectangle "TC-016: Export CSV Clocking Report" as TC016 #D6EAF8
+rectangle "TC-017: Read & Filter News" as TC017 #D6EAF8
+rectangle "TC-018: Worker Category Audit Trail" as TC018 #D6EAF8
+rectangle "TC-019: Worker Category — AD Lookup" as TC019 #D6EAF8
+rectangle "TC-020: Directory Search — Auth Required" as TC020 #D6EAF8
+
+note bottom of TC001
+  <b>Status: READY</b>
+  PR #4 approved (Iter 2).
+  IClockingService implemented.
+  M1/M2 resolved. Pending merge
+  to main for execution.
+end note
+
+note bottom of TC006
+  <b>Status: READY</b>
+  PR #4 approved (Iter 2).
+  ILdapGateway implemented.
+  LdapGatewayStub available.
+  R001 testable.
+end note
+
+note bottom of TC008
+  <b>Status: READY</b>
+  PR #4 approved (Iter 2).
+  IAuditLogger.Log() signature
+  resolved (M1). AuditInterceptor
+  implemented.
+end note
+
+note bottom of TC013
+  <b>Status: READY</b>
+  PR #4 approved (Iter 2).
+  OIDC middleware configured.
+  Mock token provider available.
+end note
+
+@enduml
+```
+
+**Legend:** Blue (#D6EAF8) = READY (PR #4 approved, pending merge to main for execution). In Iter 1 all TCs were BLOCKED (red #FFD6D6); in Iter 2 all TCs transition to READY following Code Reviewer approval of PR #4.
+
+### Test Automation Architecture (Iter 2)
+
+```plantuml
+@startuml
+title Test Automation Architecture — Elaboration Iter 2 (PR #4 Approved)
+
+skinparam componentStyle rectangle
+skinparam interfaceStyle circle
+
+package "Test Framework" {
+  component "xUnit Test Runner" as XUNIT
+  component "Moq Mocking Framework" as MOQ
+}
+
+package "Test Infrastructure (Stubs & Drivers)" {
+  component "InMemoryDb\n(Implements INT-007\nIPersistence)" as INMEM
+  component "LdapGatewayStub\n(Implements INT-006\nILdapGateway)" as LDAPSTUB
+  component "OIDC Mock Token Provider\n(Implements COMP-007\nOidcAuthMiddleware)" as OIDCMOCK
+  component "Clocking Client Test Harness\n(Simulates clocking-retry.js)" as CLKHARNESS
+  component "AuditRecordChecker\n(Verifies audit trail)" as AUDITCHK
+}
+
+package "System Under Test (SUT)" {
+  component "ClockingService\n(COMP-002)" as CLKSVC
+  component "DirectoryService\n(COMP-001)" as DIRSVC
+  component "NewsService\n(COMP-003)" as NEWSSVC
+  component "WorkerCategoryService\n(COMP-004)" as WCSVC
+  component "AuditInterceptor\n(COMP-008)" as AUDITINT
+}
+
+package "Test Suites (6)" {
+  component "ClockingServiceTests" as CLKTEST
+  component "NewsServiceTests" as NEWSTEST
+  component "DirectoryServiceTests" as DIRTEST
+  component "WorkerCategoryServiceTests" as WCTEST
+  component "OfflineRetryTests" as OFFTEST
+  component "DomainTests" as DOMTEST
+}
+
+XUNIT --> CLKTEST
+XUNIT --> NEWSTEST
+XUNIT --> DIRTEST
+XUNIT --> WCTEST
+XUNIT --> OFFTEST
+XUNIT --> DOMTEST
+
+CLKTEST --> INMEM
+CLKTEST --> OIDCMOCK
+NEWSTEST --> INMEM
+NEWSTEST --> AUDITCHK
+DIRTEST --> LDAPSTUB
+DIRTEST --> OIDCMOCK
+WCTEST --> INMEM
+WCTEST --> LDAPSTUB
+WCTEST --> AUDITCHK
+OFFTEST --> CLKHARNESS
+OFFTEST --> INMEM
+
+INMEM ..> CLKSVC : substitutes\nIPersistence
+INMEM ..> NEWSSVC : substitutes\nIPersistence
+INMEM ..> WCSVC : substitutes\nIPersistence
+LDAPSTUB ..> DIRSVC : substitutes\nILdapGateway
+LDAPSTUB ..> WCSVC : substitutes\nILdapGateway
+OIDCMOCK ..> CLKSVC : injects token
+OIDCMOCK ..> DIRSVC : injects token
+AUDITCHK ..> AUDITINT : verifies\nIAuditLogger.Log
+
+note right of INMEM
+  PR #4 Status: APPROVED
+  M1 (IAuditLogger): RESOLVED
+  M2 (IPersistence): RESOLVED
+  TCs: READY FOR EXECUTION
+  pending merge to main
+end note
+
+note right of LDAPSTUB
+  Covers R001 risk:
+  3 LDAP scenarios:
+  - Full attributes
+  - Empty jobTitle
+  - Empty telephoneNumber
+  + Private attribute filtering
+end note
+
+@enduml
+```
+
+### Test Workflow — UC to TC Execution (Iter 2)
+
+```plantuml
+@startuml
+title Test Workflow — UC to TC Execution (Elaboration Iter 2)
+
+|Test Designer|
 start
+:Read Use-Case Model\n(10 UCs, 3 arch-sig);
+:Read SAD Use-Case View\n(UC realizations);
+:Read Design Model\n(interfaces, components);
 
-:Load Test Case (TC-001..TC-020)
-from Test Designer;
-:Load Review Record findings
-(M1: IAuditLogger, M2: IPersistence);
+|Test Designer|
+:Derive test cases\nfrom UC scenarios;
+:Specify preconditions,\ninput data, expected outcome;
+:Design adversarial scenarios\n(failure modes);
 
-:Smoke Test: scm_get_build_status(main);
+|Test Infrastructure|
+:Build stubs & drivers\n(InMemoryDb, LdapGatewayStub,\nOIDC Mock, Clocking Harness);
 
-if (CI Build Green?) then (yes)
-  :Inspect source files on main
-  (Program.cs, UnitTest1.cs, .csproj);
+|Code Reviewer|
+:Review PR #4\n(architectural prototype);
+:Approve PR #4\n(M1/M2 resolved);
 
-  if (Architectural prototype code present?) then (yes)
-    :Execute TC-001..TC-020
-    against prototype implementation;
-    :Evaluate PASS/FAIL/BLOCKED
-    per test case;
-  else (no — bootstrap skeleton only)
-    :Mark all TCs as BLOCKED:
-    implementation not on main;
-    :Record finding:
-    PR #4 not merged to main;
-  endif
+|Test Designer|
+:Update TC status\nBLOCKED -> READY;
+:Execute TCs against SUT;
+
+if (All TCs pass?) then (yes)
+  :Mark TCs as PASSED;
+  :Add to regression suite;
 else (no)
-  :STOP — log blocker defect
-  via scm_create_issue;
-  :All TCs = BLOCKED
-  (build failure);
+  :Log defects;
+  :Fix & re-run;
+  |Test Designer|
+  :Update test cases;
+  |Test Designer|
+  :Re-execute;
 endif
 
-:Update Test Case Findings
-with per-iteration verdicts;
-
-if (Defects found?) then (yes)
-  :Log Change Requests
-  via scm_create_issue
-  with canonical CCM labels;
-  :Append Issue # to
-  Test Case Findings;
-else (no)
-  :Record PASS verdicts
-  in Test Case Findings;
-endif
-
-:Generate activity diagram
-for evidence trail;
+:Report coverage & results\nin Test Evaluation Summary;
 
 stop
 
 @enduml
 ```
-
-#### Blocked Test Cases by Root Cause
-
-```plantuml
-@startuml
-title Elaboration E1 — Architecture Validation: Blocked Test Cases by Root Cause
-
-skinparam rectangleBorderColor #333333
-
-rectangle "Root Cause: PR #4 Not Merged to Main" as ROOT #FFCCCC {
-  rectangle "IClockingService\n(INT-001) absent" as I1 #FFD6D6
-  rectangle "INewsService\n(INT-002) absent" as I2 #FFD6D6
-  rectangle "IDirectoryService\n(INT-003) absent" as I3 #FFD6D6
-  rectangle "IWorkerCategoryService\n(INT-004) absent" as I4 #FFD6D6
-  rectangle "IAuditLogger\n(INT-005) absent\n(M1: signature mismatch)" as I5 #FFD6D6
-  rectangle "ILdapGateway\n(INT-006) absent" as I6 #FFD6D6
-  rectangle "IPersistence\n(INT-007) absent\n(M2: transaction API mismatch)" as I7 #FFD6D6
-  rectangle "OIDC Middleware\n(COMP-007) absent" as I8 #FFD6D6
-}
-
-rectangle "Blocked Test Cases" as BLK #FFE8E8 {
-  rectangle "TC-001..TC-005\n(Clocking)" as B1 #FFD6D6
-  rectangle "TC-006, TC-007, TC-019, TC-020\n(Directory/LDAP)" as B2 #FFD6D6
-  rectangle "TC-008..TC-010, TC-018\n(Audit Trail)" as B3 #FFD6D6
-  rectangle "TC-011, TC-012\n(Performance)" as B4 #FFD6D6
-  rectangle "TC-013, TC-014\n(OIDC Auth)" as B5 #FFD6D6
-  rectangle "TC-015..TC-017\n(Clocking History/Export)" as B6 #FFD6D6
-}
-
-B1 --> I1
-B1 --> I7
-B2 --> I3
-B2 --> I6
-B3 --> I2
-B3 --> I5
-B3 --> I7
-B4 --> I1
-B4 --> I7
-B5 --> I8
-B6 --> I1
-B6 --> I7
-
-note right of ROOT
-  <b>Build ID:</b> 2026-08-28 10:50:54Z
-  <b>Branch:</b> main
-  <b>CI Status:</b> PASS (green)
-  <b>Implementation:</b> Bootstrap skeleton only
-  <b>PR #4:</b> Reviewed (REQUEST_CHANGES)
-  but NOT merged to main
-end note
-
-@enduml
-```
-
-#### Test Case Status Matrix
-
-```plantuml
-@startuml
-title Elaboration E1 — Test Case Status Matrix
-
-skinparam rectangleBorderColor #333333
-skinparam rectangleBackgroundColor #FFFFFF
-
-rectangle "TC-001: Clock In (happy path)" as TC001 #FFD6D6
-rectangle "TC-002: Clock Out (happy path)" as TC002 #FFD6D6
-rectangle "TC-003: Offline retry (5 min)" as TC003 #FFD6D6
-rectangle "TC-004: Offline retry expiry" as TC004 #FFD6D6
-rectangle "TC-005: Clocking idempotency" as TC005 #FFD6D6
-rectangle "TC-006: LDAP attribute coverage" as TC006 #FFD6D6
-rectangle "TC-007: Corporate-data-only (CON-012)" as TC007 #FFD6D6
-rectangle "TC-008: Audit trail on publish" as TC008 #FFD6D6
-rectangle "TC-009: Audit trail on edit" as TC009 #FFD6D6
-rectangle "TC-010: Audit trail on unpublish" as TC010 #FFD6D6
-rectangle "TC-011: Page load <3s (NFR-001)" as TC011 #FFD6D6
-rectangle "TC-012: Clock response <1s (NFR-002)" as TC012 #FFD6D6
-rectangle "TC-013: OIDC auth — Employee role" as TC013 #FFD6D6
-rectangle "TC-014: OIDC auth — HR role" as TC014 #FFD6D6
-rectangle "TC-015: View own clocking history" as TC015 #FFD6D6
-rectangle "TC-016: View all employee clockings" as TC016 #FFD6D6
-rectangle "TC-017: Export CSV clocking report" as TC017 #FFD6D6
-rectangle "TC-018: Worker category audit trail" as TC018 #FFD6D6
-rectangle "TC-019: Directory search by name" as TC019 #FFD6D6
-rectangle "TC-020: Directory search by dept/office" as TC020 #FFD6D6
-
-note bottom of TC001
-  <b>Status: BLOCKED</b>
-  Reason: IClockingService not
-  implemented on main branch.
-  PR #4 reviewed but not merged.
-  Build ID: 2026-08-28 10:50:54Z
-end note
-
-note bottom of TC006
-  <b>Status: BLOCKED</b>
-  Reason: ILdapGateway not
-  implemented on main branch.
-  R001 (exposure=9) untested.
-  CR-001 tracks this risk.
-end note
-
-note bottom of TC008
-  <b>Status: BLOCKED</b>
-  Reason: IAuditLogger not
-  implemented on main branch.
-  M1 finding: signature mismatch
-  in PR #4 (not on main).
-end note
-
-note bottom of TC013
-  <b>Status: BLOCKED</b>
-  Reason: OIDC middleware not
-  configured in Program.cs.
-  No AddAuthentication call.
-end note
-
-@enduml
-```
-
 ## Test Case Catalog
 
 ### TC-001: Clock In — Main Flow (Happy Path)
