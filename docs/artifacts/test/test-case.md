@@ -89,6 +89,351 @@ This Test Case artifact covers **all 10 use-case scenarios** at Construction dep
 | Security | **FAIL** | Identity spoofing (C2-MIN-2). No antiforgery token (C2-MAJ-2). OIDC integration untested. |
 | Usability | **BLOCKED** | 9/10 UCs have no UI. Index.cshtml is a placeholder. |
 | Audit Trail | **PASS** (service) | NewsService and WorkerCategoryService correctly log audit records. NFR-004 satisfied at service layer. |
+
+### Test Analyst C2 Cycle 1 — Defect Pattern Analysis
+
+**Test Analyst evaluation of C2 execution results — pattern identification, root cause analysis, and quality risk assessment.**
+
+Three distinct defect patterns emerge from the 7 C2 findings:
+
+| Pattern | Findings | Root Cause | Defect-Prone Component | Severity Distribution | Stakeholder Impact |
+|---|---|---|---|---|---|
+| **P1: Route/Binding Mismatch** | C2-CRIT-1, C2-MAJ-1, C2-MIN-4 | Frontend calls endpoint A, backend routes to endpoint B. Form field names don't match BindProperty names. No integration test between JS fetch and Razor Page route resolution. | Presentation Layer (ClockingApi.cshtml, News/Edit.cshtml, ClockingService.ExportCsv) | 1 Critical + 1 Major + 1 Minor | STK-004 (employees cannot clock in), STK-001 (HR cannot edit news, CSV misleading) |
+| **P2: Security Gap** | C2-MAJ-2, C2-MIN-2 | Security mechanisms (antiforgery, identity from token) treated as afterthought. No adversarial test at API boundary verifying token-based identity. | Presentation Layer (ClockingApi.cshtml.cs, clocking-retry.js) | 1 Major + 1 Minor | STK-003 (OIDC claims not used), STK-001 (identity spoofing risk) |
+| **P3: Deferred Implementation** | C2-MIN-1, C2-MIN-3 | C1 deferred work not completed in C2. Infrastructure dependencies (R001 LDAP, STK-003 OIDC) block integration testing. Placeholder test from CR-014 still present. | Infrastructure (NovellLdapConnectionAdapter), Test Layer (UnitTest1.cs) | 2 Minor (but blocking) | STK-003 (LDAP untested), STK-004 (directory non-functional) |
+
+**Key Insight:** 5 of 7 C2 findings (71%) originate in the **Presentation Layer** — the UI/API boundary. The Service Layer is stable (26/26 PASS). This indicates the C1→C2 transition introduced defects when moving from service-layer unit tests to full-stack integration. The pattern is consistent: implementation was written without integration tests that verify the JS→Razor Page route resolution and form field binding.
+
+**Quality Risk Assessment:**
+
+| Risk | Probability | Impact | Exposure | Affected ACs | Mitigation |
+|---|---|---|---|---|---|
+| UC-001 completely non-functional at UI | 3 | 3 | 9 | AC-001, AC-004, AC-005 | Fix C2-CRIT-1 + C2-MAJ-2 + C2-MIN-2 in C2 Cycle 2 — must-run regression TC-031, TC-033, TC-034 |
+| 9/10 UCs have no UI | 3 | 3 | 9 | AC-002, AC-003 | Implement missing Razor Pages in C2 Cycle 2 — TC-032 and all UI TCs |
+| OIDC integration untested | 3 | 2 | 6 | AC-001, AC-004 | R003 escalated — STK-003 must register OIDC client before integration testing |
+| LDAP attributes inconsistent (R001) | 3 | 3 | 9 | AC-003 | C2-MIN-1 deferred to integration testing — requires real AD test environment |
+| Regression in service layer | 1 | 3 | 3 | All | 26/26 PASS — low regression risk, but must re-verify after C2 Cycle 2 fixes |
+
+```plantuml
+@startuml
+title C2 Defect Pattern Analysis — Component → Finding → Root Cause
+
+skinparam classAttributeIconSize 0
+skinparam monochrome false
+skinparam shadowing false
+
+package "Presentation Layer" {
+  rectangle "ClockingApi.cshtml\n+ clocking-retry.js" as CLK_UI #FFD0D0
+  rectangle "News/Edit.cshtml\n+ Edit.cshtml.cs" as NEWS_UI #FFD0D0
+  rectangle "9/10 UC Razor Pages\n(missing)" as MISSING_UI #FFD0D0
+}
+
+package "Service Layer" {
+  rectangle "ClockingService.cs\n(ExportCsv)" as CSV_SVC #FFE0B0
+}
+
+package "Test Layer" {
+  rectangle "UnitTest1.cs\n(placeholder)" as PLACEHOLDER_TEST #FFF0B0
+}
+
+package "Infrastructure" {
+  rectangle "NovellLdapConnectionAdapter.cs\n(NotImplementedException)" as LDAP_ADAPTER #FFF0B0
+}
+
+package "C2 Findings" {
+  card "C2-CRIT-1\nAPI routing 404" as F_CRIT #FF6666
+  card "C2-MAJ-1\nForm binding mismatch" as F_MAJ1 #FF9966
+  card "C2-MAJ-2\nNo antiforgery token" as F_MAJ2 #FF9966
+  card "C2-MIN-2\nIdentity spoofing" as F_MIN2 #FFCC66
+  card "C2-MIN-4\nCSV header mismatch" as F_MIN4 #FFCC66
+  card "C2-MIN-1\nLDAP not implemented" as F_MIN1 #FFCC66
+  card "C2-MIN-3\nPlaceholder test" as F_MIN3 #FFCC66
+}
+
+package "Root Cause Patterns" {
+  note as P1
+    **Pattern P1: Route/Binding Mismatch**
+    Frontend calls endpoint A, backend
+    routes to endpoint B. Form field
+    names don't match BindProperty names.
+    Root cause: no integration test
+    between JS fetch and Razor Page.
+    Components: CLK_UI, NEWS_UI
+    Severity: Critical + Major
+    3 of 7 findings (43%)
+  end note
+
+  note as P2
+    **Pattern P2: Security Gap**
+    Missing antiforgery token, identity
+    from request body instead of token.
+    Root cause: security mechanisms
+    treated as afterthought, not tested
+    adversarially at API boundary.
+    Components: CLK_UI
+    Severity: Major + Minor
+    2 of 7 findings (29%)
+  end note
+
+  note as P3
+    **Pattern P3: Deferred Implementation**
+    LDAP adapter throws NotImplemented,
+    9/10 UCs have no UI, placeholder test.
+    Root cause: C1 deferred work not
+    completed in C2 — infrastructure
+    dependencies (R001, STK-003) block.
+    Components: LDAP_ADAPTER, MISSING_UI
+    Severity: Minor + Major (blocking)
+    2 of 7 findings (29%)
+  end note
+}
+
+CLK_UI --> F_CRIT
+CLK_UI --> F_MAJ2
+CLK_UI --> F_MIN2
+NEWS_UI --> F_MAJ1
+MISSING_UI --> F_MAJ1
+CSV_SVC --> F_MIN4
+LDAP_ADAPTER --> F_MIN1
+PLACEHOLDER_TEST --> F_MIN3
+
+F_CRIT --> P1
+F_MAJ1 --> P1
+F_MAJ2 --> P2
+F_MIN2 --> P2
+F_MIN1 --> P3
+F_MIN3 --> P3
+F_MIN4 --> P1
+
+note bottom of P1
+  **Defect-Prone Component: Presentation Layer**
+  5 of 7 C2 findings originate in the UI/API boundary.
+  Service layer is stable (26/26 PASS).
+  Recommendation: Integration tests must cover
+  JS→Razor Page route resolution and form binding.
+end note
+
+@enduml
+```
+
+### Test Analyst C2 Cycle 1 — Quality Dimension Assessment
+
+```plantuml
+@startuml
+title Quality Dimension Assessment Matrix — Construction C2 Cycle 1
+
+skinparam classAttributeIconSize 0
+skinparam monochrome false
+skinparam shadowing false
+
+enum Verdict {
+  PASS
+  AT_RISK
+  FAIL
+  BLOCKED
+}
+
+class QualityDimension {
+  + dimension : String
+  + verdict : Verdict
+  + evidence : String
+  + affectedTCs : String
+  + stakeholder : String
+}
+
+class Functionality {
+  + verdict = FAIL
+  + evidence = "UC-001 404+400; 9/10 UCs no UI"
+  + affectedTCs = "TC-031 FAIL, TC-033 FAIL, TC-032 BLOCKED"
+  + stakeholder = "STK-004 (employees), STK-001 (HR)"
+}
+
+class Reliability {
+  + verdict = AT_RISK
+  + evidence = "Offline retry JS present but endpoint missing"
+  + affectedTCs = "TC-003, TC-004 (service PASS, UI untested)"
+  + stakeholder = "STK-004 (employees)"
+}
+
+class Performance {
+  + verdict = BLOCKED
+  + evidence = "No deployment env; NFR-001/002 untestable"
+  + affectedTCs = "TC-011, TC-012, TC-029, TC-030"
+  + stakeholder = "STK-001 (HR), STK-004 (employees)"
+}
+
+class Security {
+  + verdict = FAIL
+  + evidence = "Identity spoofing + no antiforgery token"
+  + affectedTCs = "TC-034 FAIL, TC-033 FAIL, TC-022 FAIL"
+  + stakeholder = "STK-003 (infra), STK-001 (HR)"
+}
+
+class Usability {
+  + verdict = BLOCKED
+  + evidence = "9/10 UCs have no UI; Index.cshtml placeholder"
+  + affectedTCs = "TC-032 BLOCKED, all UI TCs"
+  + stakeholder = "STK-004 (employees)"
+}
+
+class AuditTrail {
+  + verdict = PASS
+  + evidence = "NewsService + WorkerCategoryService log correctly"
+  + affectedTCs = "TC-008, TC-009, TC-010, TC-018, TC-023, TC-027"
+  + stakeholder = "STK-001 (HR)"
+}
+
+QualityDimension <|-- Functionality
+QualityDimension <|-- Reliability
+QualityDimension <|-- Performance
+QualityDimension <|-- Security
+QualityDimension <|-- Usability
+QualityDimension <|-- AuditTrail
+
+note right of Functionality
+  **Weight: Highest**
+  AC-001 (clock in/out) BLOCKED
+  AC-002 (publish news) BLOCKED
+  AC-003 (directory search) BLOCKED
+  AC-004 (80% adoption) BLOCKED
+  AC-005 (offline sync) AT_RISK
+end note
+
+note right of Security
+  **Weight: High**
+  C2-MIN-2: employeeId spoofable
+  C2-MAJ-2: no CSRF protection
+  OIDC integration UNTESTED
+  SEC-001, SEC-002 unverified
+end note
+
+note bottom of AuditTrail
+  **Only dimension at PASS**
+  NFR-004 satisfied at service layer.
+  AuditInterceptor + AuditLogEntry
+  correctly record author + timestamp.
+end note
+
+@enduml
+```
+
+### Test Analyst C2 Cycle 1 — New Test Ideas Surfaced
+
+The following new test ideas are surfaced from C2 execution discoveries. These should be materialized as TC-036..TC-039 by the Test Designer in C2 Cycle 2:
+
+| Idea ID | TC Target | Description | Quality Dimension | Risk Priority | Triggering Condition |
+|---|---|---|---|---|---|
+| TI-036 | TC-036 | **Route resolution integration test**: Verify JS fetch URL matches Razor Page @page directive for ALL API endpoints, not just clocking. Pattern P1 showed this is a systemic risk. | Functionality | P=3, I=3, Exp=9 | Any JS fetch to a Razor Page endpoint — must verify route exists before testing behavior |
+| TI-037 | TC-037 | **Form binding round-trip test**: For every Razor Page form (Publish, Edit, Unpublish, Worker Category), verify HTML form field names match BindProperty names. Pattern P1 root cause. | Functionality | P=3, I=2, Exp=6 | Any form POST to a Razor Page — must verify field names match before testing business logic |
+| TI-038 | TC-038 | **Antiforgery token presence test**: Verify every POST form and fetch call includes antiforgery token (or has justified [IgnoreAntiforgeryToken] with OIDC bearer auth). Pattern P2 root cause. | Security | P=2, I=3, Exp=6 | Any POST request — must verify CSRF protection is present or explicitly justified |
+| TI-039 | TC-039 | **Token-based identity enforcement test**: Verify ALL API endpoints derive employeeId from OIDC token claims (User.FindFirst("sub")), never from request body. Pattern P2 root cause. | Security | P=2, I=3, Exp=6 | Any API endpoint that accepts employeeId — must verify it comes from token, not request body |
+
+**Ideas Prioritization (risk-ranked):**
+1. **TI-036** (Exp=9) — Route resolution is the highest risk: C2-CRIT-1 proved this can make an entire UC non-functional. Must be tested for ALL endpoints, not just the one that failed.
+2. **TI-037** (Exp=6) — Form binding is the same pattern as C2-MAJ-1. Systemic across all news forms.
+3. **TI-038** (Exp=6) — Antiforgery is a security dimension gap. Every POST is a potential vector.
+4. **TI-039** (Exp=6) — Identity spoofing is a security dimension gap. Every API endpoint accepting identity is a vector.
+
+### Test Analyst C2 Cycle 1 — Regression Scope for C2 Cycle 2
+
+```plantuml
+@startuml
+title C2 Cycle 2 Regression Test Scope — Risk-Based Selection
+
+skinparam classAttributeIconSize 0
+skinparam monochrome false
+skinparam shadowing false
+
+package "Must-Run (Critical Path)" {
+  card "TC-031: Clock API routing\n(C2-CRIT-1 fix verification)" as R_TC031 #FF6666
+  card "TC-033: Antiforgery token\n(C2-MAJ-2 fix verification)" as R_TC033 #FF9966
+  card "TC-032: News edit form binding\n(C2-MAJ-1 fix verification)" as R_TC032 #FF9966
+  card "TC-034: Identity from token\n(C2-MIN-2 fix verification)" as R_TC034 #FFCC66
+  card "TC-035: CSV header correctness\n(C2-MIN-4 fix verification)" as R_TC035 #FFCC66
+}
+
+package "Regression Guard (C1 PASS — Re-verify)" {
+  card "TC-001..TC-005: Clocking service" as R_CLK #LightGreen
+  card "TC-008..TC-010: News service + audit" as R_NEWS #LightGreen
+  card "TC-015..TC-016: History + CSV export" as R_HIST #LightGreen
+  card "TC-017: News filter + featured" as R_FILTER #LightGreen
+  card "TC-018..TC-019: Worker category" as R_WCAT #LightGreen
+  card "TC-020: HR view all clockings" as R_HR #LightGreen
+  card "TC-021: Cross-employee idempotency" as R_IDEM #LightGreen
+  card "TC-023..TC-024: IsFeatured (MAJOR-1 resolved)" as R_FEAT #LightGreen
+  card "TC-025..TC-027: Domain + audit chain" as R_DOM #LightGreen
+}
+
+package "Still BLOCKED (Infrastructure)" {
+  card "TC-011, TC-012: Performance/load" as B_PERF #LightGray
+  card "TC-013, TC-014: Auth/role gating" as B_AUTH #LightGray
+  card "TC-028: LDAP integration (R001)" as B_LDAP #LightGray
+  card "TC-029, TC-030: Directory perf + fault tolerance" as B_DIR #LightGray
+}
+
+package "New Ideas for C2 Cycle 2" {
+  card "TC-036: Route resolution\nintegration test (JS→Razor)" as N_ROUTE #LightBlue
+  card "TC-037: Form binding round-trip\nfor all news forms" as N_FORM #LightBlue
+  card "TC-038: Antiforgery token\npresence in all POST forms" as N_ANTIFORGERY #LightBlue
+  card "TC-039: Token-based identity\nfor all API endpoints" as N_IDENTITY #LightBlue
+}
+
+R_TC031 --> R_CLK : "fix must not\nbreak service"
+R_TC033 --> R_CLK
+R_TC034 --> R_CLK
+R_TC032 --> R_NEWS : "fix must not\nbreak service"
+R_TC035 --> R_HIST
+
+N_ROUTE --> R_TC031
+N_FORM --> R_TC032
+N_ANTIFORGERY --> R_TC033
+N_IDENTITY --> R_TC034
+
+note bottom of B_PERF
+  **BLOCKED by:**
+  INFRA-BLOCK-1: STK-003 OIDC not registered
+  INFRA-BLOCK-2: No deployment env provisioned
+  R003: OIDC deadline passed (escalated)
+  These tests cannot execute until
+  infrastructure is provisioned.
+end note
+
+@enduml
+```
+
+**Regression Strategy for C2 Cycle 2:**
+
+| Tier | TCs | Rationale | Execution Priority |
+|---|---|---|---|
+| **Tier 1: Fix Verification** | TC-031, TC-032, TC-033, TC-034, TC-035 | Direct verification of C2 findings fixes. These MUST pass before any other testing. | 1 — Block all other testing until these pass |
+| **Tier 2: Regression Guard** | TC-001..TC-010, TC-015..TC-021, TC-023..TC-027 | Re-verify all C1/C2 PASS verdicts to ensure fixes don't break service layer. 26 tests. | 2 — Run immediately after Tier 1 passes |
+| **Tier 3: New Adversarial** | TC-036, TC-037, TC-038, TC-039 | New test ideas from pattern analysis. Test Designer to materialize these as formal TCs. | 3 — Run after Tier 2 confirms no regression |
+| **Tier 4: Infrastructure-Blocked** | TC-011, TC-012, TC-013, TC-014, TC-028, TC-029, TC-030 | Cannot execute until STK-003 registers OIDC client and deployment env is provisioned. | 4 — Blocked by INFRA-BLOCK-1, INFRA-BLOCK-2, R003 |
+
+### Test Analyst C2 Cycle 1 — Findings Summary
+
+**Findings recorded inline in affected Test Cases (severity + priority + triggering conditions):**
+
+| Finding | Severity | Priority | Triggering Condition | Affected TCs | Pattern | Status |
+|---|---|---|---|---|---|---|
+| C2-CRIT-1: Clock API 404 | Critical | Blocker | JS fetch to `/api/clocking` but Razor Page routes to `/Api/ClockingApi` — route mismatch | TC-031 | P1: Route/Binding Mismatch | **OPEN — requires fix in C2 Cycle 2** |
+| C2-MAJ-1: Form binding mismatch | Major | High | Form posts `title`, `body`, `category` but BindProperties are `EditTitle`, `EditBody`, `EditCategory` | TC-032 | P1: Route/Binding Mismatch | **OPEN — requires fix in C2 Cycle 2** |
+| C2-MAJ-2: No antiforgery token | Major | High | `fetch()` POST has no anti-forgery token; Razor Pages validates by default → 400 | TC-033 | P2: Security Gap | **OPEN — requires fix in C2 Cycle 2** |
+| C2-MIN-1: LDAP NotImplemented | Minor | Medium | `NovellLdapConnectionAdapter` all methods throw `NotImplementedException` | TC-028 | P3: Deferred Implementation | **DEFERRED — requires integration testing with real AD (R001)** |
+| C2-MIN-2: Identity spoofing | Minor | Medium | API accepts `employeeId` from request body — client can spoof identity | TC-022, TC-034 | P2: Security Gap | **OPEN — requires fix in C2 Cycle 2** |
+| C2-MIN-3: Placeholder test | Trivial | Low | `UnitTest1.cs` contains `Assert.True(true)` — CR-014 deferred | — | P3: Deferred Implementation | **OPEN — delete UnitTest1.cs** |
+| C2-MIN-4: CSV header mismatch | Minor | Medium | CSV header `TimeIn,TimeOut` but data has single time + Direction | TC-035 | P1: Route/Binding Mismatch | **OPEN — requires fix in C2 Cycle 2** |
+
+**Overall Test Analyst Verdict for C2 Cycle 1:**
+
+The system is **NOT READY** for IOC milestone. 1 Critical + 2 Major findings remain open. The service layer is stable (26/26 PASS, 0 regressions), but the presentation layer is defect-prone (5 of 7 findings). The primary quality risk is Pattern P1 (Route/Binding Mismatch) — a systemic issue where the JS→Razor Page integration was not tested. The secondary risk is Pattern P2 (Security Gap) — antiforgery and identity enforcement were not tested adversarially at the API boundary.
+
+**Recommendation for C2 Cycle 2:**
+1. Fix C2-CRIT-1, C2-MAJ-1, C2-MAJ-2, C2-MIN-2, C2-MIN-4 (5 open findings)
+2. Delete UnitTest1.cs (C2-MIN-3)
+3. Materialize TC-036..TC-039 as formal test cases (Test Designer)
+4. Execute Tier 1 → Tier 2 → Tier 3 regression sequence
+5. STK-003 must register OIDC client to unblock TC-013, TC-014, TC-028..TC-030 (R003 escalation)
 ## Test Case Catalog
 ### TC-001: Clock In — Main Flow (Happy Path)
 
