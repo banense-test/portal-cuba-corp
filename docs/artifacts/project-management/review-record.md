@@ -364,7 +364,6 @@ end note
 | 7 | CR-003 (Audit trail validation): Validate NFR-004 implementation | Test Designer | Medium | Elaboration Iter 2 |
 
 ## Disposition
-
 ### Per-Artifact Verdicts
 
 | Artifact | Verdict | Rationale |
@@ -374,8 +373,8 @@ end note
 | Use-Case Model | **APPROVED** | 10 UCs 1:1 with 10 FRs, each cites Source: FR-NNN, no phantom/cross-cutting/multi-actor-split UCs |
 | Supplementary Specification | **APPROVED** | NFRs quantified, FURPS+ complete, cross-cutting mechanisms in SuppSpec with <<include>> |
 | Development Case | **APPROVED** | No baseline violations, optional triggers correctly justified (PoC fired for R001, others correctly not fired) |
-| Risk List | **APPROVED** | R001 (exposure=9) top risk with PoC mitigation, all risks derived from declared constraints |
-| Iteration Plan | **APPROVED** | 5 objectives aligned with Elaboration goals, budget-boxed from measured actuals |
+| Risk List | **NEEDS REWORK** (MR lens) | R001/R006 MITIGATING without PoC results; R003 external dependency pending; stakeholder refused sanction |
+| Iteration Plan | **NEEDS REWORK** (MR lens) | Iteration count inconsistency (says 6, table shows 7); otherwise feasible and well-structured |
 | Test Case | **APPROVED (1 Minor)** | 20 TCs covering all 10 UCs, arch-sig UCs prioritized, 1 Minor finding (TD-NNN prefix) |
 | Test Evaluation Summary | **APPROVED** | Mission defined, NFR coverage assessed, E1 BLOCKED status legitimate |
 | Vision | **N/A** | Inception artifact, already Approved |
@@ -383,7 +382,7 @@ end note
 
 ### Overall LCA Disposition
 
-**APPROVED — Architecture baseline sanctioned at LCA.**
+**Technical Lens (Reviewer): APPROVED — Architecture baseline sanctioned at LCA.**
 
 The Elaboration artifact set is technically sound and ready for Construction:
 - **0 Critical findings** — no blockers
@@ -395,6 +394,262 @@ The Elaboration artifact set is technically sound and ready for Construction:
 - Use-Case Model traces 1:1 to declared functional requirements
 - Risk List addresses all declared risks with mitigation plans
 - CI build is green on the PR branch
+
+### Management Lens (Management Reviewer): CONDITIONAL — Stakeholder Sanction REFUSED
+
+The Management Reviewer assessment of the LCA milestone for Elaboration Iteration 1 of 2:
+
+- **Architecture:** PARTIALLY MET — SAD is comprehensive but status is DRAFT, not BASELINED. 2 Major interface mismatches (M1, M2) from the technical Reviewer must be resolved.
+- **Risk Retirement:** PARTIALLY MET — R001 (HIGH, exp=9) and R006 (SIGNIFICANT, exp=6) are MITIGATING with PoCs triggered but no results. R003 (SIGNIFICANT, exp=6) external dependency pending.
+- **Construction Plan:** MET — Token-based budgeting with [ASSUMPTION] tags, grounded in Inception measured actuals.
+- **Stakeholder Alignment:** NOT MET — Stakeholder REFUSED sanction, directing the team to iterate again and resolve all open issues.
+- **Plan Feasibility:** PARTIALLY MET — Token-based budgeting is correct; minor iteration count inconsistency.
+
+**LCA Compliance Table (Management Lens):**
+
+```plantuml
+@startuml
+title Portal Cuba Corp — LCA Compliance Table (Management Lens)
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+class "LCA Exit Criteria Assessment" as T {
+  = Criterion | Status | Evidence | Verdict =
+  ---
+  **1. Architecture baselined** | PARTIALLY MET | SAD 4+1 views, 8 components, 5 ADRs; 2 Major interface mismatches (M1, M2); SAD status DRAFT not BASELINED | CONDITIONAL
+  **2. Critical risks retired** | PARTIALLY MET | R001 (exp=9) MITIGATING, results PENDING; R006 (exp=6) MITIGATING, results PENDING | CONDITIONAL
+  **3. Construction plan credible** | MET | Token-based; [ASSUMPTION—validation at LCA]; basis: Inception measured actuals | PASS
+  **4. Stakeholder alignment** | NOT MET | Stakeholder REFUSED: "We need to iterate again" | FAIL
+  **5. Design Model complete** | PARTIALLY MET | Top-3 UC realizations; 2 Major divergences (M1, M2) need fixing | CONDITIONAL
+  **6. Use-Case Model complete** | MET | 10 UCs map 1:1 to FR-001..FR-010; all traceable | PASS
+  **7. Supplementary Spec complete** | MET | NFR-001..004, SEC, AUD, PERF, SUP all mapped | PASS
+  **8. Test coverage defined** | MET | 20 TCs covering all UCs, NFRs, ACs; BLOCKED pending PR merge (expected) | PASS
+  **9. Risk List maintained** | MET | 6 risks with magnitude, strategy, owner, status | PASS
+  **10. Iteration Plan feasible** | PARTIALLY MET | Token-based correct; iteration count inconsistency (6 vs 7) | CONDITIONAL
+}
+
+note bottom of T
+  **Overall: CONDITIONAL — Stakeholder sanction REFUSED**
+  Elaboration Iteration 1 of 2 — LCA gate not yet reached.
+  Conditions for LCA closure at end of Iter 2:
+  1. R001 PoC results: RETIRED or ESCALATED
+  2. R006 PoC results: RETIRED or ESCALATED
+  3. M1/M2 interface mismatches resolved
+  4. R003 OIDC confirmed or mock auth activated
+  5. Architecture DRAFT to BASELINED
+  6. Iteration count corrected
+  7. All open PRs merged to iteration baseline
+  8. Stakeholder re-consulted for sanction
+end note
+
+@enduml
+```
+
+**Risk Retirement State Machine:**
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Risk Retirement State Machine (Inception to Elaboration)
+
+skinparam state {
+  BackgroundColor<<high>> #FF6B6B
+  BackgroundColor<<sig>> #FFA94D
+  BackgroundColor<<mod>> #FFE066
+  BackgroundColor<<retired>> #69DB7C
+  BackgroundColor<<open>> #A5D8FF
+}
+
+[*] --> R001_Identified
+[*] --> R002_Identified
+[*] --> R003_Identified
+[*] --> R004_Identified
+[*] --> R005_Identified
+[*] --> R006_Identified
+
+state R001_Identified <<high>> {
+  R001_Identified : R001 AD LDAP (exp=9, HIGH)
+  R001_Identified : Inception: IDENTIFIED
+  R001_Identified : Elaboration: MITIGATING
+  R001_Identified : PoC triggered, results PENDING
+  R001_Identified : TREND: downward (mitigation active)
+}
+
+state R006_Identified <<sig>> {
+  R006_Identified : R006 Offline Retry (exp=6, SIG)
+  R006_Identified : Inception: IDENTIFIED
+  R006_Identified : Elaboration: MITIGATING
+  R006_Identified : PoC triggered, results PENDING
+  R006_Identified : TREND: downward (mitigation active)
+}
+
+state R003_Identified <<sig>> {
+  R003_Identified : R003 OIDC Registration (exp=6, SIG)
+  R003_Identified : Inception: IDENTIFIED
+  R003_Identified : Elaboration: MITIGATING
+  R003_Identified : External dep on STK-003
+  R003_Identified : TREND: stable (external, no change)
+}
+
+state R002_Identified <<sig>> {
+  R002_Identified : R002 Clocking Adoption (exp=6, SIG)
+  R002_Identified : Inception: IDENTIFIED
+  R002_Identified : Elaboration: OPEN
+  R002_Identified : Deferred to Transition
+  R002_Identified : TREND: stable (no action yet)
+}
+
+state R004_Identified <<mod>> {
+  R004_Identified : R004 PostgreSQL Load (exp=4, MOD)
+  R004_Identified : Inception: IDENTIFIED
+  R004_Identified : Elaboration: OPEN
+  R004_Identified : Deferred to Construction
+  R004_Identified : TREND: stable (no action yet)
+}
+
+state R005_Identified <<mod>> {
+  R005_Identified : R005 UI Design Compliance (exp=4, MOD)
+  R005_Identified : Inception: IDENTIFIED
+  R005_Identified : Elaboration: MITIGATING
+  R005_Identified : UI review in progress
+  R005_Identified : TREND: downward (mitigation active)
+}
+
+R001_Identified --> R001_Retired : PoC confirms LDAP attributes OK
+R001_Identified --> R001_Escalated : PoC reveals gaps, coordinate with STK-003
+
+R006_Identified --> R006_Retired : PoC confirms offline retry works
+R006_Identified --> R006_Escalated : PoC fails, contingency scope reduction
+
+R003_Identified --> R003_Retired : STK-003 confirms OIDC registration
+R003_Identified --> R003_Contingency : Mock auth activated for Iter 2
+
+state R001_Retired <<retired>> {
+  R001_Retired : TARGET: Retire at LCA
+}
+state R001_Escalated <<high>> {
+  R001_Escalated : RISK: Gaps found
+}
+state R006_Retired <<retired>> {
+  R006_Retired : TARGET: Retire at LCA
+}
+state R006_Escalated <<sig>> {
+  R006_Escalated : RISK: Retry fails
+}
+state R003_Retired <<retired>> {
+  R003_Retired : TARGET: Confirm at LCA
+}
+state R003_Contingency <<open>> {
+  R003_Contingency : Mock auth fallback
+}
+
+note right of R001_Identified
+  **LCA GATE CONDITION:**
+  R001 (exp=9, HIGH) MUST show
+  PoC results by end of Iter 2.
+  MITIGATING without results
+  = NOT retired = LCA blocked.
+end note
+
+@enduml
+```
+
+**Project Health Scorecard:**
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Project Health Scorecard (Elaboration Iter 1)
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+class "Project Health Scorecard" as S {
+  = Dimension | Status | RAG | Evidence =
+  ---
+  **SCOPE** | On Track | GREEN | 10 UCs defined, 10 FRs mapped 1:1; all scope traces to declared input; no scope creep detected
+  **SCHEDULE** | On Track | GREEN | Elaboration Iter 1 of 2; 5 objectives defined and in progress; Inception closed on time (2 iters, 22 min agent)
+  **COST** | On Track | GREEN | Token-based budgeting with [ASSUMPTION] tags; Inception measured: 4.38M tokens; Elaboration estimate ~5M [ASSUMPTION]; no budget overrun
+  **QUALITY** | At Risk | YELLOW | 2 Major interface mismatches (M1, M2) from Reviewer; 20 TCs BLOCKED pending PR merge; architecture DRAFT not yet baselined; stakeholder sanction REFUSED
+}
+
+note bottom of S
+  **Overall: AT-RISK (YELLOW)**
+  Three dimensions GREEN, one YELLOW (Quality).
+  Quality dimension requires:
+  - Resolution of M1/M2 interface mismatches
+  - PR #4 merge to iteration baseline (Integrator)
+  - PoC results for R001/R006 to confirm risk retirement
+  - Architecture status change from DRAFT to BASELINED
+  - Stakeholder re-consultation for sanction
+end note
+
+@enduml
+```
+
+**LCA Review Workflow:**
+
+```plantuml
+@startuml
+title Portal Cuba Corp — LCA Review Workflow (Elaboration Iter 1)
+
+actor "Management\nReviewer" as MR
+actor "Stakeholder\n(STK-001)" as STK
+participant "Reviewer\n(Technical Lens)" as REV
+participant "Project\nManager" as PM
+participant "Integrator" as INT
+
+MR -> REV : Read Review Record (technical findings)
+REV --> MR : 2 Major (M1: IAuditLogger, M2: IPersistence)\n1 Info (F1: TD-NNN prefix)
+MR -> MR : Assess LCA exit criteria\n(10 criteria evaluated)
+MR -> MR : Assess risk retirement\n(R001, R006 MITIGATING—no results)
+MR -> MR : Assess plan feasibility\n(token-based, [ASSUMPTION] tagged)
+MR -> STK : Consult: sanction to advance?\n(Conditional verdict, 0 Critical, 0 Major from MR lens)
+STK --> MR : REFUSED — "We need to iterate again.\nIssues to mitigate, PRs to close,\nfindings to address."
+MR -> MR : Record findings:\n1. Iteration Plan: Minor (count mismatch)\n2. Risk List: Major (PoC results pending)
+MR -> MR : Produce Review Record\n(LCA Compliance Table,\nRisk State Machine,\nHealth Scorecard)
+MR -> PM : Verdict: CONDITIONAL\nStakeholder sanction: REFUSED\nMust complete Iter 2 with conditions
+
+note right of MR
+  **LCA CONDITIONS FOR ITER 2:**
+  1. R001 PoC results: RETIRED or ESCALATED
+  2. R006 PoC results: RETIRED or ESCALATED
+  3. M1/M2 interface mismatches resolved
+  4. R003 OIDC confirmed or mock auth activated
+  5. Architecture DRAFT to BASELINED
+  6. Iteration count corrected (Minor)
+  7. All open PRs merged to iteration baseline
+  8. Stakeholder re-consulted for sanction
+end note
+
+@enduml
+```
+
+### Stakeholder Consultation Record
+
+| Field | Value |
+|---|---|
+| Question Asked | LCA review — verdict: Conditional. Open defects: 0 Critical, 0 Major (MR lens). Reviewer has 2 Major (M1, M2). Elaboration is Iter 1 of 2 — LCA gate not yet reached. Do you accept the Iteration Plan and sanction advancing toward LCA? |
+| Stakeholder Answer | **No** |
+| Stakeholder Direction | "We need to iterate again. There are issues to mitigate, pull requests to close, and findings to address, even if they're minor. We need to be clear before we can move on to elaboration." |
+| Sanction Status | **REFUSED** |
+| Impact | Project must complete Elaboration Iteration 2 with all conditions resolved before LCA can be assessed. No phase advance authorized. |
+
+### Management Verdict
+
+**CONDITIONAL — Stakeholder sanction REFUSED.**
+
+The project does NOT advance to Construction until all conditions are met AND stakeholder sanction is GRANTED.
+
+**Conditions for LCA closure at end of Elaboration Iteration 2:**
+
+1. R001 LDAP PoC results confirmed — RETIRED (attributes OK) or ESCALATED (gaps found, STK-003 coordination)
+2. R006 Offline retry PoC results confirmed — RETIRED (mechanism works) or ESCALATED (contingency scope reduction)
+3. M1 (IAuditLogger signature mismatch) and M2 (IPersistence transaction API mismatch) resolved in Design Model and prototype code
+4. R003 OIDC registration confirmed with STK-003 or mock auth contingency activated for Iter 2
+5. Architecture status changed from DRAFT to BASELINED
+6. Iteration Plan iteration count corrected (Minor — "6" → "7")
+7. All open PRs merged to iteration baseline (PR #4 after M1/M2 fixes)
+8. Stakeholder re-consulted for sanction before LCA gate closes
 
 ### PR #4 Disposition
 
@@ -413,7 +668,6 @@ The Code Reviewer has already issued **REQUEST_CHANGES** on PR #4 for 2 Major im
 | #3 | CR-003: Audit trail validation | Open | cr:deferred-next-iteration |
 | #5 | E1 iteration close — DEFERRED | Open | No mechanism integrated yet |
 | #6 | CR-006: Prototype not merged | Open | All TCs BLOCKED — resolves when PR #4 merges |
-
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
