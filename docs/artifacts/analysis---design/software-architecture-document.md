@@ -738,13 +738,12 @@ end note
 | Microsoft.EntityFrameworkCore | 10.0.0 | PortalCubaCorp.Infrastructure | CON-003 (EF Core) | .NET 10 pinned |
 | Npgsql.EntityFrameworkCore.PostgreSQL | 10.0.0 | PortalCubaCorp.Infrastructure | CON-003 (PostgreSQL) | .NET 10 pinned |
 ## Data View
-
 ### Portal-Owned Data (PostgreSQL)
 
 | Entity | Stored Fields | Source | Audit |
 |---|---|---|---|
 | Clocking Record | employee_id (AD user id), timestamp, type (in/out), idempotency_key | Client POST (UC-001) | No |
-| News Item | id, title, body, category, status (published/unpublished), created_by, created_at, updated_by, updated_at | HR publish/edit/unpublish (UC-005/006/007) | Yes (AUD-001) |
+| News Item | id, title, body, category, status (published/unpublished), author_id, created_at, updated_by, updated_at, is_featured | HR publish/edit/unpublish (UC-005/006/007) | Yes (AUD-001) |
 | Worker Category | ad_user_id, category | HR manage (UC-010) | Yes (AUD-002) |
 | Audit Record | id, entity_type, entity_id, action, author, timestamp | Audit interceptor (COMP-008) | Append-only |
 
@@ -756,15 +755,102 @@ end note
 
 **Critical constraint (CON-009):** The portal stores ONLY `ad_user_id → category`. Everything else is projected from AD at read time. No sync job, no reconciliation, no conflict resolution.
 
+```plantuml
+@startuml
+title Portal Cuba Corp — Data View (Construction C2 — Refined)
+
+skinparam classAttributeIconSize 0
+
+package "PostgreSQL (Portal-Owned)" {
+  
+  class ClockingRecord {
+    + id : Guid
+    + employee_id : string
+    + timestamp : DateTime
+    + type : ClockingType
+    + idempotency_key : string
+    --
+    + UNIQUE INDEX (employee_id, idempotency_key)
+    + CR-011: scoped per employee
+  }
+  
+  class NewsItem {
+    + id : Guid
+    + title : string
+    + body : string
+    + category : NewsCategory
+    + status : NewsStatus
+    + author_id : string
+    + created_at : DateTime
+    + updated_by : string
+    + updated_at : DateTime
+    + is_featured : bool
+    --
+    + CON-013: never hard-deleted
+    + status: Published | Unpublished
+  }
+  
+  class WorkerCategory {
+    + ad_user_id : string
+    + category : string
+    --
+    + PK: ad_user_id
+    + CON-009: 2 columns only
+  }
+  
+  class AuditRecord {
+    + id : Guid
+    + entity_type : string
+    + entity_id : string
+    + action : AuditAction
+    + author : string
+    + timestamp : DateTime
+    --
+    + Append-only (no UPDATE/DELETE)
+    + NFR-004
+  }
+}
+
+package "Active Directory (LDAP — Read-Only)" {
+  class DirectoryEntry <<projected>> {
+    + name : string
+    + job_title : string
+    + department : string
+    + office : string
+    + email : string
+    + extension : string
+    --
+    + CON-009: NOT stored in portal DB
+    + Projected from AD at read time
+    + R001: fallback "N/A" for missing
+  }
+}
+
+ClockingRecord ..> DirectoryEntry : employee_id maps to\nAD user id
+WorkerCategory ..> DirectoryEntry : ad_user_id maps to\nAD user id
+AuditRecord ..> NewsItem : entity_id references news
+AuditRecord ..> WorkerCategory : entity_id references category
+
+note bottom of ClockingRecord
+  C2 REFINEMENT (CR-011):
+  Idempotency key scoped per employee.
+  Unique index on (employee_id, idempotency_key)
+  prevents cross-employee collision.
+  Was: UNIQUE(idempotency_key) — could collide
+  across different employees.
+end note
+
+@enduml
+```
+
 ### Key Database Constraints
 
 | Constraint | Implementation | Rationale |
 |---|---|---|
-| Unique idempotency_key on clockings | PostgreSQL UNIQUE INDEX | Prevents duplicate clocking records from offline retry (AC-005) |
+| Unique (employee_id, idempotency_key) on clockings | PostgreSQL UNIQUE INDEX on composite key | Prevents duplicate clocking records from offline retry (AC-005) — CR-011: scoped per employee to prevent cross-employee collision |
 | News items never hard-deleted | status column (published/unpublished) + application logic | CON-013: unpublishing hides, never deletes |
 | Audit records append-only | No UPDATE/DELETE on audit_records table | NFR-004: immutable audit trail |
 | Worker category: 2 columns only | Table: (ad_user_id, category) | CON-009: nothing else stored locally |
-
 ## Size and Performance
 
 | NFR | Requirement | Architectural Tactic |
