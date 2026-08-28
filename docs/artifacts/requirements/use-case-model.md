@@ -747,9 +747,9 @@ package "Acceptance Criteria" {
   rectangle "AC-005: Offline tolerance 5min" as AC5
 }
 
-package "Change Requests (CR-NNN)" {
-  rectangle "CR-010: IsFeatured flag\n(UC-005, UC-006)" as CR10
-  rectangle "CR-011: Idempotency key\n(UC-001)" as CR11
+package "Approved Change Requests (CR-NNN)" {
+  rectangle "CR-010: IsFeatured flag\n(UC-005, UC-006)\nCCB-APPROVED" as CR10
+  rectangle "CR-011: Idempotency key\n(UC-001)\nCCB-APPROVED" as CR11
 }
 
 BG1 --> FR1 : derives
@@ -781,13 +781,21 @@ UC1 --> AC5 : verifies
 UC5 --> AC2 : verifies
 UC9 --> AC3 : verifies
 
-CR10 --> UC5 : derives [DERIVED — from FR-008]
-CR10 --> UC6 : derives [DERIVED — from FR-008]
+CR10 --> UC5 : derives
+CR10 --> UC6 : derives
 CR11 --> UC1 : derives
 
 note bottom of BG1
   NFR-004 (audit trail) applies to
   UC-005, UC-006, UC-007, UC-010
+end note
+
+note bottom of CR10
+  CR-010 approved by CCB
+  IsFeatured flag is an approved
+  extension of FR-008 featured banner
+  [DERIVED] marker retired —
+  CCB approval constitutes confirmation
 end note
 
 @enduml
@@ -815,5 +823,5 @@ end note
 | UC-005..UC-008 | BG-003 | Derives | (Business Goals) |
 | UC-009 | BG-002 | Derives | (Business Goals) |
 | UC-009 | R001 | DependsOn | (LDAP attribute consistency) |
-| CR-010 | FR-008 | Derives | UC-005, UC-006 (IsFeatured flag) |
-| CR-011 | AC-005 | Derives | UC-001 (idempotency key) |
+| CR-010 | FR-008 | Derives | UC-005, UC-006 (IsFeatured flag — CCB-approved) |
+| CR-011 | AC-005 | Derives | UC-001 (idempotency key — CCB-approved) |
