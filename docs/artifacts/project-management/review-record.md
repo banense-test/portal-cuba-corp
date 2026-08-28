@@ -61,7 +61,7 @@ This review evaluates Construction C1 artifacts and code against the following c
 |---|---|---|---|---|
 | F1 (TD-NNN prefix) | Minor | Test Case | Resolved | Closed in Elaboration iter 2 — TD-NNN entries removed from traceability table, cataloged in Test Data section only |
 
-### Current Iteration Findings
+### Current Iteration Findings — Technical Lens (Reviewer)
 
 All 8 document artifacts **PASS** their checklists with zero findings. All 5 code findings are on PR #8 and persist from the prior Review Record review (PR not updated since initial review).
 
@@ -77,7 +77,434 @@ All 8 document artifacts **PASS** their checklists with zero findings. All 5 cod
 
 **BM Discipline Status: INACTIVE (DC §4: business-process-led = false)**
 
-No Business Modeling findings to record. The project's 10 declared functional requirements (FR-001 through FR-010) are system-level featur
+No Business Modeling findings to record. The project's 10 declared functional requirements (FR-001 through FR-010) are system-level features that trace directly to declared scope — no derivation bridge assessment required. Elaboration baseline PRESERVED.
+
+### Management Lens — Findings (Management Reviewer)
+
+#### IOC Compliance Table
+
+```plantuml
+@startuml
+title IOC Milestone Compliance Table — Construction C1
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+class IOC_Compliance {
+  + Milestone : IOC (End of Construction)
+  + Assessment_Point : Construction C1 (mid-Construction)
+  + Overall_Status : NOT_READY (C1 of 2)
+}
+
+class CRITERION_1_Functional {
+  + criterion : Functional Completeness
+  + status : PARTIALLY_MET
+  + evidence : PR #8 REQUEST_CHANGES — MAJOR-1 blocks FR-008 (IsFeatured)
+  + detail : 10 UCs declared; presentation layer delivered but IsFeatured non-functional
+  + gap : MAJOR-1 must be fixed + merged; application/persistence/LDAP/audit layers deferred to C2
+}
+
+class CRITERION_2_Quality {
+  + criterion : Quality Threshold
+  + status : NOT_MET
+  + evidence : 30 TCs: 20 PASS, 5 FAIL, 8 BLOCKED
+  + detail : 5 defects (Issues #10-#14); 8 blocked by infra deps (STK-003 OIDC, deployment env)
+  + gap : Defect closure rate 0%; failing tests must be resolved; blocked tests need infra
+}
+
+class CRITERION_3_Environment {
+  + criterion : Beta Deployment Environment Readiness
+  + status : NOT_MET
+  + evidence : INFRA-BLOCK-2 (deployment env not prepared); INFRA-BLOCK-1 (STK-003 OIDC pending)
+  + detail : Internal Windows Server (CON-006) not yet configured for beta; OIDC client registration unconfirmed
+  + gap : STK-003 must confirm OIDC client; deployment env must be provisioned
+}
+
+class CRITERION_4_Risk {
+  + criterion : Risk Retirement
+  + status : PARTIALLY_MET
+  + evidence : R001 MITIGATED (PoC confirmed), R006 MITIGATED (PoC confirmed), R003 MONITORING (STK-003 pending)
+  + detail : R007 NEW (schedule risk from PR #8 findings); R002 ACTIVE (adoption risk)
+  + gap : R003 must be resolved; R007 must be retired; R002 needs Transition plan
+}
+
+class CRITERION_5_Acceptance {
+  + criterion : Acceptance Criteria Traceability
+  + status : PARTIALLY_MET
+  + evidence : AC-001..AC-005 traced in Iteration Plan and Test Case
+  + detail : AC-001 (clocking) — code exists but MAJOR-1 blocks; AC-002 (news publish) — code exists; AC-003 (directory <10s) — LDAP code deferred to C2; AC-005 (offline) — MINOR-3 fix pending
+  + gap : All ACs need verified test execution in C2
+}
+
+IOC_Compliance --> CRITERION_1_Functional
+IOC_Compliance --> CRITERION_2_Quality
+IOC_Compliance --> CRITERION_3_Environment
+IOC_Compliance --> CRITERION_4_Risk
+IOC_Compliance --> CRITERION_5_Acceptance
+
+@enduml
+```
+
+#### Iteration Scorecard — Objectives vs Actuals
+
+```plantuml
+@startuml
+title Construction C1 — Iteration Scorecard (Objectives vs Actuals)
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+class Iteration_Scorecard {
+  + iteration : Construction C1
+  + objectives_planned : 7
+  + objectives_met : 0
+  + objectives_partial : 3
+  + objectives_not_met : 4
+  + verdict : CONDITIONAL (mid-Construction)
+}
+
+class OBJ1_Fix_PR8 {
+  + id : OBJ-1
+  + objective : Resolve all PR #8 Review Record findings
+  + planned : MAJOR-1 + MINOR-1..4
+  + actual : CRs approved (CR-010..CR-018) but NOT YET MERGED
+  + status : PARTIAL
+  + evidence : 6 CRs approved, 7 deferred; PR #8 still REQUEST_CHANGES
+}
+
+class OBJ2_AppServices {
+  + id : OBJ-2
+  + objective : Implement application services layer
+  + planned : NewsService, ClockingService, DirectoryService, WorkerCategoryService
+  + actual : DEFERRED to C2 per Risk List contingency
+  + status : NOT_MET
+  + evidence : Risk List states scope reduction — Items 6-14 deferred to C2
+}
+
+class OBJ3_Persistence {
+  + id : OBJ-3
+  + objective : Implement persistence layer
+  + planned : PostgreSQL repositories for Clocking, News, NewsAudit, WorkerCategory
+  + actual : DEFERRED to C2
+  + status : NOT_MET
+  + evidence : Risk List contingency: C2 absorbs deferred work
+}
+
+class OBJ4_LDAP {
+  + id : OBJ-4
+  + objective : Implement LDAP gateway
+  + planned : LdapGateway with Novell.Directory.Ldap + ILdapConnection
+  + actual : DEFERRED to C2
+  + status : NOT_MET
+  + evidence : Scope reduction per Risk List
+}
+
+class OBJ5_Audit {
+  + id : OBJ-5
+  + objective : Implement audit logging
+  + planned : AuditLogger (INT-005) for all publish/edit/unpublish/category ops
+  + actual : DEFERRED to C2
+  + status : NOT_MET
+  + evidence : Scope reduction per Risk List
+}
+
+class OBJ6_Tests {
+  + id : OBJ-6
+  + objective : Expand test coverage
+  + planned : Unit tests for services; integration tests for LDAP + persistence
+  + actual : 30 TCs designed (TC-001..TC-030); 20 PASS, 5 FAIL, 8 BLOCKED
+  + status : PARTIAL
+  + evidence : Adversarial tests TC-021..TC-024 target PR #8 findings; 5 defects logged
+}
+
+class OBJ7_ReReview {
+  + id : OBJ-7
+  + objective : Re-review and merge
+  + planned : Re-review PR #8 after fixes; merge to iteration/C1 baseline
+  + actual : Review Record shows REQUEST_CHANGES still active
+  + status : PARTIAL
+  + evidence : 1 Major + 4 Minor findings still open; merge blocked
+}
+
+Iteration_Scorecard --> OBJ1_Fix_PR8
+Iteration_Scorecard --> OBJ2_AppServices
+Iteration_Scorecard --> OBJ3_Persistence
+Iteration_Scorecard --> OBJ4_LDAP
+Iteration_Scorecard --> OBJ5_Audit
+Iteration_Scorecard --> OBJ6_Tests
+Iteration_Scorecard --> OBJ7_ReReview
+
+@enduml
+```
+
+#### Risk Retirement Status
+
+```plantuml
+@startuml
+title Risk Retirement Status — Construction C1
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+class Risk_Trend {
+  + assessment_point : Construction C1
+  + total_risks : 7
+  + retired : 0
+  + mitigated : 2
+  + monitoring : 1
+  + active : 2
+  + new : 1
+  + resolved_prior : 1
+}
+
+class R001 {
+  + id : R001
+  + name : AD LDAP attribute consistency
+  + magnitude : HIGH (exposure=9)
+  + elaboration_status : MITIGATED (PoC confirmed)
+  + construction_status : MITIGATED (execution pending CR-001)
+  + trend : STABLE
+  + owner : Software Architect
+}
+
+class R002 {
+  + id : R002
+  + name : Digital clocking adoption
+  + magnitude : SIGNIFICANT (exposure=6)
+  + elaboration_status : ACTIVE
+  + construction_status : ACTIVE
+  + trend : STABLE
+  + owner : Project Manager
+  + note : Transition phase concern
+}
+
+class R003 {
+  + id : R003
+  + name : OIDC registration (STK-003)
+  + magnitude : SIGNIFICANT (exposure=6)
+  + elaboration_status : MONITORING
+  + construction_status : MONITORING
+  + trend : STABLE (no change)
+  + owner : Project Manager
+  + note : Escalation deadline C2; mock auth contingency active
+  + concern : STK-003 not yet confirmed — blocks integration tests
+}
+
+class R004 {
+  + id : R004
+  + name : Page load performance
+  + magnitude : MODERATE (exposure=4)
+  + elaboration_status : ACTIVE
+  + construction_status : ACTIVE
+  + trend : STABLE
+  + owner : Software Architect
+  + note : Load test planned for C2
+}
+
+class R005 {
+  + id : R005
+  + name : UI design conformance
+  + magnitude : MODERATE (exposure=4)
+  + elaboration_status : ACTIVE
+  + construction_status : ACTIVE
+  + trend : IMPROVING
+  + owner : UI Designer
+  + note : PR #8 presentation layer delivered
+}
+
+class R006 {
+  + id : R006
+  + name : Offline retry fault tolerance
+  + magnitude : SIGNIFICANT (exposure=6)
+  + elaboration_status : MITIGATED (PoC confirmed)
+  + construction_status : MITIGATED (execution pending CR-002)
+  + trend : STABLE
+  + owner : Software Architect
+}
+
+class R007 {
+  + id : R007
+  + name : Schedule risk (PR #8 findings)
+  + magnitude : SIGNIFICANT (exposure=6)
+  + elaboration_status : N/A (new in Construction)
+  + construction_status : ACTIVE (NEW)
+  + trend : NEW
+  + owner : Project Manager
+  + note : MAJOR-1 blocks merge; scope reduction to C2
+  + concern : 5 of 7 objectives deferred — C2 load is heavy
+}
+
+Risk_Trend --> R001
+Risk_Trend --> R002
+Risk_Trend --> R003
+Risk_Trend --> R004
+Risk_Trend --> R005
+Risk_Trend --> R006
+Risk_Trend --> R007
+
+@enduml
+```
+
+#### Project Health State Machine
+
+```plantuml
+@startuml
+title Project Health State Machine — Construction C1
+
+skinparam shadowing false
+
+state "HEALTHY" as healthy {
+  healthy : All dimensions green
+  healthy : Risks retiring
+  healthy : Tests passing
+}
+
+state "AT_RISK" as at_risk {
+  at_risk : 1-2 dimensions yellow
+  at_risk : Some risks active
+  at_risk : Some tests failing
+}
+
+state "CRITICAL" as critical {
+  critical : Any dimension red
+  critical : High risks unmitigated
+  critical : Major defects blocking
+}
+
+state "STOPPED" as stopped {
+  stopped : Milestone gate failed
+  stopped : No-Go verdict
+}
+
+[*] --> healthy : LCA Achieved (Elaboration)
+
+healthy --> at_risk : Construction C1 start\nPR #8 findings (1 Major, 4 Minor)
+
+at_risk --> critical : 5 of 7 objectives NOT MET\nApplication/persistence/LDAP/audit deferred\n5 FAIL + 8 BLOCKED tests\nR007 new schedule risk
+
+critical --> at_risk : IF C2 delivers deferred layers\nAND MAJOR-1 fixed + merged\nAND STK-003 confirms OIDC
+
+at_risk --> healthy : IF all tests pass\nAND risks retired\nAND ACs verified
+
+critical --> stopped : IF C2 fails to deliver\nAND IOC criteria not met\nAND stakeholder refuses
+
+stopped --> [*] : Project halted
+
+note right of critical
+  **Current State: CRITICAL**
+  - Scope: 5/7 objectives deferred to C2
+  - Quality: 5 FAIL, 8 BLOCKED of 30 TCs
+  - Schedule: R007 new risk, C2 load heavy
+  - External: R003 STK-003 OIDC unconfirmed
+  - Merge: PR #8 REQUEST_CHANGES (MAJOR-1)
+end note
+
+@enduml
+```
+
+#### Defect Distribution (Management Lens)
+
+```plantuml
+@startuml
+title Defect Distribution — Construction C1 (Severity x Artifact)
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+class Defect_Distribution {
+  + total_findings : 5 (from Review Record PR #8)
+  + critical : 0
+  + major : 1
+  + minor : 4
+  + new_this_iteration : 5
+}
+
+class MAJOR_1 {
+  + id : MAJOR-1
+  + severity : MAJOR
+  + artifact : Design Model / PR #8 code
+  + location : NewsService.cs, PublishNews.cshtml.cs
+  + description : IsFeatured flag never set — FR-008 featured banner non-functional
+  + blocks_merge : YES
+  + cr : CR-010 (approved, not yet implemented)
+}
+
+class MINOR_1 {
+  + id : MINOR-1
+  + severity : MINOR
+  + artifact : Design Model / PR #8 code
+  + location : Directory.cshtml.cs
+  + description : DirectoryModel naming violation
+  + cr : CR-015 (deferred to C2)
+}
+
+class MINOR_2 {
+  + id : MINOR-2
+  + severity : MINOR
+  + artifact : Design Model / PR #8 code
+  + location : ClockingApiController.cs
+  + description : Dead EmployeeId field in DTO
+  + cr : CR-017 (deferred to C2)
+}
+
+class MINOR_3 {
+  + id : MINOR-3
+  + severity : MINOR
+  + artifact : Design Model / PR #8 code
+  + location : ClockingService.cs, clocking-retry.js
+  + description : Idempotency key not scoped by employee
+  + cr : CR-011 (approved, not yet implemented)
+  + impact : AC-005 offline retry correctness
+}
+
+class MINOR_4 {
+  + id : MINOR-4
+  + severity : MINOR
+  + artifact : Test Case / PR #8 code
+  + location : OfflineRetryTests.cs
+  + description : Test codifies MINOR-3 bug behavior
+  + cr : CR-018 (deferred to C2)
+  + dependency : Depends on CR-011 fix
+}
+
+Defect_Distribution --> MAJOR_1
+Defect_Distribution --> MINOR_1
+Defect_Distribution --> MINOR_2
+Defect_Distribution --> MINOR_3
+Defect_Distribution --> MINOR_4
+
+@enduml
+```
+
+#### Management Reviewer Findings
+
+| # | Artifact | Severity | Finding | Recommendation | Verdict |
+|---|---|---|---|---|---|
+| MR-F1 | Iteration Plan | Major | The Iteration Plan deferred 5 of 7 Construction C1 objectives to C2 without obtaining stakeholder approval for the scope reduction. The stakeholder has REFUSED sanction, stating the system is not complete enough to advance. Scope reduction affecting IOC readiness requires stakeholder sanction BEFORE execution, not after. | Revise the Iteration Plan to acknowledge the stakeholder's refusal and re-plan C2 with detailed work breakdown, budget capacity assessment, prioritization (MAJOR-1 first), and explicit stakeholder consultation if C2 budget is insufficient. | NeedsRework |
+| MR-F2 | Iteration Plan | Minor | The plan does not assess whether C2 can realistically absorb the deferred scope from C1 (5 objectives) plus its own originally planned scope within the ~10.4M token budget box. No contingency documented. | Add a budget capacity analysis comparing combined C1-deferred + C2-original scope against the budget box. Document prioritization and contingency for partial delivery. | NeedsRework |
+| MR-F3 | Risk List | Major | R003 (OIDC registration, STK-003) has been MONITORING since Elaboration with no escalation progress. STK-003 has not confirmed, blocking 8 of 30 tests. No specific escalation action documented — only "escalation deadline C2." | Update R003 with a specific escalation action and deadline, formal adoption of mock auth as primary path if STK-003 does not respond, and explicit IOC impact statement (8 blocked tests prevent quality verification). | NeedsRework |
+| MR-F4 | Risk List | Minor | R007 (schedule risk) mitigation is thin: "C2 absorbs the deferred work" without addressing the magnitude of deferral (5 of 7 objectives) or C2 capacity. | Expand R007 mitigation with capacity analysis, prioritized delivery sequence, fallback plan (third iteration or scope reduction via CR), and escalation trigger. | NeedsRework |
+
+#### Stakeholder Consultation Record
+
+| Field | Value |
+|---|---|
+| Consultation Date | 2026-08-28 |
+| Stakeholder | STK-001 (Laura Gómez, HR Director — project sponsor) |
+| Question | IOC review — verdict: Conditional. Open defects: 0 Critical, 1 Major (MAJOR-1: IsFeatured flag never set, blocks FR-008). 5 of 7 C1 objectives deferred to C2. 8 of 30 tests BLOCKED by infrastructure dependencies. Do you accept the delivered capability and sanction advancing to Construction Iteration 2? |
+| Answer | **No** |
+| Stakeholder Statement | "We cannot advance to Transition because there are still things to finish to have the system with the use cases correctly implemented in construction, which is where we are now. We cannot move forward without the software." |
+| Sanction | **REFUSED** — stakeholder does not accept the delivered capability as IOC-complete |
+| Interpretation | The stakeholder is NOT halting the project — they are requiring that Construction be completed (all use cases correctly implemented) before any advancement. The project continues in Construction C2. |
+
+#### Four-Axis Health Scorecard
+
+| Dimension | Status | Evidence |
+|---|---|---|
+| **Scope** | 🔴 RED | 5 of 7 C1 objectives deferred to C2; MAJOR-1 blocks FR-008; application/persistence/LDAP/audit layers not implemented |
+| **Schedule** | 🔴 RED | R007 new schedule risk; C2 must absorb 5 deferred objectives + original scope; budget box may be insufficient |
+| **Cost** | 🟡 YELLOW | Budget box ~10.4M tokens sized from Elaboration average; C2 load may exceed box; no cost overrun yet but risk is high |
+| **Quality** | 🔴 RED | 20 PASS, 5 FAIL, 8 BLOCKED of 30 TCs; 0% defect closure rate; 8 tests blocked by infrastructure dependencies |
 ## Resolutions and Actions
 
 ### Prior Finding Closure
