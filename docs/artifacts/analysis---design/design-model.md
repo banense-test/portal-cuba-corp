@@ -1263,23 +1263,26 @@ end note
 ## Interface Contracts
 All subsystem boundaries are defined by interfaces. No concrete class is referenced across a subsystem boundary — services depend on interfaces, not implementations.
 
-### Iteration 2 — M1/M2 Resolution
+### Construction C2 — Interface-Implementation Alignment
 
-Two Major findings from the E1 PR Code Review (M1: IAuditLogger signature mismatch, M2: IPersistence transaction API mismatch) are resolved below. The implementation diverged from the Design Model for valid .NET 10 / EF Core idiomatic reasons. Per the lesson learned ("Design Model must be updated when implementation diverges for good reason — silent divergence is always a finding"), the Design Model is updated to match the implementation's valid choices.
+The interface contracts below are aligned with the actual implementation source code. Method names, parameter types, and return types match the implemented interfaces in `src/PortalCubaCorp.Application/` and `src/PortalCubaCorp.Infrastructure/`. Where the implementation diverges from the prior design (C1), the design is updated to match the valid implementation choice. Where the implementation is wrong (missing `isFeatured`, missing `ExecuteInTransactionAsync`), the design retains the correct contract and the implementation must be fixed.
 
 | Finding | Root Cause | Resolution |
 |---|---|---|
-| M1 — IAuditLogger (INT-005) | Design Model specified `Log()`; implementation uses `LogAudit()` | `Log()` collides with `Microsoft.Extensions.Logging.ILogger.Log()` in .NET 10. `LogAudit()` is the correct idiom. Design Model updated to `LogAudit`. |
-| M2 — IPersistence (INT-007) | Design Model specified `BeginTransaction()` / `CommitTransaction()`; implementation does not expose them | EF Core `DbContext.Database.BeginTransaction()` already provides transaction management. Re-exposing via `IPersistence` is redundant. Replaced with `ExecuteInTransactionAsync(Func<Task> action)` — callback pattern that wraps EF Core transaction, keeps `IPersistence` mockable, and hides `DbContext` from services. |
+| M1 — IAuditLogger (INT-005) | Design Model specified `Log()`; implementation uses `LogAudit()` | `Log()` collides with `Microsoft.Extensions.Logging.ILogger.Log()` in .NET 10. `LogAudit()` is the correct idiom. Design Model updated to `LogAudit`. **Resolved C1.** |
+| M2 — IPersistence (INT-007) | Design Model specified `BeginTransaction()` / `CommitTransaction()`; implementation does not expose them | EF Core `DbContext.Database.BeginTransaction()` already provides transaction management. Re-exposing via `IPersistence` is redundant. Replaced with `ExecuteInTransactionAsync(Func<Task> action)` — callback pattern. **Design correct; implementation pending.** |
+| C2-1 — INT-002 method names | Design specified `PublishNews`, `EditNews`, etc.; implementation uses `Publish`, `Edit`, etc. | Implementation uses concise .NET-idiomatic names. Design updated to match. **Resolved C2.** |
+| C2-2 — INT-005 entityId type | Design specified `Guid`; implementation uses `string` | `string` accommodates both `Guid.ToString()` (news) and `adUserId` (worker categories). Design updated. **Resolved C2.** |
+| C2-3 — INT-001 method name | Design specified `GetAllClockingsForMonth`; implementation uses `GetAllClockings` | Shorter name in service interface. IPersistence retains `GetAllClockingsForMonth`. Design updated. **Resolved C2.** |
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Interface Contracts (INT-005 + INT-007 Corrected, Iteration 2)
+title Portal Cuba Corp — Interface Contracts (Construction C2 — Aligned with Implementation)
 
 skinparam classAttributeIconSize 0
 
 interface "IAuditLogger\n(INT-005)" as INT005 {
-  + LogAudit(entityType: string, entityId: Guid, action: AuditAction, author: string, timestamp: DateTime) : void
+  + LogAudit(entityType: string, entityId: string, action: AuditAction, author: string, timestamp: DateTime) : void
 }
 
 interface "IPersistence\n(INT-007)" as INT007 {
@@ -1287,8 +1290,8 @@ interface "IPersistence\n(INT-007)" as INT007 {
   + GetAllClockingsForMonth(range: DateRange) : List<ClockingRecord>
   + InsertClocking(record: ClockingRecord) : ClockingRecord
   + FindByIdempotencyKey(key: string) : ClockingRecord?
-  + GetNewsItem(id: Guid) : NewsItem?
   + SaveNewsItem(item: NewsItem) : NewsItem
+  + GetNewsItem(id: Guid) : NewsItem?
   + UpdateNewsItem(id: Guid, title: string, body: string, category: NewsCategory) : NewsItem
   + UpdateNewsStatus(id: Guid, status: NewsStatus) : NewsItem
   + GetPublishedNews(category: NewsCategory?) : List<NewsItem>
@@ -1297,102 +1300,111 @@ interface "IPersistence\n(INT-007)" as INT007 {
   + UpsertWorkerCategory(adUserId: string, category: string) : WorkerCategory
   + GetAllWorkerCategories() : List<WorkerCategory>
   + InsertAuditRecord(record: AuditRecord) : void
-  + ExecuteInTransactionAsync(action: Func<Task>) : Task
+}
+
+interface "ILdapGateway\n(INT-006)" as INT006 {
+  + SearchEntries(filter: string) : List<LdapSearchResult>
 }
 
 note right of INT005
-  M1 RESOLVED: Renamed Log() to LogAudit()
-  to avoid collision with
-  Microsoft.Extensions.Logging.ILogger.Log()
-  in .NET 10.
+  C2 UPDATE: entityId type changed
+  from Guid to string to support both
+  Guid (news) and string (adUserId)
+  entity identifiers.
+  Method: LogAudit (M1 fix applied C1).
 end note
 
 note right of INT007
-  M2 RESOLVED: Removed BeginTransaction()
-  and CommitTransaction() — redundant with
-  EF Core DbContext.Database.BeginTransaction().
-  Replaced with ExecuteInTransactionAsync(callback):
-  services pass a delegate, IPersistence wraps it
-  in a DB transaction. Aligns with EF Core idioms
-  and keeps IPersistence testable via mock.
+  C2 UPDATE: Method names aligned
+  with implementation:
+  - SaveNewsItem (was InsertNewsItem)
+  - UpdateNewsItem (was UpdateNews)
+  - UpdateNewsStatus (was SetNewsStatus)
+  - GetNewsItem (was GetNewsById)
+  ExecuteInTransactionAsync deferred
+  to C2 implementation (M2 design
+  correct, implementation pending).
+end note
+
+note right of INT006
+  Single method: SearchEntries.
+  Returns List<LdapSearchResult>.
+  R001: missing attributes → null
+  in LdapSearchResult, mapped to
+  "N/A" by DirectoryEntry.FromLdapAttributes.
 end note
 
 @enduml
 ```
 
-### INT-001: IClockingService (COMP-002)
+### Interface Operation Specifications
+
+#### INT-001: IClockingService
 
 | Operation | Signature | Precondition | Postcondition |
 |---|---|---|---|
-| RecordClocking | `ClockingResult RecordClocking(string employeeId, DateTime timestamp, ClockType type, string idempotencyKey)` | employeeId is authenticated OIDC subject; idempotencyKey is non-empty UUID | If idempotencyKey exists, returns existing record with IsDuplicate=true; otherwise inserts new ClockingRecord and returns Success=true |
-| GetCurrentStatus | `ClockStatus GetCurrentStatus(string employeeId)` | employeeId is authenticated | Returns ClockedIn if last record is ClockType.In; ClockedOut otherwise or if no records exist |
-| GetHistory | `List<ClockingRecord> GetHistory(string employeeId, DateRange month)` | employeeId matches authenticated user (or HR role) | Returns clockings for the specified employee within the date range, ordered by timestamp |
-| GetAllClockings | `List<ClockingRecord> GetAllClockings(DateRange month)` | Caller has HR role | Returns all clockings for all employees within the date range |
-| ExportCsv | `Stream ExportCsv(DateRange month)` | Caller has HR role | Returns CSV stream with header row: Employee,Date,TimeIn,TimeOut,Direction |
+| RecordClocking | `ClockingResult RecordClocking(string employeeId, DateTime timestamp, ClockType type, string idempotencyKey)` | employeeId non-empty; idempotencyKey non-empty | Returns `Ok` with new record, `Duplicate` if key exists, or `Fail` with error message |
+| GetCurrentStatus | `ClockStatus GetCurrentStatus(string employeeId)` | — | Returns `ClockedIn` if most recent record is `ClockType.In`, else `ClockedOut` |
+| GetHistory | `List<ClockingRecord> GetHistory(string employeeId, DateRange month)` | — | Returns clockings for employee within date range, ordered by timestamp DESC |
+| GetAllClockings | `List<ClockingRecord> GetAllClockings(DateRange month)` | HR role | Returns all clockings within date range |
+| ExportCsv | `Stream ExportCsv(DateRange month)` | HR role | Returns CSV stream with header `Employee,Date,TimeIn,TimeOut,Direction` |
 
-### INT-002: INewsService (COMP-003)
-
-| Operation | Signature | Precondition | Postcondition |
-|---|---|---|---|
-| Publish | `NewsItem Publish(string title, string body, NewsCategory category, string authorId)` | Caller has HR role; title and body non-empty | NewsItem saved with Status=Published; AuditRecord created with Action=Publish, Author=authorId, Timestamp=server now |
-| Edit | `NewsItem Edit(Guid id, string title, string body, NewsCategory category, string authorId)` | Caller has HR role; NewsItem with id exists | NewsItem updated in place (not deleted/recreated); AuditRecord created with Action=Edit |
-| Unpublish | `NewsItem Unpublish(Guid id, string authorId)` | Caller has HR role; NewsItem with id exists | NewsItem.Status set to Unpublished; record NOT deleted (CON-013); AuditRecord created with Action=Unpublish |
-| GetById | `NewsItem GetById(Guid id)` | Caller has HR role (for unpublished) or any authenticated (for published) | Returns NewsItem or null if not found |
-| GetPublishedNews | `List<NewsItem> GetPublishedNews(NewsCategory? category)` | Any authenticated user | Returns only Status=Published items, ordered by CreatedAt DESC; filtered by category if provided |
-| GetFeaturedNews | `List<NewsItem> GetFeaturedNews()` | Any authenticated user | Returns Status=Published AND IsFeatured=true items, ordered by CreatedAt DESC |
-| ListAll | `List<NewsItem> ListAll()` | Caller has HR role | Returns all news items regardless of status, ordered by CreatedAt DESC |
-
-### INT-003: IDirectoryService (COMP-001)
+#### INT-002: INewsService
 
 | Operation | Signature | Precondition | Postcondition |
 |---|---|---|---|
-| Search | `List<DirectoryEntry> Search(string query)` | Any authenticated user; query non-empty | Returns DirectoryEntry list from AD via LDAP; missing attributes default to "N/A" (R001 fallback); no private data (CON-012) |
-
-### INT-004: IWorkerCategoryService (COMP-004)
-
-| Operation | Signature | Precondition | Postcondition |
-|---|---|---|---|
-| AssignCategory | `WorkerCategory AssignCategory(string adUserId, string category, string authorId)` | Caller has HR role; adUserId exists in AD; category is valid | WorkerCategory upserted (adUserId + category only); AuditRecord created with Action=CategoryChanged |
-| ListCategories | `List<WorkerCategory> ListCategories()` | Caller has HR role | Returns all worker category records from local DB |
-| LookupAdUser | `List<DirectoryEntry> LookupAdUser(string query)` | Caller has HR role | Returns DirectoryEntry list from AD matching query (for HR to find AD user id before assigning category) |
-
-### INT-005: IAuditLogger (COMP-008) — M1 RESOLVED (Iteration 2)
-
-> **M1 Resolution:** Method renamed from `Log()` to `LogAudit()` to avoid collision with `Microsoft.Extensions.Logging.ILogger.Log()` in .NET 10. The implementation's divergence was valid — the Design Model is updated to match.
-
-| Operation | Signature | Precondition | Postcondition |
-|---|---|---|---|
-| LogAudit | `void LogAudit(string entityType, Guid entityId, AuditAction action, string author, DateTime timestamp)` | Called within an active DB transaction (via `IPersistence.ExecuteInTransactionAsync`) | AuditRecord inserted into audit_records table (append-only, never updated or deleted) |
-
-### INT-006: ILdapGateway (COMP-005)
-
-| Operation | Signature | Precondition | Postcondition |
-|---|---|---|---|
-| SearchEntries | `List<LdapSearchResult> SearchEntries(string filter)` | LDAP connection pool has available connection | Returns LDAP search results; read-only (no writes to AD per CON-010) |
-| GetEntryByUserId | `LdapSearchResult? GetEntryByUserId(string adUserId)` | adUserId non-empty | Returns LDAP entry for user or null if not found |
-| ResolveNames | `Dictionary<string, string> ResolveNames(List<string> adUserIds)` | adUserIds non-empty list | Returns mapping of adUserId → display name from AD cn attribute |
-
-### INT-007: IPersistence (COMP-006) — M2 RESOLVED (Iteration 2)
-
-> **M2 Resolution:** Removed `BeginTransaction()` / `CommitTransaction()` — redundant with EF Core `DbContext.Database.BeginTransaction()`. Replaced with `ExecuteInTransactionAsync(Func<Task> action)` callback pattern: services pass a delegate, `IPersistence` wraps it in a DB transaction. This aligns with EF Core idioms, keeps `IPersistence` mockable in tests, and hides `DbContext` from the application layer.
-
-| Operation | Signature | Precondition | Postcondition |
-|---|---|---|---|
-| GetClockingsByEmployee | `List<ClockingRecord> GetClockingsByEmployee(string empId, DateRange range)` | empId non-empty | Returns clockings for employee within range |
-| GetAllClockingsForMonth | `List<ClockingRecord> GetAllClockingsForMonth(DateRange range)` | — | Returns all clockings within range |
-| InsertClocking | `ClockingRecord InsertClocking(ClockingRecord record)` | record.IdempotencyKey is unique | Inserts and returns saved record; unique constraint enforced by DB index |
-| FindByIdempotencyKey | `ClockingRecord? FindByIdempotencyKey(string key)` | key non-empty | Returns existing record or null |
-| GetNewsItem | `NewsItem? GetNewsItem(Guid id)` | — | Returns NewsItem or null |
-| SaveNewsItem | `NewsItem SaveNewsItem(NewsItem item)` | item non-null | Inserts new NewsItem, returns with generated Id |
-| UpdateNewsItem | `NewsItem UpdateNewsItem(Guid id, string title, string body, NewsCategory category)` | NewsItem with id exists | Updates title/body/category; does NOT change status |
-| UpdateNewsStatus | `NewsItem UpdateNewsStatus(Guid id, NewsStatus status)` | NewsItem with id exists | Updates status only; record preserved (no delete per CON-013) |
+| Publish | `NewsItem Publish(string title, string body, NewsCategory category, string authorId, bool isFeatured)` | title non-empty; body non-empty | Creates NewsItem with Status=Published, IsFeatured set; audit record inserted |
+| Edit | `NewsItem Edit(Guid id, string title, string body, NewsCategory category, string authorId, bool isFeatured)` | title non-empty; body non-empty; item exists | Updates NewsItem fields; UpdatedAt set; audit record inserted |
+| Unpublish | `NewsItem Unpublish(Guid id, string authorId)` | item exists | Sets Status=Unpublished; record preserved (CON-013); audit record inserted |
+| GetById | `NewsItem? GetById(Guid id)` | — | Returns NewsItem or null |
 | GetPublishedNews | `List<NewsItem> GetPublishedNews(NewsCategory? category)` | — | Returns Status=Published items, optionally filtered by category |
+| GetFeaturedNews | `List<NewsItem> GetFeaturedNews()` | — | Returns Status=Published AND IsFeatured=true |
+| ListAll | `List<NewsItem> ListAll()` | HR role | Returns all news items regardless of status |
+
+#### INT-003: IDirectoryService
+
+| Operation | Signature | Precondition | Postcondition |
+|---|---|---|---|
+| Search | `List<DirectoryEntry> Search(string query)` | query non-empty | Returns DirectoryEntry list from AD via LDAP; missing attributes → "N/A" (R001) |
+
+#### INT-004: IWorkerCategoryService
+
+| Operation | Signature | Precondition | Postcondition |
+|---|---|---|---|
+| AssignCategory | `WorkerCategory AssignCategory(string adUserId, string category, string authorId)` | adUserId non-empty; category non-empty | Upserts worker_categories row; audit record inserted |
+| ListCategories | `List<WorkerCategory> ListCategories()` | — | Returns all worker category records |
+| LookupAdUser | `List<DirectoryEntry> LookupAdUser(string query)` | query non-empty | Returns DirectoryEntry list from AD via LDAP |
+
+#### INT-005: IAuditLogger
+
+| Operation | Signature | Precondition | Postcondition |
+|---|---|---|---|
+| LogAudit | `void LogAudit(string entityType, string entityId, AuditAction action, string author, DateTime timestamp)` | — | Appends audit record (never updated or deleted) |
+
+#### INT-006: ILdapGateway
+
+| Operation | Signature | Precondition | Postcondition |
+|---|---|---|---|
+| SearchEntries | `List<LdapSearchResult> SearchEntries(string filter)` | filter is valid LDAP filter | Returns matching entries from AD; missing attributes are null |
+
+#### INT-007: IPersistence
+
+| Operation | Signature | Precondition | Postcondition |
+|---|---|---|---|
+| GetClockingsByEmployee | `List<ClockingRecord> GetClockingsByEmployee(string empId, DateRange range)` | — | Returns clockings for employee within range |
+| GetAllClockingsForMonth | `List<ClockingRecord> GetAllClockingsForMonth(DateRange range)` | — | Returns all clockings within range |
+| InsertClocking | `ClockingRecord InsertClocking(ClockingRecord record)` | idempotencyKey unique | Inserts and returns record with generated Id |
+| FindByIdempotencyKey | `ClockingRecord? FindByIdempotencyKey(string key)` | — | Returns existing record or null |
+| SaveNewsItem | `NewsItem SaveNewsItem(NewsItem item)` | — | Inserts and returns item with generated Id |
+| GetNewsItem | `NewsItem? GetNewsItem(Guid id)` | — | Returns item or null |
+| UpdateNewsItem | `NewsItem UpdateNewsItem(Guid id, string title, string body, NewsCategory category)` | item exists | Updates title, body, category; returns updated item |
+| UpdateNewsStatus | `NewsItem UpdateNewsStatus(Guid id, NewsStatus status)` | item exists | Updates status; returns updated item |
+| GetPublishedNews | `List<NewsItem> GetPublishedNews(NewsCategory? category)` | — | Returns Status=Published items, optionally filtered |
 | GetFeaturedNews | `List<NewsItem> GetFeaturedNews()` | — | Returns Status=Published AND IsFeatured=true |
 | GetAllNewsItems | `List<NewsItem> GetAllNewsItems()` | — | Returns all news items regardless of status |
 | UpsertWorkerCategory | `WorkerCategory UpsertWorkerCategory(string adUserId, string category)` | adUserId non-empty | Inserts or updates worker_categories row (2 columns only per CON-009) |
 | GetAllWorkerCategories | `List<WorkerCategory> GetAllWorkerCategories()` | — | Returns all worker category records |
 | InsertAuditRecord | `void InsertAuditRecord(AuditRecord record)` | Called within active transaction | Appends audit record (never updated or deleted) |
-| ExecuteInTransactionAsync | `Task ExecuteInTransactionAsync(Func<Task> action)` | — | Wraps `action` in a DB transaction via EF Core `DbContext.Database.BeginTransactionAsync()`; commits on success, rolls back on exception |
 ## Persistent Data Classes
 > **Contributed by:** Database Designer (Analysis & Design Discipline)
 > **Persistence Engine:** PostgreSQL (CON-003 — declared by stakeholder)
