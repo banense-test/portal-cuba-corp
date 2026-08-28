@@ -795,21 +795,113 @@ stop
 @enduml
 ```
 ## Traceability
+### Consolidated Requirements Traceability Flow
+
+The following diagram shows the complete traceability chain from stakeholder needs (business goals) through declared features (FR-NNN) to use cases (UC-NNN) and acceptance criteria (AC-NNN). This consolidated view fulfills the Work Order's instruction to produce a consolidated requirements specification from all use cases and supplementary requirements.
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Requirements Traceability Flow
+
+skinparam packageStyle rectangle
+skinparam rectangleFontSize 10
+
+package "Stakeholder Needs" {
+  rectangle "BG-001: Reduce HR\nmanagement time 50%" as BG1
+  rectangle "BG-002: Eliminate 100%\nExcel usage" as BG2
+  rectangle "BG-003: 80% employee\nadoption in 3 months" as BG3
+}
+
+package "Declared Features (FR-NNN)" {
+  rectangle "FR-001: Clock In/Out" as FR1
+  rectangle "FR-002: View Own Clocking" as FR2
+  rectangle "FR-003: View All Clockings" as FR3
+  rectangle "FR-004: Export CSV Report" as FR4
+  rectangle "FR-005: Publish News" as FR5
+  rectangle "FR-006: Edit News" as FR6
+  rectangle "FR-007: Unpublish News" as FR7
+  rectangle "FR-008: Read/Filter News" as FR8
+  rectangle "FR-009: Search Directory" as FR9
+  rectangle "FR-010: Manage Category" as FR10
+}
+
+package "Use Cases (UC-NNN)" {
+  rectangle "UC-001" as UC1
+  rectangle "UC-002" as UC2
+  rectangle "UC-003" as UC3
+  rectangle "UC-004" as UC4
+  rectangle "UC-005" as UC5
+  rectangle "UC-006" as UC6
+  rectangle "UC-007" as UC7
+  rectangle "UC-008" as UC8
+  rectangle "UC-009" as UC9
+  rectangle "UC-010" as UC10
+}
+
+package "Acceptance Criteria" {
+  rectangle "AC-001: Clock without help" as AC1
+  rectangle "AC-002: Publish without help" as AC2
+  rectangle "AC-003: Find colleague <10s" as AC3
+  rectangle "AC-004: 80% clocking no training" as AC4
+  rectangle "AC-005: Offline tolerance 5min" as AC5
+}
+
+BG1 --> FR1 : derives
+BG1 --> FR2 : derives
+BG1 --> FR3 : derives
+BG1 --> FR4 : derives
+BG2 --> FR1 : derives
+BG2 --> FR9 : derives
+BG2 --> FR10 : derives
+BG3 --> FR5 : derives
+BG3 --> FR6 : derives
+BG3 --> FR7 : derives
+BG3 --> FR8 : derives
+
+FR1 --> UC1 : refines
+FR2 --> UC2 : refines
+FR3 --> UC3 : refines
+FR4 --> UC4 : refines
+FR5 --> UC5 : refines
+FR6 --> UC6 : refines
+FR7 --> UC7 : refines
+FR8 --> UC8 : refines
+FR9 --> UC9 : refines
+FR10 --> UC10 : refines
+
+UC1 --> AC1 : verifies
+UC1 --> AC4 : verifies
+UC1 --> AC5 : verifies
+UC5 --> AC2 : verifies
+UC9 --> AC3 : verifies
+
+note bottom of BG1
+  NFR-004 (audit trail) applies to
+  UC-005, UC-006, UC-007, UC-010
+end note
+
+@enduml
+```
+
+### Traceability Table
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| UC-001 | FR-001, AC-005 | Refines | REQ-001, REL-003, REL-004 |
+| UC-001 | FR-001, AC-005 | Refines | REQ-001, REL-003, REL-004, PERF-002, AC-001, AC-004, AC-005 |
 | UC-002 | FR-002 | Refines | REQ-002 |
-| UC-003 | FR-003 | Refines | REQ-003 |
-| UC-004 | FR-004 | Refines | REQ-004 |
-| UC-005 | FR-005, NFR-004 | Refines | REQ-005 |
-| UC-006 | FR-006, NFR-004 | Refines | REQ-006 |
-| UC-007 | FR-007, CON-013, NFR-004 | Refines | REQ-007 |
-| UC-008 | FR-008 | Refines | REQ-008 |
-| UC-009 | FR-009, CON-005, CON-012 | Refines | REQ-009 |
-| UC-010 | FR-010, CON-009, NFR-004 | Refines | REQ-010 |
+| UC-003 | FR-003 | Refines | REQ-003, PERF-005, REL-006 |
+| UC-004 | FR-004 | Refines | REQ-004, PERF-004, STD-003 |
+| UC-005 | FR-005, NFR-004 | Refines | REQ-005, AUD-001, AC-002 |
+| UC-006 | FR-006, NFR-004 | Refines | REQ-006, AUD-001 |
+| UC-007 | FR-007, CON-013, NFR-004 | Refines | REQ-007, AUD-001, AUD-003 |
+| UC-008 | FR-008 | Refines | REQ-008, USA-001 |
+| UC-009 | FR-009, CON-005, CON-012 | Refines | REQ-009, SEC-004, SEC-005, PERF-003, SUP-003, R001, AC-003 |
+| UC-010 | FR-010, CON-009, NFR-004 | Refines | REQ-010, AUD-002, DC-006 |
 | ACT-001 | STK-004 | Derives | UC-001, UC-002, UC-008, UC-009 |
 | ACT-002 | STK-001 | Derives | UC-003..UC-007, UC-010 |
 | ACT-003 | CON-005, CON-009 | Derives | UC-003, UC-009, UC-010 |
 | ACT-004 | CON-004 | Derives | All UCs (auth) |
+| UC-001..UC-004 | BG-001, BG-002 | Derives | (Business Goals) |
+| UC-005..UC-008 | BG-003 | Derives | (Business Goals) |
+| UC-009 | BG-002 | Derives | (Business Goals) |
 | UC-009 | R001 | DependsOn | (LDAP attribute consistency) |
