@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.EntityFrameworkCore;
+using PortalCubaCorp;
 using PortalCubaCorp.Application;
 using PortalCubaCorp.Infrastructure;
 
