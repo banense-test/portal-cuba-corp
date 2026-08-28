@@ -5,48 +5,54 @@
 | Phase | Construction |
 | Status | Active |
 | Milestone Target | End-of-Construction (IOC) |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 2) |
 | Date | 2026-08-28 |
-| Prior Phase | Elaboration (LCA achieved, 0 open Critical/Major, stakeholder sanction GRANTED) |
-| Evolution | Elaboration Iter 2 Plan evolved for Construction Iter 1: coarse roadmap baselined with measured Elaboration actuals; fine plan replaced with C1 scope (fix PR #8 findings + implement application/persistence/LDAP/audit layers); budget box sized from measured Elaboration per-iteration cost (~10.4M tokens average) |
-| Measured Baseline | Inception: 2 iters, 4.38M tokens, 22 min, 11 runs, 10 artifacts. Elaboration: 2 iters, 20.87M tokens, 1.0h, 21 runs, 13 artifacts. Cumulative: 25.25M tokens, 2.5h, 53 runs, 23 artifacts. |
+| Prior Phase | Construction C1 (REQUEST_CHANGES — 1 Major, 4 Minor; IOC NOT achieved; stakeholder sanction REFUSED) |
+| Evolution | Construction C1 Plan evolved for C2 Cycle 2: coarse roadmap updated with C1 measured actuals (9.85M tokens, 1h 42m 55s); fine plan replaced with C2 rework scope (fix C2-CRIT-1 + C2-MAJ-1..2 + C2-MIN-1..4 from PR #19 Review Record); budget box sized from C1 measured actual; R003 escalation triggered (OIDC deadline passed) |
+| Measured Baseline | Inception: 2 iters, 4.38M tokens, 22 min, 11 runs, 10 artifacts. Elaboration: 2 iters, 20.87M tokens, 1.0h, 21 runs, 13 artifacts. Construction C1: 1 iter, 9.85M tokens, 1h 42m 55s, 15 runs, 15 artifacts. Cumulative: 35.10M tokens, 3.1h, 47 runs, 38 artifacts. |
 
 ## Iteration Objectives
 
-1. **Resolve all open Review Record findings from PR #8:** MAJOR-1 (IsFeatured flag never set — FR-008 featured banner non-functional) blocks merge. MINOR-1 (DirectoryModel naming), MINOR-2 (dead EmployeeId field), MINOR-3 (idempotency key not scoped by employee), MINOR-4 (test codifies MINOR-3 behavior). All 5 findings targeted for closure this iteration.
-2. **Implement application services layer:** NewsService (publish/edit/unpublish with audit), ClockingService (record with idempotency + offline retry), DirectoryService (LDAP read), WorkerCategoryService (AD user id → category CRUD with audit).
-3. **Implement persistence layer:** PostgreSQL repositories for Clocking, News, NewsAudit, WorkerCategory tables per SAD schema baseline.
-4. **Implement LDAP gateway:** LdapGateway using Novell.Directory.Ldap (ADR-003) with ILdapConnection abstraction for testability. Missing AD attributes default to "N/A" (R001 mitigation).
-5. **Implement audit logging:** AuditLogger (INT-005) for all publish/edit/unpublish/category operations per NFR-004.
-6. **Expand test coverage:** Unit tests for new application services; integration tests for LDAP and persistence layers.
-7. **Re-review and merge PR #8:** After fixes, Reviewer re-evaluates; CI must pass green.
+1. **Fix C2-CRIT-1 (Critical): Clocking API route mismatch.** JS calls `fetch('/api/clocking')` but Razor Page routes to `/Api/ClockingApi`. UC-001 is non-functional (404). Fix: add `@page "/api/clocking"` to ClockingApi.cshtml, OR move to API controller, OR rename page folder to `Pages/api/clocking.cshtml`.
+2. **Fix C2-MAJ-1 (Major): News Edit form field name mismatch.** Form posts `title`, `body`, `category` but BindProperties are `EditTitle`, `EditBody`, `EditCategory`. UC-006 is non-functional. Fix: add `[BindProperty(Name = "title")]` etc., OR rename properties, OR change form field names.
+3. **Fix C2-MAJ-2 (Major): Missing antiforgery token on clocking POST.** `fetch()` POST has no anti-forgery token. Razor Pages validates by default — POST rejected with 400. Fix: add antiforgery token to fetch headers, OR `[IgnoreAntiforgeryToken]` with justification (OIDC bearer auth + idempotency key).
+4. **Fix C2-MIN-2 (Minor): EmployeeId spoofable from request body.** API accepts `employeeId` from request body — client can spoof identity. Fix: use `User.FindFirst("sub")?.Value` instead of `request.EmployeeId`.
+5. **Fix C2-MIN-4 (Minor): CSV header misleading.** Header says `TimeIn,TimeOut` but data has single time + Direction. Fix: change header to `Employee,Date,Time,Direction`.
+6. **Fix C2-MIN-3 (Minor): Placeholder test.** `Assert.True(true)` in UnitTest1.cs. Fix: delete UnitTest1.cs (CR-014).
+7. **Document C2-MIN-1 (Minor): LDAP adapter NotImplementedException.** All methods throw `NotImplementedException`. Known deferred to integration testing (R001). Fix: document as `[DEFERRED — requires integration testing with real AD server (R001)]`.
+8. **Re-review PR #19 after fixes:** Reviewer re-evaluates; CI must pass green; target 0 Critical, 0 Major.
+9. **Escalate R003 (OIDC registration):** Escalation deadline has passed. Escalate to STK-001 (sponsor) for STK-003 OIDC client registration. 8 of 30 tests remain BLOCKED without it.
 
 ## Plan and Milestones
 
 ### Coarse Cross-Iteration Roadmap
 
-The project follows the RUP iterative lifecycle with **7 iterations** across 4 phases. Inception and Elaboration are CLOSED with measured actuals. Construction is allocated 2 iterations; Transition 1. The coarse roadmap is now baselined from measured Elaboration actuals.
+The project follows the RUP iterative lifecycle. Inception and Elaboration are CLOSED with measured actuals. Construction C1 is CLOSED with measured actuals. C2 Cycle 1 has been reviewed (PR #20 approved, PR #19 requires rework). C2 Cycle 2 is the current rework cycle. The coarse roadmap is now baselined from C1 measured actuals.
 
 | Phase | Iterations | Measured Tokens | Measured Agent Time | Agent Runs | Artifacts | Milestone |
 |---|---|---|---|---|---|---|
 | Inception (CLOSED) | 2 | 4,382,313 | 22 min | 11 | 10 | LCO ✅ ACHIEVED |
 | Elaboration (CLOSED) | 2 | 20,867,327 | 1.0 h | 21 | 13 | LCA ✅ ACHIEVED |
-| Construction (CURRENT) | 2 | [ASSUMPTION — ~10.4M tokens/iter; basis: Elaboration measured average per-iteration cost] | [ASSUMPTION — ~30 min/iter; basis: Elaboration measured average] | [ASSUMPTION — ~15 runs/iter] | [ASSUMPTION — ~10 artifacts] | IOC (target) |
+| Construction C1 (CLOSED) | 1 | 9,854,220 | 1h 42m 55s | 15 | 15 | IOC ❌ NOT ACHIEVED |
+| Construction C2 (CURRENT) | 1+ cycles | [ASSUMPTION — ~9.85M tokens/cycle; basis: C1 measured actual] | [ASSUMPTION — ~1h 43m/cycle; basis: C1 measured actual] | [ASSUMPTION — ~15 runs/cycle] | [ASSUMPTION — ~15 artifacts] | IOC (target) |
 | Transition (PLANNED) | 1 | [ASSUMPTION — ~5M tokens; basis: Transition is lighter, fewer architectural decisions] | [ASSUMPTION — ~15 min] | [ASSUMPTION — ~8 runs] | [ASSUMPTION — ~5 artifacts] | PR (target) |
-| **Total** | **7** | **~51M (forecast)** | | | | |
+| **Total** | **7+** | **~40M+ (forecast)** | | | | |
+
+> The iteration count has increased beyond the original 7 due to C1 scope delivery failure (5 of 7 objectives deferred) and C2 review findings (1 Critical + 2 Major blocking). The "6 ± 3" rule sanity check: 7+ iterations is within the high extreme [1, 3, 3, 2] for a project with significant integration dependencies. The rework cycle does not add a full iteration — it is a cycle within C2.
 
 ### Iteration Sequence + Human Gates
 
 ```plantuml
 @startgantt
-title Portal Cuba Corp — Iteration Sequence + Human Gates (UNANCHORED)
+title Portal Cuba Corp — Iteration Sequence + Human Gates (UNANCHORED, C2 Refined)
 
 [Inception CLOSED] lasts 2 days
 [LCO Gate] lasts 1 day
 [Elaboration CLOSED] lasts 2 days
 [LCA Gate] lasts 1 day
-[Construction Iter 1 CURRENT] lasts 1 day
-[Construction Iter 2] lasts 1 day
+[Construction Iter 1 CLOSED] lasts 1 day
+[Construction Iter 2 Cycle 1 REVIEWED] lasts 1 day
+[Construction Iter 2 Cycle 2 CURRENT] lasts 1 day
 [IOC Gate] lasts 1 day
 [Transition Iter 1] lasts 1 day
 [PR Gate] lasts 1 day
@@ -55,113 +61,114 @@ title Portal Cuba Corp — Iteration Sequence + Human Gates (UNANCHORED)
 
 > Gates are quoted in **days of queue time** (human waiting, not agent working). Agent work is denominated in tokens and measured elapsed time — never added to gate time.
 
-### Fine Gantt — Construction Iteration 1 Critical Chain
+### Fine Gantt — Construction C2 Cycle 2 Critical Chain
 
 ```plantuml
 @startuml
-title Construction Iter 1 — Critical Chain (Sequential Agent Stretches to Gate)
+title Construction C2 Cycle 2 — Critical Chain (Sequential Agent Stretches to Gate)
 
 |Project Manager|
 start
-:Read Review Record findings\n(MAJOR-1, MINOR-1..4)\nPlan Construction Iter 1\n[~8K tokens];
+:Read C2 Review Record findings\n(C2-CRIT-1, C2-MAJ-1..2, C2-MIN-1..4)\nEvolve Iteration Plan + Risk List\n[~12K tokens];
 
 |Implementer|
-:Fix MAJOR-1: IsFeatured flag\nin PublishNews + NewsService\n[~10K tokens];
-:Fix MINOR-1: Rename DirectoryModel\nto DirectorySearchModel\n[~3K tokens];
-:Fix MINOR-2: Remove EmployeeId\nfrom RecordClockingRequest\n[~2K tokens];
-:Fix MINOR-3: Scope idempotency key\nby employee\n[~5K tokens];
+:Fix C2-CRIT-1: Clocking API route\nAdd @page "/api/clocking" to ClockingApi.cshtml\nOR rename folder to Pages/api/clocking\n[~5K tokens];
+:Fix C2-MAJ-1: News Edit form binding\nAdd [BindProperty(Name="title")] etc.\nOR rename properties to match form\n[~5K tokens];
+:Fix C2-MAJ-2: Antiforgery token\nAdd antiforgery header to fetch()\nOR [IgnoreAntiforgeryToken] with justification\n[~4K tokens];
+:Fix C2-MIN-2: Use OIDC sub claim\ninstead of request body employeeId\n[~3K tokens];
+:Fix C2-MIN-4: CSV header correction\nTimeIn,TimeOut -> Employee,Date,Time,Direction\n[~2K tokens];
+:Fix C2-MIN-3: Delete placeholder test\nRemove UnitTest1.cs Assert.True(true)\n[~1K tokens];
+:Document C2-MIN-1: LDAP adapter\n[DEFERRED — requires integration testing\nwith real AD server (R001)]\n[~1K tokens];
 
 |Test Designer|
-:Fix MINOR-4: Update\nOfflineRetryTests\n[~5K tokens];
-
-|Implementer|
-:Implement application services\nNewsService, ClockingService,\nDirectoryService, WorkerCategoryService\n[~25K tokens];
-:Implement persistence layer\nPostgreSQL repositories\n[~15K tokens];
-:Implement LDAP gateway\nLdapGateway + AD read\n[~10K tokens];
-:Implement audit logging\nAuditLogger NFR-004\n[~8K tokens];
-
-|Test Designer|
-:Write unit tests for\nnew application services\n[~12K tokens];
-:Write integration tests\nLDAP, persistence\n[~8K tokens];
+:Update tests for fixed routes\n+ antiforgery + OIDC sub claim\n[~6K tokens];
 
 |Reviewer|
-:Re-review PR #8 fixes\n+ review new code\n[~10K tokens];
+:Re-review PR #19 after fixes\nVerify 0 Critical, 0 Major\n[~8K tokens];
 
 |Project Manager|
-:Iteration Assessment\nvariance analysis\n[~10K tokens];
+:Iteration Assessment\nC2 Cycle 2 variance analysis\n[~10K tokens];
 stop
+
+note
+  Budget box: ~9.85M tokens
+  [BASIS: C1 measured actual = 9,854,220 tokens.
+   C2 rework cycle is narrower scope (7 findings)
+   but same artifact surface reasoning cost.]
+  
+  3 blocking findings (1 Critical + 2 Major)
+  must be resolved before PR #19 can merge.
+  
+  R003 ESCALATION: OIDC registration deadline
+  has passed — escalate to STK-001 this cycle.
+end note
 
 @enduml
 ```
 
-### Construction Iter 1 — Work Items
+### Construction C2 Cycle 2 — Work Items
 
 | # | Work Item | Owner | Token Budget | Depends On | Acceptance Criterion |
 |---|---|---|---|---|---|
-| 1 | Fix MAJOR-1: Add isFeatured param to INewsService.Publish, set item.IsFeatured, update PublishNewsModel.OnPost | Implementer | ~10K | Review Record | FR-008 featured banner functional |
-| 2 | Fix MINOR-1: Rename DirectoryModel → DirectorySearchModel (V007 conformance) | Implementer | ~3K | — | Design Model conformance |
-| 3 | Fix MINOR-2: Remove EmployeeId from RecordClockingRequest DTO | Implementer | ~2K | — | No dead code in DTO |
-| 4 | Fix MINOR-3: Scope idempotency key by employee (FindByIdempotencyKey(employeeId, key)) | Implementer | ~5K | — | Cross-employee collision impossible |
-| 5 | Fix MINOR-4: Update OfflineRetryTests to assert both employees succeed independently | Test Designer | ~5K | Item 4 | Test validates correct behavior |
-| 6 | Implement NewsService: publish/edit/unpublish with audit trail (NFR-004, CON-013) | Implementer | ~8K | Item 1 | AC-002, FR-005/006/007 |
-| 7 | Implement ClockingService: record with idempotency + offline retry (AC-005) | Implementer | ~6K | Item 4 | AC-001, FR-001 |
-| 8 | Implement DirectoryService: LDAP read with "N/A" fallback (R001 mitigation) | Implementer | ~5K | SAD COMP-005 | AC-003, FR-009 |
-| 9 | Implement WorkerCategoryService: AD user id → category CRUD with audit | Implementer | ~5K | — | FR-010, NFR-004 |
-| 10 | Implement persistence layer: PostgreSQL repositories (Clocking, News, NewsAudit, WorkerCategory) | Implementer | ~15K | SAD schema | NFR-002 response time |
-| 11 | Implement LdapGateway: Novell.DirectoryLdap + ILdapConnection abstraction | Implementer | ~10K | SAD COMP-005, ADR-003 | R001 mitigation active |
-| 12 | Implement AuditLogger: INT-005 conformance, all operations audited | Implementer | ~8K | Design Model INT-005 | NFR-004 compliance |
-| 13 | Write unit tests for application services | Test Designer | ~12K | Items 6-9 | Dual coverage (black-box + white-box) |
-| 14 | Write integration tests for LDAP + persistence | Test Designer | ~8K | Items 10-11 | Integration paths covered |
-| 15 | Re-review PR #8 + new code | Reviewer | ~10K | All above | 0 Critical, 0 Major open |
-| 16 | Iteration Assessment (variance analysis) | Project Manager | ~10K | All above | Objectives met/missed documented |
+| 1 | Fix C2-CRIT-1: Clocking API route — add `@page "/api/clocking"` or rename folder | Implementer | ~5K | Review Record C2 | UC-001 functional (no 404) |
+| 2 | Fix C2-MAJ-1: News Edit form binding — `[BindProperty(Name="title")]` etc. | Implementer | ~5K | — | UC-006 functional (form posts succeed) |
+| 3 | Fix C2-MAJ-2: Antiforgery token on clocking POST | Implementer | ~4K | Item 1 | POST accepted (no 400) |
+| 4 | Fix C2-MIN-2: Use OIDC sub claim instead of request body employeeId | Implementer | ~3K | — | Identity not spoofable |
+| 5 | Fix C2-MIN-4: CSV header → `Employee,Date,Time,Direction` | Implementer | ~2K | — | FR-004 export correct |
+| 6 | Fix C2-MIN-3: Delete UnitTest1.cs placeholder test | Implementer | ~1K | — | No placeholder tests |
+| 7 | Document C2-MIN-1: LDAP adapter as `[DEFERRED — requires integration testing with real AD server (R001)]` | Implementer | ~1K | — | Deferred status documented |
+| 8 | Update tests for fixed routes + antiforgery + OIDC sub claim | Test Designer | ~6K | Items 1-4 | Tests pass with fixes |
+| 9 | Re-review PR #19 after fixes | Reviewer | ~8K | Items 1-8 | 0 Critical, 0 Major open |
+| 10 | Escalate R003: OIDC registration to STK-001 (sponsor) | Project Manager | ~2K | — | Escalation logged; STK-003 contacted |
+| 11 | Iteration Assessment (C2 Cycle 2 variance analysis) | Project Manager | ~10K | Item 9 | Objectives met/missed documented |
 
-**Budget box: ~10.4M tokens** [ASSUMPTION — basis: Elaboration measured average per-iteration cost was ~10.4M tokens; Construction has more code volume but fewer architectural decisions, so this is a reasonable starting estimate. This figure will be replaced by measured actuals at iteration close.]
+**Budget box: ~9.85M tokens** [BASIS: C1 measured actual = 9,854,220 tokens. C2 rework cycle is narrower in scope (7 findings vs 16 work items in C1) but the accumulated artifact surface is larger (38 artifacts vs 23), so reasoning-over-surface cost is comparable. The box is fixed; scope adapts.]
 
-> The budget box is fixed. If work does not fit, overflow defers to Construction Iter 2 backlog. Scope adapts to the box; the box does not grow to fit scope.
+> The budget box is fixed. If work does not fit, overflow defers to the next cycle. Scope adapts to the box; the box does not grow to fit scope.
 
 ## Resources
 
-### Agent Role Profile — Construction Iter 1
+### Agent Role Profile — Construction C2 Cycle 2
 
 | Role | Active | Work Items | Token Budget | Rationale |
 |---|---|---|---|---|
-| Project Manager | Yes | 1, 16 | ~18K | Plan, monitor, assess iteration |
-| Implementer | Yes | 1-4, 6-12 | ~74K | Primary code production + finding fixes |
-| Test Designer | Yes | 5, 13, 14 | ~25K | Test fixes + new test coverage |
-| Reviewer | Yes | 15 | ~10K | Re-review PR #8 + new code |
+| Project Manager | Yes | 10, 11 | ~14K | Plan, escalate R003, assess iteration |
+| Implementer | Yes | 1-7 | ~21K | Fix all 7 C2 findings (3 blocking + 4 minor) |
+| Test Designer | Yes | 8 | ~6K | Update tests for fixed code |
+| Reviewer | Yes | 9 | ~8K | Re-review PR #19 after fixes |
 | Software Architect | Advisory | — | ~0K | Architecture baseline stable; consultation only |
 | UI Designer | Advisory | — | ~0K | Design Model complete; consultation only |
 
-> **Parallelism discipline:** 4 active roles. No increase in parallelism is proposed to address schedule pressure. If the iteration falls behind, the first lever is scope reduction (defer work items to C2), not additional agent roles.
+> **Parallelism discipline:** 4 active roles — same as C1. No increase in parallelism. The rework cycle is narrower in scope; the constraint is sequential dependency (fixes → test update → re-review), not parallel capacity.
 
 ### Budget Split Across Agent Roles
 
-| Role | Token Share | % of Budget Box |
+| Role | Token Share | % of Work-Item Budget |
 |---|---|---|
-| Implementer | ~74K | 71% |
-| Test Designer | ~25K | 24% |
-| Reviewer | ~10K | 10% |
-| Project Manager | ~18K | 17% |
-| **Total planned** | **~127K** | **(planned work items only; full budget box ~10.4M includes all agent reasoning over artifact surface)** |
+| Implementer | ~21K | 38% |
+| Project Manager | ~14K | 25% |
+| Reviewer | ~8K | 15% |
+| Test Designer | ~6K | 11% |
+| **Total planned work items** | **~49K** | **(work-item budgets only; full budget box ~9.85M includes all agent reasoning over artifact surface)** |
 
-> The token budgets above are for the **planned work items** — the specific code, test, and review tasks. The full budget box (~10.4M) accounts for all agent reasoning including re-reading accumulated artifacts, cross-referencing, and verification overhead. The Elaboration measured actuals showed that work-item budgets were ~1% of actual token spend; the cost driver is reasoning over the accumulated artifact surface, not the volume of new output.
+> The token budgets above are for the **planned work items** — the specific code, test, and review tasks. The full budget box (~9.85M) accounts for all agent reasoning including re-reading accumulated artifacts, cross-referencing, and verification overhead. C1 measured actuals showed that work-item budgets were ~0.5% of actual token spend; the cost driver is reasoning over the accumulated artifact surface, not the volume of new output.
 
 ## Use Cases and Scenarios Addressed
 
-| UC ID | Use Case | FR ID | Iteration Scope | Status |
-|---|---|---|---|---|
-| UC-001 | Clock In and Clock Out | FR-001 | Presentation layer implemented (PR #8); application + persistence + audit this iteration | Fix MINOR-2/3 + implement service |
-| UC-002 | View Own Clocking History | FR-002 | Presentation layer implemented (PR #8); application + persistence this iteration | Implement service |
-| UC-003 | View All Employee Clockings | FR-003 | Presentation layer implemented (PR #8); application + persistence this iteration | Implement service |
-| UC-004 | Export Monthly Clocking Report | FR-004 | Presentation layer implemented (PR #8); application + persistence this iteration | Implement service |
-| UC-005 | Publish News | FR-005 | Presentation layer implemented (PR #8); **MAJOR-1 fix required** + application + audit this iteration | Fix MAJOR-1 + implement service |
-| UC-006 | Edit Published News | FR-006 | Presentation layer implemented (PR #8); application + audit this iteration | Implement service |
-| UC-007 | Unpublish News | FR-007 | Presentation layer implemented (PR #8); application + audit this iteration | Implement service |
-| UC-008 | Read and Filter News | FR-008 | Presentation layer implemented (PR #8); **MAJOR-1 blocks featured banner** + application this iteration | Fix MAJOR-1 + implement service |
-| UC-009 | Search Employee Directory | FR-009 | Presentation layer implemented (PR #8); **MINOR-1 naming fix** + LDAP gateway this iteration | Fix MINOR-1 + implement LDAP |
-| UC-010 | Manage Worker Category | FR-010 | Presentation layer implemented (PR #8); application + audit this iteration | Implement service |
+| UC ID | Use Case | FR ID | C1 Status | C2 Cycle 1 Status | C2 Cycle 2 Action |
+|---|---|---|---|---|---|
+| UC-001 | Clock In and Clock Out | FR-001 | Presentation + service implemented | **C2-CRIT-1: 404 route mismatch** + **C2-MAJ-2: antiforgery 400** + **C2-MIN-2: employeeId spoofable** | Fix route + antiforgery + sub claim (Items 1, 3, 4) |
+| UC-002 | View Own Clocking History | FR-002 | Presentation + service implemented | No findings | — |
+| UC-003 | View All Employee Clockings | FR-003 | Presentation + service implemented | No findings | — |
+| UC-004 | Export Monthly Clocking Report | FR-004 | Presentation + service implemented | **C2-MIN-4: CSV header misleading** | Fix CSV header (Item 5) |
+| UC-005 | Publish News | FR-005 | MAJOR-1 RESOLVED (PR #20) | No new findings | — |
+| UC-006 | Edit Published News | FR-006 | Service implemented | **C2-MAJ-1: form field name mismatch** | Fix form binding (Item 2) |
+| UC-007 | Unpublish News | FR-007 | Service implemented | No findings | — |
+| UC-008 | Read and Filter News | FR-008 | MAJOR-1 RESOLVED (PR #20) | No new findings | — |
+| UC-009 | Search Employee Directory | FR-009 | MINOR-1 RESOLVED (PR #20) | **C2-MIN-1: LDAP adapter NotImplementedException** | Document as DEFERRED (Item 7) |
+| UC-010 | Manage Worker Category | FR-010 | Service implemented | No findings | — |
 
-> **Scope variance note:** The prior provisional roadmap assigned UC-001–UC-005 to C1 and UC-006–UC-010 to C2. The Implementer produced presentation-layer code for all 10 UCs in PR #8. This iteration addresses finding fixes across all 10 UCs plus application/persistence/LDAP/audit service implementation. The C1/C2 split is re-baselined: C1 = fix findings + implement all service/persistence/audit layers; C2 = integration testing, NFR validation (NFR-001/NFR-002 load testing), OIDC integration (if STK-003 confirms), end-to-end test scenarios.
+> **C2-MIN-3 (placeholder test):** Not tied to a specific UC — CR-014 cleanup. Delete UnitTest1.cs (Item 6).
 
 ## Evaluation Criteria
 
@@ -169,48 +176,46 @@ stop
 
 | AC ID | Description | Addressed This Iteration? | Evidence / Reason |
 |---|---|---|---|
-| AC-001 | Employee can clock in/out without help | Partially — application + persistence + audit implemented; full end-to-end validation in C2 | ClockingService, ClockingRepository, AuditLogger |
-| AC-002 | HR can publish a news item without technical assistance | Partially — MAJOR-1 fix makes featured banner functional; NewsService + AuditLogger implemented; full validation in C2 | MAJOR-1 fix, NewsService, AuditLogger |
-| AC-003 | Employee finds colleague's phone/email in under 10 seconds | Partially — LdapGateway implemented with "N/A" fallback; performance validation in C2 | LdapGateway, DirectoryService |
+| AC-001 | Employee can clock in/out without help | Yes — C2-CRIT-1 + C2-MAJ-2 + C2-MIN-2 fixes make UC-001 functional | Items 1, 3, 4: route fix, antiforgery, sub claim |
+| AC-002 | HR can publish a news item without technical assistance | No — already addressed in C2 Cycle 1 (PR #20 approved, MAJOR-1 resolved) | PR #20 APPROVED |
+| AC-003 | Employee finds colleague's phone/email in under 10 seconds | Partially — LDAP adapter deferred to integration testing (C2-MIN-1) | Item 7: DEFERRED documentation |
 | AC-004 | 80% of employees complete at least one clocking with no prior training | Not addressed — Transition phase (adoption tracking) | Deferred to Transition |
-| AC-005 | System works temporarily offline (5-min network drop, data syncs on recovery) | Partially — MINOR-3 fix scopes idempotency key by employee; ClockingService retry mechanism implemented; full offline test in C2 | MINOR-3/4 fixes, ClockingService |
+| AC-005 | System works temporarily offline (5-min network drop, data syncs on recovery) | Partially — antiforgery fix (Item 3) enables POST; offline retry mechanism already implemented | Item 3: antiforgery token fix |
 
-### Layer (b): Construction Iteration 1 Exit Criteria
+### Layer (b): Construction C2 Cycle 2 Exit Criteria
 
 | # | Exit Criterion | Assessment Target | Evidence Required |
 |---|---|---|---|
-| 1 | MAJOR-1 resolved — IsFeatured flag set in Publish flow | MET | Code review confirms IsFeatured persisted; unit test verifies |
-| 2 | MINOR-1 resolved — DirectoryModel renamed to DirectorySearchModel | MET | Code review confirms V007 conformance |
-| 3 | MINOR-2 resolved — EmployeeId removed from RecordClockingRequest | MET | Code review confirms no dead code |
-| 4 | MINOR-3 resolved — Idempotency key scoped by employee | MET | Code review confirms FindByIdempotencyKey(employeeId, key) |
-| 5 | MINOR-4 resolved — OfflineRetryTests updated | MET | Test asserts both employees succeed independently |
-| 6 | Application services implemented (News, Clocking, Directory, WorkerCategory) | MET | Code review confirms service layer complete |
-| 7 | Persistence layer implemented (PostgreSQL repositories) | MET | Code review confirms repository pattern + schema conformance |
-| 8 | LDAP gateway implemented with ILdapConnection abstraction | MET | Code review confirms ADR-003 conformance |
-| 9 | Audit logging implemented (INT-005 conformance) | MET | Code review confirms NFR-004 compliance |
-| 10 | CI build passes green | MET | scm_get_build_status confirms PASS |
-| 11 | Re-review of PR #8 + new code: 0 Critical, 0 Major | MET | Review Record updated |
-| 12 | Iteration Assessment produced with variance analysis | MET | This artifact at iteration close |
+| 1 | C2-CRIT-1 resolved — Clocking API route matches fetch URL | MET | Code review confirms no 404; UC-001 functional |
+| 2 | C2-MAJ-1 resolved — News Edit form binding matches field names | MET | Code review confirms form posts succeed; UC-006 functional |
+| 3 | C2-MAJ-2 resolved — Antiforgery token present or justified exemption | MET | Code review confirms POST accepted (no 400) |
+| 4 | C2-MIN-2 resolved — EmployeeId from OIDC sub claim, not request body | MET | Code review confirms identity not spoofable |
+| 5 | C2-MIN-4 resolved — CSV header correct (Employee,Date,Time,Direction) | MET | Code review confirms FR-004 export correct |
+| 6 | C2-MIN-3 resolved — UnitTest1.cs placeholder deleted | MET | No Assert.True(true) in test suite |
+| 7 | C2-MIN-1 documented — LDAP adapter DEFERRED status annotated | MET | Code carries [DEFERRED] annotation |
+| 8 | CI build passes green | MET | scm_get_build_status confirms PASS |
+| 9 | Re-review PR #19: 0 Critical, 0 Major | MET | Review Record updated |
+| 10 | R003 escalation to STK-001 logged | MET | Escalation recorded in Risk List |
+| 11 | Iteration Assessment produced with variance analysis | MET | This artifact at iteration close |
 
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| Construction Iter 1 Plan | Elaboration Iter 2 Plan (coarse roadmap), Elaboration Iteration Assessment (measured actuals) | Refines | Construction Iter 1 Assessment |
-| MAJOR-1 fix | Review Record MAJOR-1, FR-008, V004 (PublishNewsModel) | Derives | NewsService.Publish, PublishNews.cshtml.cs |
-| MINOR-1 fix | Review Record MINOR-1, V007 (DirectorySearchModel) | Derives | Directory.cshtml.cs |
-| MINOR-2 fix | Review Record MINOR-2, INT-001 (IClockingService) | Derives | ClockingApiController.cs |
-| MINOR-3 fix | Review Record MINOR-3, AC-005, R006 | Derives | ClockingService.cs, IPersistence |
-| MINOR-4 fix | Review Record MINOR-4, MINOR-3 | Derives | OfflineRetryTests.cs |
-| NewsService | FR-005, FR-006, FR-007, NFR-004, CON-013, INT-005 | Derives | src/PortalCubaCorp.Application/NewsService.cs |
-| ClockingService | FR-001, FR-002, AC-001, AC-005, R006 | Derives | src/PortalCubaCorp.Application/ClockingService.cs |
-| DirectoryService | FR-009, R001, COMP-005, ADR-003 | Derives | src/PortalCubaCorp.Application/DirectoryService.cs |
-| WorkerCategoryService | FR-010, NFR-004 | Derives | src/PortalCubaCorp.Application/WorkerCategoryService.cs |
-| Persistence layer | CON-003, SAD schema, INT-007 | Derives | src/PortalCubaCorp.Infrastructure/ |
-| LdapGateway | CON-005, CON-009, COMP-005, ADR-003, R001 | Derives | src/PortalCubaCorp.Infrastructure/LdapGateway.cs |
-| AuditLogger | NFR-004, INT-005, COMP-008 | Derives | src/PortalCubaCorp.Infrastructure/AuditLogger.cs |
-| Budget box (~10.4M tokens) | Elaboration measured actuals (per-iteration average) | Derives | Construction Iter 1 Assessment (measured vs planned) |
-| AC-001 (clocking) | Work Order AC-001 | Refines | ClockingService, ClockingRepository |
-| AC-002 (news publish) | Work Order AC-002 | Refines | NewsService, AuditLogger, MAJOR-1 fix |
-| AC-003 (directory search) | Work Order AC-003 | Refines | LdapGateway, DirectoryService |
-| AC-005 (offline) | Work Order AC-005 | Refines | ClockingService, MINOR-3/4 fixes |
+| C2-CRIT-1 fix (Item 1) | Review Record C2-CRIT-1, UC-001, FR-001, AC-001 | Derives | ClockingApi.cshtml, clocking-retry.js |
+| C2-MAJ-1 fix (Item 2) | Review Record C2-MAJ-1, UC-006, FR-006 | Derives | News/Edit.cshtml, News/Edit.cshtml.cs |
+| C2-MAJ-2 fix (Item 3) | Review Record C2-MAJ-2, UC-001, FR-001, AC-001 | Derives | clocking-retry.js, Index.cshtml |
+| C2-MIN-2 fix (Item 4) | Review Record C2-MIN-2, SEC-001, CON-004 | Derives | ClockingApi.cshtml.cs |
+| C2-MIN-4 fix (Item 5) | Review Record C2-MIN-4, FR-004, CR-012 | Derives | ClockingService.cs (ExportCsv) |
+| C2-MIN-3 fix (Item 6) | Review Record C2-MIN-3, CR-014 | Derives | UnitTest1.cs (deleted) |
+| C2-MIN-1 doc (Item 7) | Review Record C2-MIN-1, R001, CON-005 | DependsOn | NovellLdapConnectionAdapter.cs |
+| Test update (Item 8) | Items 1-4, TC-001..TC-030 | Tests | Updated test files in tests/ |
+| Re-review (Item 9) | Review Record PR #19, all C2 findings | Derives | PR #19 merge gate |
+| R003 escalation (Item 10) | R003, CON-004, STK-003, STK-001 | DependsOn | OIDC registration, 8 blocked tests |
+| Budget box (~9.85M) | C1 measured actual (9,854,220 tokens) | Derives | C2 Cycle 2 Assessment (measured vs planned) |
+| AC-001 (clocking) | Work Order AC-001 | Refines | Items 1, 3, 4 (route + antiforgery + sub claim) |
+| AC-005 (offline) | Work Order AC-005 | Refines | Item 3 (antiforgery enables POST retry) |
+| MAJOR-1 (C1, RESOLVED) | Review Record C1 MAJOR-1, FR-008, CR-010 | Resolved by | PR #19, PR #20 |
+| MINOR-1 (C1, RESOLVED) | Review Record C1 MINOR-1, FR-009, CR-015 | Resolved by | PR #19, PR #20 |
+| MINOR-3 (C1, RESOLVED) | Review Record C1 MINOR-3, AC-005, CR-011 | Resolved by | PR #19, PR #20 |
+| MINOR-4 (C1, RESOLVED) | Review Record C1 MINOR-4, CR-011, CR-018 | Resolved by | PR #19, PR #20 |
