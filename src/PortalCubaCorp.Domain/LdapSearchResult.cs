@@ -24,7 +24,7 @@ public class LdapSearchResult
 
     /// <summary>
     /// Department (department attribute).
-    │   /// </summary>
+    /// </summary>
     public string? Department { get; set; }
 
     /// <summary>
