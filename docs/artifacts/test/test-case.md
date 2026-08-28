@@ -665,28 +665,46 @@ FBT --> NSU
 | TC-028 | UC-009, R001, CON-005 | Tests | DirectoryService.cs, DirectoryServiceTests.cs |
 | TC-029 | UC-009, AC-003, PERF-003 | Tests | DirectoryService.cs, PerformanceTests |
 | TC-030 | UC-001, NFR-003 | Tests | ClockingService.cs, ClockingApiController.cs, PerformanceTests |
+| TC-031 | UC-001, C2-CRIT-1 | Tests | clocking-retry.js, ClockingApi.cshtml, RoutingBindingTests.cs |
+| TC-032 | UC-006, C2-MAJ-1, FR-006 | Tests | News/Edit.cshtml, News/Edit.cshtml.cs, NewsIntegrationTests.cs |
+| TC-033 | UC-001, C2-MAJ-2, SEC-001 | Tests | clocking-retry.js, ClockingApi.cshtml.cs, AntiforgeryIntegrationTests.cs |
+| TC-034 | UC-001, C2-MIN-2, SEC-001, CON-004 | Tests | ClockingApi.cshtml.cs, SecurityTests.cs |
+| TC-035 | UC-004, C2-MIN-4, FR-004, CR-012 | Tests | ClockingService.cs, RoutingBindingTests.cs |
 | TG-001 | NFR-001 | Refines | TC-011 |
 | TG-002 | NFR-002 | Refines | TC-012 |
 | TG-003 | AC-005, NFR-003 | Refines | TC-003, TC-004 |
 | TG-004 | AC-003 | Refines | TC-006, TC-007, TC-029 |
 | TG-005 | NFR-004, AUD-001, AUD-002 | Refines | TC-008, TC-009, TC-010, TC-018, TC-023, TC-027 |
-| TG-006 | SEC-002 | Refines | TC-013, TC-014, TC-020, TC-022 |
+| TG-006 | SEC-002 | Refines | TC-013, TC-014, TC-020, TC-022, TC-034 |
 | TG-007 | R001, SUP-003 | Refines | TC-006, TC-028 |
 | TG-008 | UC-001 A3 | Refines | TC-005, TC-015, TC-016, TC-025, TC-026 |
 | TG-009 | NFR-003 | Refines | TC-030 |
 | TG-010 | FR-008, MAJOR-1 | Refines | TC-023, TC-024 |
-| InMemoryPersistence | INT-007, COMP-006 | Implements | TC-001..TC-005, TC-008..TC-010, TC-015..TC-019, TC-021, TC-023, TC-024, TC-027 |
+| TG-011 | C2-CRIT-1, UC-001 | Refines | TC-031 |
+| TG-012 | C2-MAJ-1, UC-006, FR-006 | Refines | TC-032 |
+| TG-013 | C2-MAJ-2, UC-001, SEC-001 | Refines | TC-033 |
+| TG-014 | C2-MIN-2, UC-001, SEC-001, CON-004 | Refines | TC-034 |
+| TG-015 | C2-MIN-4, UC-004, FR-004, CR-012 | Refines | TC-035 |
+| InMemoryPersistence | INT-007, COMP-006 | Implements | TC-001..TC-005, TC-008..TC-010, TC-015..TC-019, TC-021, TC-023, TC-024, TC-027, TC-031..TC-035 |
 | MockLdapGateway | INT-006, COMP-005 | Implements | TC-006, TC-007, TC-019, TC-020, TC-028, TC-029 |
-| InMemoryAuditLogger | INT-005, COMP-008 | Implements | TC-008, TC-009, TC-010, TC-018, TC-023, TC-027 |
-| OIDC Mock Token Provider | COMP-007, SEC-002 | Implements | TC-013, TC-014, TC-020, TC-022, TC-030 |
+| InMemoryAuditLogger | INT-005, COMP-008 | Implements | TC-008, TC-009, TC-010, TC-018, TC-023, TC-027, TC-032 |
+| OIDC Mock Token Provider | COMP-007, SEC-002 | Implements | TC-013, TC-014, TC-020, TC-022, TC-030, TC-031, TC-033, TC-034 |
 | Clocking Client Test Harness | AC-005, clocking-retry.js | Implements | TC-003, TC-004 |
-| MAJOR-1 finding | FR-008, V004 | Tests | TC-023, TC-024 |
-| MINOR-2 finding | INT-001, CON-004 | Tests | TC-022 |
-| MINOR-3/MINOR-4 findings | ClockingService.cs | Tests | TC-021 |
+| FormBindingTestHelper | C2-MAJ-1, form binding | Implements | TC-032, TC-035 |
+| MAJOR-1 finding (C1) | FR-008, V004 | Tests | TC-023, TC-024 — **RESOLVED in PR #20** |
+| MINOR-2 finding (C1) | INT-001, CON-004 | Tests | TC-022 |
+| MINOR-3/MINOR-4 findings (C1) | ClockingService.cs | Tests | TC-021 — **RESOLVED in PR #20** |
+| C2-CRIT-1 finding | UC-001, clocking-retry.js | Tests | TC-031 |
+| C2-MAJ-1 finding | UC-006, FR-006, News/Edit.cshtml | Tests | TC-032 |
+| C2-MAJ-2 finding | UC-001, SEC-001, clocking-retry.js | Tests | TC-033 |
+| C2-MIN-2 finding | UC-001, SEC-001, CON-004 | Tests | TC-034 |
+| C2-MIN-4 finding | UC-004, FR-004, CR-012 | Tests | TC-035 |
+| C2-MIN-1 finding | UC-009, R001, CON-005 | Tests | TC-028 (existing — DEFERRED to integration testing) |
+| C2-MIN-3 finding | CR-014, test quality | Tests | TC-026 (existing domain tests provide coverage) |
 | ISSUE-13 finding | TC-028, test code | Tests | DirectoryServiceTests.cs |
 | ISSUE-14 finding | test scaffolding | Tests | UnitTest1.cs |
 | INFRA-BLOCK-1 | STK-003, CON-004 | DependsOn | TC-022, TC-028, TC-029 |
-| INFRA-BLOCK-2 | CON-006, deployment | DependsOn | TC-011, TC-012, TC-029, TC-030 |
+| INFRA-BLOCK-2 | CON-006, deployment | DependsOn | TC-011, TC-012, TC-029, TC-030, TC-031, TC-032, TC-033 |
 | TD-014 | TC-016 (empty month) | Refines | CSV export boundary |
 | TD-015 | TC-023, MAJOR-1 | Refines | IsFeatured pre-seeded data |
 | TD-016 | TC-001 (special chars) | Refines | Idempotency key boundary |
@@ -694,5 +712,9 @@ FBT --> NSU
 | TD-018 | TC-017 (all featured) | Refines | Featured news edge case |
 | TD-019 | TC-003 (corrupted localStorage) | Refines | Offline retry robustness |
 | TD-020 | TC-015 (year boundary) | Refines | Month filter year transition |
+| TD-021 | TC-032, C2-MAJ-1 | Refines | News edit form binding test data |
+| TD-022 | TC-034, C2-MIN-2 | Refines | Identity spoofing test token |
+| TD-023 | TC-035, C2-MIN-4 | Refines | CSV header correctness test data |
 | C1 Quality Assessment | All TCs, NFR-001..004, AC-001..005 | Derives | This Test Case artifact |
 | C1 Defect Pattern Analysis | Issues #10..#14, MAJOR-1, MINOR-1..4 | Derives | This Test Case artifact |
+| C2 Findings Coverage | C2-CRIT-1, C2-MAJ-1, C2-MAJ-2, C2-MIN-2, C2-MIN-4 | Derives | TC-031..TC-035 |
