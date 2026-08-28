@@ -29,8 +29,9 @@ public class ClockingService : IClockingService
         if (string.IsNullOrWhiteSpace(idempotencyKey))
             return ClockingResult.Fail("Idempotency key is required");
 
-        // Check idempotency — if key exists, return the existing record (AC-005)
-        var existing = _persistence.FindByIdempotencyKey(idempotencyKey);
+        // Check idempotency — scoped per employee (CR #11)
+        // If (employeeId, key) exists, return the existing record (AC-005)
+        var existing = _persistence.FindByIdempotencyKey(employeeId, idempotencyKey);
         if (existing != null)
             return ClockingResult.Duplicate(existing);
 

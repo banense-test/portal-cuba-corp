@@ -18,7 +18,7 @@ public class DirectoryService : IDirectoryService
         _ldapGateway = ldapGateway;
     }
 
-    public List<DirectoryEntry> Search(string query)
+    public List<DirectoryEntry> Search(string query, string? office = null)
     {
         if (string.IsNullOrWhiteSpace(query))
             return new List<DirectoryEntry>();
@@ -26,6 +26,13 @@ public class DirectoryService : IDirectoryService
         // Build LDAP filter for name, department, or office search
         var escapedQuery = EscapeLdapFilter(query);
         var filter = $"(|(cn=*{escapedQuery}*)(department=*{escapedQuery}*)(physicalDeliveryOfficeName=*{escapedQuery}*))";
+
+        // If office filter is specified, add it as an AND condition (MINOR-1 fix)
+        if (!string.IsNullOrWhiteSpace(office))
+        {
+            var escapedOffice = EscapeLdapFilter(office);
+            filter = $"(&{filter}(physicalDeliveryOfficeName=*{escapedOffice}*))";
+        }
 
         var results = _ldapGateway.SearchEntries(filter);
 

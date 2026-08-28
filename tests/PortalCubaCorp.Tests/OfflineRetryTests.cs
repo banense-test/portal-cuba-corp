@@ -108,23 +108,24 @@ public class OfflineRetryTests
         Assert.Equal("Idempotency key is required", result.Error);
     }
 
-    // --- White-box: Idempotency works across different employees ---
+    // --- White-box: CR #11 — Idempotency scoped per employee prevents cross-employee collision ---
 
     [Fact]
-    public void Retry_SameKeyDifferentEmployee_BothSucceed()
+    public void Retry_SameKeyDifferentEmployee_BothSucceedNotDuplicate()
     {
         var (service, _) = CreateService();
         var ts = DateTime.UtcNow;
         var key = "shared-key-001";
 
-        // Same idempotency key but different employees - both should succeed
-        // because idempotency is per-record, not per-employee
+        // Same idempotency key but different employees — both should succeed
+        // because idempotency is scoped per (employeeId, key), not globally (CR #11)
         var first = service.RecordClocking("emp1", ts, ClockType.In, key);
         var second = service.RecordClocking("emp2", ts, ClockType.In, key);
 
         Assert.True(first.Success);
         Assert.True(second.Success);
-        Assert.True(second.IsDuplicate); // Same key = duplicate of first
+        Assert.False(first.IsDuplicate);
+        Assert.False(second.IsDuplicate);
     }
 
     // --- Black-box: Multiple retries with same key all return the same record ---
@@ -145,6 +146,48 @@ public class OfflineRetryTests
         Assert.True(third.Success && third.IsDuplicate);
         Assert.Equal(first.Record!.Id, second.Record!.Id);
         Assert.Equal(first.Record!.Id, third.Record!.Id);
+    }
+
+    // --- White-box: 5-minute expiry boundary (AC-005 criterion 7) ---
+    // The client-side clocking-retry.js retries every 10 seconds for up to 5 minutes.
+    // After 5 minutes without network recovery, the user sees "Clocking failed — contact HR".
+    // This test verifies that a clocking with a timestamp older than 5 minutes is still
+    // accepted by the server (the server does not reject old timestamps — the client
+    // is responsible for the 5-minute retry window). The test validates that the server
+    // idempotency mechanism works correctly even for delayed retries.
+
+    [Fact]
+    public void Retry_TimestampOlderThan5Minutes_StillAcceptedByServer()
+    {
+        var (service, _) = CreateService();
+        // Simulate a clocking that was stored 6 minutes ago (past the 5-minute client retry window)
+        var oldTimestamp = DateTime.UtcNow.AddMinutes(-6);
+        var key = "emp1-expired-retry-key";
+
+        // The server accepts the timestamp regardless of age — the client-side
+        // clocking-retry.js is responsible for the 5-minute retry window.
+        // If the client sends the clocking after 5 minutes (e.g., user manually retries),
+        // the server still processes it with idempotency protection.
+        var result = service.RecordClocking("emp1", oldTimestamp, ClockType.In, key);
+
+        Assert.True(result.Success);
+        Assert.False(result.IsDuplicate);
+        Assert.Equal(oldTimestamp, result.Record!.Timestamp);
+    }
+
+    [Fact]
+    public void Retry_At5MinuteBoundary_StillAcceptedByServer()
+    {
+        var (service, _) = CreateService();
+        // Simulate a clocking at exactly the 5-minute boundary
+        var boundaryTimestamp = DateTime.UtcNow.AddMinutes(-5);
+        var key = "emp1-5min-boundary-key";
+
+        var result = service.RecordClocking("emp1", boundaryTimestamp, ClockType.In, key);
+
+        Assert.True(result.Success);
+        Assert.False(result.IsDuplicate);
+        Assert.Equal(boundaryTimestamp, result.Record!.Timestamp);
     }
 
     // --- White-box: ExecuteInTransactionAsync wraps operations atomically (INT-007) ---
@@ -169,7 +212,7 @@ public class OfflineRetryTests
         });
 
         Assert.True(executed);
-        var record = persistence.FindByIdempotencyKey("tx-key-001");
+        var record = persistence.FindByIdempotencyKey("emp1", "tx-key-001");
         Assert.NotNull(record);
     }
 
