@@ -864,10 +864,10 @@ end note
 | Quality Attribute | Tactic | Status |
 |---|---|---|
 | Security | OIDC authentication via Keycloak (CON-004); role-based authorization from token claims; no access outside corporate network (CON-007); read-only LDAP (CON-010) | Addressed in baseline architecture |
-| Auditability | Audit interceptor (COMP-008) as cross-cutting mechanism; append-only audit records; news never hard-deleted (CON-013); audit within same DB transaction as business operation | Addressed in baseline architecture |
-| Availability | Single server for 200 users; offline clocking retry for 5-min network drops (AC-005); other features show "no connection" | Addressed; offline mechanism designed in Process View |
+| Auditability | Audit interceptor (COMP-008) as cross-cutting mechanism; append-only audit records; news never hard-deleted (CON-013); audit within same DB transaction as business operation | Addressed in baseline architecture; C2: Design Model retains ExecuteInTransactionAsync as correct design — Implementer must enforce transaction boundary |
+| Availability | Single server for 200 users; offline clocking retry for 5-min network drops (AC-005); other features show "no connection" | Addressed; offline mechanism designed in Process View; C2: CR-011 refines idempotency key to be scoped per employee |
 | Performance | Local PostgreSQL (no network hop); server-rendered pages (no SPA overhead); LDAP query for directory (R001 risk) | Addressed; LDAP performance to be validated against real AD |
-| Maintainability | Interface-based subsystem boundaries; each subsystem encapsulates one volatility area; layered monolith (simple to deploy and debug); 4-project solution structure | Addressed in baseline architecture |
+| Maintainability | Interface-based subsystem boundaries; each subsystem encapsulates one volatility area; layered monolith (simple to deploy and debug); 4-project solution structure | Addressed in baseline architecture; C2: Design Model contracts aligned with implementation — no boundary violations |
 
 ### PoC Plan — Risk Retirement Strategy
 
@@ -875,123 +875,43 @@ Per the Development Case, the Architectural Proof-of-Concept artifact is trigger
 
 | Risk | Mode | Mechanism | Acceptance Criteria (Summary) | Status |
 |---|---|---|---|---|
-| R001 (AD LDAP, exposure=9) | single-mechanism | LDAP Gateway (COMP-005) + Directory Service (COMP-001) — evolutionary code in src/ | LDAP bind across 3 offices; search returns results; fallback "N/A" for missing attributes; no private data (CON-012); query < 10s (AC-003) | PoC decision recorded — Implementer to build |
-| R006 (Offline retry, exposure=6) | single-mechanism | clocking-retry.js + IClockingService idempotency — evolutionary code in src/ | localStorage stores POST; retry every 10s for 5 min; idempotency key prevents duplicates; server accepts client timestamp; user sees confirmation or failure | PoC decision recorded — Implementer to build |
-| R003 (OIDC registration) | analysis-only | Coordination with STK-003 — no code mechanism | OIDC client registered in Keycloak; portal redirects, receives token, extracts role claims | Retired by analysis — coordination dependency |
+| R001 (AD LDAP, exposure=9) | single-mechanism | LDAP Gateway (COMP-005) + Directory Service (COMP-001) — evolutionary code in src/ | LDAP bind across 3 offices; search returns results; fallback "N/A" for missing attributes; no private data (CON-012); query < 10s (AC-003) | PoC decision recorded — Implementer to build; CR-001 approved |
+| R006 (Offline retry, exposure=6) | single-mechanism | clocking-retry.js + IClockingService idempotency — evolutionary code in src/ | localStorage stores POST; retry every 10s for 5 min; idempotency key scoped per employee (CR-011); server accepts client timestamp; no duplicate records | PoC decision recorded — Implementer to build; CR-002 approved; CR-011 refines idempotency key scoping |
+| R003 (OIDC integration) | analysis-only | Coordination with STK-003 for OIDC client registration | OIDC client registered in Keycloak; token validation works; roles from claims | Analysis-only — STK-003 coordination required; 8 tests blocked pending OIDC registration |
 
-**Interface Consistency Verification (M1/M2 findings):**
-
-The SAD Logical View interface specifications are verified consistent with the Design Model Interface Contracts section:
-- **INT-005 (IAuditLogger):** SAD specifies `Log(entityType, entityId, action, author, timestamp)` — matches Design Model INT-005. The Implementer's code used `LogAudit()` which diverges; the Implementer must align the code to the Design Model contract.
-- **INT-007 (IPersistence):** SAD specifies `BeginTransaction()` / `CommitTransaction()` as part of the IPersistence interface — matches Design Model INT-007. The Implementer's code did not expose these methods; the Implementer must align the code to the Design Model contract.
-
-The SAD and Design Model are the authoritative interface definitions. The implementation must conform to them, not the reverse. M1 and M2 are Implementer-owned findings — the code must be corrected to match the Design Model contracts.
-
-### Lifecycle Architecture Milestone Assessment
-
-The following table assesses all 6 LAM criteria for the Elaboration iteration. This is a working assessment — the milestone is NOT yet achieved (per Work Order instructions).
-
-| # | Criterion | Status | Assessment |
-|---|---|---|---|
-| 1 | Vision stable | PASS | Vision Document approved at LCO. Scope statement, stakeholders, and business goals unchanged. No CRs affecting vision. |
-| 2 | Architecture stable | PASS | SAD BASELINED with all 4+1 views. 8 components with full interface specifications. 5 ADRs with alternatives documented. 6 design mechanisms mapped from analysis mechanisms. Component, deployment, process, implementation, and 3 sequence diagrams validated. PoC decisions recorded for R001, R006, R003. |
-| 3 | Risks resolved | PARTIAL → IMPROVING | R001 (LDAP, exposure=9): PoC decision recorded (single-mechanism); Implementer to build evolutionary LDAP Gateway. R006 (offline clocking, exposure=6): PoC decision recorded (single-mechanism); Implementer to build evolutionary retry mechanism. R003 (OIDC): retired by analysis — coordination with STK-003. M1/M2 interface mismatches: SAD verified consistent with Design Model; Implementer to align code. |
-| 4 | Construction plan credible | PENDING | Iteration Plan provides construction planning basis. SAD prioritized UC list available for PM. Design Model has UC realizations and class diagrams. |
-| 5 | Stakeholders agree | PENDING | LCO stakeholder sanction granted. Elaboration Iter 1 stakeholder sanction REFUSED — issues to mitigate in Iter 2. Iter 2 review pending. |
-| 6 | Expenditure acceptable | PASS | Inception cost: 22 min agent time, 0s stakeholder queue, 4.38M tokens, 11 agent runs, 10 artifacts. Proportional to scope. Elaboration costs tracking within budget. |
-
-### Open Architecture Issues
-
-| Issue | Status | Resolution Path |
-|---|---|---|
-| R001 LDAP attribute consistency | PoC decision recorded — Implementer to build evolutionary mechanism | Implementer builds COMP-005 + COMP-001; test against real AD (STK-003) |
-| R006 Offline retry mechanism | PoC decision recorded — Implementer to build evolutionary mechanism | Implementer builds clocking-retry.js + idempotency key handling |
-| R003 OIDC registration | Retired by analysis — coordination dependency | STK-003 registers OIDC client before login testing |
-| M1 IAuditLogger signature | SAD verified consistent with Design Model | Implementer aligns code to INT-005 `Log()` signature |
-| M2 IPersistence transaction API | SAD verified consistent with Design Model | Implementer aligns code to INT-007 `BeginTransaction()`/`CommitTransaction()` |
-
-### Risk Resolution Status
-
-| Risk | Exposure | Strategy | Status |
-|---|---|---|---|
-| R001 | 9 (HIGH) | Mitigate via ADR-003 (attribute mapping + fallback) | PoC decision recorded (single-mechanism) — Implementer to build |
-| R006 | 6 (SIGNIFICANT) | Mitigate via ADR-004 (localStorage + POST retry) | PoC decision recorded (single-mechanism) — Implementer to build |
-| R003 | — | Accept (Keycloak already running) | Retired by analysis — coordination with STK-003 |
-| R004 | — | Mitigate (local PostgreSQL, no network hop) | Addressed in Size & Performance |
-| R005 | — | Mitigate (mandatory custom UI design CON-011) | Addressed in Design Model UI Patterns |
-
-```plantuml
-@startuml
-title LAM Review — 6 Criteria Assessment (Elaboration Iter 2)
-
-skinparam activityStyle rounded
-
-start
-if (1. Vision stable?) then (yes)
-  if (2. Architecture stable?) then (yes)
-    if (3. Risks resolved?) then (yes)
-      if (4. Construction plan credible?) then (yes)
-        if (5. Stakeholders agree?) then (yes)
-          if (6. Expenditure acceptable?) then (yes)
-            :LCA Milestone: PASS;
-          else (no)
-            :LCA: FAIL — expenditure;
-          endif
-        else (no)
-          :LCA: FAIL — stakeholder;
-        endif
-      else (no)
-        :LCA: FAIL — plan;
-      endif
-    else (no)
-      :LCA: FAIL — risks;
-    endif
-  else (no)
-    :LCA: FAIL — architecture;
-  endif
-else (no)
-  :LCA: FAIL — vision;
-endif
-stop
-
-@enduml
-```
-
-**Current LAM verdict:** Architecture is stable (criterion 2 PASS — SAD BASELINED). Risks are improving (criterion 3 PARTIAL → IMPROVING — PoC decisions recorded for R001/R006/R003; M1/M2 interface consistency verified). Construction plan and stakeholder agreement are PENDING completion of Implementer code alignment and end-of-iteration review. The milestone is NOT yet achieved — this is a working assessment for Elaboration Iteration 2.
-
----
-
-### Construction C1 Governance Record (2026-08-28)
+### Construction C2 Governance Record
 
 #### CR Concurrence Decisions
 
-| Issue | CR Title | Verdict | Rationale |
+| Issue # | CR | Decision | Rationale |
 |---|---|---|---|
-| #1 | CR-001: Execute LDAP Attribute Mapping PoC (R001 — exposure=9) | **CONCUR** | Validates existing COMP-005 / ILdapGateway (INT-006) within its subsystem boundary. No new subsystem, interface, or layering change. LdapGateway implementation already maps 7 AD attributes with null fallback. Depends on STK-003 for real AD access — coordination, not architecture change. CON-012 enforced by attribute whitelist. |
-| #2 | CR-002: Validate Offline Clocking Retry Design (AC-005, R006 — exposure=6) | **CONCUR** | Validates existing COMP-002 (ClockingService) + clocking-retry.js within their documented boundaries. SAD Process View documents the mechanism. Implementation matches SAD: localStorage, 10s retry, 5min max, idempotency key, server-side deduplication via FindByIdempotencyKey. No interface changes permitted. |
+| — | — | No `needs-architect-review` CRs pending | All CRs from C1 (CR-001, CR-002) already concurred. No new CRs parked for Architect review in C2. |
 
 #### Refinement Findings
 
-| Finding | Type | SAD Section | Resolution |
+| Finding | Type | Section Updated | Description |
 |---|---|---|---|
-| Implementation View project naming: SAD said `src/PortalCubaCorp.Web`, actual is `src/PortalCubaCorp` | MINOR-LOCAL | Implementation View | **Applied** — Implementation View diagram and build structure table updated to reflect actual project name |
-| ILdapConnection testability abstraction not in SAD Implementation View | MINOR-LOCAL | Implementation View | **Applied** — Added to Infrastructure Interfaces package in updated diagram |
-| Domain entities incomplete in SAD: listed 5, actual has 9 (ClockingResult, LdapSearchResult, DateRange, Enums added) | MINOR-LOCAL | Implementation View | **Applied** — All 9 domain entities listed in updated diagram and build structure table |
-| NuGet package inventory not in SAD | MINOR-LOCAL | Implementation View | **Applied** — Package inventory table added with versions and constraint mappings |
-| Audit transaction boundary: NewsService calls LogAudit() after SaveNewsItem() without ExecuteInTransactionAsync wrapper | OBSERVATION | Quality (Auditability) | **Flagged** — SAD states "audit within same DB transaction as business operation." Implementation does not wrap both in ExecuteInTransactionAsync. This is an implementation-level finding for the Implementer to resolve — the architectural intent is correct, the code does not yet enforce it. Not a boundary violation. |
+| Implementation View delivery status | Minor-local | Implementation View | Updated to reflect C1 actual delivery (Index.cshtml, Program.cs, clocking-retry.js) vs C2 targets (7 remaining Razor Pages). Added C1 Status column to Build Structure table. |
+| CR-011 idempotency key scoping | Minor-local | Data View, Implementation View | Updated idempotency key constraint from UNIQUE(idempotency_key) to UNIQUE(employee_id, idempotency_key) per approved CR-011. Prevents cross-employee collision. Data View diagram and constraints table updated. |
+| Design Model contract alignment | Minor-local | Implementation View, Quality | Noted C2 Design Model changes: NewsStatus Draft removed, CreatedBy→AuthorId, entityId type=string, INT-002 method names aligned. No boundary violations — all changes within existing subsystem interfaces. |
+| Document Control | Minor-local | Document Control | Updated to C2 iteration with current governance status. |
 
 #### Iteration-Baseline PR Review
 
-No iteration-baseline PR (iteration/C1 → main) was open at the time of this governance run. The iteration has not reached its close. Architectural review will be performed when the Integrator opens the PR.
+| PR | Title | Verdict | Date | Notes |
+|---|---|---|---|---|
+| #9 | Iteration C1 close — integration baseline (iteration/C1 → main) | **APPROVED** | 2026-08-28 | Documentation-only PR (integration record). No code changes. No architectural violations. Issue #16 (missing Architect approval) resolved by this review. |
 
-#### Open Architectural Issues for Next Iteration
+#### Open Architectural Issues for Next Iteration (C3 or C2 close)
 
 | Issue | Priority | Owner | Description |
 |---|---|---|---|
-| Audit transaction boundary enforcement | Medium | Implementer | NewsService and WorkerCategoryService should wrap business operation + audit log in ExecuteInTransactionAsync to ensure atomicity (SAD Quality: Auditability tactic) |
-| CR-001 LDAP PoC execution | High | Implementer + STK-003 | Execute LDAP PoC against real AD to retire R001 (architect concurred) |
-| CR-002 Offline retry validation | High | Implementer | Validate offline retry end-to-end to retire R006 (architect concurred) |
-| Iteration-baseline PR review | High | Architect | Review iteration/C1 → main PR when opened by Integrator |
+| Audit transaction boundary enforcement | Medium | Implementer | NewsService and WorkerCategoryService should wrap business operation + audit log in ExecuteInTransactionAsync to ensure atomicity (SAD Quality: Auditability tactic). Design Model retains this as correct design. |
+| CR-001 LDAP PoC execution | High | Implementer + STK-003 | Execute LDAP PoC against real AD to retire R001 (architect concurred, CR approved). 8 tests blocked pending OIDC registration by STK-003. |
+| CR-002 Offline retry validation | High | Implementer | Validate offline retry end-to-end to retire R006 (architect concurred, CR approved). CR-011 idempotency key scoping must be implemented. |
+| CR-010 IsFeatured fix | High | Implementer | NewsService.Publish must accept isFeatured parameter to enable FR-008 featured banner. Design Model confirms isFeatured is correct design. Approved CR, assigned to Implementer. |
+| PR #8 rework | High | Implementer | Feature PR received CHANGES_REQUESTED — MAJOR-1 (IsFeatured) + MINOR-1..4 must be resolved before merge into iteration/C1. |
+| Remaining 7 Razor Pages | High | Implementer | C1 delivered only Index.cshtml. Clocking, Directory, AllClockings, PublishNews, EditNews, NewsManagement, WorkerCategory pages are C2 deliverables. |
 ## Traceability
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
