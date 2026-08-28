@@ -1,20 +1,21 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Construction |
 | Status | Active |
-| Milestone Target | End-of-Construction |
+| Milestone Target | End-of-Construction (IOC) |
 | Iteration | 1 (Cycle 1) |
 | Date | 2026-08-28 |
 | Prior Phase | Elaboration (LCA achieved, 0 open Critical/Major, stakeholder sanction GRANTED) |
-| Reviewer | Reviewer (Project Management Discipline) — Code Reviewer modality |
-| Review Type | Construction C1 — Iteration Acceptance Review (per RUP Ch.11) |
+| Reviewer (Technical Lens) | Reviewer (Project Management Discipline) — Code Reviewer modality |
+| Reviewer (Management Lens) | Management Reviewer (Project Management Discipline) — IOC Milestone Review |
+| Review Type | Construction C1 — Iteration Acceptance Review + IOC Milestone Assessment |
 | PRs Reviewed | #8 (feature/C1-presentation → iteration/C1), #9 (iteration/C1 → main) |
 | CI Build Status | main: GREEN (2026-08-28 15:10:26Z) |
 | Open Defect Issues | 0 |
-| Disposition | **REQUEST_CHANGES** — 1 Major (blocks merge), 4 Minor (stakeholder requires all resolved) |
-
+| Technical Lens Disposition | **REQUEST_CHANGES** — 1 Major (blocks merge), 4 Minor (stakeholder requires all resolved) |
+| Management Lens Disposition | **CONDITIONAL** — IOC NOT achieved; 2 Major, 2 Minor management findings; stakeholder sanction REFUSED |
+| Stakeholder Sanction | **REFUSED** — STK-001: "We cannot advance to Transition because there are still things to finish to have the system with the use cases correctly implemented in construction, which is where we are now. We cannot move forward without the software." |
 ## Review Scope and Criteria
 This review evaluates Construction C1 artifacts and code against the following checklists:
 
