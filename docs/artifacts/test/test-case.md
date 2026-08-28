@@ -7,8 +7,14 @@
 | Milestone Target | End of Elaboration (LCA) |
 | Iteration | 1 (Cycle 1) |
 | Date | 2026-08-28 |
-| Author | Test Designer (Test Discipline) |
+| Author | Test Designer (Test Discipline) — Test Cases; Tester (Test Discipline) — E1 Findings |
 | Prior Phase | Inception — Test Evaluation Summary (Approved) |
+| E1 Execution Date | 2026-08-28 |
+| E1 Build ID | CI run 2026-08-28 10:50:54Z (main) |
+| E1 CI Status | PASS (green) — build compiles, placeholder test passes |
+| E1 Implementation State | Bootstrap skeleton (Inception scaffold) — no architectural prototype code on main |
+| E1 Overall Verdict | BLOCKED — all 20 TCs blocked; PR #4 (architectural prototype) reviewed but not merged to main |
+| E1 Defects Logged | 1 (CR-006: Architectural prototype not merged to main — all TCs blocked) |
 
 ## Test Scope
 
@@ -42,228 +48,260 @@ Additional UCs covered at moderate depth for regression readiness:
 | TG-002 | Performance | Clock in/out response < 1 second (95th percentile) | System / Performance | NFR-002, PERF-002 |
 | TG-003 | Reliability | Offline clocking retry succeeds within 5-minute window when network drops | Integration / Fault Tolerance | AC-005, NFR-003 |
 | TG-004 | Functionality | Directory search returns results in < 10 seconds for any query | System / Performance | AC-003, PERF-003 |
-| TG-005 | Functionality | 100% of news publish/edit/unpublish operations create audit records with author + timestamp | Integration / Functional | NFR-004, AUD-001 |
-| TG-006 | Security | HR-only UCs (UC-003..UC-007, UC-010) reject Employee-role tokens | System / Security | SEC-002 |
-| TG-007 | Reliability | LDAP queries with missing attributes (empty job title, empty extension) do not crash the directory | Integration / Fault Tolerance | R001, SUP-003 |
-| TG-008 | Functionality | Idempotency: duplicate POST with same key returns original confirmation, no duplicate record | Integration / Functional | UC-001 A3 |
+| TG-005 | Auditability | Every publish/edit/unpublish/category-change creates an audit record with author + timestamp | Integration | NFR-004, AUD-001, AUD-002, AUD-003 |
+| TG-006 | Security | HR-only functions reject Employee-role tokens; all endpoints require authentication | Integration / Security | SEC-002 |
+| TG-007 | Reliability | LDAP queries with missing attributes (empty jobTitle, empty telephoneNumber) do not crash and return graceful partial results | Integration / Fault Tolerance | R001, SUP-003 |
+| TG-008 | Functionality | Duplicate clock-in with same idempotency key returns original confirmation, does not create second record | Integration | UC-001 A3 |
 
-### Test Types Mapped to Quality Dimensions
+### E1 Iteration Findings — Architecture Validation
 
-| Quality Dimension | Test Types | Test Cases | Automation Level |
-|---|---|---|---|
-| Reliability | Fault tolerance, offline retry, idempotency | TC-001, TC-002, TC-003 | Automated (xUnit + test harness) |
-| Functionality | Functional correctness, audit trail, data validation | TC-004, TC-005, TC-006, TC-007, TC-008, TC-009, TC-010 | Automated (xUnit) + Manual UAT |
-| Performance | Response time, page load | TC-011, TC-012 | Automated (benchmark) + Manual |
-| Security | Authorization, role-based access | TC-013, TC-014 | Automated (xUnit with mock tokens) |
+#### Smoke Test
 
-### Test Automation Architecture
+| Check | Result | Evidence |
+|---|---|---|
+| CI Build Status (main) | ✅ PASS | Build success, completed 2026-08-28 10:50:54Z |
+| Solution Structure | ✅ Present | `PortalCubaCorp.sln` with `src/PortalCubaCorp/` and `tests/PortalCubaCorp.Tests/` |
+| Target Framework | ✅ .NET 10 | `net10.0` in both .csproj files |
+| Test Framework | ✅ xUnit | `xunit 2.9.3`, `Microsoft.NET.Test.Sdk 17.12.0` |
+| Test Suite Content | ⚠️ PLACEHOLDER | `UnitTest1.cs` — single `Assert.True(true)`, no real tests |
+| Source Implementation | ⚠️ SKELETON | `Program.cs` — bare-bones Razor Pages, no services, no DI, no interfaces |
+| OIDC Configuration | ❌ ABSENT | No `AddAuthentication` / `AddOpenIdConnect` in Program.cs |
+| LDAP Integration | ❌ ABSENT | No LDAP-related code or packages |
+| Audit Trail | ❌ ABSENT | No audit service or interceptor |
+| Persistence | ❌ ABSENT | No EF Core, no DbContext, no PostgreSQL provider |
 
-The following component diagram defines the test automation architecture — framework, stubs, drivers, and their relationships to the System Under Test.
+**Smoke Test Verdict:** Build is green but the implementation on main is the Inception bootstrap skeleton. The architectural prototype (PR #4, 43 files, +2958/-482) was reviewed with disposition REQUEST_CHANGES but has **not been merged to main**. All 20 Test Cases reference interfaces (INT-001 through INT-007) and services that do not exist on the testable branch.
 
-```plantuml
-@startuml
-title Test Automation Architecture — Portal Cuba Corp (Elaboration)
+#### Per-Test-Case Verdict Matrix (E1 Iteration 1)
 
-skinparam componentStyle rectangle
-skinparam packageStyle rectangle
+| TC ID | UC Trace | Interface(s) Required | Status | Root Cause | Issue # |
+|---|---|---|---|---|---|
+| TC-001 | UC-001 (main) | INT-001, INT-007 | BLOCKED | IClockingService + IPersistence not on main | CR-006 |
+| TC-002 | UC-001 (main) | INT-001, INT-007 | BLOCKED | IClockingService + IPersistence not on main | CR-006 |
+| TC-003 | UC-001 (A1), AC-005 | INT-001, INT-007, clocking-retry.js | BLOCKED | IClockingService + offline retry JS not on main | CR-006 |
+| TC-004 | UC-001 (A2), AC-005 | clocking-retry.js | BLOCKED | Offline retry JS not on main | CR-006 |
+| TC-005 | UC-001 (A3) | INT-001, INT-007 | BLOCKED | IClockingService + IPersistence not on main | CR-006 |
+| TC-006 | UC-009, R001 | INT-003, INT-006 | BLOCKED | IDirectoryService + ILdapGateway not on main | CR-006 |
+| TC-007 | UC-009, CON-012 | INT-003, INT-006 | BLOCKED | IDirectoryService + ILdapGateway not on main | CR-006 |
+| TC-008 | UC-005, NFR-004 | INT-002, INT-005, INT-007 | BLOCKED | INewsService + IAuditLogger + IPersistence not on main | CR-006 |
+| TC-009 | UC-007, CON-013 | INT-002, INT-005, INT-007 | BLOCKED | INewsService + IAuditLogger + IPersistence not on main | CR-006 |
+| TC-010 | UC-006, NFR-004 | INT-002, INT-005, INT-007 | BLOCKED | INewsService + IAuditLogger + IPersistence not on main | CR-006 |
+| TC-011 | NFR-001 | All endpoints | BLOCKED | No application endpoints implemented | CR-006 |
+| TC-012 | UC-001, NFR-002 | INT-001, clock-in endpoint | BLOCKED | IClockingService + endpoint not on main | CR-006 |
+| TC-013 | SEC-002 | COMP-007 (OIDC) | BLOCKED | OIDC middleware not configured | CR-006 |
+| TC-014 | SEC-002 | COMP-007 (OIDC) | BLOCKED | OIDC middleware not configured | CR-006 |
+| TC-015 | UC-002 | INT-001, INT-007 | BLOCKED | IClockingService + IPersistence not on main | CR-006 |
+| TC-016 | UC-004, FR-004 | INT-001, INT-007 | BLOCKED | IClockingService + IPersistence not on main | CR-006 |
+| TC-017 | UC-008, FR-008 | INT-002, INT-007 | BLOCKED | INewsService + IPersistence not on main | CR-006 |
+| TC-018 | UC-010, NFR-004 | INT-004, INT-005, INT-007 | BLOCKED | IWorkerCategoryService + IAuditLogger + IPersistence not on main | CR-006 |
+| TC-019 | UC-010 (A1) | INT-004, INT-006 | BLOCKED | IWorkerCategoryService + ILdapGateway not on main | CR-006 |
+| TC-020 | UC-003, SEC-002 | INT-001, INT-006, COMP-007 | BLOCKED | IClockingService + ILdapGateway + OIDC not on main | CR-006 |
 
-package "Test Framework (xUnit + Moq)" {
-  component "Test Runner\n(xUnit)" as TR <<test framework>>
-  component "Mock Container\n(Moq)" as MC <<test framework>>
-}
+**Summary:** 0 PASS, 0 FAIL, 20 BLOCKED, 0 SKIP
 
-package "Test Stubs & Drivers" {
-  component "LDAP Stub\n(LdapGatewayStub)" as LS <<test stub>>
-  component "OIDC Mock Token\nProvider" as OT <<test driver>>
-  component "Persistence Test Double\n(InMemoryDb)" as PD <<test double>>
-  component "Clocking Client\nTest Harness" as CT <<test driver>>
-  component "Audit Verifier\n(AuditRecordChecker)" as AV <<test utility>>
-}
+#### Review Record Findings Status
 
-package "System Under Test" {
-  component "ClockingService\n(COMP-002)" as CS
-  component "NewsService\n(COMP-003)" as NS
-  component "DirectoryService\n(COMP-001)" as DS
-  component "WorkerCategoryService\n(COMP-004)" as WCS
-  component "AuditInterceptor\n(COMP-008)" as AI
-  component "LdapGateway\n(COMP-005)" as LG
-  component "PersistenceGateway\n(COMP-006)" as PG
-  component "OIDC Middleware\n(COMP-007)" as OIDC
-}
+The Review Record (Elaboration E1) identified 2 Major findings in PR #4:
 
-package "Test Levels" {
-  component "Unit Tests\n(Service layer)" as UT <<test level>>
-  component "Integration Tests\n(LDAP + Persistence)" as IT <<test level>>
-  component "System Tests\n(End-to-End UC)" as ST <<test level>>
-  component "Acceptance Tests\n(AC-001..AC-005)" as AT <<test level>>
-}
-
-' Test runner drives all levels
-TR --> UT
-TR --> IT
-TR --> ST
-TR --> AT
-
-' Unit tests mock all external interfaces
-UT ..> MC : uses mocks
-MC ..> LS : configures
-MC ..> OT : configures
-MC ..> PD : configures
-
-' Integration tests use real components with stubs for external systems
-IT ..> LS : replaces COMP-005
-IT ..> PD : replaces COMP-006
-IT ..> OT : replaces COMP-007
-
-' System tests exercise full stack with LDAP stub
-ST ..> LS : replaces AD
-ST ..> OT : injects tokens
-ST ..> CT : drives clocking UI
-
-' Acceptance tests are manual + automated
-AT ..> ST : automated subset
-AT ..> CT : manual UAT scripts
-
-' Stubs interface with SUT
-LS ..> LG : implements ILdapGateway\n(INT-006)
-OT ..> OIDC : injects OIDC tokens\nwith role claims
-PD ..> PG : implements IPersistence\n(INT-007)
-CT ..> CS : drives clocking POST\nwith idempotency key
-AV ..> AI : verifies audit records
-
-' Test utilities
-AV ..> PG : reads audit_records table
-
-note right of LS
-  R001 CRITICAL: LDAP stub must
-  simulate missing attributes
-  (empty job title, empty extension)
-  across 3 office OUs
-end note
-
-note right of CT
-  AC-005: Drives offline retry
-  scenario — simulates network
-  drop, localStorage queue,
-  5-min retry window
-end note
-
-note right of OT
-  SEC-002: Injects tokens with
-  Employee vs HR role claims
-  for authorization testing
-end note
-
-@enduml
-```
-
-**Stubs and Drivers Summary:**
-
-| Stub/Driver | Type | Replaces | Interface | Purpose |
+| Finding | Severity | Description | Status | Impact on Testing |
 |---|---|---|---|---|
-| LdapGatewayStub | Test Stub | COMP-005 (LdapGateway) | INT-006 (ILdapGateway) | Simulate AD responses with missing/empty attributes (R001); simulate 3 office OUs |
-| OIDC Mock Token Provider | Test Driver | COMP-007 (OIDC Middleware) | N/A (injects tokens) | Inject tokens with Employee vs HR role claims for authorization testing (SEC-002) |
-| InMemoryDb (EF Core InMemory) | Test Double | COMP-006 (PersistenceGateway) | INT-007 (IPersistence) | Fast persistence without PostgreSQL dependency; **NOTE: Review Record M2 finding — IPersistence transaction API mismatch must be resolved before integration tests can use real transaction semantics** |
-| Clocking Client Test Harness | Test Driver | Browser + clocking-retry.js | N/A | Simulates network drop, localStorage queue, 5-min retry window (AC-005) |
-| AuditRecordChecker | Test Utility | N/A | N/A | Reads audit_records table to verify author + timestamp + action for every audited operation |
+| M1 | Major | IAuditLogger (INT-005) signature mismatch — implementation diverges from Design Model contract | Open (PR not merged) | TC-008, TC-009, TC-010, TC-018 cannot verify audit trail until M1 is fixed AND PR merged |
+| M2 | Major | IPersistence (INT-007) transaction API mismatch — implementation diverges from Design Model contract | Open (PR not merged) | TC-001..TC-005, TC-008..TC-010, TC-015..TC-019 cannot verify persistence until M2 is fixed AND PR merged |
 
-### Test Case Lifecycle
+**Note:** Since PR #4 was not merged to main, M1 and M2 are not yet testable on the main branch. When the PR is reworked and merged, these findings must be re-verified before TCs can be unblocked.
+
+#### Risk-Driven Test Coverage Assessment
+
+| Risk | Exposure | TCs Covering Risk | E1 Status | Mitigation |
+|---|---|---|---|---|
+| R001 (LDAP attributes) | 9 | TC-006, TC-007 | BLOCKED | CR-001 tracks LDAP PoC; CR-006 tracks prototype not merged |
+| R002 (Clocking adoption) | 6 | TC-001..TC-005 | BLOCKED | CR-002 tracks offline retry design; CR-006 tracks prototype not merged |
+
+#### Acceptance Criteria Test Mapping
+
+| AC ID | TCs | E1 Status | Construction/Transition Plan |
+|---|---|---|---|
+| AC-001 | TC-001, TC-002, TC-005 | BLOCKED | Execute in Construction after prototype merge |
+| AC-002 | TC-008 | BLOCKED | Execute in Construction after prototype merge |
+| AC-003 | TC-006, TC-007, TC-019, TC-020 | BLOCKED | Execute in Construction after prototype merge |
+| AC-004 | TC-001..TC-005 (adoption) | BLOCKED | Measure in Transition (requires live users) |
+| AC-005 | TC-003, TC-004 | BLOCKED | Execute in Construction after prototype merge |
+
+#### E1 Test Execution Flow
 
 ```plantuml
 @startuml
-title Test Case Lifecycle — State Diagram
+title Elaboration E1 — Test Evaluation Flow (Architecture Validation)
 
-[*] --> Designed : Test case derived\nfrom UC scenario
+skinparam activityBorderColor #333333
+skinparam activityBackgroundColor #F5F5F5
 
-Designed --> Reviewed : Peer review
-Reviewed --> Scripted : Automation code written
-Reviewed --> Designed : Revision needed
+start
 
-Scripted --> Ready : CI integration complete
-Ready --> Executed : Test run triggered
+:Load Test Case (TC-001..TC-020)
+from Test Designer;
+:Load Review Record findings
+(M1: IAuditLogger, M2: IPersistence);
 
-Executed --> Passed : All assertions pass
-Executed --> Failed : One or more assertions fail
-Executed --> Blocked : Precondition unmet\n(env/dependency)
+:Smoke Test: scm_get_build_status(main);
 
-Passed --> Ready : Regression cycle
-Failed --> Analyzed : Defect logged
-Blocked --> Ready : Blocker resolved
+if (CI Build Green?) then (yes)
+  :Inspect source files on main
+  (Program.cs, UnitTest1.cs, .csproj);
 
-Analyzed --> Scripted : Fix applied, re-test
-Analyzed --> Closed : Defect resolved + verified
+  if (Architectural prototype code present?) then (yes)
+    :Execute TC-001..TC-020
+    against prototype implementation;
+    :Evaluate PASS/FAIL/BLOCKED
+    per test case;
+  else (no — bootstrap skeleton only)
+    :Mark all TCs as BLOCKED:
+    implementation not on main;
+    :Record finding:
+    PR #4 not merged to main;
+  endif
+else (no)
+  :STOP — log blocker defect
+  via scm_create_issue;
+  :All TCs = BLOCKED
+  (build failure);
+endif
 
-Closed --> Ready : Regression cycle
+:Update Test Case Findings
+with per-iteration verdicts;
 
-Passed --> [*] : Retired (scope removed)
-Closed --> [*] : Retired (scope removed)
+if (Defects found?) then (yes)
+  :Log Change Requests
+  via scm_create_issue
+  with canonical CCM labels;
+  :Append Issue # to
+  Test Case Findings;
+else (no)
+  :Record PASS verdicts
+  in Test Case Findings;
+endif
 
-note right of Failed
-  Adversarial intent:
-  failure is the GOAL,
-  not the exception
-end note
+:Generate activity diagram
+for evidence trail;
 
-note right of Blocked
-  Blocked if: LDAP stub down,
-  OIDC mock misconfigured,
-  test DB unavailable
+stop
+
+@enduml
+```
+
+#### Blocked Test Cases by Root Cause
+
+```plantuml
+@startuml
+title Elaboration E1 — Architecture Validation: Blocked Test Cases by Root Cause
+
+skinparam rectangleBorderColor #333333
+
+rectangle "Root Cause: PR #4 Not Merged to Main" as ROOT #FFCCCC {
+  rectangle "IClockingService\n(INT-001) absent" as I1 #FFD6D6
+  rectangle "INewsService\n(INT-002) absent" as I2 #FFD6D6
+  rectangle "IDirectoryService\n(INT-003) absent" as I3 #FFD6D6
+  rectangle "IWorkerCategoryService\n(INT-004) absent" as I4 #FFD6D6
+  rectangle "IAuditLogger\n(INT-005) absent\n(M1: signature mismatch)" as I5 #FFD6D6
+  rectangle "ILdapGateway\n(INT-006) absent" as I6 #FFD6D6
+  rectangle "IPersistence\n(INT-007) absent\n(M2: transaction API mismatch)" as I7 #FFD6D6
+  rectangle "OIDC Middleware\n(COMP-007) absent" as I8 #FFD6D6
+}
+
+rectangle "Blocked Test Cases" as BLK #FFE8E8 {
+  rectangle "TC-001..TC-005\n(Clocking)" as B1 #FFD6D6
+  rectangle "TC-006, TC-007, TC-019, TC-020\n(Directory/LDAP)" as B2 #FFD6D6
+  rectangle "TC-008..TC-010, TC-018\n(Audit Trail)" as B3 #FFD6D6
+  rectangle "TC-011, TC-012\n(Performance)" as B4 #FFD6D6
+  rectangle "TC-013, TC-014\n(OIDC Auth)" as B5 #FFD6D6
+  rectangle "TC-015..TC-017\n(Clocking History/Export)" as B6 #FFD6D6
+}
+
+B1 --> I1
+B1 --> I7
+B2 --> I3
+B2 --> I6
+B3 --> I2
+B3 --> I5
+B3 --> I7
+B4 --> I1
+B4 --> I7
+B5 --> I8
+B6 --> I1
+B6 --> I7
+
+note right of ROOT
+  <b>Build ID:</b> 2026-08-28 10:50:54Z
+  <b>Branch:</b> main
+  <b>CI Status:</b> PASS (green)
+  <b>Implementation:</b> Bootstrap skeleton only
+  <b>PR #4:</b> Reviewed (REQUEST_CHANGES)
+  but NOT merged to main
 end note
 
 @enduml
 ```
 
-### Test Workflow — UC to Test Case
+#### Test Case Status Matrix
 
 ```plantuml
 @startuml
-title Test Workflow — UC Scenario to Test Case Lifecycle
+title Elaboration E1 — Test Case Status Matrix
 
-|Test Designer|
-start
-:Read Use-Case Model\n(UC-001..UC-010);
-:Identify architecturally\nsignificant UCs;
-note right
-  Top 3 per SAD Use-Case View:
-  UC-001 (Clock In/Out) — offline retry, idempotency
-  UC-005 (Publish News) — audit trail
-  UC-009 (Directory Search) — LDAP attribute risk R001
+skinparam rectangleBorderColor #333333
+skinparam rectangleBackgroundColor #FFFFFF
+
+rectangle "TC-001: Clock In (happy path)" as TC001 #FFD6D6
+rectangle "TC-002: Clock Out (happy path)" as TC002 #FFD6D6
+rectangle "TC-003: Offline retry (5 min)" as TC003 #FFD6D6
+rectangle "TC-004: Offline retry expiry" as TC004 #FFD6D6
+rectangle "TC-005: Clocking idempotency" as TC005 #FFD6D6
+rectangle "TC-006: LDAP attribute coverage" as TC006 #FFD6D6
+rectangle "TC-007: Corporate-data-only (CON-012)" as TC007 #FFD6D6
+rectangle "TC-008: Audit trail on publish" as TC008 #FFD6D6
+rectangle "TC-009: Audit trail on edit" as TC009 #FFD6D6
+rectangle "TC-010: Audit trail on unpublish" as TC010 #FFD6D6
+rectangle "TC-011: Page load <3s (NFR-001)" as TC011 #FFD6D6
+rectangle "TC-012: Clock response <1s (NFR-002)" as TC012 #FFD6D6
+rectangle "TC-013: OIDC auth — Employee role" as TC013 #FFD6D6
+rectangle "TC-014: OIDC auth — HR role" as TC014 #FFD6D6
+rectangle "TC-015: View own clocking history" as TC015 #FFD6D6
+rectangle "TC-016: View all employee clockings" as TC016 #FFD6D6
+rectangle "TC-017: Export CSV clocking report" as TC017 #FFD6D6
+rectangle "TC-018: Worker category audit trail" as TC018 #FFD6D6
+rectangle "TC-019: Directory search by name" as TC019 #FFD6D6
+rectangle "TC-020: Directory search by dept/office" as TC020 #FFD6D6
+
+note bottom of TC001
+  <b>Status: BLOCKED</b>
+  Reason: IClockingService not
+  implemented on main branch.
+  PR #4 reviewed but not merged.
+  Build ID: 2026-08-28 10:50:54Z
 end note
 
-:Derive test cases per UC\n(main flow + alternative flows);
-:Specify preconditions,\ninput data, expected outcome,\npass/fail criteria;
-:Define automation hints\n+ interface points\n+ environment prerequisites;
-:Generate activity diagram\n(test workflow);
-:Generate state diagram\n(test case lifecycle);
-:Embed automation architecture\ncomponent diagram;
-|Test Designer|
-
-|Reviewer|
-:Review test cases for\nadversarial coverage;
-note right
-  INVERSION check:
-  Each TC must target a
-  plausible failure scenario
+note bottom of TC006
+  <b>Status: BLOCKED</b>
+  Reason: ILdapGateway not
+  implemented on main branch.
+  R001 (exposure=9) untested.
+  CR-001 tracks this risk.
 end note
-|Reviewer|
 
-|Implementer|
-:Write test scripts\nin *.Tests/ folders;
-:Integrate with CI pipeline;
-|Implementer|
+note bottom of TC008
+  <b>Status: BLOCKED</b>
+  Reason: IAuditLogger not
+  implemented on main branch.
+  M1 finding: signature mismatch
+  in PR #4 (not on main).
+end note
 
-|Test Runner|
-:Execute test suite;
-if (All pass?) then (yes)
-  :Mark Passed;
-else (no)
-  :Log defect;
-  :Analyze root cause;
-  :Fix + re-test;
-endif
-:Update coverage report;
-stop
-|Test Runner|
+note bottom of TC013
+  <b>Status: BLOCKED</b>
+  Reason: OIDC middleware not
+  configured in Program.cs.
+  No AddAuthentication call.
+end note
 
 @enduml
 ```
@@ -287,6 +325,7 @@ stop
 | **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence) |
 | **Automation** | xUnit + Moq; InMemoryDb for persistence; OIDC mock token |
 | **Environment** | .NET 10 test project; no external dependencies |
+| **E1 Verdict** | BLOCKED — IClockingService (INT-001) and IPersistence (INT-007) not implemented on main branch. PR #4 reviewed but not merged. Issue: CR-006. |
 
 ### TC-002: Clock Out — Main Flow with Prior Clock-In
 
@@ -299,329 +338,270 @@ stop
 | **Adversarial Intent** | Verify that clock-out after clock-in produces a correct alternating sequence — a missing or duplicated direction indicates a state machine bug |
 | **Preconditions** | Employee authenticated; clock-in record exists for today (`emp-001`, direction=`in`, timestamp=`2026-08-28T08:00:00Z`) |
 | **Input Data** | Employee id: `emp-001`; direction: `out`; client timestamp: `2026-08-28T17:00:00Z`; idempotency key: `key-002` |
-| **Test Steps** | 1. Call `IClockingService.ClockOut(emp-001, timestamp, key-002)` 2. Verify confirmation returned 3. Query clockings table for `emp-001` ordered by timestamp 4. Verify 2 records: first `in`, second `out` |
-| **Expected Outcome** | 2 records in correct order; confirmation displays `17:00:00` |
-| **Pass/Fail Criteria** | PASS: 2 records, correct order, correct directions. FAIL: wrong direction, missing record, or wrong order |
+| **Test Steps** | 1. Call `IClockingService.ClockOut(emp-001, timestamp, key-002)` 2. Verify return value contains confirmation 3. Query clockings table for `emp-001` 4. Verify 2 records: in (08:00) and out (17:00) |
+| **Expected Outcome** | Confirmation returned; 2 records in correct sequence |
+| **Pass/Fail Criteria** | PASS: 2 records, correct order, correct directions. FAIL: missing record, wrong direction, or wrong order |
 | **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence) |
-| **Automation** | xUnit + Moq; InMemoryDb |
+| **Automation** | xUnit + InMemoryDb + OIDC mock |
 | **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — IClockingService (INT-001) and IPersistence (INT-007) not on main. Issue: CR-006. |
 
-### TC-003: Offline Clocking Retry — Network Drop and Recovery (AC-005)
+### TC-003: Offline Clocking Retry — Network Drop Within 5-Minute Window
 
 | Field | Value |
 |---|---|
-| **UC Trace** | UC-001 (alternative flow A1 — offline retry) |
-| **Test Level** | Integration / Fault Tolerance |
+| **UC Trace** | UC-001 (A1 — offline retry), AC-005 |
+| **Test Level** | Integration |
 | **Quality Dimension** | Reliability |
-| **Goal** | TG-003 (offline retry succeeds within 5-min window) |
-| **Adversarial Intent** | Demonstrate that a network drop does NOT silently lose the clocking — if the retry fails or the timestamp is wrong, the employee's attendance record is corrupted |
-| **Preconditions** | Employee authenticated; portal main page loaded; clocking-retry.js active; network simulated as down |
-| **Input Data** | Employee presses "Clock In" at `T=0`; network restored at `T=120s` (within 5-min window); client timestamp: `2026-08-28T08:00:00Z`; idempotency key: `key-offline-001` |
-| **Test Steps** | 1. Simulate network down 2. Employee presses Clock In — client stores in localStorage 3. Verify POST fails (network error) 4. Client retries every N seconds 5. At T=120s, restore network 6. Verify POST succeeds with original client timestamp 7. Verify server records timestamp=`2026-08-28T08:00:00Z` (press time, not retry time) 8. Verify confirmation displayed |
-| **Expected Outcome** | Clocking record persisted with original press timestamp; confirmation shown; localStorage entry cleared |
-| **Pass/Fail Criteria** | PASS: record exists with press-time timestamp, not retry-time. FAIL: record has retry-time timestamp, record missing, or localStorage not cleared |
-| **Interface Points** | INT-001 (IClockingService), clocking-retry.js (client), INT-007 (IPersistence) |
-| **Automation** | Clocking Client Test Harness (simulates network drop + localStorage); xUnit for server-side assertions |
-| **Environment** | .NET 10 test project + headless browser or HTTP client mock for client behavior |
+| **Goal** | TG-003 (offline retry within 5 min) |
+| **Adversarial Intent** | Verify that a clocking pressed during a network outage is persisted locally and successfully synced when the network returns — a lost clocking means the employee is marked absent incorrectly |
+| **Preconditions** | Employee authenticated; network drops immediately after pressing Clock In; `clocking-retry.js` loaded in browser |
+| **Input Data** | Employee id: `emp-001`; direction: `in`; client timestamp: `2026-08-28T08:00:00Z`; idempotency key: `key-003`; network down for 3 minutes, then restored |
+| **Test Steps** | 1. Simulate network drop 2. Press Clock In (POST fails) 3. Verify `clocking-retry.js` stores entry in localStorage 4. Wait 3 minutes (simulated) 5. Restore network 6. Verify retry POST succeeds 7. Verify server has 1 record with original timestamp |
+| **Expected Outcome** | Clocking persisted locally during outage; synced to server on network restore; original timestamp preserved |
+| **Pass/Fail Criteria** | PASS: 1 server record with original timestamp. FAIL: lost entry, wrong timestamp, or duplicate on retry |
+| **Interface Points** | INT-001 (IClockingService), clocking-retry.js (client-side) |
+| **Automation** | Clocking Client Test Harness (headless browser or JS unit test) |
+| **Environment** | .NET 10 test project + JS test runner |
+| **E1 Verdict** | BLOCKED — IClockingService (INT-001) and clocking-retry.js not on main. CR-002 tracks offline retry design. Issue: CR-006. |
 
-### TC-004: Offline Clocking Retry — Network Not Restored Within 5 Minutes (AC-005)
+### TC-004: Offline Clocking Retry — Expiry After 5 Minutes
 
 | Field | Value |
 |---|---|
-| **UC Trace** | UC-001 (alternative flow A2 — network not restored) |
-| **Test Level** | Integration / Fault Tolerance |
+| **UC Trace** | UC-001 (A2 — retry expiry), AC-005 |
+| **Test Level** | Integration |
 | **Quality Dimension** | Reliability |
 | **Goal** | TG-003 |
-| **Adversarial Intent** | Verify that the system does NOT silently discard the clocking attempt — the employee must be explicitly informed that the clocking was not recorded |
-| **Preconditions** | Employee authenticated; portal main page loaded; network simulated as down |
-| **Input Data** | Employee presses "Clock In" at `T=0`; network remains down for >5 minutes; idempotency key: `key-offline-002` |
-| **Test Steps** | 1. Simulate network down 2. Employee presses Clock In — client stores in localStorage 3. Client retries for 5 minutes 4. At T=300s+, verify client stops retrying 5. Verify "Clocking not recorded — report to HR" message displayed 6. Verify NO record in clockings table |
-| **Expected Outcome** | No clocking record; error message displayed; localStorage entry retained for manual reporting |
-| **Pass/Fail Criteria** | PASS: no record, error message shown, retry stopped. FAIL: record created (should not be), no error message, or retry continues past 5 min |
-| **Interface Points** | clocking-retry.js (client), INT-001 (IClockingService) |
-| **Automation** | Clocking Client Test Harness with extended timeout simulation |
-| **Environment** | .NET 10 test project + client behavior mock |
+| **Adversarial Intent** | Verify that a clocking pressed during an outage longer than 5 minutes is NOT silently lost — the user must be notified that the clocking failed |
+| **Preconditions** | Employee authenticated; network drops; `clocking-retry.js` loaded |
+| **Input Data** | Employee id: `emp-001`; direction: `in`; timestamp: `2026-08-28T08:00:00Z`; network down for 6 minutes |
+| **Test Steps** | 1. Simulate network drop 2. Press Clock In (POST fails) 3. Verify localStorage entry 4. Wait 6 minutes (simulated) 5. Verify retry window expired 6. Verify user notified of failure 7. Verify no server record created |
+| **Expected Outcome** | User notified of failed clocking; no server record; localStorage entry retained for manual retry |
+| **Pass/Fail Criteria** | PASS: user notified, no server record. FAIL: silent loss or stale retry after expiry |
+| **Interface Points** | clocking-retry.js (client-side) |
+| **Automation** | Clocking Client Test Harness |
+| **Environment** | .NET 10 test project + JS test runner |
+| **E1 Verdict** | BLOCKED — clocking-retry.js not on main. CR-002 tracks offline retry design. Issue: CR-006. |
 
-### TC-005: Idempotency — Duplicate POST Returns Original Confirmation (UC-001 A3)
+### TC-005: Clocking Idempotency — Duplicate Clock-In with Same Key
 
 | Field | Value |
 |---|---|
-| **UC Trace** | UC-001 (alternative flow A3 — duplicate POST) |
+| **UC Trace** | UC-001 (A3 — idempotency) |
 | **Test Level** | Integration |
 | **Quality Dimension** | Functionality |
-| **Goal** | TG-008 (idempotency) |
-| **Adversarial Intent** | Demonstrate that a network retry that causes a duplicate POST does NOT create a second clocking record — a duplicate would corrupt attendance data |
-| **Preconditions** | Employee authenticated; first POST already succeeded (record exists with key=`key-dup-001`) |
-| **Input Data** | Second POST with same employee id, same timestamp, same idempotency key=`key-dup-001` |
-| **Test Steps** | 1. Verify first record exists (1 record with key=`key-dup-001`) 2. Send duplicate POST with same idempotency key 3. Verify response returns original confirmation 4. Query clockings table 5. Verify still exactly 1 record with key=`key-dup-001` |
-| **Expected Outcome** | Response returns original confirmation; record count remains 1 |
-| **Pass/Fail Criteria** | PASS: 1 record, original confirmation returned. FAIL: 2 records, or different confirmation returned |
+| **Goal** | TG-008 |
+| **Adversarial Intent** | Verify that a duplicate clock-in with the same idempotency key returns the original confirmation and does NOT create a second record — a duplicate means inflated attendance counts |
+| **Preconditions** | Employee authenticated; clock-in record exists (`emp-001`, `in`, `2026-08-28T08:00:00Z`, key=`key-001`) |
+| **Input Data** | Same employee id, same timestamp, same idempotency key `key-001` |
+| **Test Steps** | 1. Call `IClockingService.ClockIn(emp-001, timestamp, key-001)` again 2. Verify return value matches original confirmation 3. Query clockings table 4. Verify still exactly 1 record |
+| **Expected Outcome** | Original confirmation returned; still 1 record in table |
+| **Pass/Fail Criteria** | PASS: 1 record, same confirmation. FAIL: 2 records or different confirmation |
 | **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence) |
 | **Automation** | xUnit + InMemoryDb |
 | **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — IClockingService (INT-001) and IPersistence (INT-007) not on main. Issue: CR-006. |
 
-### TC-006: Directory Search — Missing LDAP Attributes (R001)
+### TC-006: LDAP Attribute Coverage — Missing jobTitle and telephoneNumber
 
 | Field | Value |
 |---|---|
-| **UC Trace** | UC-009 (main flow + R001 risk scenario) |
+| **UC Trace** | UC-009, R001 (exposure=9) |
 | **Test Level** | Integration |
-| **Quality Dimension** | Reliability / Functionality |
-| **Goal** | TG-007 (LDAP missing attributes do not crash) |
-| **Adversarial Intent** | Demonstrate that LDAP entries with missing `jobTitle` or `telephoneNumber` attributes (inconsistent across 3 offices) do NOT crash the directory search or display broken entries |
-| **Preconditions** | OIDC mock (Employee role); LDAP stub configured with 3 test entries: (1) full attributes, (2) empty jobTitle, (3) empty telephoneNumber |
-| **Input Data** | Search query: "García" (matches entry with empty jobTitle) |
-| **Test Steps** | 1. Call `IDirectoryService.Search("García")` 2. Verify results returned (not empty, not error) 3. Verify entry with empty jobTitle displays with blank or "N/A" for job title field 4. Verify entry with empty telephoneNumber displays with blank or "N/A" for extension field 5. Verify no exception thrown |
-| **Expected Outcome** | Results returned with graceful handling of missing attributes; no crash |
-| **Pass/Fail Criteria** | PASS: results returned, missing fields handled gracefully. FAIL: exception thrown, empty results, or broken display |
+| **Quality Dimension** | Reliability |
+| **Goal** | TG-007 |
+| **Adversarial Intent** | Verify that LDAP entries with missing attributes (empty jobTitle from Office 2, empty telephoneNumber from Office 3) do not crash the directory search and return graceful partial results — R001 is the highest-exposure risk |
+| **Preconditions** | LdapGatewayStub configured with TD-008 (3 entries: full, empty jobTitle, empty telephoneNumber) |
+| **Input Data** | Search query: `*` (all entries) |
+| **Test Steps** | 1. Call `IDirectoryService.Search("*")` 2. Verify 3 results returned 3. Verify entry with empty jobTitle shows empty string (not null, not crash) 4. Verify entry with empty telephoneNumber shows empty string (not null, not crash) |
+| **Expected Outcome** | 3 results; missing attributes shown as empty strings; no exceptions |
+| **Pass/Fail Criteria** | PASS: 3 results, no crash, graceful empty strings. FAIL: crash, null reference, or missing entry |
 | **Interface Points** | INT-003 (IDirectoryService), INT-006 (ILdapGateway) |
-| **Automation** | xUnit + LdapGatewayStub configured with missing-attribute entries |
-| **Environment** | .NET 10 test project; LDAP stub (no real AD needed) |
-
-### TC-007: Directory Search — Corporate Data Only (CON-012)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-009 (main flow, CON-012 constraint) |
-| **Test Level** | Integration / Security |
-| **Quality Dimension** | Security / Functionality |
-| **Goal** | Verify no private personal information is exposed |
-| **Adversarial Intent** | Demonstrate that the directory does NOT expose private fields (mobile phone, home address, date of birth) even if they exist in AD — a leak violates CON-012 |
-| **Preconditions** | OIDC mock (Employee role); LDAP stub configured with an entry that has both corporate attributes AND private attributes (mobile, homeAddress, dateOfBirth) |
-| **Input Data** | Search query: "*" (return all) |
-| **Test Steps** | 1. Call `IDirectoryService.Search("*")` 2. Inspect returned DTOs 3. Verify each entry has exactly: name, jobTitle, department, office, email, extension 4. Verify NO entry contains: mobile, homeAddress, dateOfBirth, or any private field |
-| **Expected Outcome** | Only corporate fields returned; private attributes filtered out |
-| **Pass/Fail Criteria** | PASS: only 6 corporate fields present. FAIL: any private field present in response |
-| **Interface Points** | INT-003 (IDirectoryService), INT-006 (ILdapGateway) |
-| **Automation** | xUnit + LdapGatewayStub with extra private attributes |
+| **Automation** | xUnit + LdapGatewayStub |
 | **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — IDirectoryService (INT-003) and ILdapGateway (INT-006) not on main. CR-001 tracks LDAP PoC. Issue: CR-006. |
 
-### TC-008: Publish News — Audit Trail Verification (NFR-004)
+### TC-007: Corporate-Data-Only — Private Attributes Filtered (CON-012)
 
 | Field | Value |
 |---|---|
-| **UC Trace** | UC-005 (main flow, audit trail) |
+| **UC Trace** | UC-009, CON-012 |
 | **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-005 (100% audit record creation) |
-| **Adversarial Intent** | Demonstrate that a news publication WITHOUT an audit record is detectable — a missing audit record means the system cannot prove who published what, violating NFR-004 |
-| **Preconditions** | OIDC mock (HR role, user=`hr-admin-001`); InMemoryDb initialized empty |
-| **Input Data** | Title: "New Policy"; Body: "Effective immediately..."; Category: `HR`; Date: `2026-08-28` |
-| **Test Steps** | 1. Call `INewsService.Publish(title, body, category, date, authorId=hr-admin-001)` 2. Verify news item created in news_items table 3. Query audit_records table for action=`NewsPublished` 4. Verify audit record has: author=`hr-admin-001`, timestamp matches publish time, action=`NewsPublished`, entity reference to news item |
-| **Expected Outcome** | News item created; exactly 1 audit record with correct author, timestamp, and action |
-| **Pass/Fail Criteria** | PASS: news item + audit record both present with correct fields. FAIL: audit record missing, wrong author, or wrong action |
-| **Interface Points** | INT-002 (INewsService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb + AuditRecordChecker utility |
-| **Environment** | .NET 10 test project |
-| **Note** | Review Record M1 finding: IAuditLogger signature mismatch must be resolved before this test can execute against the real AuditInterceptor. Test is designed against the Design Model interface contract, not the current implementation. |
-
-### TC-009: Unpublish News — No Hard Delete, Record Preserved (CON-013)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-007 (main flow, CON-013) |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | Verify CON-013: news items are never hard-deleted |
-| **Adversarial Intent** | Demonstrate that unpublishing does NOT remove the news record from the database — if the record is deleted, the audit trail is destroyed, violating CON-013 and NFR-004 |
-| **Preconditions** | OIDC mock (HR role); news item exists with status=`Published` (id=`news-001`) |
-| **Input Data** | Unpublish news item id=`news-001` |
-| **Test Steps** | 1. Call `INewsService.Unpublish(news-001, authorId=hr-admin-001)` 2. Query news_items table for id=`news-001` 3. Verify record still exists (NOT deleted) 4. Verify status changed to `Unpublished` 5. Query audit_records for action=`NewsUnpublished` 6. Verify audit record has correct author + timestamp |
-| **Expected Outcome** | Record exists with status=`Unpublished`; audit record created |
-| **Pass/Fail Criteria** | PASS: record preserved, status changed, audit record present. FAIL: record deleted, status unchanged, or audit record missing |
-| **Interface Points** | INT-002 (INewsService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb + AuditRecordChecker |
-| **Environment** | .NET 10 test project |
-
-### TC-010: Edit Published News — Audit Trail on Edit (NFR-004)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-006 (main flow, audit trail) |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-005 |
-| **Adversarial Intent** | Demonstrate that editing a news item creates a NEW audit record — if the edit is not audited, a malicious change could be made without traceability |
-| **Preconditions** | OIDC mock (HR role); news item exists with status=`Published` (id=`news-002`, original title="Old Title") |
-| **Input Data** | New title: "Corrected Title"; authorId=`hr-admin-001` |
-| **Test Steps** | 1. Call `INewsService.Edit(news-002, newTitle, authorId=hr-admin-001)` 2. Verify news item title updated in news_items table 3. Query audit_records for action=`NewsEdited` referencing news-002 4. Verify audit record has author=`hr-admin-001`, timestamp, action=`NewsEdited` |
-| **Expected Outcome** | Title updated; audit record created with correct fields |
-| **Pass/Fail Criteria** | PASS: title changed + audit record present. FAIL: title unchanged, or audit record missing |
-| **Interface Points** | INT-002 (INewsService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb + AuditRecordChecker |
-| **Environment** | .NET 10 test project |
-
-### TC-011: Page Load Performance (NFR-001)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | All UCs (main page load) |
-| **Test Level** | System / Performance |
-| **Quality Dimension** | Performance |
-| **Goal** | TG-001 (page load < 3s, 95th percentile) |
-| **Adversarial Intent** | Demonstrate that the page does NOT exceed the 3-second budget under realistic load — a slow page violates NFR-001 and risks adoption failure (R002) |
-| **Preconditions** | System deployed on internal Windows Server; corporate network; OIDC mock or real Keycloak; LDAP stub with 200 entries |
-| **Input Data** | 50 concurrent page load requests (simulating peak morning clock-in rush) |
-| **Test Steps** | 1. Warm up application 2. Send 50 concurrent GET requests to main page 3. Measure response time for each request 4. Calculate 95th percentile |
-| **Expected Outcome** | 95th percentile response time < 3000ms |
-| **Pass/Fail Criteria** | PASS: P95 < 3000ms. FAIL: P95 >= 3000ms |
-| **Interface Points** | HTTP endpoint (main page), OIDC middleware, LDAP stub |
-| **Automation** | BenchmarkDotNet or k6 load testing script; CI-integrated |
-| **Environment** | Internal Windows Server or equivalent test environment; corporate network simulation |
-
-### TC-012: Clock In/Out Response Time (NFR-002)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001 (main flow) |
-| **Test Level** | System / Performance |
-| **Quality Dimension** | Performance |
-| **Goal** | TG-002 (clock response < 1s, 95th percentile) |
-| **Adversarial Intent** | Demonstrate that the clocking POST does NOT exceed the 1-second budget — a slow clock-in frustrates users and drives them back to Excel (R002) |
-| **Preconditions** | System deployed; OIDC mock; InMemoryDb or PostgreSQL test instance |
-| **Input Data** | 20 sequential clock-in POST requests |
-| **Test Steps** | 1. Warm up application 2. Send 20 sequential POST requests to clock-in endpoint 3. Measure response time for each 4. Calculate 95th percentile |
-| **Expected Outcome** | 95th percentile response time < 1000ms |
-| **Pass/Fail Criteria** | PASS: P95 < 1000ms. FAIL: P95 >= 1000ms |
-| **Interface Points** | INT-001 (IClockingService), HTTP endpoint |
-| **Automation** | BenchmarkDotNet or k6 script |
-| **Environment** | .NET 10 test project or deployed system |
-
-### TC-013: HR Authorization — Employee Role Rejected for HR-Only UCs (SEC-002)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-003, UC-004, UC-005, UC-006, UC-007, UC-010 (authorization) |
-| **Test Level** | System / Security |
 | **Quality Dimension** | Security |
-| **Goal** | TG-006 (HR-only UCs reject Employee-role tokens) |
-| **Adversarial Intent** | Demonstrate that an Employee-role user CANNOT access HR-only functions — if authorization fails, any employee could publish news or view all clockings |
-| **Preconditions** | OIDC mock configured with Employee-role token (not HR role) |
-| **Input Data** | Employee-role token; attempt to access: (a) View All Clockings, (b) Export CSV, (c) Publish News, (d) Edit News, (e) Unpublish News, (f) Manage Worker Category |
-| **Test Steps** | 1. Inject Employee-role OIDC token 2. Call each HR-only endpoint/service method 3. Verify each returns 403 Forbidden or equivalent authorization failure 4. Verify no data is returned or modified |
-| **Expected Outcome** | All 6 HR-only operations rejected with authorization error |
-| **Pass/Fail Criteria** | PASS: all 6 rejected. FAIL: any HR-only operation succeeds with Employee role |
-| **Interface Points** | COMP-007 (OIDC Middleware), all HR service interfaces |
-| **Automation** | xUnit with OIDC Mock Token Provider (Employee role) |
+| **Goal** | TG-004, TG-006 |
+| **Adversarial Intent** | Verify that private attributes (mobile, homeAddress, dateOfBirth) present in LDAP entries are NOT returned by the directory service — a leak of private data violates CON-012 |
+| **Preconditions** | LdapGatewayStub configured with TD-009 (1 entry with corporate + private fields) |
+| **Input Data** | Search query: `*` |
+| **Test Steps** | 1. Call `IDirectoryService.Search("*")` 2. Verify 1 result 3. Verify result contains only: name, jobTitle, department, office, email, telephoneNumber 4. Verify result does NOT contain: mobile, homeAddress, dateOfBirth |
+| **Expected Outcome** | 1 result with 6 corporate fields only; no private attributes |
+| **Pass/Fail Criteria** | PASS: only corporate fields present. FAIL: any private field leaked |
+| **Interface Points** | INT-003 (IDirectoryService), INT-006 (ILdapGateway) |
+| **Automation** | xUnit + LdapGatewayStub |
 | **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — IDirectoryService (INT-003) and ILdapGateway (INT-006) not on main. Issue: CR-006. |
 
-### TC-014: HR Authorization — HR Role Accepted for HR-Only UCs (SEC-002)
+### TC-008: Audit Trail — Publish News Creates Audit Record
 
 | Field | Value |
 |---|---|
-| **UC Trace** | UC-003, UC-004, UC-005, UC-006, UC-007, UC-010 (authorization) |
-| **Test Level** | System / Security |
+| **UC Trace** | UC-005, NFR-004, AUD-001 |
+| **Test Level** | Integration |
+| **Quality Dimension** | Auditability |
+| **Goal** | TG-005 |
+| **Adversarial Intent** | Verify that publishing a news item creates an audit record with the correct author and timestamp — a missing or incorrect audit record means the publication cannot be traced |
+| **Preconditions** | HR authenticated (HR role); InMemoryDb empty |
+| **Input Data** | Title: `New Policy`; Body: `Updated dress code`; Category: `HR`; Author: `hr-001` |
+| **Test Steps** | 1. Call `INewsService.Publish(title, body, category, author)` 2. Verify news item created 3. Query audit_records table 4. Verify 1 audit record with action=`publish`, author=`hr-001`, timestamp matches |
+| **Expected Outcome** | News item created + 1 audit record with correct fields |
+| **Pass/Fail Criteria** | PASS: news + audit record with correct author/timestamp. FAIL: missing audit record or wrong author |
+| **Interface Points** | INT-002 (INewsService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
+| **Automation** | xUnit + InMemoryDb + AuditRecordChecker |
+| **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — INewsService (INT-002), IAuditLogger (INT-005, M1 signature mismatch), IPersistence (INT-007, M2 transaction API mismatch) not on main. Issue: CR-006. |
+
+### TC-009: Audit Trail — Unpublish News Preserves Record (CON-013)
+
+| Field | Value |
+|---|---|
+| **UC Trace** | UC-007, CON-013, AUD-003 |
+| **Test Level** | Integration |
+| **Quality Dimension** | Auditability |
+| **Goal** | TG-005 |
+| **Adversarial Intent** | Verify that unpublishing a news item hides it but does NOT delete the record — a hard delete would destroy the audit trail and violate CON-013 |
+| **Preconditions** | HR authenticated; 1 published news item exists |
+| **Input Data** | News item id: `news-001`; Actor: `hr-001` |
+| **Test Steps** | 1. Call `INewsService.Unpublish(news-001, hr-001)` 2. Query news_items table 3. Verify record still exists with status=`unpublished` 4. Query audit_records 5. Verify audit record with action=`unpublish`, author=`hr-001` |
+| **Expected Outcome** | News record preserved (status=unpublished); audit record created |
+| **Pass/Fail Criteria** | PASS: record preserved + audit record. FAIL: record deleted or no audit record |
+| **Interface Points** | INT-002 (INewsService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
+| **Automation** | xUnit + InMemoryDb + AuditRecordChecker |
+| **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — INewsService (INT-002), IAuditLogger (INT-005), IPersistence (INT-007) not on main. Issue: CR-006. |
+
+### TC-010: Audit Trail — Edit News Creates Audit Record
+
+| Field | Value |
+|---|---|
+| **UC Trace** | UC-006, NFR-004, AUD-001 |
+| **Test Level** | Integration |
+| **Quality Dimension** | Auditability |
+| **Goal** | TG-005 |
+| **Adversarial Intent** | Verify that editing a published news item creates an audit record with the editor's identity and timestamp — a silent edit without audit means changes are untraceable |
+| **Preconditions** | HR authenticated; 1 published news item exists (`news-001`) |
+| **Input Data** | News id: `news-001`; New title: `Updated Policy`; Editor: `hr-001` |
+| **Test Steps** | 1. Call `INewsService.Edit(news-001, newTitle, hr-001)` 2. Verify news item updated 3. Query audit_records 4. Verify audit record with action=`edit`, author=`hr-001`, timestamp matches |
+| **Expected Outcome** | News updated + audit record with correct editor/timestamp |
+| **Pass/Fail Criteria** | PASS: updated news + audit record. FAIL: no audit record or wrong author |
+| **Interface Points** | INT-002 (INewsService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
+| **Automation** | xUnit + InMemoryDb + AuditRecordChecker |
+| **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — INewsService (INT-002), IAuditLogger (INT-005), IPersistence (INT-007) not on main. Issue: CR-006. |
+
+### TC-011: Page Load Performance — < 3 Seconds (NFR-001)
+
+| Field | Value |
+|---|---|
+| **UC Trace** | All UCs (main page) |
+| **Test Level** | System / Performance |
+| **Quality Dimension** | Performance |
+| **Goal** | TG-001 |
+| **Adversarial Intent** | Verify that the main page loads in under 3 seconds on the corporate network — a slow page load means employees will avoid using the portal (R002) |
+| **Preconditions** | Application running; OIDC mock configured |
+| **Input Data** | GET / (main page) |
+| **Test Steps** | 1. Start timer 2. GET / with Employee-role token 3. Stop timer 4. Repeat 10 times 5. Calculate 95th percentile |
+| **Expected Outcome** | 95th percentile < 3 seconds |
+| **Pass/Fail Criteria** | PASS: p95 < 3s. FAIL: p95 >= 3s |
+| **Interface Points** | Main page endpoint, OIDC middleware (COMP-007) |
+| **Automation** | BenchmarkDotNet or k6 load test |
+| **Environment** | .NET 10 test project + running application |
+| **E1 Verdict** | BLOCKED — No application endpoints implemented on main. Issue: CR-006. |
+
+### TC-012: Clock In/Out Response Time — < 1 Second (NFR-002)
+
+| Field | Value |
+|---|---|
+| **UC Trace** | UC-001, NFR-002 |
+| **Test Level** | System / Performance |
+| **Quality Dimension** | Performance |
+| **Goal** | TG-002 |
+| **Adversarial Intent** | Verify that the clock in/out operation responds in under 1 second — a slow response means employees may double-click or abandon the action |
+| **Preconditions** | Application running; IClockingService registered |
+| **Input Data** | POST /api/clocking (clock-in request) |
+| **Test Steps** | 1. Start timer 2. POST clock-in request 3. Stop timer 4. Repeat 20 times 5. Calculate 95th percentile |
+| **Expected Outcome** | 95th percentile < 1 second |
+| **Pass/Fail Criteria** | PASS: p95 < 1s. FAIL: p95 >= 1s |
+| **Interface Points** | INT-001 (IClockingService), clock-in endpoint |
+| **Automation** | BenchmarkDotNet or k6 |
+| **Environment** | .NET 10 test project + running application |
+| **E1 Verdict** | BLOCKED — IClockingService (INT-001) and clock-in endpoint not on main. Issue: CR-006. |
+
+### TC-013: OIDC Authentication — Employee Role Access
+
+| Field | Value |
+|---|---|
+| **UC Trace** | UC-001, UC-002, UC-008, UC-009, SEC-002 |
+| **Test Level** | Integration / Security |
 | **Quality Dimension** | Security |
 | **Goal** | TG-006 |
-| **Adversarial Intent** | Verify that the HR role is correctly recognized — if the HR role check is too strict, HR users cannot do their job (false positive blocking) |
-| **Preconditions** | OIDC mock configured with HR-role token |
-| **Input Data** | HR-role token; attempt to access all 6 HR-only operations |
-| **Test Steps** | 1. Inject HR-role OIDC token 2. Call each HR-only endpoint/service method 3. Verify each returns 200 OK or equivalent success 4. Verify data is returned or operation succeeds |
-| **Expected Outcome** | All 6 HR-only operations succeed |
-| **Pass/Fail Criteria** | PASS: all 6 succeed. FAIL: any HR-only operation rejected despite HR role |
-| **Interface Points** | COMP-007 (OIDC Middleware), all HR service interfaces |
-| **Automation** | xUnit with OIDC Mock Token Provider (HR role) |
+| **Adversarial Intent** | Verify that an Employee-role token can access employee-facing endpoints but is rejected from HR-only endpoints — a role escalation means employees can see all clockings or publish news |
+| **Preconditions** | OIDC mock configured; Employee-role token available |
+| **Input Data** | Employee token: `emp-token-001` |
+| **Test Steps** | 1. Call employee endpoint (clock-in) with Employee token 2. Verify 200 OK 3. Call HR endpoint (publish news) with Employee token 4. Verify 403 Forbidden |
+| **Expected Outcome** | Employee endpoints: 200 OK; HR endpoints: 403 Forbidden |
+| **Pass/Fail Criteria** | PASS: correct access control. FAIL: Employee can access HR endpoints |
+| **Interface Points** | COMP-007 (OIDC middleware) |
+| **Automation** | xUnit + OIDC Mock Token Provider |
 | **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — OIDC middleware (COMP-007) not configured in Program.cs. Issue: CR-006. |
 
-### TC-015: View Own Clocking History — Current Month Filter (UC-002)
+### TC-014: OIDC Authentication — HR Role Access
 
 | Field | Value |
 |---|---|
-| **UC Trace** | UC-002 (main flow) |
+| **UC Trace** | UC-003..UC-007, UC-010, SEC-002 |
+| **Test Level** | Integration / Security |
+| **Quality Dimension** | Security |
+| **Goal** | TG-006 |
+| **Adversarial Intent** | Verify that an HR-role token can access HR endpoints — a false rejection means HR cannot perform their duties |
+| **Preconditions** | OIDC mock configured; HR-role token available |
+| **Input Data** | HR token: `hr-token-001` |
+| **Test Steps** | 1. Call HR endpoint (publish news) with HR token 2. Verify 200 OK 3. Call HR endpoint (view all clockings) with HR token 4. Verify 200 OK |
+| **Expected Outcome** | All HR endpoints: 200 OK |
+| **Pass/Fail Criteria** | PASS: HR can access all HR endpoints. FAIL: HR rejected from any HR endpoint |
+| **Interface Points** | COMP-007 (OIDC middleware) |
+| **Automation** | xUnit + OIDC Mock Token Provider |
+| **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — OIDC middleware (COMP-007) not configured. Issue: CR-006. |
+
+### TC-015: View Own Clocking History — Current Month Filter
+
+| Field | Value |
+|---|---|
+| **UC Trace** | UC-002 |
 | **Test Level** | Integration |
 | **Quality Dimension** | Functionality |
-| **Goal** | Verify current-month filtering is correct |
-| **Adversarial Intent** | Demonstrate that the history view does NOT show clockings from previous months — a leak of old data or a missing current-month record both indicate a filter bug |
-| **Preconditions** | Employee authenticated; clockings table has entries for current month (3 records) and previous month (2 records) |
+| **Goal** | Data correctness |
+| **Adversarial Intent** | Verify that the clocking history view shows only the current month's records — showing previous months or hiding current month records is a data correctness bug |
+| **Preconditions** | Employee authenticated; TD-005 seeded (3 current-month + 2 previous-month records) |
 | **Input Data** | Employee id: `emp-001`; current date: `2026-08-28` |
-| **Test Steps** | 1. Call `IClockingService.GetHistory(emp-001)` 2. Verify exactly 3 records returned (current month only) 3. Verify all timestamps are within August 2026 4. Verify no records from July 2026 |
-| **Expected Outcome** | 3 records, all from current month |
-| **Pass/Fail Criteria** | PASS: 3 records, all current month. FAIL: wrong count, or records from other months present |
+| **Test Steps** | 1. Call `IClockingService.GetHistory(emp-001)` 2. Verify 3 records returned (current month only) 3. Verify no records from July 2026 |
+| **Expected Outcome** | 3 current-month records; 0 previous-month records |
+| **Pass/Fail Criteria** | PASS: 3 records, all August 2026. FAIL: wrong count or previous month records shown |
 | **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb with seeded data |
+| **Automation** | xUnit + InMemoryDb |
 | **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — IClockingService (INT-001) and IPersistence (INT-007) not on main. Issue: CR-006. |
 
-### TC-016: Export Monthly Clocking Report — CSV Format (UC-004)
+### TC-016: View All Employee Clockings — HR Authorization + LDAP Name Lookup
 
 | Field | Value |
 |---|---|
-| **UC Trace** | UC-004 (main flow) |
+| **UC Trace** | UC-003, SEC-002, CON-005 |
 | **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | Verify CSV export correctness |
-| **Adversarial Intent** | Demonstrate that the CSV export does NOT omit records or produce malformed CSV — a missing row or broken format makes the report useless for HR |
-| **Preconditions** | OIDC mock (HR role); clockings table has 10 records across 3 employees for August 2026 |
-| **Input Data** | Month: August 2026 |
-| **Test Steps** | 1. Call `IClockingService.ExportMonthlyReport(2026, 8)` 2. Verify response is CSV format 3. Parse CSV 4. Verify 10 data rows (excluding header) 5. Verify header contains: employee id, timestamp, direction 6. Verify each row has valid data |
-| **Expected Outcome** | Valid CSV with 10 rows + header; all fields populated |
-| **Pass/Fail Criteria** | PASS: 10 rows, valid CSV, correct header. FAIL: wrong row count, malformed CSV, or missing header |
-| **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb with seeded data; CSV parsing assertion |
-| **Environment** | .NET 10 test project |
-
-### TC-017: Read and Filter News — Category Filter (UC-008)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-008 (main flow, category filter) |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | Verify category filtering and date sorting |
-| **Adversarial Intent** | Demonstrate that the category filter does NOT show news from other categories — a leak means employees see IT announcements under an HR filter, undermining trust |
-| **Preconditions** | Employee authenticated; news_items table has: 2 `General`, 1 `HR`, 1 `IT`, 1 `Events` (all published); 1 `HR` unpublished |
-| **Input Data** | Filter: category=`HR` |
-| **Test Steps** | 1. Call `INewsService.GetPublishedNews(category=HR)` 2. Verify exactly 1 result returned (only published HR) 3. Verify unpublished HR item is NOT in results 4. Verify result is sorted by date (most recent first) |
-| **Expected Outcome** | 1 result, category=HR, published, sorted by date desc |
-| **Pass/Fail Criteria** | PASS: 1 result, correct category, published only. FAIL: wrong count, unpublished shown, or wrong category |
-| **Interface Points** | INT-002 (INewsService), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb with seeded news data |
-| **Environment** | .NET 10 test project |
-
-### TC-018: Manage Worker Category — Audit Trail (UC-010, NFR-004)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-010 (main flow, audit trail) |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | TG-005 (audit trail for category changes) |
-| **Adversarial Intent** | Demonstrate that a worker category change WITHOUT an audit record is detectable — a missing audit means HR could silently reassign categories without traceability |
-| **Preconditions** | OIDC mock (HR role, user=`hr-admin-001`); LDAP stub has employee with AD user id=`ad-user-001`; worker_categories table empty |
-| **Input Data** | AD user id: `ad-user-001`; category: `Administrative` |
-| **Test Steps** | 1. Call `IWorkerCategoryService.AssignCategory(ad-user-001, "Administrative", authorId=hr-admin-001)` 2. Verify worker_categories table has 1 record: (ad-user-001, Administrative) 3. Query audit_records for action=`CategoryChanged` 4. Verify audit record has: author=`hr-admin-001`, timestamp, action=`CategoryChanged`, entity reference to ad-user-001 |
-| **Expected Outcome** | Category link created; audit record created with correct fields |
-| **Pass/Fail Criteria** | PASS: category link + audit record both present. FAIL: audit record missing, wrong author, or wrong action |
-| **Interface Points** | INT-004 (IWorkerCategoryService), INT-005 (IAuditLogger), INT-006 (ILdapGateway), INT-007 (IPersistence) |
-| **Automation** | xUnit + InMemoryDb + LdapGatewayStub + AuditRecordChecker |
-| **Environment** | .NET 10 test project |
-
-### TC-019: Manage Worker Category — Employee Not Found in AD (UC-010 A1)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-010 (alternative flow A1) |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Goal** | Verify graceful handling of AD lookup failure |
-| **Adversarial Intent** | Demonstrate that searching for a non-existent AD user does NOT create a category link — a silent creation would mean categories assigned to phantom users |
-| **Preconditions** | OIDC mock (HR role); LDAP stub configured to return no results for `ad-user-999` |
-| **Input Data** | AD user id: `ad-user-999` (does not exist in AD) |
-| **Test Steps** | 1. Call `IWorkerCategoryService.LookupAdUser(ad-user-999)` 2. Verify "Employee not found in AD" response 3. Attempt to assign category 4. Verify assignment is rejected 5. Verify worker_categories table is still empty |
-| **Expected Outcome** | Lookup fails gracefully; no category link created |
-| **Pass/Fail Criteria** | PASS: error message, no record created. FAIL: record created, or unhandled exception |
-| **Interface Points** | INT-004 (IWorkerCategoryService), INT-006 (ILdapGateway) |
-| **Automation** | xUnit + LdapGatewayStub (configured for not-found) |
-| **Environment** | .NET 10 test project |
-
-### TC-020: View All Employee Clockings — HR Authorization + LDAP Name Lookup (UC-003)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-003 (main flow) |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality / Security |
-| **Goal** | Verify HR can view all clockings with employee names resolved from AD |
-| **Adversarial Intent** | Demonstrate that the all-clockings view does NOT expose clockings to non-HR users AND that employee names are correctly resolved from AD — a name mismatch means HR cannot identify who clocked when |
+| **Quality Dimension** | Functionality + Security |
+| **Goal** | TG-006 |
+| **Adversarial Intent** | Verify that the all-clockings view does NOT expose clockings to non-HR users AND that employee names are correctly resolved from AD — a name mismatch means HR cannot identify who clocked when |
 | **Preconditions** | OIDC mock (HR role); clockings table has 3 records for 2 employees; LDAP stub has both employee names |
 | **Input Data** | No filter (view all) |
 | **Test Steps** | 1. Call `IClockingService.GetAllClockings()` with HR-role token 2. Verify 3 records returned 3. Verify each record has employee name resolved from LDAP (not just employee id) 4. Repeat call with Employee-role token 5. Verify 403 Forbidden |
@@ -630,6 +610,83 @@ stop
 | **Interface Points** | INT-001 (IClockingService), INT-006 (ILdapGateway), COMP-007 (OIDC) |
 | **Automation** | xUnit + InMemoryDb + LdapGatewayStub + OIDC Mock Token Provider |
 | **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — IClockingService (INT-001), ILdapGateway (INT-006), OIDC (COMP-007) not on main. Issue: CR-006. |
+
+### TC-017: Export Monthly Clocking Report — CSV Format
+
+| Field | Value |
+|---|---|
+| **UC Trace** | UC-004, FR-004 |
+| **Test Level** | Integration |
+| **Quality Dimension** | Functionality |
+| **Goal** | Data completeness |
+| **Adversarial Intent** | Verify that the CSV export contains all clocking records for the specified month with correct headers and data — a missing or malformed CSV means HR cannot use it for reporting |
+| **Preconditions** | HR authenticated; TD-004 seeded (10 records, 3 employees, August 2026) |
+| **Input Data** | Month: `2026-08` |
+| **Test Steps** | 1. Call `IClockingService.ExportCsv(2026, 8)` 2. Verify CSV content has correct headers 3. Verify 10 data rows 4. Verify each row has: employee name, date, direction, timestamp |
+| **Expected Outcome** | Valid CSV with 10 rows + header |
+| **Pass/Fail Criteria** | PASS: valid CSV, 10 rows, correct headers. FAIL: missing rows, wrong format, or missing names |
+| **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence) |
+| **Automation** | xUnit + InMemoryDb |
+| **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — IClockingService (INT-001) and IPersistence (INT-007) not on main. Issue: CR-006. |
+
+### TC-018: Worker Category Audit Trail — Category Change Audited
+
+| Field | Value |
+|---|---|
+| **UC Trace** | UC-010, NFR-004, AUD-002 |
+| **Test Level** | Integration |
+| **Quality Dimension** | Auditability |
+| **Goal** | TG-005 |
+| **Adversarial Intent** | Verify that changing a worker's category creates an audit record — an unaudited category change means HR actions are untraceable |
+| **Preconditions** | HR authenticated; TD-010 seeded (1 worker_categories record: ad-user-001, Administrative) |
+| **Input Data** | AD user id: `ad-user-001`; New category: `Operational`; Actor: `hr-001` |
+| **Test Steps** | 1. Call `IWorkerCategoryService.Update(ad-user-001, Operational, hr-001)` 2. Verify worker_categories updated 3. Query audit_records 4. Verify audit record with action=`category_change`, author=`hr-001` |
+| **Expected Outcome** | Category updated + audit record created |
+| **Pass/Fail Criteria** | PASS: category updated + audit record. FAIL: no audit record or wrong author |
+| **Interface Points** | INT-004 (IWorkerCategoryService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
+| **Automation** | xUnit + InMemoryDb + AuditRecordChecker |
+| **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — IWorkerCategoryService (INT-004), IAuditLogger (INT-005), IPersistence (INT-007) not on main. Issue: CR-006. |
+
+### TC-019: Worker Category — AD User ID Lookup (UC-010 A1)
+
+| Field | Value |
+|---|---|
+| **UC Trace** | UC-010 (A1 — AD user not found) |
+| **Test Level** | Integration |
+| **Quality Dimension** | Functionality |
+| **Goal** | Graceful error handling |
+| **Adversarial Intent** | Verify that looking up a non-existent AD user id returns a graceful not-found response — a crash or unhandled exception means HR cannot manage categories safely |
+| **Preconditions** | HR authenticated; LdapGatewayStub configured |
+| **Input Data** | AD user id: `nonexistent-001` |
+| **Test Steps** | 1. Call `IWorkerCategoryService.Lookup(nonexistent-001)` 2. Verify graceful not-found response (not exception) |
+| **Expected Outcome** | Not-found response returned gracefully |
+| **Pass/Fail Criteria** | PASS: graceful not-found. FAIL: unhandled exception or crash |
+| **Interface Points** | INT-004 (IWorkerCategoryService), INT-006 (ILdapGateway) |
+| **Automation** | xUnit + LdapGatewayStub |
+| **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — IWorkerCategoryService (INT-004) and ILdapGateway (INT-006) not on main. Issue: CR-006. |
+
+### TC-020: Directory Search — Security + LDAP Integration
+
+| Field | Value |
+|---|---|
+| **UC Trace** | UC-003, SEC-002, CON-005 |
+| **Test Level** | Integration / Security |
+| **Quality Dimension** | Security + Functionality |
+| **Goal** | TG-006 |
+| **Adversarial Intent** | Verify that directory search requires authentication and that LDAP results are correctly returned — an unauthenticated search means corporate data is exposed without login |
+| **Preconditions** | OIDC mock configured; LdapGatewayStub with 3 entries |
+| **Input Data** | Search query: `Gómez`; unauthenticated request |
+| **Test Steps** | 1. Call directory search with Employee token 2. Verify results returned 3. Call directory search without token 4. Verify 401 Unauthorized |
+| **Expected Outcome** | Authenticated: results. Unauthenticated: 401 |
+| **Pass/Fail Criteria** | PASS: auth required, results correct. FAIL: unauthenticated access or wrong results |
+| **Interface Points** | INT-001 (IClockingService), INT-006 (ILdapGateway), COMP-007 (OIDC) |
+| **Automation** | xUnit + LdapGatewayStub + OIDC Mock Token Provider |
+| **Environment** | .NET 10 test project |
+| **E1 Verdict** | BLOCKED — IClockingService (INT-001), ILdapGateway (INT-006), OIDC (COMP-007) not on main. Issue: CR-006. |
 
 ## Test Data
 
@@ -701,3 +758,5 @@ The LDAP stub (LdapGatewayStub implementing INT-006/ILdapGateway) must be config
 | InMemoryDb | INT-007, COMP-006 | Implements | TC-001..TC-005, TC-008..TC-010, TC-015..TC-019 |
 | Clocking Client Test Harness | AC-005, clocking-retry.js | Implements | TC-003, TC-004 |
 | AuditRecordChecker | NFR-004, AUD-001..AUD-003 | Verifies | TC-008, TC-009, TC-010, TC-018 |
+| E1 Findings | Review Record (M1, M2), PR #4 | Derives | CR-006 |
+| E1 Smoke Test | CI build (main) | Tests | All TCs (BLOCKED) |
