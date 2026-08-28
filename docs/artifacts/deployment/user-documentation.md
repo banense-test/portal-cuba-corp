@@ -711,22 +711,25 @@ A: The network was down for more than 5 minutes when you tried to clock in or ou
 | Feature requests or bugs | HR Director (STK-001) or Software Engineer (STK-002) |
 
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | User Documentation | All UCs, SAD Deployment View, Design Model | Derives | End users (STK-004), HR (STK-001), Infrastructure (STK-003) |
-| Clock In/Out task (UC-001) | FR-001, AC-001, AC-005, NFR-002 | Refines | Activity diagram: UC-001 workflow |
+| Clock In/Out task (UC-001) | FR-001, AC-001, AC-005, NFR-002, CR-011 | Refines | Activity diagram: UC-001 workflow |
 | View My Clockings task (UC-002) | FR-002 | Refines | Procedural steps |
 | View All Clockings task (UC-003) | FR-003 | Refines | Procedural steps |
-| Export CSV task (UC-004) | FR-004 | Refines | Activity diagram: UC-004 workflow |
-| Publish News task (UC-005) | FR-005, NFR-004, AC-002 | Refines | Activity diagram: UC-005 workflow |
-| Edit News task (UC-006) | FR-006, NFR-004 | Refines | Procedural steps |
+| Export CSV task (UC-004) | FR-004, C2-MIN-4, CR-012 | Refines | Activity diagram: UC-004 workflow (C2 CSV format fix) |
+| Publish News task (UC-005) | FR-005, NFR-004, AC-002, CR-010 | Refines | Activity diagram: UC-005 workflow |
+| Edit News task (UC-006) | FR-006, NFR-004, CR-010 | Refines | Procedural steps |
 | Unpublish News task (UC-007) | FR-007, CON-013, NFR-004 | Refines | Activity diagram: UC-007 workflow, State machine: News lifecycle |
-| Read and Filter News task (UC-008) | FR-008 | Refines | Activity diagram: UC-008 workflow |
-| Search Directory task (UC-009) | FR-009, CON-005, CON-012, AC-003, R001 | Refines | Activity diagram: UC-009 workflow |
+| Read and Filter News task (UC-008) | FR-008, CR-010 | Refines | Activity diagram: UC-008 workflow |
+| Search Directory task (UC-009) | FR-009, CON-005, CON-012, AC-003, R001, CR-015 | Refines | Activity diagram: UC-009 workflow |
 | Manage Worker Category task (UC-010) | FR-010, CON-009, NFR-004 | Refines | Activity diagram: UC-010 workflow |
 | Installation Guide | SAD Deployment View, CON-001..CON-008 | Derives | Infrastructure team (STK-003) |
 | Configuration Reference | SAD Logical View, SAD Implementation View | Derives | Operations procedures |
 | Troubleshooting | R001, AC-005, NFR-001..NFR-003 | Derives | Support procedures |
 | FAQ | AC-001..AC-005, CON-007, CON-008, CON-013 | Derives | End-user support |
 | Terminology (Styleguide) | All FRs, all UCs | Refines | All documentation sections |
+| C2-MIN-4 CSV format fix | C2 Review Record, FR-004, CR-012 | Derives | UC-004 CSV export documentation |
+| CR-010 IsFeatured | C1 Review Record MAJOR-1, FR-008 | Derives | UC-005 Publish News (featured checkbox), UC-008 Read and Filter News (featured banner) |
+| CR-011 Idempotency | AC-005, C1 Review Record MINOR-3 | Derives | UC-001 Clock In/Out (offline retry documentation) |
+| CR-015 Directory office filter | C1 Review Record MINOR-1, FR-009 | Derives | UC-009 Search Directory (office filter step) |
