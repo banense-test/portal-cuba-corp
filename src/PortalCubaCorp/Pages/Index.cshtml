@@ -1,5 +1,5 @@
 @page
-@model IndexModel
+@model PortalCubaCorp.Pages.IndexModel
 @{
     ViewData["Title"] = "Home";
 }
@@ -44,7 +44,7 @@
                 <div class="featured-banner">
                     <div class="featured-label">★ Featured</div>
                     <h3>@featured.Title</h3>
-                    <p style="margin:4px 0 0 0;font-size:13px;opacity:0.9;">@featured.Body.Substring(0, Math.Min(100, featured.Body.Length))...</p>
+                    <p style="margin:4px 0 0 0;font-size:13px;opacity:0.9;">@(featured.Body.Length > 100 ? featured.Body.Substring(0, 100) + "..." : featured.Body)</p>
                 </div>
             }
         }

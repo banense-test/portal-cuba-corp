@@ -16,7 +16,7 @@ public class ManageModel : PageModel
         _workerCategoryService = workerCategoryService;
     }
 
-    public List<WorkerCategory> Categories { get; set; } = new();
+    public List<global::PortalCubaCorp.Domain.WorkerCategory> Categories { get; set; } = new();
 
     public void OnGet()
     {
