@@ -1420,9 +1420,109 @@ All subsystem boundaries are defined by interfaces. No concrete class is referen
 | BeginTransaction | `IDbTransaction BeginTransaction()` | — | Begins a new DB transaction |
 | CommitTransaction | `void CommitTransaction()` | Transaction is active | Commits the current transaction |
 ## Persistent Data Classes
+EF Core entity classes map to PostgreSQL tables. The PortalDbContext configures all mappings, constraints, and indexes in OnModelCreating.
 
-> Placeholder — Designer owns this section. Will be populated with EF Core entity classes and database schema.
+### Entity-to-Table Mapping
 
+| Design Class | Table | Key Columns | Constraints |
+|---|---|---|---|
+| ClockingRecord (CLS-016) | clockings | Id (PK), IdempotencyKey (UNIQUE) | Unique index on idempotency_key prevents duplicate clockings (AC-005) |
+| NewsItem (CLS-017) | news_items | Id (PK) | Status column: Published/Unpublished; no DELETE operation (CON-013) |
+| WorkerCategory (CLS-018) | worker_categories | AdUserId (PK) | Two columns only: ad_user_id + category (CON-009) |
+| AuditRecord (CLS-019) | audit_records | Id (PK) | Append-only: no UPDATE, no DELETE (NFR-004) |
+
+### Schema Diagram
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Database Schema (PostgreSQL)
+
+skinparam classAttributeIconSize 0
+
+database "PostgreSQL" {
+  entity "clockings" as T1 {
+    * id : uuid (PK)
+    --
+    employee_id : varchar(255)
+    timestamp : timestamptz
+    clock_type : varchar(10)
+    idempotency_key : varchar(255) (UNIQUE)
+    created_at : timestamptz
+  }
+
+  entity "news_items" as T2 {
+    * id : uuid (PK)
+    --
+    title : varchar(500)
+    body : text
+    category : varchar(20)
+    status : varchar(20)
+    created_by : varchar(255)
+    created_at : timestamptz
+    updated_at : timestamptz (nullable)
+    is_featured : boolean
+  }
+
+  entity "worker_categories" as T3 {
+    * ad_user_id : varchar(255) (PK)
+    --
+    category : varchar(100)
+    updated_by : varchar(255)
+    updated_at : timestamptz
+  }
+
+  entity "audit_records" as T4 {
+    * id : uuid (PK)
+    --
+    entity_type : varchar(50)
+    entity_id : uuid
+    action : varchar(20)
+    author : varchar(255)
+    timestamp : timestamptz
+  }
+}
+
+note bottom of T1
+  UNIQUE INDEX idx_clockings_idempotency
+  ON idempotency_key — prevents
+  duplicate inserts under concurrent
+  offline retries (AC-005).
+end note
+
+note bottom of T2
+  No DELETE operation (CON-013).
+  Unpublish sets status='unpublished'.
+  Record preserved for audit trail.
+end note
+
+note bottom of T3
+  Two data columns only (CON-009):
+  ad_user_id + category.
+  No employee data copied from AD.
+end note
+
+note bottom of T4
+  Append-only table (NFR-004).
+  No UPDATE, no DELETE.
+  Author from OIDC token.
+  Timestamp from server clock.
+end note
+
+@enduml
+```
+
+### EF Core Configuration (PortalDbContext.OnModelCreating)
+
+| Entity | Configuration | Code |
+|---|---|---|
+| ClockingRecord | Table name | `modelBuilder.Entity<ClockingRecord>().ToTable("clockings")` |
+| ClockingRecord | Unique index | `modelBuilder.Entity<ClockingRecord>().HasIndex(c => c.IdempotencyKey).IsUnique()` |
+| NewsItem | Table name | `modelBuilder.Entity<NewsItem>().ToTable("news_items")` |
+| NewsItem | Status check | `modelBuilder.Entity<NewsItem>().Property(n => n.Status).HasConversion<string>()` |
+| WorkerCategory | Table name | `modelBuilder.Entity<WorkerCategory>().ToTable("worker_categories")` |
+| WorkerCategory | PK | `modelBuilder.Entity<WorkerCategory>().HasKey(w => w.AdUserId)` |
+| AuditRecord | Table name | `modelBuilder.Entity<AuditRecord>().ToTable("audit_records")` |
+| AuditRecord | Append-only | No update/delete APIs exposed on IPersistence for audit records |
 ## Boundary Classes and Navigation Map
 
 > **Contributed by:** User-Interface Designer (Analysis & Design Discipline)
