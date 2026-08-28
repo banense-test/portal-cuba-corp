@@ -1,15 +1,14 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Elaboration |
 | Status | Draft |
 | Milestone Target | End-of-Elaboration (LCA) |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-28 |
 | Prior Phase | Inception (LCO achieved, stakeholder sanction GRANTED) |
-| Evolution | Inception DC evolved with Elaboration tailoring deltas |
-
+| Evolution | Elaboration Iter 1 DC evolved with Iter 2 process improvements and F1 finding resolution |
+| Findings Addressed | F1 (Minor) — TD-NNN prefix non-standard; resolved by declaring TC-NNN as canonical test case ID prefix |
 ## Tailoring Overview
 
 This Development Case specifies the project-specific **deltas** over the IARI DC baseline for the Portal Cuba Corp Employee Portal project. The baseline defines 25 active roles, 16 CORE artifacts, 6 OPTIONAL artifacts, and a canonical discipline-intensity matrix. This document declares ONLY the project-specific deviations — it does not restate the baseline.
