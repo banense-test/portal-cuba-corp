@@ -1,11 +1,13 @@
 ## Document Control
 | Field | Value |
 |---|---|
-| Phase | Elaboration |
-| Status | Draft |
-| Milestone Target | End of Elaboration |
-| Iteration | 2 (Cycle 1) |
+| Phase | Construction |
+| Status | Approved (Preserved) |
+| Milestone Target | End of Construction |
+| Iteration | 1 (Cycle 1) |
 | Date | 2026-08-28 |
+| Prior Phase | Elaboration (LCA achieved — 0 Critical, 0 Major open; stakeholder sanction GRANTED) |
+| Evolution | Construction Iter 1: Requirements baseline preserved — no approved CR affects scope or NFRs. All Elaboration implementation decisions (offline retry with idempotency key in UC-001, audit trail in UC-005/006/007/010, AD read-only in UC-009/010) already reflected in Elaboration baseline. Document Control updated to Construction phase. |
 ## Use-Case Diagram
 
 ```plantuml
