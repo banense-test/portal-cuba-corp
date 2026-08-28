@@ -305,7 +305,6 @@ end note
 ```
 
 ## Logical View
-
 The architecture is a **layered monolith** with three layers. Subsystem decomposition follows the "decompose by change" principle — each subsystem encapsulates ONE area of volatility identified in the Use-Case Model.
 
 ### Subsystem Decomposition
@@ -323,135 +322,50 @@ The architecture is a **layered monolith** with three layers. Subsystem decompos
 
 ### Interface Specifications
 
-| Interface | Method | Parameters | Returns | Description |
+> **Full contracts** (preconditions, postconditions, all operations) are defined in the **Design Model → Interface Contracts** section (INT-001 through INT-007). The table below is a summary; the Design Model is the authoritative specification. The implementation MUST conform to the Design Model contracts — not the reverse.
+
+| Interface | ID | Key Methods | Returns | Description |
 |---|---|---|---|---|
-| IClockingService | RecordClocking | employeeId: string, timestamp: DateTime, type: ClockType, idempotencyKey: string | ClockingResult | Records a clock in/out with idempotency check |
-| IClockingService | GetHistory | employeeId: string, month: DateRange | List\<ClockingRecord\> | Returns clocking history for an employee |
-| IClockingService | GetAllClockings | month: DateRange | List\<ClockingRecord\> | Returns all employees' clockings (HR only) |
-| IClockingService | ExportCsv | month: DateRange | Stream | Returns CSV stream of monthly clockings |
-| INewsService | Publish | title: string, body: string, category: NewsCategory, authorId: string | NewsItem | Publishes a news item with audit |
-| INewsService | Edit | id: int, title: string, body: string, category: NewsCategory, authorId: string | NewsItem | Edits a published news item with audit |
-| INewsService | Unpublish | id: int, authorId: string | NewsItem | Unpublishes (hides) a news item with audit |
-| INewsService | ListPublished | categoryFilter: NewsCategory? | List\<NewsItem\> | Lists published news, optionally filtered |
-| INewsService | GetById | id: int | NewsItem | Gets a single news item by ID |
-| IDirectoryService | Search | query: string | List\<DirectoryEntry\> | Searches AD by name, department, or office |
-| IDirectoryService | GetByAdUserId | adUserId: string | DirectoryEntry | Gets a single employee by AD user ID |
-| IWorkerCategoryService | AssignCategory | adUserId: string, category: string, authorId: string | void | Assigns a worker category with audit |
-| IWorkerCategoryService | GetCategory | adUserId: string | string | Gets the category for an AD user ID |
-| IWorkerCategoryService | ListAll | — | List\<WorkerCategory\> | Lists all worker category mappings |
-| ILdapGateway | SearchEntries | filter: string | List\<LdapEntry\> | Searches AD entries matching the LDAP filter |
-| ILdapGateway | GetEntryByDn | dn: string | LdapEntry | Gets a single AD entry by distinguished name |
-| IPersistence | Save | entity: T | void | Persists an entity |
-| IPersistence | Query\<T\> | predicate: Expression | List\<T\> | Queries entities matching the predicate |
-| IPersistence | BeginTransaction | — | ITransaction | Starts a DB transaction |
-| IAuditLogger | Log | entityType: string, entityId: int, action: string, author: string, timestamp: DateTime | void | Records an audit entry (append-only) |
+| IClockingService | INT-001 | RecordClocking(employeeId, timestamp, type, idempotencyKey) | ClockingResult | Records a clock in/out with idempotency check |
+| IClockingService | INT-001 | GetCurrentStatus(employeeId) | ClockStatus | Returns current clock-in/out status |
+| IClockingService | INT-001 | GetHistory(employeeId, month) | List\<ClockingRecord\> | Returns clocking history for an employee |
+| IClockingService | INT-001 | GetAllClockings(month) | List\<ClockingRecord\> | Returns all employees' clockings (HR only) |
+| IClockingService | INT-001 | ExportCsv(month) | Stream | Returns CSV stream of monthly clocking |
+| INewsService | INT-002 | Publish(title, body, category, authorId) | NewsItem | Publishes news with audit trail |
+| INewsService | INT-002 | Edit(id, title, body, category, authorId) | NewsItem | Edits published news with audit trail |
+| INewsService | INT-002 | Unpublish(id, authorId) | NewsItem | Unpublishes news (never deletes — CON-013) |
+| INewsService | INT-002 | GetPublishedNews(category?) | List\<NewsItem\> | Returns published news, optionally filtered |
+| INewsService | INT-002 | GetFeaturedNews() | List\<NewsItem\> | Returns featured (banner) news |
+| INewsService | INT-002 | ListAll() | List\<NewsItem\> | Returns all news items (HR only) |
+| IDirectoryService | INT-003 | Search(query) | List\<DirectoryEntry\> | Searches AD via LDAP; missing attributes → "N/A" (R001) |
+| IWorkerCategoryService | INT-004 | AssignCategory(adUserId, category, authorId) | WorkerCategory | Upserts AD user id → category with audit |
+| IWorkerCategoryService | INT-004 | ListCategories() | List\<WorkerCategory\> | Returns all worker categories |
+| IWorkerCategoryService | INT-004 | LookupAdUser(query) | List\<DirectoryEntry\> | Searches AD for user lookup (HR only) |
+| IAuditLogger | INT-005 | **Log(entityType, entityId, action, author, timestamp)** | void | Appends audit record within active DB transaction (NFR-004) |
+| ILdapGateway | INT-006 | SearchEntries(filter) | List\<LdapSearchResult\> | Raw LDAP search, read-only (CON-010) |
+| ILdapGateway | INT-006 | GetEntryByUserId(adUserId) | LdapSearchResult? | Returns LDAP entry for a specific user |
+| ILdapGateway | INT-006 | ResolveNames(adUserIds) | Dictionary\<string, string\> | Maps AD user ids to display names |
+| IPersistence | INT-007 | InsertClocking(record) | ClockingRecord | Inserts clocking record (unique idempotency key) |
+| IPersistence | INT-007 | FindByImpotencyKey(key) | ClockingRecord? | Finds existing clocking by idempotency key |
+| IPersistence | INT-007 | SaveNewsItem(item) / UpdateNewsItem(...) / UpdateNewsStatus(...) | NewsItem | News item CRUD (no hard delete — CON-013) |
+| IPersistence | INT-007 | GetPublishedNews(category?) / GetFeaturedNews() / GetAllNewsItems() | List\<NewsItem\> | News query methods |
+| IPersistence | INT-007 | UpsertWorkerCategory(adUserId, category) | WorkerCategory | Upserts worker category (2 columns only — CON-009) |
+| IPersistence | INT-007 | InsertAuditRecord(record) | void | Appends audit record (never updated or deleted) |
+| IPersistence | INT-007 | **BeginTransaction()** | IDbTransaction | Begins a new DB transaction |
+| IPersistence | INT-007 | **CommitTransaction()** | void | Commits the current transaction |
 
-### Component Diagram
-
-```plantuml
-@startuml
-title Portal Cuba Corp — Logical View (Elaboration Baseline)
-
-skinparam componentStyle rectangle
-skinparam packageStyle rectangle
-
-package "Presentation Layer — Razor Pages (CON-002)" as PL {
-  component "Clocking UI +\nOffline Retry Script (AC-005)" as CLK_UI
-  component "News UI\n(Filter, Featured, Read)" as NEWS_UI
-  component "Directory UI\n(Search, Results)" as DIR_UI
-  component "HR Admin UI\n(News Mgmt, Clockings,\nCategories, Export)" as HR_UI
-}
-
-package "Application Layer" as AL {
-  component "Clocking Service\n(COMP-002)" as CLK_SVC
-  component "News Service\n(COMP-003)" as NEWS_SVC
-  component "Directory Service\n(COMP-001)" as DIR_SVC
-  component "Worker Category Service\n(COMP-004)" as WC_SVC
-}
-
-package "Infrastructure Layer" as IL {
-  component "LDAP Gateway\n(AD read-only, CON-005)" as LDAP_GW
-  component "Persistence Gateway\n(EF Core + PostgreSQL, CON-003)" as PERSIST_GW
-  component "OIDC Auth Middleware\n(Keycloak, CON-004)" as OIDC_MW
-  component "Audit Interceptor\n(NFR-004)" as AUDIT_INT
-}
-
-interface "IClockingService" as IClock
-interface "INewsService" as INews
-interface "IDirectoryService" as IDir
-interface "IWorkerCategoryService" as IWC
-interface "ILdapGateway" as ILdap
-interface "IPersistence" as IPersist
-interface "IAuditLogger" as IAudit
-
-CLK_SVC -- IClock
-NEWS_SVC -- INews
-DIR_SVC -- IDir
-WC_SVC -- IWC
-LDAP_GW -- ILdap
-PERSIST_GW -- IPersist
-AUDIT_INT -- IAudit
-
-CLK_UI ..> IClock
-NEWS_UI ..> INews
-DIR_UI ..> IDir
-HR_UI ..> IClock
-HR_UI ..> INews
-HR_UI ..> IWC
-
-CLK_SVC ..> IPersist
-CLK_SVC ..> IAudit
-NEWS_SVC ..> IPersist
-NEWS_SVC ..> IAudit
-DIR_SVC ..> ILdap
-WC_SVC ..> IPersist
-WC_SVC ..> ILdap
-WC_SVC ..> IAudit
-
-OIDC_MW ..> CLK_UI : auth context
-OIDC_MW ..> NEWS_UI : auth context
-OIDC_MW ..> DIR_UI : auth context
-OIDC_MW ..> HR_UI : auth + role check
-
-note right of DIR_SVC
-  **Volatility: HIGH** (R001)
-  Encapsulates LDAP attribute
-  mapping for 3 offices.
-  If AD schema varies, only
-  this subsystem changes.
-end note
-
-note right of CLK_SVC
-  **Volatility: MEDIUM** (AC-005)
-  Idempotency key + client
-  timestamp acceptance.
-  Offline retry script in
-  Presentation calls this API.
-end note
-
-note left of OIDC_MW
-  **Volatility: LOW-MED** (R003)
-  External dependency on
-  Keycloak — already running.
-  Portal is OIDC client only.
-end note
-
-@enduml
-```
+**Interface consistency note (M1/M2 findings):** The SAD interface specifications are verified consistent with the Design Model Interface Contracts (INT-001 through INT-007). Finding M1 (IAuditLogger `LogAudit()` vs `Log()`) and finding M2 (IPersistence missing `BeginTransaction()`/`CommitTransaction()`) are implementation divergences — the code must be corrected to match the Design Model contracts, not the reverse.
 
 ### Design Mechanisms
 
-Design mechanisms are the concrete realization of the analysis mechanisms identified in Inception. Each mechanism specifies the CAPABILITY it provides, the PROPERTIES it must hold, and the concrete solution shape.
-
-| Analysis Mechanism | Design Mechanism | Capability | Properties | Concrete Solution | Components |
+| Mechanism | Analysis Mechanism (Inception) | Design Mechanism (Elaboration) | Properties | Implementation | Component |
 |---|---|---|---|---|---|
-| Persistence | EF Core + PostgreSQL | Store and retrieve portal-owned data | ACID transactions; CRUD for entities; CSV export query support; never stores employee data (CON-009); unique index on idempotency_key | DbContext with DbSet\<T\> per entity; migrations via EF Core; IPersistence interface wraps DbContext | COMP-006 |
-| Directory Access | LDAP Gateway + Attribute Mapping | Read corporate attributes from AD on demand | Read-only LDAP; never writes to AD (CON-010); no local copy (CON-009); attribute mapping with fallback for missing fields (R001) | Novell.Directory.Ldap.NETStandard client; ILdapGateway interface; DirectoryService maps LdapEntry → DirectoryEntry with "N/A" fallback | COMP-005, COMP-001 |
-| Authentication & Authorization | OIDC Middleware | Verify employee identity and determine HR role | OIDC client only; role claims from token; no Keycloak management (CON-004) | Microsoft.AspNetCore.Authentication.OpenIdConnect; role check via [Authorize(Roles="HR")] | COMP-007 |
-| Audit Trail | Audit Interceptor | Record who + when for news ops and category changes | Append-only; never hard-delete news (CON-013); author from OIDC token; timestamp from server | IAuditLogger interface; AuditInterceptor called within same DB transaction as business operation; separate audit_records table | COMP-008 |
-| Offline Clocking Retry | localStorage + POST Retry | Allow clocking POST to survive 5-min network drop | Client-side localStorage; retry POST for up to 5 min; idempotency key prevents duplicates; server accepts client timestamp; only clocking — not directory/news | clocking-retry.js on Razor page; IClockingService accepts idempotencyKey parameter; PostgreSQL unique index on clockings.idempotency_key | COMP-002, Clocking UI |
-| CSV Export | Streaming Response | Generate monthly clocking report in CSV | Streaming response; HR-only access; date-range filtered | IClockingService.ExportCsv returns Stream; Razor Page writes to Response.Body | COMP-002, COMP-006 |
-
+| Persistence | Information Storage & Retrieval | EF Core + PostgreSQL via IPersistence interface | ACID transactions; unique index on idempotency_key; append-only audit_records; 2-column worker_categories (CON-009) | DbContext in PortalCubaCorp.Infrastructure; Npgsql EF Core provider 10.0.3 | COMP-006 |
+| LDAP Directory Access | External System Integration | Novell.Directory.Ldap via ILdapGateway interface | Read-only (CON-010); connection pooling; attribute mapping with fallback "N/A" for missing fields (R001); no private data (CON-012) | LdapGateway in PortalCubaCorp.Infrastructure; Novell.Directory.Ldap.NETStandard 4.0.0 | COMP-005 |
+| Authentication & Authorization | Security & Access Control | ASP.NET Core OIDC middleware via Keycloak | Token validation; role claims from OIDC token; [Authorize(Roles="HR")] for HR-only endpoints; no local user store | AddOpenIdConnect() in Program.cs; Microsoft.AspNetCore.Authentication.OpenIdConnect 10.0.11 | COMP-007 |
+| Audit Trail | Audit Logging | AuditInterceptor via IAuditLogger interface | Append-only; never hard-delete news (CON-013); author from OIDC token; timestamp from server; audit within same DB transaction as business operation | AuditInterceptor in PortalCubaCorp.Infrastructure; IAuditLogger.Log() called within IPersistence.BeginTransaction()/CommitTransaction() boundary | COMP-008 |
+| Offline Clocking Retry | Fault Tolerance | localStorage + POST Retry via client-side JS | Client-side localStorage; retry POST for up to 5 min; idempotency key prevents duplicates; server accepts client timestamp; only clocking — not directory/news | clocking-retry.js on Razor page; IClockingService accepts idempotencyKey parameter; PostgreSQL unique index on clockings.idempotency_key | COMP-002, Clocking UI |
+| CSV Export | Information Distribution | Streaming Response via IClockingService.ExportCsv | Streaming response; HR-only access; date-range filtered | IClockingService.ExportCsv returns Stream; Razor Page writes to Response.Body | COMP-002, COMP-006 |
 ## Process View
 
 The system is a single-server ASP.NET Core application for 200 users with extended working hours (NFR-003: 7:00–19:00 Mon–Fri). Concurrency is low — at most ~200 concurrent sessions with simple request/response patterns. The ASP.NET Core thread pool handles concurrency natively; no custom threading or message queues are needed.
