@@ -1,0 +1,31 @@
+@page
+@model PortalCubaCorp.Pages.News.EditModel
+@{
+    ViewData["Title"] = "Edit News";
+}
+
+<div class="card" style="max-width:800px;margin:0 auto;">
+    <h2 class="card-title">Edit News</h2>
+    <form method="post">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <div class="form-group">
+            <label for="title">Title</label>
+            <input class="form-control" id="title" name="title" value="@Model.Title" required maxlength="500" />
+        </div>
+        <div class="form-group">
+            <label for="body">Body</label>
+            <textarea class="form-control" id="body" name="body" required>@Model.Body</textarea>
+        </div>
+        <div class="form-group">
+            <label for="category">Category</label>
+            <select class="form-control" id="category" name="category">
+                <option value="General" selected="@(Model.Category == NewsCategory.General)">General</option>
+                <option value="HR" selected="@(Model.Category == NewsCategory.HR)">HR</option>
+                <option value="IT" selected="@(Model.Category == NewsCategory.IT)">IT</option>
+                <option value="Events" selected="@(Model.Category == NewsCategory.Events)">Events</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="/News/Management" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>

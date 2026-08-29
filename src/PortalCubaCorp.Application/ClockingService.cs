@@ -77,8 +77,8 @@ public class ClockingService : IClockingService
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream, Encoding.UTF8, leaveOpen: true);
 
-        // Header row
-        writer.WriteLine("Employee,Date,TimeIn,TimeOut,Direction");
+        // C2-MIN-4 fix: header matches data columns — Employee, Date, Time, Direction
+        writer.WriteLine("Employee,Date,Time,Direction");
 
         // Group by employee and pair in/out records
         var grouped = clockings.GroupBy(c => c.EmployeeId).OrderBy(g => g.Key);
@@ -91,7 +91,7 @@ public class ClockingService : IClockingService
                 var date = record.Timestamp.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                 var time = record.Timestamp.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
                 var direction = record.Type == ClockType.In ? "IN" : "OUT";
-                writer.WriteLine($"{record.EmployeeId},{date},{time},,{direction}");
+                writer.WriteLine($"{record.EmployeeId},{date},{time},{direction}");
             }
         }
 

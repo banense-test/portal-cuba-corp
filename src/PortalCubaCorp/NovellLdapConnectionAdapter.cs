@@ -1,3 +1,4 @@
+using PortalCubaCorp.Domain;
 using PortalCubaCorp.Infrastructure;
 
 namespace PortalCubaCorp;
@@ -6,28 +7,35 @@ namespace PortalCubaCorp;
 /// Adapter that wraps the Novell.Directory.Ldap library into the ILdapConnection abstraction.
 /// This is the real LDAP connection implementation for production use.
 /// The Novell.Directory.Ldap.NETStandard package API is used here.
+///
+/// [DEFERRED — requires integration testing with real AD server (R001)]
+/// All methods throw NotImplementedException until integration testing with
+/// the real Active Directory server provided by STK-003 (Infrastructure team).
+/// The LdapGateway is fully unit-tested via MockLdapGateway (ILdapGateway mock);
+/// this adapter is the production implementation that will be validated during
+/// integration testing when the AD server is available.
 /// </summary>
 public class NovellLdapConnectionAdapter : ILdapConnection
 {
+    // [DEFERRED — requires integration testing with real AD server (R001)]
+
     public void Connect(string host, int port)
     {
-        // Real implementation will use Novell.Directory.Ldap.LdapConnection.Connect()
-        // Deferred to integration testing with real AD server
-        throw new NotImplementedException("LDAP connection requires real AD server configuration.");
+        throw new NotImplementedException("LDAP connection requires real AD server (R001 — deferred to integration testing)");
     }
 
     public void Bind(string bindDn, string password)
     {
-        throw new NotImplementedException("LDAP connection requires real AD server configuration.");
+        throw new NotImplementedException("LDAP bind requires real AD server (R001 — deferred to integration testing)");
     }
 
     public List<LdapRawEntry> Search(string searchBase, string filter, string[] attributes)
     {
-        throw new NotImplementedException("LDAP connection requires real AD server configuration.");
+        throw new NotImplementedException("LDAP search requires real AD server (R001 — deferred to integration testing)");
     }
 
     public void Disconnect()
     {
-        throw new NotImplementedException("LDAP connection requires real AD server configuration.");
+        throw new NotImplementedException("LDAP disconnect requires real AD server (R001 — deferred to integration testing)");
     }
 }

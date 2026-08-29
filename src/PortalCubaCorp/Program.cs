@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.EntityFrameworkCore;
-using PortalCubaCorp;
 using PortalCubaCorp.Application;
 using PortalCubaCorp.Infrastructure;
 
@@ -24,7 +23,7 @@ builder.Services.AddSingleton<ILdapGateway>(sp =>
         BindDn = ldapSection["BindDn"] ?? string.Empty,
         BindPassword = ldapSection["BindPassword"] ?? string.Empty,
         SearchBase = ldapSection["SearchBase"] ?? string.Empty
-    }, new NovellLdapConnectionAdapter());
+    }, new PortalCubaCorp.NovellLdapConnectionAdapter());
 });
 
 // --- Application service registrations ---

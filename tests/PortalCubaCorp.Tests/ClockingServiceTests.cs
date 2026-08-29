@@ -176,7 +176,8 @@ public class ClockingServiceTests
         var reader = new StreamReader(stream);
         var content = reader.ReadToEnd();
 
-        Assert.Contains("Employee,Date,TimeIn,TimeOut,Direction", content);
+        // C2-MIN-4 fix: header is now Employee,Date,Time,Direction
+        Assert.Contains("Employee,Date,Time,Direction", content);
         Assert.Contains("emp1", content);
         Assert.Contains("IN", content);
         Assert.Contains("OUT", content);
@@ -194,6 +195,7 @@ public class ClockingServiceTests
 
         var lines = content.Trim().Split('\n');
         Assert.Single(lines);
-        Assert.Contains("Employee,Date,TimeIn,TimeOut,Direction", lines[0]);
+        // C2-MIN-4 fix: header is now Employee,Date,Time,Direction
+        Assert.Contains("Employee,Date,Time,Direction", lines[0]);
     }
 }
