@@ -843,11 +843,11 @@ end note
 ### Designer Class Diagrams — Application Services (Portal.Services)
 
 > **Contributed by:** Designer (Analysis & Design Discipline)
-> **Iteration:** Construction C2 — method signatures aligned with implementation
+> **Iteration:** Construction C3 — DM-F1 resolved: INT-003 Search() includes optional office parameter
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Portal.Services Package (Construction C2 — Aligned with Implementation)
+title Portal Cuba Corp — Portal.Services Package (Construction C3 — DM-F1 Resolved)
 
 skinparam classAttributeIconSize 0
 
@@ -893,12 +893,12 @@ package "Portal.Services (Application Layer)" {
   }
 
   interface "IDirectoryService\n(INT-003)" as INT003 {
-    + Search(query: string) : List<DirectoryEntry>
+    + Search(query: string, office: string? = null) : List<DirectoryEntry>
   }
 
   class "DirectoryService\n(CLS-003)" as CLS003 {
     - _ldapGateway : ILdapGateway
-    + Search(query: string) : List<DirectoryEntry>
+    + Search(query: string, office: string? = null) : List<DirectoryEntry>
     - EscapeLdapFilter(value: string) : string
   }
 
@@ -915,7 +915,6 @@ package "Portal.Services (Application Layer)" {
     + AssignCategory(adUserId: string, category: string, authorId: string) : WorkerCategory
     + ListCategories() : List<WorkerCategory>
     + LookupAdUser(query: string) : List<DirectoryEntry>
-    - EscapeLdapFilter(value: string) : string
   }
 
   interface "IAuditLogger\n(INT-005)" as INT005 {
@@ -934,27 +933,12 @@ INT003 <|.. CLS003
 INT004 <|.. CLS004
 INT005 <|.. CLS005
 
-CLS002 --> INT005 : _auditLogger
-CLS002 --> INT007 : _persistence
-CLS004 --> INT005 : _auditLogger
-CLS004 --> INT006 : _ldapGateway
-CLS004 --> INT007 : _persistence
-CLS003 --> INT006 : _ldapGateway
-CLS001 --> INT007 : _persistence
-
-note right of INT002
-  C2 UPDATE: Method names aligned
-  with implementation (Publish, Edit,
-  Unpublish, GetById, ListAll).
-  isFeatured param added to Publish
-  and Edit (CR-010, MAJOR-1 fix).
-end note
-
-note right of INT005
-  C2 UPDATE: entityId type changed
-  from Guid to string — implementation
-  uses string for both Guid and
-  adUserId entity IDs.
+note right of INT003
+  C3 UPDATE (DM-F1):
+  Search() now includes optional
+  office parameter matching
+  iteration/C2 implementation.
+  LDAP AND-filter for office.
 end note
 
 @enduml
@@ -963,11 +947,11 @@ end note
 ### Designer Class Diagrams — Infrastructure (Portal.Infrastructure)
 
 > **Contributed by:** Designer (Analysis & Design Discipline)
-> **Iteration:** Construction C2 — interface signatures aligned with implementation
+> **Iteration:** Construction C3
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Portal.Infrastructure Package (Construction C2)
+title Portal Cuba Corp — Portal.Infrastructure Package (Construction C3)
 
 skinparam classAttributeIconSize 0
 
@@ -975,62 +959,21 @@ package "Portal.Infrastructure (Infrastructure Layer)" {
 
   interface "ILdapGateway\n(INT-006)" as INT006 {
     + SearchEntries(filter: string) : List<LdapSearchResult>
+    + GetEntryByUserId(adUserId: string) : LdapSearchResult?
+    + ResolveNames(adUserIds: List<string>) : Dictionary<string, string>
   }
 
   class "LdapGateway\n(CLS-006)" as CLS006 {
-    - _settings : LdapSettings
-    - _pool : LdapConnectionPool
+    - _options : LdapGatewayOptions
+    - _connection : ILdapConnection
     + SearchEntries(filter: string) : List<LdapSearchResult>
-    - MapAttributes(entry: LdapEntry) : LdapSearchResult
-    - AcquireConnection() : ILdapConnection
+    + GetEntryByUserId(adUserId: string) : LdapSearchResult?
+    + ResolveNames(adUserIds: List<string>) : Dictionary<string, string>
+    - MapEntry(entry: LdapRawEntry) : LdapSearchResult
+    - EscapeFilter(value: string) : string
   }
 
-  interface "IPersistence\n(INT-007)" as INT007 {
-    + GetClockingsByEmployee(empId: string, range: DateRange) : List<ClockingRecord>
-    + GetAllClockingsForMonth(range: DateRange) : List<ClockingRecord>
-    + InsertClocking(record: ClockingRecord) : ClockingRecord
-    + FindByIdempotencyKey(key: string) : ClockingRecord?
-    + SaveNewsItem(item: NewsItem) : NewsItem
-    + GetNewsItem(id: Guid) : NewsItem?
-    + UpdateNewsItem(id: Guid, title: string, body: string, category: NewsCategory) : NewsItem
-    + UpdateNewsStatus(id: Guid, status: NewsStatus) : NewsItem
-    + GetPublishedNews(category: NewsCategory?) : List<NewsItem>
-    + GetFeaturedNews() : List<NewsItem>
-    + GetAllNewsItems() : List<NewsItem>
-    + UpsertWorkerCategory(adUserId: string, category: string) : WorkerCategory
-    + GetAllWorkerCategories() : List<WorkerCategory>
-    + InsertAuditRecord(record: AuditRecord) : void
-  }
-
-  class "PersistenceGateway\n(CLS-007)" as CLS007 {
-    - _dbContext : PortalDbContext
-    + GetClockingsByEmployee(empId: string, range: DateRange) : List<ClockingRecord>
-    + GetAllClockingsForMonth(range: DateRange) : List<ClockingRecord>
-    + InsertClocking(record: ClockingRecord) : ClockingRecord
-    + FindByIdempotencyKey(key: string) : ClockingRecord?
-    + SaveNewsItem(item: NewsItem) : NewsItem
-    + GetNewsItem(id: Guid) : NewsItem?
-    + UpdateNewsItem(id: Guid, title: string, body: string, category: NewsCategory) : NewsItem
-    + UpdateNewsStatus(id: Guid, status: NewsStatus) : NewsItem
-    + GetPublishedNews(category: NewsCategory?) : List<NewsItem>
-    + GetFeaturedNews() : List<NewsItem>
-    + GetAllNewsItems() : List<NewsItem>
-    + UpsertWorkerCategory(adUserId: string, category: string) : WorkerCategory
-    + GetAllWorkerCategories() : List<WorkerCategory>
-    + InsertAuditRecord(record: AuditRecord) : void
-  }
-
-  class "PortalDbContext\n(CLS-008)" as CLS008 {
-    + DbSet<ClockingRecord> Clockings
-    + DbSet<NewsItem> NewsItems
-    + DbSet<WorkerCategory> WorkerCategories
-    + DbSet<AuditRecord> AuditRecords
-    + OnModelCreating(modelBuilder) : void
-    + SaveChanges() : int
-    + SaveChangesAsync() : Task<int>
-  }
-
-  class "LdapSettings\n(CLS-009)" as CLS009 {
+  class "LdapGatewayOptions\n(CLS-009)" as CLS009 {
     + Host : string
     + Port : int
     + BindDn : string
@@ -1039,25 +982,75 @@ package "Portal.Infrastructure (Infrastructure Layer)" {
   }
 
   class "LdapConnectionPool\n(CLS-010)" as CLS010 {
-    - _settings : LdapSettings
+    - _pool : ConcurrentBag<ILdapConnection>
     + Acquire() : ILdapConnection
     + Release(conn: ILdapConnection) : void
+  }
+
+  interface "IPersistence\n(INT-007)" as INT007 {
+    + GetClockingsByEmployee(empId: string, range: DateRange) : List<ClockingRecord>
+    + GetAllClockingsForMonth(range: DateRange) : List<ClockingRecord>
+    + InsertClocking(record: ClockingRecord) : ClockingRecord
+    + FindByIdempotencyKey(employeeId: string, key: string) : ClockingRecord?
+    + GetNewsItem(id: Guid) : NewsItem?
+    + SaveNewsItem(item: NewsItem) : NewsItem
+    + UpdateNewsItem(id: Guid, title: string, body: string, category: NewsCategory) : NewsItem
+    + UpdateNewsStatus(id: Guid, status: NewsStatus) : NewsItem
+    + GetPublishedNews(category: NewsCategory?) : List<NewsItem>
+    + GetFeaturedNews() : List<NewsItem>
+    + GetAllNewsItems() : List<NewsItem>
+    + UpsertWorkerCategory(adUserId: string, category: string) : WorkerCategory
+    + GetAllWorkerCategories() : List<WorkerCategory>
+    + InsertAuditRecord(record: AuditRecord) : void
+    + ExecuteInTransactionAsync(action: Func<Task>) : Task
+  }
+
+  class "PersistenceGateway\n(CLS-007)" as CLS007 {
+    - _db : PortalDbContext
+    + GetClockingsByEmployee(empId: string, range: DateRange) : List<ClockingRecord>
+    + GetAllClockingsForMonth(range: DateRange) : List<ClockingRecord>
+    + InsertClocking(record: ClockingRecord) : ClockingRecord
+    + FindByIdempotencyKey(employeeId: string, key: string) : ClockingRecord?
+    + GetNewsItem(id: Guid) : NewsItem?
+    + SaveNewsItem(item: NewsItem) : NewsItem
+    + UpdateNewsItem(id: Guid, title: string, body: string, category: NewsCategory) : NewsItem
+    + UpdateNewsStatus(id: Guid, status: NewsStatus) : NewsItem
+    + GetPublishedNews(category: NewsCategory?) : List<NewsItem>
+    + GetFeaturedNews() : List<NewsItem>
+    + GetAllNewsItems() : List<NewsItem>
+    + UpsertWorkerCategory(adUserId: string, category: string) : WorkerCategory
+    + GetAllWorkerCategories() : List<WorkerCategory>
+    + InsertAuditRecord(record: AuditRecord) : void
+    + ExecuteInTransactionAsync(action: Func<Task>) : Task
+  }
+
+  class "PortalDbContext\n(CLS-008)" as CLS008 {
+    + Clockings : DbSet<ClockingRecord>
+    + NewsItems : DbSet<NewsItem>
+    + WorkerCategories : DbSet<WorkerCategory>
+    + AuditRecords : DbSet<AuditRecord>
+    + OnModelCreating(modelBuilder: ModelBuilder) : void
   }
 }
 
 INT006 <|.. CLS006
 INT007 <|.. CLS007
-CLS007 --> CLS008 : _dbContext
-CLS006 --> CLS009 : _settings
-CLS006 --> CLS010 : _pool
+CLS007 --> CLS008 : uses
+CLS006 --> CLS009 : configured by
+CLS006 --> CLS010 : pools connections
 
 note right of INT007
-  C2 UPDATE: Method names aligned
-  with implementation:
-  SaveNewsItem, UpdateNewsItem,
-  UpdateNewsStatus, GetNewsItem.
-  ExecuteInTransactionAsync deferred
-  to implementation (M2 design correct).
+  ExecuteInTransactionAsync:
+  callback pattern — wraps
+  business op + audit in
+  single DB transaction.
+  Design correct; impl pending.
+end note
+
+note right of CLS006
+  Read-only LDAP gateway.
+  Never writes to AD (CON-010).
+  R001: missing attrs → null.
 end note
 
 @enduml
@@ -1066,19 +1059,19 @@ end note
 ### Designer Class Diagrams — Domain (Portal.Domain)
 
 > **Contributed by:** Designer (Analysis & Design Discipline)
-> **Iteration:** Construction C2 — entity attributes and enum values aligned with implementation
+> **Iteration:** Construction C3
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Portal.Domain Package (Construction C2 — Aligned with Implementation)
+title Portal Cuba Corp — Portal.Domain Package (Construction C3)
 
 skinparam classAttributeIconSize 0
 
 package "Portal.Domain (Domain Layer)" {
 
   enum "ClockType\n(CLS-011)" as CLS011 {
-    In
-    Out
+    IN
+    OUT
   }
 
   enum "ClockStatus\n(CLS-012)" as CLS012 {
@@ -1120,9 +1113,9 @@ package "Portal.Domain (Domain Layer)" {
     + Category : NewsCategory
     + Status : NewsStatus
     + IsFeatured : bool
+    + AuthorId : string
     + CreatedAt : DateTime
     + UpdatedAt : DateTime
-    + AuthorId : string
   }
 
   class "WorkerCategory\n(CLS-018)" as CLS018 {
@@ -1147,33 +1140,27 @@ package "Portal.Domain (Domain Layer)" {
     + Office : string
     + Email : string
     + Extension : string
-    + {static} FromLdapAttributes(adUserId, displayName, jobTitle, department, office, email, extension) : DirectoryEntry
+    + {static} FromLdapAttributes(...) : DirectoryEntry
   }
 
   class "DateRange\n(CLS-021)" as CLS021 {
     + Start : DateTime
     + End : DateTime
-    + {static} ForMonth(year: int, month: int) : DateRange
   }
 
   class "ClockingResult\n(CLS-022)" as CLS022 {
-    + Record : ClockingRecord?
+    + Record : ClockingRecord
     + IsDuplicate : bool
-    + IsSuccess : bool
-    + ErrorMessage : string?
-    + {static} Ok(record: ClockingRecord) : ClockingResult
-    + {static} Duplicate(record: ClockingRecord) : ClockingResult
-    + {static} Fail(message: string) : ClockingResult
   }
 
   class "LdapSearchResult\n(CLS-023)" as CLS023 {
     + AdUserId : string
-    + DisplayName : string?
-    + JobTitle : string?
-    + Department : string?
-    + Office : string?
-    + Email : string?
-    + Extension : string?
+    + DisplayName : string
+    + JobTitle : string
+    + Department : string
+    + Office : string
+    + Email : string
+    + Extension : string
   }
 }
 
@@ -1183,31 +1170,23 @@ CLS017 --> CLS014 : Status
 CLS019 --> CLS015 : Action
 CLS022 --> CLS016 : Record
 
-note right of CLS014
-  C2 UPDATE: Draft state removed.
-  Implementation creates NewsItem
-  directly as Published (UC-005).
-  Only 2 states: Published, Unpublished.
-end note
-
-note right of CLS015
-  C2 UPDATE: Enum values aligned
-  with implementation: Publish, Edit,
-  Unpublish, CategoryChanged.
-end note
-
 note right of CLS017
-  C2 UPDATE: CreatedBy → AuthorId.
-  No UpdatedBy field — audit trail
-  captures editor identity via
-  LogAudit author parameter.
-  IsFeatured present (FR-008, CR-010).
+  CON-013: never hard-deleted.
+  Unpublished = hidden, record
+  preserved for audit trail.
+  IsFeatured: CR-010 approved.
+end note
+
+note right of CLS018
+  CON-009: only 2 columns.
+  No employee data copied.
+  AD is system of record.
 end note
 
 note right of CLS020
-  R001: FromLdapAttributes defaults
-  missing values to "N/A".
-  Corporate data only (CON-012).
+  CON-012: corporate data only.
+  No private personal info.
+  Projected from AD at read time.
 end note
 
 @enduml
@@ -1215,18 +1194,21 @@ end note
 
 ### Subsystem Interface Dependency Diagram
 
+> **Contributed by:** Designer (Analysis & Design Discipline)
+> **Iteration:** Construction C3
+
 ```plantuml
 @startuml
-title Portal Cuba Corp — Subsystem Interface Dependencies (Construction C2)
+title Portal Cuba Corp — Subsystem Interface Dependencies (Construction C3)
 
 skinparam componentStyle rectangle
 skinparam classAttributeIconSize 0
 
 package "Portal.UI (Presentation)" {
-  [Clocking UI] as UI_CLK
-  [News UI] as UI_NEWS
-  [Directory UI] as UI_DIR
-  [Category UI] as UI_CAT
+  component "Clocking Pages\n(V001, V002, V003)" as UI_CLK
+  component "News Pages\n(V004, V005, V006)" as UI_NEWS
+  component "Directory Page\n(V007)" as UI_DIR
+  component "Category Page\n(V008)" as UI_CAT
 }
 
 package "Portal.Services (Application)" {
@@ -1267,6 +1249,12 @@ note right of SVC_NEWS
   interface-based (DI-injected).
   No concrete class referenced
   across subsystem boundaries.
+end note
+
+note right of SVC_DIR
+  C3: INT-003 Search() includes
+  optional office parameter.
+  LDAP AND-filter for office.
 end note
 
 @enduml
