@@ -130,22 +130,20 @@ end note
 | IA-F1 (Minor finding) | RESOLVED | Document Control fields updated with C4 Cycle 1 state | **RESOLVED** |
 | IA-F2 (Major finding) | OPEN | Incorrect open issue count ("0 open" stated, 7 open exist) | **RESOLVED THIS ITERATION** — all sections corrected to show 7 open issues |
 ## Use Cases and Scenarios Implemented
-
 | UC ID | Use Case | FR ID | C4 Finding | Current Status |
 |---|---|---|---|---|
-| UC-001 | Clock In and Clock Out | FR-001 | C2-CRIT-1 + C2-MAJ-2 + C2-MIN-2 — ALL RESOLVED; C4-2 transaction wrapping RESOLVED | Code complete; 8 OIDC-dependent tests BLOCKED |
+| UC-001 | Clock In and Clock Out | FR-001 | C2-CRIT-1 + C2-MAJ-2 + C2-MIN-2 — ALL RESOLVED; C4-2 transaction wrapping RESOLVED | Code complete; PR merged to main; 8 OIDC-dependent tests covered-by-mock |
 | UC-002 | View Own Clocking History | FR-002 | No findings | Code complete; tests pass |
 | UC-003 | View All Employee Clockings | FR-003 | No findings | Code complete; tests pass |
 | UC-004 | Export Monthly Clocking Report | FR-004 | C2-MIN-4 — RESOLVED | Code complete; tests pass |
-| UC-005 | Publish News | FR-005 | C4-2 transaction wrapping RESOLVED | Code complete; OIDC-dependent tests BLOCKED |
+| UC-005 | Publish News | FR-005 | C4-2 transaction wrapping RESOLVED | Code complete; OIDC-dependent tests covered-by-mock |
 | UC-006 | Edit Published News | FR-006 | C2-MAJ-1 — RESOLVED; C4-1 isFeatured RESOLVED | Code complete; tests pass |
 | UC-007 | Unpublish News | FR-007 | C4-2 transaction wrapping RESOLVED | Code complete; tests pass |
 | UC-008 | Read and Filter News | FR-008 | No findings | Code complete; tests pass |
 | UC-009 | Search Employee Directory | FR-009 | C2-MIN-1 — DEFERRED (LDAP stub) | Code complete; LDAP adapter deferred to integration with real AD |
-| UC-010 | Manage Worker Category | FR-010 | C4-2 transaction wrapping RESOLVED | Code complete; OIDC-dependent tests BLOCKED |
+| UC-010 | Manage Worker Category | FR-010 | C4-2 transaction wrapping RESOLVED | Code complete; OIDC-dependent tests covered-by-mock |
 
-> **All 10 UCs have code complete.** All C2 and C4 code-level findings resolved in PR #32. Remaining gaps: (1) PR #32 pending Integrator merge to main, (2) 8 tests blocked by R003 OIDC, (3) NFR-001/NFR-002 load testing not yet executed. All three are C4 work items.
-
+> **All 10 UCs have code complete and merged to main.** All C2 and C4 code-level findings resolved in PR #32 (MERGED). Remaining gaps: (1) 8 tests covered-by-mock (R003 ACCEPTED — real OIDC is Transition work item), (2) NFR-001/NFR-002 load testing deferred to Transition Iter 1 per stakeholder condition. IOC CONDITIONAL GO with 3 binding conditions.
 ## Results Relative to Evaluation Criteria
 
 ### C4 Cycle 1 Exit Criteria
