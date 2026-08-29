@@ -1,31 +1,31 @@
 ## Document Control
+
 | Field | Value |
 |---|---|
 | Phase | Construction |
 | Status | Active |
-| Milestone Target | End-of-Construction (IOC) |
-| Iteration | 2 (Cycle 3) |
+| Milestone Target | End-of-Construction (IOC) — NOT YET ACHIEVED |
+| Iteration | 3 (Cycle 1) |
 | Date | 2026-08-29 |
-| Prior Phase | Construction C2 Cycle 2 (REQUEST_CHANGES — 0 of 7 C2 findings resolved; stakeholder sanction REFUSED 2nd time; IP-F4 + RL-F2 findings opened) |
-| Evolution | C2 Cycle 2 Plan evolved for Cycle 3: mid-iteration checkpoint added (IP-F4 resolution); coarse roadmap updated with C2 Cycle 2 measured actuals (18.84M tokens, 19h 15m 47s); fine plan replaced with C2 Cycle 3 rework scope — same 7 C2 findings persisting + PR synchronization directive from stakeholder; R008 contingency ACTIVATED (C3 required, not conditional) |
-| Measured Baseline | Inception: 2 iters, 4.38M tokens, 22 min, 11 runs, 10 artifacts. Elaboration: 2 iters, 20.87M tokens, 1.0h, 21 runs, 13 artifacts. Construction C1: 1 iter, 9.85M tokens, 1h 42m 55s, 15 runs, 15 artifacts. Construction C2 Cycle 2: 18.84M tokens, 19h 15m 47s, 15 runs, 15 artifacts. Cumulative: 54.0M tokens, ~21.3h, 62 runs, 53 artifacts. |
-| Finding IP-F4 | RESOLVED — mid-iteration checkpoint added to Plan and Milestones section |
+| Prior Phase | Construction C2 Cycle 3 — PR #28 APPROVED (all 7 C2 code-level findings RESOLVED); stakeholder sanction REFUSED 2nd time with PR synchronization directive |
+| Evolution | C2 Cycle 3 Plan evolved for C3 Cycle 1: all 7 C2 findings resolved in PR #28 (APPROVED by Code Reviewer); coarse roadmap updated with C2 Cycle 3 outcome; fine plan replaced with C3 scope — merge PR #28 to main, integration testing, load testing, R003 OIDC escalation (4th cycle), IOC achievement; R007 status updated to RESOLVED; R008 rework cycle COMPLETE |
+| Measured Baseline | Inception: 2 iters, 4.38M tokens, 22 min, 11 runs, 10 artifacts. Elaboration: 2 iters, 20.87M tokens, 1.0h, 21 runs, 13 artifacts. Construction C1: 1 iter, 9.85M tokens, 1h 42m 55s, 15 runs, 15 artifacts. Construction C2 Cycle 2: 18.84M tokens, 19h 15m 47s, 15 runs, 15 artifacts. Cumulative: ~54.0M tokens, ~21.3h, 62 runs, 53 artifacts. C2 Cycle 3 measured actuals not yet recorded. |
+| Finding IP-F4 | RESOLVED — mid-iteration checkpoint present in Plan and Milestones since C2 Cycle 3 |
+
 ## Iteration Objectives
 
-1. **Fix C2-CRIT-1 (Critical): Clocking API route mismatch.** JS calls `fetch('/api/clocking')` but Razor Page routes to `/Api/ClockingApi`. UC-001 is non-functional (404). Fix: add `@page "/api/clocking"` to ClockingApi.cshtml, OR move to API controller, OR rename page folder to `Pages/api/clocking.cshtml`.
-2. **Fix C2-MAJ-1 (Major): News Edit form field name mismatch.** Form posts `title`, `body`, `category` but BindProperties are `EditTitle`, `EditBody`, `EditCategory`. UC-006 is non-functional. Fix: add `[BindProperty(Name = "title")]` etc., OR rename properties, OR change form field names.
-3. **Fix C2-MAJ-2 (Major): Missing antiforgery token on clocking POST.** `fetch()` POST has no anti-forgery token. Razor Pages validates by default — POST rejected with 400. Fix: add antiforgery token to fetch headers, OR `[IgnoreAntiforgeryToken]` with justification (OIDC bearer auth + idempotency key).
-4. **Fix C2-MIN-2 (Minor): EmployeeId spoofable from request body.** API accepts `employeeId` from request body — client can spoof identity. Fix: use `User.FindFirst("sub")?.Value` instead of `request.EmployeeId`.
-5. **Fix C2-MIN-4 (Minor): CSV header misleading.** Header says `TimeIn,TimeOut` but data has single time + Direction. Fix: change header to `Employee,Date,Time,Direction`.
-6. **Fix C2-MIN-3 (Minor): Placeholder test.** `Assert.True(true)` in UnitTest1.cs. Fix: delete UnitTest1.cs (CR-014).
-7. **Document C2-MIN-1 (Minor): LDAP adapter NotImplementedException.** All methods throw `NotImplementedException`. Known deferred to integration testing (R001). Fix: document as `[DEFERRED — requires integration testing with real AD server (R001)]`.
-8. **Re-review PR #19 after fixes:** Reviewer re-evaluates; CI must pass green; target 0 Critical, 0 Major.
-9. **Escalate R003 (OIDC registration):** Escalation deadline has passed. Escalate to STK-001 (sponsor) for STK-003 OIDC client registration. 8 of 30 tests remain BLOCKED without it.
+1. **Merge PR #28 to main.** PR #28 (feature/C3-presentation → iteration/C3) is APPROVED by Code Reviewer with all 7 C2 findings resolved. PR #19 and PR #8 are superseded (REQUEST_CHANGES). The Integrator merges PR #28 to main, closing the PR synchronization gap the stakeholder identified.
+2. **Integration testing on merged main.** Run all 30 test cases (TC-001..TC-030) against the merged main branch. 8 tests remain BLOCKED by R003 (OIDC registration unconfirmed by STK-003). 22 tests should pass on merged code.
+3. **Load testing for NFR-001 (<3s page load) and NFR-002 (<1s clocking response).** Deferred from C2. Execute on merged main with representative data volume (200 employees).
+4. **R003 OIDC escalation — 4th cycle.** STK-003 has not confirmed OIDC client registration across 3 prior cycles. Escalate to STK-001 (sponsor) again. 8 of 30 tests remain BLOCKED. This is the critical path for IOC achievement.
+5. **Re-review merged main.** Reviewer verifies 0 Critical, 0 Major on the merged codebase. This is the gate for IOC milestone assessment.
+6. **Iteration Assessment.** Record C2 Cycle 3 variance (objectives MET — PR #28 approved, all findings resolved) and C3 Cycle 1 results.
 
 ## Plan and Milestones
+
 ### Coarse Cross-Iteration Roadmap
 
-The project follows the RUP iterative lifecycle. Inception and Elaboration are CLOSED with measured actuals. Construction C1 is CLOSED with measured actuals. C2 Cycle 2 is CLOSED with measured actuals (0 of 7 findings resolved — iteration produced no rework). C2 Cycle 3 is the current rework cycle. The coarse roadmap is now baselined from C1 and C2 Cycle 2 measured actuals.
+The project follows the RUP iterative lifecycle. Inception and Elaboration are CLOSED with measured actuals. Construction C1 is CLOSED. C2 Cycle 2 is CLOSED with measured actuals. C2 Cycle 3 is COMPLETE — PR #28 APPROVED, all 7 C2 findings resolved. C3 Cycle 1 is the CURRENT iteration, focused on merging, integration testing, and IOC achievement.
 
 | Phase | Iterations | Measured Tokens | Measured Agent Time | Agent Runs | Artifacts | Milestone |
 |---|---|---|---|---|---|---|
@@ -33,165 +33,120 @@ The project follows the RUP iterative lifecycle. Inception and Elaboration are C
 | Elaboration (CLOSED) | 2 | 20,867,327 | 1.0 h | 21 | 13 | LCA ✅ ACHIEVED |
 | Construction C1 (CLOSED) | 1 | 9,854,220 | 1h 42m 55s | 15 | 15 | IOC ❌ NOT ACHIEVED |
 | Construction C2 Cycle 2 (CLOSED) | 1 | 18,839,560 | 19h 15m 47s | 15 | 15 | IOC ❌ NOT ACHIEVED |
-| Construction C2 Cycle 3 (CURRENT) | 1 | [ASSUMPTION — ~18.84M tokens; basis: C2 Cycle 2 measured actual, which is 191% of C1 due to accumulated artifact surface reasoning] | [ASSUMPTION — ~19h; basis: C2 Cycle 2 measured actual] | [ASSUMPTION — ~15 runs] | [ASSUMPTION — ~15 artifacts] | IOC (target) |
+| Construction C2 Cycle 3 (COMPLETE) | 1 | [ASSUMPTION — ~18.84M tokens; basis: C2 Cycle 2 measured actual] | [ASSUMPTION — ~19h; basis: C2 Cycle 2 measured actual] | [ASSUMPTION — ~15 runs] | [ASSUMPTION — ~15 artifacts] | IOC ❌ NOT YET — PR #28 APPROVED, findings resolved, merge pending |
+| Construction C3 Cycle 1 (CURRENT) | 1 | [ASSUMPTION — ~18.84M tokens; basis: C2 Cycle 2 measured actual, accumulated surface comparable] | [ASSUMPTION — ~19h; basis: C2 Cycle 2 measured actual] | [ASSUMPTION — ~15 runs] | [ASSUMPTION — ~15 artifacts] | IOC (target) |
 | Transition (PLANNED) | 1 | [ASSUMPTION — ~5M tokens; basis: Transition is lighter, fewer architectural decisions] | [ASSUMPTION — ~15 min] | [ASSUMPTION — ~8 runs] | [ASSUMPTION — ~5 artifacts] | PR (target) |
-| **Total** | **8+** | **~59M+ (forecast)** | | | | |
+| **Total** | **9+** | **~73M+ (forecast)** | | | | |
 
-> The iteration count has increased to 8+ due to C1 scope delivery failure (5 of 7 objectives deferred), C2 review findings (1 Critical + 2 Major blocking), and C2 Cycle 2 producing zero rework (all 7 findings persisting into Cycle 3). The "6 ± 3" rule sanity check: 8+ iterations is within the high extreme [1, 3, 3, 2] for a project with significant integration dependencies. The rework cycles do not add full iterations — they are cycles within C2.
+> The iteration count is now 9+ (2 Inception + 2 Elaboration + 1 C1 + 2 C2 cycles + 1 C3 = 8 iterations, plus C3 Cycle 1 = 9). The "6 ± 3" rule sanity check: 9 iterations is at the upper bound of the high extreme [1, 3, 3, 2]. The rework cycles (C2 Cycle 2, C2 Cycle 3) were caused by zero-execution iterations — a process failure, not a scope expansion. C3 Cycle 1 is the first iteration where all code-level findings are resolved and the focus shifts to integration and IOC achievement.
 
-> **C2 Cycle 2 measured actual is 191% of the C1 budget box** (18.84M vs 9.85M planned). This overshoot is not from scope expansion — it is from the accumulated artifact surface (53 artifacts vs 23) requiring more reasoning-over-surface per cycle. The C2 Cycle 3 budget box is sized from this measured actual, not from C1.
+> **C2 Cycle 3 outcome:** PR #28 APPROVED by Code Reviewer. All 7 C2 findings (1 Critical, 2 Major, 4 Minor) RESOLVED. PR #19 and PR #8 superseded. The stakeholder's PR synchronization complaint is addressed — the Integrator role (added in C2 Cycle 3) executed the merge work. However, IOC is NOT YET achieved: (a) PR #28 must be merged to main, (b) 8 tests remain BLOCKED by R003 OIDC, (c) integration testing on merged main has not been run.
 
-### Iteration Sequence + Human Gates
-
-```plantuml
-@startgantt
-title Portal Cuba Corp — Iteration Sequence + Human Gates (UNANCHORED, C2 Cycle 3 Refined)
-
-[Inception CLOSED] lasts 2 days
-[LCO Gate] lasts 1 day
-[Elaboration CLOSED] lasts 2 days
-[LCA Gate] lasts 1 day
-[Construction Iter 1 CLOSED] lasts 1 day
-[Construction Iter 2 Cycle 1 REVIEWED] lasts 1 day
-[Construction Iter 2 Cycle 2 CLOSED] lasts 1 day
-[Construction Iter 2 Cycle 3 CURRENT] lasts 1 day
-[IOC Gate] lasts 1 day
-[Transition Iter 1] lasts 1 day
-[PR Gate] lasts 1 day
-@endgantt
-```
-
-> Gates are quoted in **days of queue time** (human waiting, not agent working). Agent work is denominated in tokens and measured elapsed time — never added to gate time.
-
-### Mid-Iteration Progress Checkpoint (IP-F4 Resolution)
-
-> **Finding IP-F4 (RESOLVED):** The Management Reviewer found that C2 Cycle 2 passed with zero of 10 work items executed — not detected until end-of-iteration review. This checkpoint mechanism ensures that progress is verified DURING the iteration, not only at its end.
-
-**Checkpoint protocol for C2 Cycle 3:**
-
-| Checkpoint | Trigger | Action if Blocked |
-|---|---|---|
-| CP-1: Rework execution verified | After Implementer completes Items 1-7 | If zero items executed (as in Cycle 2), halt iteration and escalate to stakeholder immediately — do NOT wait for end-of-iteration review |
-| CP-2: PR merge verified | After Integrator merges PR #19 to iteration/C2 and main | If PR remains unmerged, escalate to stakeholder with specific blocker — stakeholder has explicitly demanded PR synchronization |
-| CP-3: Test unblock status | After R003 escalation to STK-001 | If STK-003 still has not confirmed OIDC registration, activate mock-auth contingency and document scope reduction for stakeholder approval |
-| CP-4: Finding resolution count | After Reviewer re-reviews PR #19 | If any Critical or Major finding persists, do NOT declare IOC — auto-iterate to C2 Cycle 4 with narrowed scope |
-
-> **Checkpoint authority:** The Project Manager verifies each checkpoint. If a checkpoint fails, the iteration is halted and the stakeholder is notified WITHIN the iteration — not at the end. This directly addresses the root cause of C2 Cycle 2's failure: the iteration ran to completion with zero work done, and nobody noticed until the review.
-
-### Fine Gantt — Construction C2 Cycle 3 Critical Chain
+### Fine Plan — C3 Cycle 1 Work Items
 
 ```plantuml
 @startuml
-title Construction C2 Cycle 3 — Critical Chain (Sequential Agent Stretches to Gate)
+title Portal Cuba Corp — C3 Cycle 1 Critical Chain (Sequential Agent Stretches to Gate)
 
-|Project Manager|
-start
-:Read C2 Cycle 2 Review Record\n7 findings persisting (0 resolved)\nEvolve Iteration Plan + Risk List\nAdd mid-iteration checkpoints (IP-F4)\n[~12K tokens];
-
-|Implementer|
-:Fix C2-CRIT-1: Clocking API route\nAdd @page "/api/clocking"\n[~5K tokens];
-:Fix C2-MAJ-1: News Edit form binding\n[BindProperty(Name="title")] etc.\n[~5K tokens];
-:Fix C2-MAJ-2: Antiforgery token\n[~4K tokens];
-:Fix C2-MIN-2: OIDC sub claim\n[~3K tokens];
-:Fix C2-MIN-4: CSV header\n[~2K tokens];
-:Fix C2-MIN-3: Delete UnitTest1.cs\n[~1K tokens];
-:Document C2-MIN-1: LDAP DEFERRED\n[~1K tokens];
+skinparam activityBackgroundColor #F5F5F5
+skinparam activityBorderColor #333333
 
 |Integrator|
-:Merge PR #19 to iteration/C2\nthen to main\nClose SCM issues\n[~3K tokens];
+start
+:Merge PR #28 to main\n(token budget: ~5K);
+note right: All 7 C2 findings resolved\nin PR #28 (APPROVED)
 
 |Test Designer|
-:Update tests for fixed routes\n+ antiforgery + OIDC sub claim\n[~6K tokens];
+:Update + run integration tests\nfor UC-001..UC-010\n(token budget: ~8K);
+note right: 8 tests still BLOCKED\nby R003 OIDC dependency
+
+|Software Architect|
+:Load testing\n(NFR-001 <3s, NFR-002 <1s)\n(token budget: ~6K);
 
 |Reviewer|
-:Re-review PR #19 after merge\nVerify 0 Critical, 0 Major\n[~8K tokens];
+:Re-review merged main branch\n(token budget: ~8K);
+note right: Verify 0 Critical, 0 Major\non merged codebase
 
 |Project Manager|
-:CP-1: Verify rework executed\nCP-2: Verify PR merged\nCP-3: Verify R003 status\nCP-4: Verify finding count\nIteration Assessment\n[~10K tokens];
+:Iteration Assessment\n+ R003 escalation to STK-001\n(token budget: ~12K);
+
 stop
-
-note
-  Budget box: ~18.84M tokens
-  [BASIS: C2 Cycle 2 measured actual.
-   C2 Cycle 3 is same scope (7 findings)
-   but accumulated surface is 53 artifacts.]
-  
-  CRITICAL: Stakeholder directive —
-  "everything is in the PRs, nobody
-  has bothered to merge." Integrator
-  role is MANDATORY this cycle.
-  
-  Mid-iteration checkpoints (IP-F4)
-  ensure progress is tracked DURING
-  the iteration, not only at review.
-end note
-
 @enduml
 ```
 
-### Construction C2 Cycle 3 — Work Items
+```plantuml
+@startgantt
+title Portal Cuba Corp Construction C3 Cycle 1
 
-| # | Work Item | Owner | Token Budget | Depends On | Acceptance Criterion | Checkpoint |
+[Merge PR #28 to main] lasts 1 days
+[Integration testing] lasts 2 days
+[R003 OIDC escalation] lasts 1 days
+[Load testing] lasts 1 days
+[Re-review merged main] lasts 1 days
+[Iteration Assessment] lasts 1 days
+[STK-003 OIDC response] lasts 3 days
+[STK-001 IOC sanction] lasts 2 days
+@endgantt
+```
+
+| # | Work Item | Owner | Token Budget | Dependencies | Acceptance Criterion | Checkpoint |
 |---|---|---|---|---|---|---|
-| 1 | Fix C2-CRIT-1: Clocking API route — add `@page "/api/clocking"` or rename folder | Implementer | ~5K | Review Record C2 | UC-001 functional (no 404) | CP-1 |
-| 2 | Fix C2-MAJ-1: News Edit form binding — `[BindProperty(Name="title")]` etc. | Implementer | ~5K | — | UC-006 functional (form posts succeed) | CP-1 |
-| 3 | Fix C2-MAJ-2: Antiforgery token on clocking POST | Implementer | ~4K | Item 1 | POST accepted (no 400) | CP-1 |
-| 4 | Fix C2-MIN-2: Use OIDC sub claim instead of request body employeeId | Implementer | ~3K | — | Identity not spoofable | CP-1 |
-| 5 | Fix C2-MIN-4: CSV header → `Employee,Date,Time,Direction` | Implementer | ~2K | — | FR-004 export correct | CP-1 |
-| 6 | Fix C2-MIN-3: Delete UnitTest1.cs placeholder test | Implementer | ~1K | — | No placeholder tests | CP-1 |
-| 7 | Document C2-MIN-1: LDAP adapter as `[DEFERRED — requires integration testing with real AD server (R001)]` | Implementer | ~1K | — | Deferred status documented | CP-1 |
-| 8 | **Merge PR #19 to iteration/C2 and main; close SCM issues** | Integrator | ~3K | Items 1-7 | PR merged, main green, issues closed | CP-2 |
-| 9 | Update tests for fixed routes + antiforgery + OIDC sub claim | Test Designer | ~6K | Items 1-4 | Tests pass with fixes | CP-1 |
-| 10 | Re-review PR #19 after merge | Reviewer | ~8K | Items 1-9 | 0 Critical, 0 Major open | CP-4 |
-| 11 | Escalate R003: OIDC registration to STK-001 (sponsor) | Project Manager | ~2K | — | Escalation logged; STK-003 contacted | CP-3 |
-| 12 | Iteration Assessment (C2 Cycle 3 variance analysis) | Project Manager | ~10K | Item 10 | Objectives met/missed documented | — |
+| 1 | Merge PR #28 to main (close PR #19, PR #8 as superseded) | Integrator | ~5K | PR #28 APPROVED | main branch carries all C2 fixes; CI green | CP-1 |
+| 2 | Run integration tests TC-001..TC-030 on merged main | Test Designer | ~8K | Item 1 | 22 of 30 pass; 8 BLOCKED documented (R003) | CP-2 |
+| 3 | Load testing: NFR-001 (<3s page load), NFR-002 (<1s clocking) | Software Architect | ~6K | Item 1 | Both thresholds met or mitigation documented | CP-2 |
+| 4 | Escalate R003: OIDC registration to STK-001 (4th cycle) | Project Manager | ~2K | — | Escalation logged; STK-003 contacted | CP-3 |
+| 5 | Re-review merged main: verify 0 Critical, 0 Major | Reviewer | ~8K | Items 1-3 | Review Record updated with verdict | CP-4 |
+| 6 | Iteration Assessment (C3 Cycle 1 variance analysis) | Project Manager | ~10K | Item 5 | Objectives met/missed documented | — |
 
-**Budget box: ~18.84M tokens** [BASIS: C2 Cycle 2 measured actual = 18,839,560 tokens. The accumulated artifact surface is 53 artifacts (vs 38 in C2 Cycle 2 start), so reasoning-over-surface cost is comparable. The box is fixed; scope adapts.]
+**Budget box: ~18.84M tokens** [BASIS: C2 Cycle 2 measured actual = 18,839,560 tokens. The accumulated artifact surface is 53+ artifacts, so reasoning-over-surface cost is comparable. The box is fixed; scope adapts.]
 
-> The budget box is fixed. If work does not fit, overflow defers to the next cycle. Scope adapts to the box; the box does not grow to fit scope. **The Integrator role (Item 8) is new this cycle** — it directly addresses the stakeholder's complaint that PRs exist but were never merged.
+> **Mid-iteration checkpoint (IP-F4 resolution):** CP-1 (merge complete) and CP-2 (integration + load testing complete) are mid-iteration checkpoints. If CP-1 is not met by the first third of the iteration, the Integrator is blocked and all downstream work stalls — escalate immediately. If CP-2 shows new Critical/Major findings on merged main, stop and re-plan before CP-3.
+
 ## Resources
 
-### Agent Role Profile — Construction C2 Cycle 2
+### Agent Role Profile — Construction C3 Cycle 1
 
 | Role | Active | Work Items | Token Budget | Rationale |
 |---|---|---|---|---|
-| Project Manager | Yes | 10, 11 | ~14K | Plan, escalate R003, assess iteration |
-| Implementer | Yes | 1-7 | ~21K | Fix all 7 C2 findings (3 blocking + 4 minor) |
-| Test Designer | Yes | 8 | ~6K | Update tests for fixed code |
-| Reviewer | Yes | 9 | ~8K | Re-review PR #19 after fixes |
-| Software Architect | Advisory | — | ~0K | Architecture baseline stable; consultation only |
+| Integrator | Yes | 1 | ~5K | Merge PR #28 to main — addresses stakeholder PR sync complaint |
+| Test Designer | Yes | 2 | ~8K | Integration testing on merged main; 8 tests blocked by R003 |
+| Software Architect | Yes | 3 | ~6K | Load testing for NFR-001, NFR-002 |
+| Reviewer | Yes | 5 | ~8K | Re-review merged main for IOC gate |
+| Project Manager | Yes | 4, 6 | ~12K | R003 escalation, iteration assessment |
+| Implementer | Advisory | — | ~0K | All code fixes complete (PR #28 approved) |
 | UI Designer | Advisory | — | ~0K | Design Model complete; consultation only |
 
-> **Parallelism discipline:** 4 active roles — same as C1. No increase in parallelism. The rework cycle is narrower in scope; the constraint is sequential dependency (fixes → test update → re-review), not parallel capacity.
+> **Parallelism discipline:** 5 active roles — one more than C2 (Integrator added). The Integrator is a sequential prerequisite for Test Designer and Software Architect. No increase in parallelism risk — the dependency chain is strictly sequential: merge → test → review.
 
 ### Budget Split Across Agent Roles
 
 | Role | Token Share | % of Work-Item Budget |
 |---|---|---|
-| Implementer | ~21K | 38% |
-| Project Manager | ~14K | 25% |
-| Reviewer | ~8K | 15% |
-| Test Designer | ~6K | 11% |
-| **Total planned work items** | **~49K** | **(work-item budgets only; full budget box ~9.85M includes all agent reasoning over artifact surface)** |
+| Integrator | ~5K | 13% |
+| Test Designer | ~8K | 21% |
+| Software Architect | ~6K | 16% |
+| Reviewer | ~8K | 21% |
+| Project Manager | ~12K | 32% |
+| **Total planned work items** | **~39K** | **(work-item budgets only; full budget box ~18.84M includes all agent reasoning over artifact surface)** |
 
-> The token budgets above are for the **planned work items** — the specific code, test, and review tasks. The full budget box (~9.85M) accounts for all agent reasoning including re-reading accumulated artifacts, cross-referencing, and verification overhead. C1 measured actuals showed that work-item budgets were ~0.5% of actual token spend; the cost driver is reasoning over the accumulated artifact surface, not the volume of new output.
+> The token budgets above are for the **planned work items**. The full budget box (~18.84M) accounts for all agent reasoning including re-reading accumulated artifacts, cross-referencing, and verification overhead. Work-item budgets are ~0.2% of actual token spend; the cost driver is reasoning over the accumulated artifact surface, not the volume of new output.
 
 ## Use Cases and Scenarios Addressed
 
-| UC ID | Use Case | FR ID | C1 Status | C2 Cycle 1 Status | C2 Cycle 2 Action |
-|---|---|---|---|---|---|
-| UC-001 | Clock In and Clock Out | FR-001 | Presentation + service implemented | **C2-CRIT-1: 404 route mismatch** + **C2-MAJ-2: antiforgery 400** + **C2-MIN-2: employeeId spoofable** | Fix route + antiforgery + sub claim (Items 1, 3, 4) |
-| UC-002 | View Own Clocking History | FR-002 | Presentation + service implemented | No findings | — |
-| UC-003 | View All Employee Clockings | FR-003 | Presentation + service implemented | No findings | — |
-| UC-004 | Export Monthly Clocking Report | FR-004 | Presentation + service implemented | **C2-MIN-4: CSV header misleading** | Fix CSV header (Item 5) |
-| UC-005 | Publish News | FR-005 | MAJOR-1 RESOLVED (PR #20) | No new findings | — |
-| UC-006 | Edit Published News | FR-006 | Service implemented | **C2-MAJ-1: form field name mismatch** | Fix form binding (Item 2) |
-| UC-007 | Unpublish News | FR-007 | Service implemented | No findings | — |
-| UC-008 | Read and Filter News | FR-008 | MAJOR-1 RESOLVED (PR #20) | No new findings | — |
-| UC-009 | Search Employee Directory | FR-009 | MINOR-1 RESOLVED (PR #20) | **C2-MIN-1: LDAP adapter NotImplementedException** | Document as DEFERRED (Item 7) |
-| UC-010 | Manage Worker Category | FR-010 | Service implemented | No findings | — |
+| UC ID | Use Case | FR ID | C2 Finding | C3 Cycle 1 Status |
+|---|---|---|---|---|
+| UC-001 | Clock In and Clock Out | FR-001 | C2-CRIT-1 + C2-MAJ-2 + C2-MIN-2 — ALL RESOLVED in PR #28 | Integration test on merged main (Item 2) |
+| UC-002 | View Own Clocking History | FR-002 | No findings | Integration test on merged main (Item 2) |
+| UC-003 | View All Employee Clockings | FR-003 | No findings | Integration test on merged main (Item 2) |
+| UC-004 | Export Monthly Clocking Report | FR-004 | C2-MIN-4 — RESOLVED in PR #28 | Integration test on merged main (Item 2) |
+| UC-005 | Publish News | FR-005 | No C2 findings (C1 MAJOR-1 resolved in PR #20) | Integration test on merged main (Item 2) |
+| UC-006 | Edit Published News | FR-006 | C2-MAJ-1 — RESOLVED in PR #28 | Integration test on merged main (Item 2) |
+| UC-007 | Unpublish News | FR-007 | No findings | Integration test on merged main (Item 2) |
+| UC-008 | Read and Filter News | FR-008 | No C2 findings (C1 MAJOR-1 resolved in PR #20) | Integration test on merged main (Item 2) |
+| UC-009 | Search Employee Directory | FR-009 | C2-MIN-1 — DEFERRED (LDAP adapter stub) | Integration test on merged main; LDAP adapter deferred to integration with real AD |
+| UC-010 | Manage Worker Category | FR-010 | No findings | Integration test on merged main (Item 2) |
 
-> **C2-MIN-3 (placeholder test):** Not tied to a specific UC — CR-014 cleanup. Delete UnitTest1.cs (Item 6).
+> **All 10 UCs have presentation + service layers implemented.** All 7 C2 code-level findings are RESOLVED in PR #28. The remaining blocker is R003 (OIDC registration) which blocks 8 of 30 tests and prevents full IOC achievement.
 
 ## Evaluation Criteria
 
@@ -199,46 +154,39 @@ end note
 
 | AC ID | Description | Addressed This Iteration? | Evidence / Reason |
 |---|---|---|---|
-| AC-001 | Employee can clock in/out without help | Yes — C2-CRIT-1 + C2-MAJ-2 + C2-MIN-2 fixes make UC-001 functional | Items 1, 3, 4: route fix, antiforgery, sub claim |
-| AC-002 | HR can publish a news item without technical assistance | No — already addressed in C2 Cycle 1 (PR #20 approved, MAJOR-1 resolved) | PR #20 APPROVED |
-| AC-003 | Employee finds colleague's phone/email in under 10 seconds | Partially — LDAP adapter deferred to integration testing (C2-MIN-1) | Item 7: DEFERRED documentation |
+| AC-001 | Employee can clock in/out without help | Yes — C2-CRIT-1 + C2-MAJ-2 + C2-MIN-2 all RESOLVED in PR #28; integration test on merged main (Item 2) | PR #28 APPROVED; Items 1, 2 |
+| AC-002 | HR can publish a news item without technical assistance | Yes — already addressed in C2 Cycle 1 (PR #20 approved); integration test confirms on merged main | PR #20 APPROVED; Item 2 |
+| AC-003 | Employee finds colleague's phone/email in under 10 seconds | Partially — LDAP adapter deferred to integration testing with real AD (R001) | Item 2; R001 mitigation |
 | AC-004 | 80% of employees complete at least one clocking with no prior training | Not addressed — Transition phase (adoption tracking) | Deferred to Transition |
-| AC-005 | System works temporarily offline (5-min network drop, data syncs on recovery) | Partially — antiforgery fix (Item 3) enables POST; offline retry mechanism already implemented | Item 3: antiforgery token fix |
+| AC-005 | System works temporarily offline (5-min network drop, data syncs on recovery) | Yes — antiforgery fix (C2-MAJ-2) RESOLVED in PR #28; offline retry mechanism functional | PR #28 APPROVED; Item 2 |
 
-### Layer (b): Construction C2 Cycle 2 Exit Criteria
+### Layer (b): Construction C3 Cycle 1 Exit Criteria
 
 | # | Exit Criterion | Assessment Target | Evidence Required |
 |---|---|---|---|
-| 1 | C2-CRIT-1 resolved — Clocking API route matches fetch URL | MET | Code review confirms no 404; UC-001 functional |
-| 2 | C2-MAJ-1 resolved — News Edit form binding matches field names | MET | Code review confirms form posts succeed; UC-006 functional |
-| 3 | C2-MAJ-2 resolved — Antiforgery token present or justified exemption | MET | Code review confirms POST accepted (no 400) |
-| 4 | C2-MIN-2 resolved — EmployeeId from OIDC sub claim, not request body | MET | Code review confirms identity not spoofable |
-| 5 | C2-MIN-4 resolved — CSV header correct (Employee,Date,Time,Direction) | MET | Code review confirms FR-004 export correct |
-| 6 | C2-MIN-3 resolved — UnitTest1.cs placeholder deleted | MET | No Assert.True(true) in test suite |
-| 7 | C2-MIN-1 documented — LDAP adapter DEFERRED status annotated | MET | Code carries [DEFERRED] annotation |
-| 8 | CI build passes green | MET | scm_get_build_status confirms PASS |
-| 9 | Re-review PR #19: 0 Critical, 0 Major | MET | Review Record updated |
-| 10 | R003 escalation to STK-001 logged | MET | Escalation recorded in Risk List |
-| 11 | Iteration Assessment produced with variance analysis | MET | This artifact at iteration close |
+| 1 | PR #28 merged to main | MET (target) | main branch carries all C2 fixes; CI green on main |
+| 2 | Integration tests run on merged main: 22 of 30 pass, 8 BLOCKED documented (R003) | MET (target) | Test results recorded; blocked tests attributed to R003 |
+| 3 | Load testing: NFR-001 (<3s) and NFR-002 (<1s) met or mitigation documented | MET (target) | Load test results recorded |
+| 4 | Re-review merged main: 0 Critical, 0 Major | MET (target) | Review Record updated with verdict |
+| 5 | R003 escalation to STK-001 logged (4th cycle) | MET (target) | Escalation recorded in Risk List |
+| 6 | Iteration Assessment produced with variance analysis | MET (target) | This artifact at iteration close |
 
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| C2-CRIT-1 fix (Item 1) | Review Record C2-CRIT-1, UC-001, FR-001, AC-001 | Derives | ClockingApi.cshtml, clocking-retry.js |
-| C2-MAJ-1 fix (Item 2) | Review Record C2-MAJ-1, UC-006, FR-006 | Derives | News/Edit.cshtml, News/Edit.cshtml.cs |
-| C2-MAJ-2 fix (Item 3) | Review Record C2-MAJ-2, UC-001, FR-001, AC-001 | Derives | clocking-retry.js, Index.cshtml |
-| C2-MIN-2 fix (Item 4) | Review Record C2-MIN-2, SEC-001, CON-004 | Derives | ClockingApi.cshtml.cs |
-| C2-MIN-4 fix (Item 5) | Review Record C2-MIN-4, FR-004, CR-012 | Derives | ClockingService.cs (ExportCsv) |
-| C2-MIN-3 fix (Item 6) | Review Record C2-MIN-3, CR-014 | Derives | UnitTest1.cs (deleted) |
-| C2-MIN-1 doc (Item 7) | Review Record C2-MIN-1, R001, CON-005 | DependsOn | NovellLdapConnectionAdapter.cs |
-| Test update (Item 8) | Items 1-4, TC-001..TC-030 | Tests | Updated test files in tests/ |
-| Re-review (Item 9) | Review Record PR #19, all C2 findings | Derives | PR #19 merge gate |
-| R003 escalation (Item 10) | R003, CON-004, STK-003, STK-001 | DependsOn | OIDC registration, 8 blocked tests |
-| Budget box (~9.85M) | C1 measured actual (9,854,220 tokens) | Derives | C2 Cycle 2 Assessment (measured vs planned) |
-| AC-001 (clocking) | Work Order AC-001 | Refines | Items 1, 3, 4 (route + antiforgery + sub claim) |
-| AC-005 (offline) | Work Order AC-005 | Refines | Item 3 (antiforgery enables POST retry) |
-| MAJOR-1 (C1, RESOLVED) | Review Record C1 MAJOR-1, FR-008, CR-010 | Resolved by | PR #19, PR #20 |
-| MINOR-1 (C1, RESOLVED) | Review Record C1 MINOR-1, FR-009, CR-015 | Resolved by | PR #19, PR #20 |
-| MINOR-3 (C1, RESOLVED) | Review Record C1 MINOR-3, AC-005, CR-011 | Resolved by | PR #19, PR #20 |
-| MINOR-4 (C1, RESOLVED) | Review Record C1 MINOR-4, CR-011, CR-018 | Resolved by | PR #19, PR #20 |
+| Merge PR #28 (Item 1) | Review Record C3 Cycle 1 (PR #28 APPROVED), UC-001..UC-010 | Derives | main branch, PR #19 (superseded), PR #8 (superseded) |
+| Integration testing (Item 2) | TC-001..TC-030, UC-001..UC-010, FR-001..FR-010 | Tests | Test results on merged main |
+| Load testing (Item 3) | NFR-001, NFR-002, R004 | Derives | Load test results |
+| R003 escalation (Item 4) | R003, CON-004, STK-003, STK-001 | DependsOn | OIDC registration, 8 blocked tests |
+| Re-review (Item 5) | Review Record, all C2 findings (RESOLVED) | Derives | main branch review gate |
+| Iteration Assessment (Item 6) | C3 Cycle 1 work items, Review Record | Derives | C3 Cycle 1 variance analysis |
+| Budget box (~18.84M) | C2 Cycle 2 measured actual (18,839,560 tokens) | Derives | C3 Cycle 1 budget box |
+| AC-001 (clocking) | Work Order AC-001 | Refines | Items 1, 2 (merge + integration test) |
+| AC-005 (offline) | Work Order AC-005 | Refines | Items 1, 2 (merge + integration test) |
+| C2-CRIT-1 (RESOLVED) | Review Record C2-CRIT-1, UC-001, FR-001 | Resolved by | PR #28 |
+| C2-MAJ-1 (RESOLVED) | Review Record C2-MAJ-1, UC-006, FR-006 | Resolved by | PR #28 |
+| C2-MAJ-2 (RESOLVED) | Review Record C2-MAJ-2, UC-001, FR-001 | Resolved by | PR #28 |
+| C2-MIN-1..4 (RESOLVED) | Review Record C2-MIN-1..4 | Resolved by | PR #28 |
+| R007 (RESOLVED) | Review Record C2 findings (all 7 resolved) | Resolved by | PR #28 APPROVED |
+| R008 (COMPLETE) | Stakeholder sanction refusal, C2 rework cycles | Derives | C3 Cycle 1 plan |
