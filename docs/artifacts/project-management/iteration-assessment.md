@@ -145,18 +145,17 @@ end note
 
 > **All 10 UCs have code complete and merged to main.** All C2 and C4 code-level findings resolved in PR #32 (MERGED). Remaining gaps: (1) 8 tests covered-by-mock (R003 ACCEPTED — real OIDC is Transition work item), (2) NFR-001/NFR-002 load testing deferred to Transition Iter 1 per stakeholder condition. IOC CONDITIONAL GO with 3 binding conditions.
 ## Results Relative to Evaluation Criteria
-
 ### C4 Cycle 1 Exit Criteria
 
 | Exit Criterion | Status | Evidence |
 |---|---|---|
-| PR #32 merged to main; stale PRs closed; GitHub Issues closed | **PENDING** | PR #32 APPROVED, pending Integrator merge |
-| Integration tests on merged main: 31 of 39 pass, 8 BLOCKED documented | **PENDING** | Depends on merge (work item 1) |
-| NFR-001 load testing (<3s page load) | **PENDING** | IP-F5 RESOLVED: decoupled from merge, ready to execute |
-| NFR-002 load testing (<1s clocking response) | **PENDING** | IP-F5 RESOLVED: decoupled from merge, ready to execute |
-| R003 OIDC: STK-003 confirms OR mock-auth to STK-001 | **PENDING** | 5th and final escalation cycle; hard deadline enforced |
-| Management Reviewer lens executed | **PENDING** | Code Reviewer COMPLETE; Management Reviewer PENDING |
-| Iteration Assessment produced; IA-F1 resolved | **MET** | This artifact |
+| PR #32 merged to main; stale PRs closed; GitHub Issues closed | **MET** | PR #32 + #33 MERGED to main; PRs #8, #19 closed; 0 open PRs. 7 open issues remain (1 blocker ACCEPTED, 6 deferred-next-iteration). |
+| Integration tests on merged main: 35 of 43 pass, 8 blocked (covered-by-mock) | **PARTIAL** | 35/43 pass, 0 fail, 8 blocked (R003 ACCEPTED — covered-by-mock, not passing). CI GREEN on main (run 33256627567). |
+| NFR-001 load testing (<3s page load) | **NOT MET** | NOT EXECUTED. Deferred to Transition Iter 1 per stakeholder condition. Measured values required. |
+| NFR-002 load testing (<1s clocking response) | **NOT MET** | NOT EXECUTED. Deferred to Transition Iter 1 per stakeholder condition. Measured values required. |
+| R003 OIDC: STK-003 confirms OR mock-auth to STK-001 | **RESOLVED (ACCEPTED)** | STK-001 approved mock-auth contingency. R003 ACCEPTED. 8 tests covered-by-mock. Real OIDC is Transition work item. |
+| Management Reviewer lens executed | **MET** | MR lens EXECUTED. 1 Major (IA-F2 — corrected this iteration). Stakeholder sanction GRANTED. IOC CONDITIONAL GO. |
+| Iteration Assessment produced; IA-F1 resolved | **MET** | This artifact. IA-F1 RESOLVED. IA-F2 (Major) corrected this iteration. |
 
 ### Prior C3 Cycle 1 Exit Criteria (Preserved)
 
@@ -171,7 +170,6 @@ end note
 | R003 OIDC registration confirmed by STK-003 | **NOT MET** | STK-003 unconfirmed across 4 escalation cycles (RL-F5) |
 | User Documentation delivered | **MET** | User Documentation artifact produced, avg quality 9.9 |
 | Iteration Assessment produced | **MET** | C3 Cycle 1 Iteration Assessment produced |
-
 ## Test Results
 
 | Test Category | Total | Pass | Fail | Blocked | Notes |
