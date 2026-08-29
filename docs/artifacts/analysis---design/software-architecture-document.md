@@ -830,7 +830,7 @@ end note
 | Auditability | Audit interceptor (COMP-008) as cross-cutting mechanism; append-only audit records; news never hard-deleted (CON-013); audit within same DB transaction as business operation | Addressed in baseline architecture; C2: Design Model retains ExecuteInTransactionAsync as correct design — Implementer must enforce transaction boundary |
 | Availability | Single server for 200 users; offline clocking retry for 5-min network drops (AC-005); other features show "no connection" | Addressed; offline mechanism designed in Process View; C2: CR-011 refines idempotency key to be scoped per employee |
 | Performance | Local PostgreSQL (no network hop); server-rendered pages (no SPA overhead); LDAP query for directory (R001 risk) | Addressed; LDAP performance to be validated against real AD |
-| Maintainability | Interface-based subsystem boundaries; each subsystem encapsulates one volatility area; layered monolith (simple to deploy and debug); 4-project solution structure | Addressed in baseline architecture; C2: Design Model contracts aligned with implementation — no boundary violations |
+| Maintainability | Interface-based subsystem boundaries; each subsystem encapsulates one volatility area; layered monolith (simple to deploy and debug); 4-project solution structure | Addressed in baseline architecture; C2: Design Model contracts aligned with implementation — no boundary violations; C3: INT-003 office parameter added within existing interface — no boundary violation |
 
 ### PoC Plan — Risk Retirement Strategy
 
@@ -875,6 +875,42 @@ Per the Development Case, the Architectural Proof-of-Concept artifact is trigger
 | CR-010 IsFeatured fix | High | Implementer | NewsService.Publish must accept isFeatured parameter to enable FR-008 featured banner. Design Model confirms isFeatured is correct design. Approved CR, assigned to Implementer. |
 | PR #8 rework | High | Implementer | Feature PR received CHANGES_REQUESTED — MAJOR-1 (IsFeatured) + MINOR-1..4 must be resolved before merge into iteration/C1. |
 | Remaining 7 Razor Pages | High | Implementer | C1 delivered only Index.cshtml. Clocking, Directory, AllClockings, PublishNews, EditNews, NewsManagement, WorkerCategory pages are C2 deliverables. |
+
+### Construction C3 Governance Record
+
+#### CR Concurrence Decisions
+
+| Issue # | CR | Decision | Rationale |
+|---|---|---|---|
+| — | — | No `needs-architect-review` CRs pending | All previously tagged CRs (#1, #2) already carry `architect-concurred`. No new CRs parked for Architect review in C3. |
+
+#### Refinement Findings
+
+| Finding | Type | Section Updated | Description |
+|---|---|---|---|
+| INT-003 contract refinement (DM-F1) | Minor-local | Logical View, Implementation View | INT-003 (IDirectoryService) contract updated to `Search(string query, string? office = null)` per Design Model C3 update (DM-F1 resolution). Component diagram updated to show the office parameter. Implementation View diagram and Build Structure table updated. No boundary violation — change is within existing interface. |
+| Implementation View delivery status | Minor-local | Implementation View | Updated to reflect C2 delivery: 7 Razor Pages delivered in PR #19 (feature/C2-presentation → iteration/C2). Added C2/C3 Status column to Build Structure table. Noted 3 open code-level defects (C2-CRIT-1, C2-MAJ-1, C2-MAJ-2) in presentation layer. |
+| Document Control | Minor-local | Document Control | Updated to C3 iteration with current governance status. |
+
+#### Iteration-Baseline PR Review
+
+| PR | Title | Verdict | Date | Notes |
+|---|---|---|---|---|
+| #21 | Iteration C2 close — integration baseline (iteration/C2 → main) | **ARCHITECTURALLY APPROVED** | 2026-08-29 | PR is closed (not merged). Architectural checklist applied to diff (13 files, +250/-104): (1) SAD compliance — all changes within existing subsystem interfaces (INT-001, INT-003), no boundary violations; (2) Design mechanisms correctly applied — idempotency key scoping (CR-011) within ClockingService, office filter within DirectoryService; (3) No layer bypass or cross-cutting leakage; (4) Deployment view unchanged — no new runtime dependencies. Issue #26 updated with architectural review outcome. Integrator must re-open or re-create the iteration/C2 → main PR to merge the C2 baseline. |
+
+#### Open Architectural Issues for Next Iteration (C3 close or C4)
+
+| Issue | Priority | Owner | Description |
+|---|---|---|---|
+| PR synchronization — stakeholder directive | Critical | Integrator | Stakeholder feedback (C2 Cycle 2): "everything is in the PRs... nobody has bothered to merge anything." PR #19 (feature/C2-presentation → iteration/C2) and PR #21 (iteration/C2 → main, closed) must be synchronized and merged. The work exists in branches but has not reached main. |
+| C2-CRIT-1: Clocking API 404 (#22) | Critical | Implementer | Clocking API endpoint missing — `fetch('/api/clocking')` returns 404. UC-001 non-functional. Not an architectural issue — the endpoint is missing in the presentation layer code. |
+| C2-MAJ-1: News edit form binding (#27) | Major | Implementer | News/Edit form field names mismatch BindProperties. UC-006 non-functional. Not an architectural issue — form binding mismatch in presentation layer. |
+| C2-MAJ-2: Missing antiforgery token (#23) | Major | Implementer | Missing antiforgery token on clocking POST — 400 rejection. UC-001 POST rejected. Not an architectural issue — ASP.NET Core antiforgery token not emitted in the Razor Page form. |
+| Audit transaction boundary enforcement | Medium | Implementer | NewsService and WorkerCategoryService should wrap business operation + audit log in ExecuteInTransactionAsync to ensure atomicity (SAD Quality: Auditability tactic). Design Model retains this as correct design. Carried forward from C2. |
+| CR-001 LDAP PoC execution | High | Implementer + STK-003 | Execute LDAP PoC against real AD to retire R001 (architect concurred, CR approved). 8 tests blocked pending OIDC registration by STK-003. Carried forward from C2. |
+| CR-002 Offline retry validation | High | Implementer | Validate offline retry end-to-end to retire R006 (architect concurred, CR approved). CR-011 idempotency key scoping implemented. Carried forward from C2. |
+| EmployeeId spoofable from request body (#24) | Minor | Implementer | RecordClockingRequest.EmployeeId is dead code — identity should be derived from OIDC token, not request body. Security finding, not architectural — the architecture specifies OIDC token as identity source (ADR-005). |
+| OIDC registration (STK-003) | High | STK-003 | 8 of 30 tests remain blocked pending OIDC client registration in Keycloak by STK-003. R003 risk (analysis-only mode) requires STK-003 coordination. Carried forward from C2. |
 ## Traceability
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
