@@ -9,5 +9,5 @@ namespace PortalCubaCorp.Application;
 /// </summary>
 public interface IDirectoryService
 {
-    List<DirectoryEntry> Search(string query);
+    List<DirectoryEntry> Search(string query, string? office = null);
 }

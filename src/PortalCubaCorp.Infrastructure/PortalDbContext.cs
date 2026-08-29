@@ -38,7 +38,8 @@ public class PortalDbContext : DbContext
             entity.Property(e => e.Timestamp).IsRequired();
             entity.Property(e => e.Type).HasConversion<string>().IsRequired();
             entity.Property(e => e.IdempotencyKey).IsRequired().HasMaxLength(64);
-            entity.HasIndex(e => e.IdempotencyKey).IsUnique(); // AC-005 idempotency
+            // CR #11: unique index scoped per employee — prevents cross-employee collision
+            entity.HasIndex(e => new { e.EmployeeId, e.IdempotencyKey }).IsUnique();
             entity.HasIndex(e => new { e.EmployeeId, e.Timestamp });
         });
 

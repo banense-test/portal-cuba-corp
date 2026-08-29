@@ -8,7 +8,7 @@ namespace PortalCubaCorp.Tests;
 /// <summary>
 /// Unit tests for ClockingService (COMP-002).
 /// Black-box: verify IClockingService contract — record clocking, get status, history, CSV export.
-/// White-box: exercise idempotency deduplication branch, empty input validation, status determination logic.
+/// White-box: exercise idempotency deduplication branch (per-employee scoped), empty input validation, status determination logic.
 /// </summary>
 public class ClockingServiceTests
 {
@@ -47,6 +47,27 @@ public class ClockingServiceTests
         Assert.True(result.Success);
         Assert.NotNull(result.Record);
         Assert.Equal("key-dup", result.Record!.IdempotencyKey);
+    }
+
+    // --- White-box: CR #11 — idempotency key scoped per employee ---
+
+    [Fact]
+    public void RecordClocking_SameKeyDifferentEmployee_BothSucceed()
+    {
+        var (service, _) = CreateService();
+        var ts = DateTime.UtcNow;
+        var key = "shared-key-001";
+
+        // Same idempotency key but different employees — both should succeed
+        // because idempotency is scoped per (employeeId, key), not globally
+        var first = service.RecordClocking("emp1", ts, ClockType.In, key);
+        var second = service.RecordClocking("emp2", ts, ClockType.In, key);
+
+        Assert.True(first.Success);
+        Assert.True(second.Success);
+        Assert.False(first.IsDuplicate);
+        Assert.False(second.IsDuplicate);
+        Assert.NotEqual(first.Record!.Id, second.Record!.Id);
     }
 
     [Fact]

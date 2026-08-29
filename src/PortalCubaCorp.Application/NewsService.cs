@@ -21,7 +21,7 @@ public class NewsService : INewsService
         _auditLogger = auditLogger;
     }
 
-    public NewsItem Publish(string title, string body, NewsCategory category, string authorId)
+    public NewsItem Publish(string title, string body, NewsCategory category, bool isFeatured, string authorId)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Title is required", nameof(title));
@@ -34,6 +34,7 @@ public class NewsService : INewsService
             Title = title,
             Body = body,
             Category = category,
+            IsFeatured = isFeatured,
             Status = NewsStatus.Published,
             CreatedAt = now,
             UpdatedAt = now,

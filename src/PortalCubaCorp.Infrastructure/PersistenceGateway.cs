@@ -41,9 +41,9 @@ public class PersistenceGateway : IPersistence
         return record;
     }
 
-    public ClockingRecord? FindByIdempotencyKey(string key)
+    public ClockingRecord? FindByIdempotencyKey(string employeeId, string key)
     {
-        return _db.Clockings.FirstOrDefault(c => c.IdempotencyKey == key);
+        return _db.Clockings.FirstOrDefault(c => c.EmployeeId == employeeId && c.IdempotencyKey == key);
     }
 
     // News operations
