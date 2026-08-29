@@ -631,7 +631,6 @@ The product is feature-complete and operationally ready for handover. However, b
 - 0 Critical, 1 Major (BR-T1-002), 2 Minor (DM-F2 + BR-T1-001)
 - Product is release-ready pending verification of 3 binding conditions and documentation of goal measurement plan
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | DM-F2 (persisting) | Design Model C4, PR #32 | Derives | Designer artifact (traceability table update) |
@@ -646,3 +645,11 @@ The product is feature-complete and operationally ready for handover. However, b
 | Binding condition #2 | CON-004, R003, STK-003 | Derives | Software Architect — OIDC verification |
 | Binding condition #3 | CON-006, CON-007 | Derives | Software Architect — mock-auth expiry |
 | Stakeholder directive (C4) | STK-001 feedback | Refines | "Close all PRs, Github Issues, and findings" — 0 open PRs, 7 minor/deferred issues, 1 persisting Minor finding documented |
+| BR-T1-001 | BG-001, BG-002, BG-003 | Derives | Vision — post-deployment goal verification plan |
+| BR-T1-002 | NFR-001, NFR-002, CON-004, R003 | Derives | Review Record — binding conditions as business-goal-blocking |
+| BG-001 (goal achievement) | UC-001..UC-004, UC-009 | Derives | Post-deployment HR time audit (PENDING) |
+| BG-002 (goal achievement) | UC-001..UC-004, UC-009 | Derives | Post-deployment Excel usage audit (PENDING) |
+| BG-003 (goal achievement) | UC-001..UC-010, User Documentation | Derives | Post-deployment adoption tracking (PENDING) |
+| BM-LL-001 | BG-001..BG-003 | Derives | Future projects — goal measurement planning |
+| BM-LL-002 | BR-T1-002, BG-001..BG-003 | Derives | Future projects — technical-business dependency tracing |
+| BM-LL-003 | DC §4 classification | Derives | Future projects — BM inactive review lens adaptation |
