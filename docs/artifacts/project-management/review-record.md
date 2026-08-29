@@ -1,4 +1,5 @@
 ## Document Control
+
 | Field | Value |
 |---|---|
 | Phase | Construction |
@@ -8,9 +9,9 @@
 | Date | 2026-08-29 |
 | Prior Phase | Construction C3 Cycle 1 (Consolidation — 0 Critical, 2 Major, 1 Minor; stakeholder sanction REFUSED 3rd time) |
 | Technical Lens (Code Reviewer) | EXECUTED — Construction C4 Cycle 1, Iteration 4. 0 Critical, 0 Major, 1 Minor (DM-F2: Design Model stale traceability for C4-1/C4-2). Source code verified: C4-1 (isFeatured) and C4-2 (transaction wrapping) CONFIRMED in code. All PRs merged. CI green on main. |
-| Business Lens (Business Reviewer) | INACTIVE — did not evaluate this review |
+| Business Lens (Business Reviewer) | **PRESERVED** — BM INACTIVE per DC §4 (isBusinessProcessLed=false). No BM deltas in C4 Cycle 1. Elaboration baseline stands. 0 findings, 0 open actions. |
 | Management Lens (Management Reviewer) | PENDING — not yet executed this cycle |
-| Review Coordinator | PENDING — Code Reviewer lens complete; awaiting Management Reviewer lens |
+| Review Coordinator | PENDING — Code Reviewer lens complete; Business Reviewer lens complete (PRESERVED); awaiting Management Reviewer lens |
 | Review Type | Construction C4 Cycle 1 — Code Review (source verification + artifact review) |
 | PRs Reviewed | #32 (feature/C4-rework → iteration/C4, APPROVED & MERGED), #19 (stale, superseded), #8 (stale, superseded) |
 | CI Build Status | main: GREEN (run 33256627567, 2026-08-29 14:05:31Z) |
@@ -20,8 +21,10 @@
 | Prior Findings Resolved (Reviewer lens) | DM-F1 (INT-003 office parameter) — RESOLVED in C3; TC-F1 (TD-NNN prefix) — RESOLVED in E2; TC-F2 (UnitTest1.cs placeholder) — RESOLVED in C3 |
 | Prior Findings (Management Reviewer lens) | IP-F5 (Major) — OPEN from C3; RL-F5 (Major) — OPEN from C3; IA-F1 (Minor) — OPEN from C3 |
 | New Findings (Reviewer, this cycle) | 0 Critical, 0 Major, 1 Minor (DM-F2: Design Model traceability table stale — C4-1/C4-2 listed as OPEN but RESOLVED in code) |
+| New Findings (Business Reviewer, this cycle) | 0 — BM INACTIVE, no deltas, no findings |
 | Stakeholder Sanction | PENDING — awaiting Management Reviewer lens and stakeholder decision |
 | Code Reviewer Verdict | **APPROVED** — Source code conforms to Design Model. C4-1 and C4-2 confirmed resolved in code. 1 Minor finding (DM-F2) is non-blocking documentation lag. CI green on main, 0 open PRs, 0 open defects. IOC blockers remain: R003 OIDC (8 tests blocked) and NFR-001/002 load testing not executed. |
+| Business Reviewer Verdict | **PRESERVED** — BM INACTIVE per DC §4. No BM deltas in C4 Cycle 1. Elaboration baseline preserved. 0 findings. |
 
 ## Review Scope and Criteria
 
@@ -259,6 +262,57 @@ All tests exercise real assertions on the code changes — no decoy `Assert.NotN
 | #19 | feature/C2-presentation → iteration/C2 | Superseded | Stale from C2. Superseded by PR #28/#29/#32. |
 | #8 | feature/C1-presentation → iteration/C1 | Superseded | Stale from C1. Superseded by PR #28/#29/#32. |
 
+### Business Reviewer Lens — C4 Cycle 1 (Construction Iteration 4)
+
+```plantuml
+@startuml
+title Business Modeling Lens — C4 Cycle 1 Coverage Map
+
+note as N1
+**Business Modeling Status: INACTIVE**
+DC §4 classification: isBusinessProcessLed = false
+No BM deltas in Construction C4 Cycle 1
+
+BM Scenario: Not Applicable (system-level FRs, not business process models)
+BUC Model: Not produced (INACTIVE per DC §4)
+Business Rules: Not produced (INACTIVE per DC §4)
+Business Workers/Entities: Not produced (INACTIVE per DC §4)
+
+Prior BR Findings: 0 (BR lens INACTIVE since Elaboration)
+New BR Findings: 0 (no BM artifacts to review)
+Disposition: PRESERVED — Elaboration baseline stands
+end note
+
+note as N2
+**Artifacts Reviewed (BR Lens)**
+Use-Case Model: APPROVED — no BM deltas
+Supplementary Specification: APPROVED — no BM deltas
+Vision: APPROVED — no BM deltas (prior findings resolved in Inception)
+
+**Derivation Bridge**: N/A (BM INACTIVE — system UCs derive directly from declared FRs)
+**Implementation Conformance**: N/A (no BM deltas to verify against code)
+**Test Coverage of Business Rules**: N/A (no business rule deltas)
+end note
+
+N1 -[hidden]- N2
+
+@enduml
+```
+
+| Criterion | Assessment | Result |
+|---|---|---|
+| BM Scenario Identification | DC §4: `isBusinessProcessLed = false` — system-level FRs, not business process models. No BUC model produced or required. | N/A (INACTIVE) |
+| BUC Completeness | No BUCs in scope — system UCs derive directly from declared FR-001..FR-010. | N/A (INACTIVE) |
+| Realization Coverage | No BUC realizations required — BM discipline inactive. | N/A (INACTIVE) |
+| Derivation Bridge | System UCs derive directly from declared FRs (FR-001..FR-010 → UC-001..UC-010). No worker→actor or entity→class bridge needed. | N/A (INACTIVE) |
+| Business Rule Audit | Business rules encoded as constraints (CON-010, CON-012, CON-013) and NFR-004 in Supplementary Specification — not as separate BR artifacts. | N/A (INACTIVE) |
+| Diagram Coverage | No BM diagrams required — discipline inactive. | N/A (INACTIVE) |
+| Stakeholder Coverage | All 4 stakeholders (STK-001..STK-004) represented in Vision and Use-Case Model. No BM-specific stakeholder gaps. | PASS |
+| Implementation Conformance | No BM deltas in C4 Cycle 1 — nothing to verify against code. | N/A (INACTIVE) |
+| Test Coverage of Business Rules | No business rule deltas — existing constraints (CON-013 no-delete, NFR-004 audit) covered by existing tests. | N/A (INACTIVE) |
+
+**BR Lens Verdict: PRESERVED** — Business Modeling is INACTIVE per DC §4. No BM deltas in Construction C4 Cycle 1. The Elaboration baseline is preserved. Zero findings, zero open actions.
+
 ## Resolutions and Actions
 
 ### Resolved This Cycle (Iteration 4)
@@ -326,6 +380,12 @@ The stakeholder's C4 directive — "Let's iterate again and close all PRs, Githu
 - ✅ All GitHub Issues resolved (0 open defects)
 - ⚠️ Findings: 1 new Minor (DM-F2) from this lens; 3 open findings from Management Reviewer lens (IP-F5, RL-F5, IA-F1)
 
+### Business Reviewer Disposition — C4 Cycle 1, Iteration 4
+
+**Verdict: PRESERVED**
+
+Business Modeling is INACTIVE per DC §4 (`isBusinessProcessLed = false`). No Business Modeling deltas were introduced in Construction C4 Cycle 1. The Elaboration baseline for Business Modeling is preserved. Zero findings, zero open actions from the Business Reviewer lens.
+
 ### IOC Exit Criteria Status (C4 Iteration 4)
 
 | Criterion | Status | Evidence | Gap |
@@ -365,4 +425,4 @@ The stakeholder's C4 directive — "Let's iterate again and close all PRs, Githu
 | Stakeholder directive (C4) | STK-001 feedback (C4 Cycle 1) | Refines | Close all PRs, Issues, and findings |
 | Stakeholder directive (C3) | STK-001 feedback (C3 Cycle 1) | Refines | "We absolutely have to iterate again" |
 | Review Coordinator Consolidation | All artifacts, Reviewer lens complete | Refines | Awaiting Management Reviewer lens |
-| Business Reviewer Lens | N/A | N/A | INACTIVE — did not evaluate this review |
+| Business Reviewer Lens | DC §4 (isBusinessProcessLed=false) | Refines | PRESERVED — Elaboration baseline stands, 0 findings |
