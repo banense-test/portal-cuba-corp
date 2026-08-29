@@ -2,15 +2,16 @@
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | **Finalized** — Technical Writer end-user phrasing review complete (Transition Iter 1, Cycle 1) |
-| Milestone Target | End of Transition (PRD) — NOT YET ACHIEVED |
-| Iteration | 1 (Cycle 1) |
+| Status | **Evolved — Transition Iteration 2 Cycle 1** — binding conditions addressed per stakeholder directive |
+| Milestone Target | End of Transition (PR) — **NOT YET ACHIEVED — pending stakeholder re-review** |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-29 |
 | Author | Deployment Manager (Deployment Discipline) — primary; Technical Writer (Deployment Discipline) — end-user phrasing contributor |
-| Prior Phase | Construction C4 — IOC CONDITIONAL GO, stakeholder sanction GRANTED with 3 binding conditions |
-| CI Build | main: GREEN (run 33256627567, 2026-08-29 14:05:31Z) |
+| Prior Phase | Transition Iteration 1 — Release Notes drafted; beta program completed; 3 binding conditions OPEN; stakeholder PR sanction REFUSED |
+| CI Build | main: GREEN (run 33259873386, 2026-08-29 15:18:05Z) |
 | Deployment Mode | Custom-built, single Windows Server (CON-006) |
-| Technical Writer Review | End-user phrasing audited for styleguide compliance: "Clock In/Out" (not "punch"/"check-in"), "News item" (not "article"/"post"), "Worker category" (not "employee type"), "Directory" (not "phonebook"), "Unpublish" (not "hide"/"remove"). All known issues, features, and upgrade notes use consistent terminology with User Documentation. No internal ticket IDs exposed to end users. Training Status updated to reflect User Documentation publication-ready status. |
+| Finding RN-F1 (Major) | **RESOLVED** — All 4 stakeholder directives addressed: (1) NFR-001/NFR-002 measured values reported; (2) R003 OIDC formally accepted risk with residual stated; (3) Mock-auth expiry date and owner documented; (4) Deployment verification on Windows Server explicitly stated as NOT PERFORMED. |
+| Technical Writer Review | End-user phrasing audited for styleguide compliance: "Clock In/Out" (not "punch"/"check-in"), "News item" (not "article"/"post"), "Worker category" (not "employee type"), "Directory" (not "phonebook"), "Unpublish" (not "hide"/"remove"). All known issues, features, and upgrade notes use consistent terminology with User Documentation. No internal ticket IDs exposed to end users. |
 ## About This Release
 
 Portal Cuba Corp is the employee portal for Cuba Corp — a single web application that centralizes clock in/out, HR news, and the employee directory into one place accessible from the corporate browser. It replaces shared Excel sheets, mass emails, and the outdated PDF phone directory for 200 employees across 3 offices.
