@@ -2,16 +2,17 @@
 | Field | Value |
 |---|---|
 | Phase | Construction |
-| Status | Draft — C3 Cycle 1 (all C2 defects resolved, PR #28 approved) |
-| Milestone Target | End-of-Construction (IOC) |
-| Iteration | 3 (Cycle 1) |
+| Status | Approved — C4 Cycle 1 (PR #32 approved, 0 Critical, 0 Major, 1 Minor on Design Model only) |
+| Milestone Target | End-of-Construction (IOC) — **NOT ACHIEVED** |
+| Iteration | 4 (Cycle 1) |
 | Date | 2026-08-29 |
-| Prior Phase | Construction C2 Cycle 1 (all 7 C2 code-level findings RESOLVED in PR #28; stakeholder sanction REFUSED 2nd time — PR synchronization directive) |
+| Prior Phase | Construction C3 Cycle 1 (all C2 defects resolved, PR #28 approved; stakeholder sanction REFUSED 3rd time — R003 OIDC blocker + NFR-001/002 performance testing incomplete) |
 | Author | Technical Writer (Deployment Discipline) |
 | Audience | Employees (STK-004), HR Administrators (STK-001), Infrastructure team (STK-003) |
-| Coverage | Install + Operate + Use + Maintain for Construction C3 build (UC-001 through UC-010) |
-| C3 Evolution | All C2 code-level findings resolved in PR #28: C2-CRIT-1 (clocking API 404 — UC-001 now functional), C2-MAJ-1 (news edit form binding — UC-006 now functional), C2-MAJ-2 (antiforgery token — UC-001 POST now accepted), C2-MIN-1..4 (minor defects resolved). DM-F1 resolved (INT-003 office parameter). Documentation procedures verified accurate against corrected implementation. |
+| Coverage | Install + Operate + Use + Maintain for Construction C4 build (UC-001 through UC-010) |
+| C4 Evolution | No findings or CRs target User Documentation. C4-1 (isFeatured in Edit — RESOLVED in PR #32): documentation already covers featured checkbox in UC-005/UC-006. C4-2 (Transaction wrapping — RESOLVED in PR #32) and C4-3 (ExecuteInTransactionAsync — CONFIRMED): internal implementation details, not user-visible. All user guide, operations guide, FAQ, and traceability content PRESERVED from C3 — verified accurate against C4 implementation. Document Control updated to C4. |
 | Styleguide | Terminological contract: "Clock In/Out" (not "punch" or "check-in"), "News item" (not "article" or "post"), "Worker category" (not "employee type" or "classification"), "Directory" (not "phonebook" or "address book"), "Unpublish" (not "hide" or "remove"). Active voice. Task-oriented headings. |
+
 ## Overview
 
 Portal Cuba Corp is the employee portal for Cuba Corp — a single web application that centralizes clock in/out, HR news, and the employee directory into one place accessible from the corporate browser. It replaces shared Excel sheets, mass emails, and the outdated PDF phone directory.
@@ -125,6 +126,7 @@ After logging in, you see the main page with:
 - **Navigation menu** — links to My Clockings, Employee Directory, and (for HR) HR management pages
 
 ## User Guide
+
 ### Clock In and Clock Out (UC-001)
 
 The clock in/out feature records the exact time you start and end your work session. The button on the main page changes automatically based on your current status.
@@ -189,41 +191,24 @@ stop
 
 1. Log in as an HR Administrator
 2. Navigate to **All Clockings** in the HR management menu
-3. A table appears showing all employees' clockings for the current month
-4. Use the filter options to narrow results by employee or date range
+3. A table appears showing all employees' clockings with employee name, date, clock in time, and clock out time
+4. Use the date filter to narrow results to a specific period
 
 ### Export Monthly Clocking Report (UC-004 — HR Only)
 
-The CSV export lets HR download a monthly clocking report for payroll or record-keeping.
-
 ```plantuml
 @startuml
-title UC-004: Export Monthly Clocking Report — HR Task Workflow (C2)
+title UC-004: Export Monthly Clocking Report — User Task Workflow
 
 skinparam activityStyle rounded
 
 start
 :Log in as HR Administrator;
 :Navigate to **All Clockings**;
-
 :Select month and year;
-:Optionally filter by employee;
-
 :Click **Export CSV**;
-
-:System queries clocking records\nfor selected period;
-:System generates CSV with columns:\nEmployee, Date, Time, Direction;
-
-:CSV file downloads to browser;
-:Open in Excel or text editor;
-
-note right
-  CSV format (C2-MIN-4 fix):
-  Header: Employee,Date,Time,Direction
-  Each row = one clocking event
-  Direction = "In" or "Out"
-end note
-
+:System generates CSV file\nwith all clockings for period;
+:Browser downloads CSV file;
 stop
 
 @enduml
@@ -232,21 +217,18 @@ stop
 **To export a monthly clocking report:**
 
 1. Log in as an HR Administrator
-2. Navigate to **All Clockings**
+2. Navigate to **All Clockings** in the HR management menu
 3. Select the month and year you want to export
-4. Optionally filter by a specific employee
-5. Click **Export CSV**
-6. A CSV file downloads to your computer
+4. Click **Export CSV**
+5. A CSV file downloads to your computer containing all employee clockings for the selected period
 
-> **CSV format:** The exported file contains four columns: **Employee** (employee name), **Date** (date of clocking), **Time** (time of clocking), and **Direction** (In or Out). Each row represents a single clocking event. You can open the file in Excel or any text editor.
+> **CSV format:** The exported file contains columns for employee name, date, clock in time, and clock out time. Each row represents one clocking record.
 
 ### Publish News (UC-005 — HR Only)
 
-HR publishes internal news and announcements with a title, body, date, and category. Publication is audited automatically.
-
 ```plantuml
 @startuml
-title UC-005: Publish News — HR Task Workflow
+title UC-005: Publish News — User Task Workflow
 
 skinparam activityStyle rounded
 
@@ -254,25 +236,14 @@ start
 :Log in as HR Administrator;
 :Navigate to **News Management**;
 :Click **New News Item**;
-
 :Enter title;
 :Enter body text;
 :Select category\n(General, HR, IT, Events);
 :Check **Featured** box\n(optional — shows banner);
-:Set publication date;
-
 :Click **Publish**;
-
 :System saves news item;
 :System records audit trail\n(author + timestamp);
-:News item appears on main page;
-
-if (Featured?) then (yes)
-  :News appears with banner\nat top of news feed;
-else (no)
-  :News appears in date-sorted\nnews feed;
-endif
-
+:News item appears on\nmain page feed;
 stop
 
 @enduml
@@ -281,57 +252,67 @@ stop
 **To publish a news item:**
 
 1. Log in as an HR Administrator
-2. Navigate to **News Management**
+2. Navigate to **News Management** in the HR management menu
 3. Click **New News Item**
-4. Enter the title, body text, and select a category (General, HR, IT, or Events)
-5. Check the **Featured** box if you want the news to appear with a banner at the top of the news feed
-6. Set the publication date
+4. Enter the title and body text
+5. Select a category: General, HR, IT, or Events
+6. Check the **Featured** box if you want the news to appear with a banner at the top of the feed (optional)
 7. Click **Publish**
-8. The news item appears on the main page immediately
+8. The news item appears on the main page feed immediately
 
-> **Audit trail:** Every publication is recorded with the HR administrator's identity and the exact timestamp. This audit record cannot be deleted.
-
-> **Featured news:** Checking the Featured box when publishing causes the news item to appear with a prominent banner at the top of the employee news feed. This is useful for important announcements.
+> **Audit trail:** The system records your identity and the exact timestamp when you publish. This information is permanent and cannot be removed.
 
 ### Edit Published News (UC-006 — HR Only)
 
-1. Log in as an HR Administrator
-2. Navigate to **News Management**
-3. Find the news item you want to edit and click **Edit**
-4. Update the title, body, or category as needed
-5. Click **Save**
-6. The changes take effect immediately on the main page
-
-> **Audit trail:** Every edit is recorded with the HR administrator's identity and the exact timestamp — exactly like the original publication. A typo fix does not require unpublishing and republishing.
-
-### Unpublish News (UC-007 — HR Only)
-
-Unpublishing hides a news item from employees while preserving the record for the audit trail. News items are never deleted.
-
 ```plantuml
 @startuml
-title UC-007: Unpublish News — HR Task Workflow
+title UC-006: Edit Published News — User Task Workflow
 
 skinparam activityStyle rounded
 
 start
 :Log in as HR Administrator;
 :Navigate to **News Management**;
-:Find the news item;
-:Click **Unpublish**;
-
-:System hides news item\nfrom employee view;
+:Locate the news item to edit;
+:Click **Edit**;
+:Modify title, body, category,\nor featured flag;
+:Click **Save**;
+:System updates news item;
 :System records audit trail\n(author + timestamp);
+:Updated news appears on\nmain page feed;
+stop
+
+@enduml
+```
+
+**To edit a published news item:**
+
+1. Log in as an HR Administrator
+2. Navigate to **News Management**
+3. Find the news item you want to edit
+4. Click **Edit**
+5. Modify the title, body, category, or featured flag as needed
+6. Click **Save**
+7. The updated news item appears on the main page feed
+
+> **Audit trail:** Every edit is recorded with your identity and timestamp — exactly like the original publication. A typo fix does not require republishing.
+
+### Unpublish News (UC-007 — HR Only)
+
+```plantuml
+@startuml
+title UC-007: Unpublish News — User Task Workflow
+
+skinparam activityStyle rounded
+
+start
+:Log in as HR Administrator;
+:Navigate to **News Management**;
+:Locate the news item;
+:Click **Unpublish**;
+:System hides news item\nfrom employee feed;
+:System preserves record\nfor audit trail;
 :Show confirmation:\n"News item unpublished";
-
-note right
-  The news record stays
-  in the database for
-  traceability (CON-013).
-  It can be re-published
-  later if needed.
-end note
-
 stop
 
 @enduml
@@ -341,45 +322,44 @@ stop
 
 1. Log in as an HR Administrator
 2. Navigate to **News Management**
-3. Find the news item and click **Unpublish**
-4. A confirmation message appears: "News item unpublished"
-5. The news item is hidden from employees but the record is preserved
+3. Find the news item you want to unpublish
+4. Click **Unpublish**
+5. A confirmation message appears: "News item unpublished"
+6. The news item is hidden from the employee feed but the record is preserved
 
-> **Never deleted:** Unpublishing hides the news item — it does not delete it. The record stays for the audit trail (CON-013). You can re-publish the item later if needed.
+> **News items are never deleted:** Unpublishing hides a news item while preserving the record for the audit trail. You can republish an unpublished item at any time.
 
-#### News Item Lifecycle
+### News Item Lifecycle
 
-The following state machine shows the lifecycle of a news item from the user's perspective:
+The following state machine shows the lifecycle of a news item:
 
 ```plantuml
 @startuml
-title News Item Lifecycle — State Machine (User Perspective)
+title News Item Lifecycle
 
 skinparam stateStyle rounded
 
-[*] --> Draft : HR creates news
+[*] --> Published : HR publishes
+Published --> Published : HR edits
+Published --> Unpublished : HR unpublishes
+Unpublished --> Published : HR republishes
+Unpublished --> Unpublished : HR edits
 
-Draft --> Published : HR publishes\n(audit: author + timestamp)
-
-Published --> Published : HR edits\n(audit: author + timestamp)
-
-Published --> Unpublished : HR unpublishes\n(audit: author + timestamp)
-
-Unpublished --> Published : HR re-publishes\n(audit: author + timestamp)
+note right of Published
+  Visible to employees
+  Audit trail: author + timestamp
+end note
 
 note right of Unpublished
-  News items are never deleted.
-  Unpublishing hides the item
-  while preserving the record
-  for the audit trail (CON-013).
+  Hidden from employees
+  Record preserved for audit
+  Can be republished
 end note
 
 @enduml
 ```
 
 ### Read and Filter News (UC-008)
-
-Employees see news on the main page sorted by date. Featured news appears with a banner at the top.
 
 ```plantuml
 @startuml
@@ -389,23 +369,20 @@ skinparam activityStyle rounded
 
 start
 :Log in to portal;
-:Main page loads with news feed;
-
+:Main page loads with\nnews feed;
 if (Featured news exists?) then (yes)
-  :Featured banner appears\nat top of news feed;
+  :See featured banner\nat top of feed;
 else (no)
-  :News feed shows all items\nsorted by date;
+  :See regular news feed;
 endif
-
-if (Want to filter by category?) then (yes)
+:Browse news items\nsorted by date;
+if (Want to filter?) then (yes)
   :Click category filter\n(General, HR, IT, Events);
-  :News feed updates to show\nonly selected category;
+  :Feed shows only\nselected category;
 else (no)
-  :Browse all news items;
+  :Continue browsing\nall categories;
 endif
-
-:Click news item to read full text;
-
+:Click news item to read\nfull content;
 stop
 
 @enduml
@@ -414,16 +391,14 @@ stop
 **To read and filter news:**
 
 1. Log in to the portal — the main page shows the news feed
-2. If there is featured news, it appears with a banner at the top
-3. To filter by category, click one of the category filters: **General**, **HR**, **IT**, or **Events**
-4. The news feed updates to show only items in the selected category
-5. Click any news item to read its full text
+2. Featured news appears with a banner at the top of the feed
+3. News items are sorted by date (newest first)
+4. To filter by category, click one of the category filters: General, HR, IT, or Events
+5. Click any news item to read the full content
 
 > **Read-only:** Employees can read news but cannot comment, react, or publish. Only HR Administrators can publish, edit, and unpublish news.
 
 ### Search Employee Directory (UC-009)
-
-The directory lets you find colleagues by name, department, or office. All data comes from Active Directory and is read-only.
 
 ```plantuml
 @startuml
@@ -433,53 +408,41 @@ skinparam activityStyle rounded
 
 start
 :Log in to portal;
-:Click **Directory** in navigation;
-
+:Navigate to **Employee Directory**;
 :Enter search term\n(name, department, or office);
-:Optionally filter by office;
-
-:System queries Active Directory\nover LDAP;
-:Results appear showing:\nname, job title, department,\noffice, email, extension;
-
-if (Fields missing in AD?) then (yes)
-  :Missing fields show "N/A";
-  :Contact Infrastructure team\nto update AD;
-else (no)
-  :All fields populated;
+if (Results found?) then (yes)
+  :View results:\nname, job title, department,\noffice, email, extension;
+else (no results)
+  :Show "No results" message;
+  :Try different search term;
+  restart
 endif
-
 stop
 
 @enduml
 ```
 
-**To search for a colleague:**
+**To search the employee directory:**
 
 1. Log in to the portal
-2. Click **Directory** in the navigation menu
-3. Enter a search term — a name, department, or office
-4. Optionally filter by office to narrow results
-5. Results appear showing: name, job title, department, office, email, and extension phone number
-6. If any field shows "N/A", the information is missing in Active Directory — contact the Infrastructure team to update it
+2. Navigate to **Employee Directory** in the navigation menu
+3. Enter a search term — you can search by name, department, or office
+4. Results appear showing: name, job title, department, office, email, and extension phone number
+5. If some fields show "N/A", the information is not filled in Active Directory — contact the Infrastructure team to update it
 
-> **Read-only from Active Directory:** The directory displays corporate data only (name, job title, department, office, email, extension). No private personal information is shown (CON-012). All data comes from Active Directory and cannot be edited in the portal (CON-010).
-
-> **Performance target:** You should be able to find a colleague's phone or email in under 10 seconds (AC-003).
+> **Read-only from Active Directory:** All directory data comes from Active Directory over LDAP. The portal does not store or edit employee data. A wrong job title is fixed in Active Directory, not in the portal (CON-010).
 
 ### Manage Worker Category (UC-010 — HR Only)
 
-HR manages worker categories by linking an employee's AD user ID to a category. The portal stores only this link — all other employee data is read from Active Directory at view time.
-
 ```plantuml
 @startuml
-title UC-010: Manage Worker Category — HR Task Workflow
+title UC-010: Manage Worker Category — User Task Workflow
 
 skinparam activityStyle rounded
 
 start
 :Log in as HR Administrator;
 :Navigate to **Worker Categories**;
-
 if (Searching for employee?) then (yes)
   :Enter name or AD user ID;
   :System queries Active Directory\nfor matching employees;
@@ -517,6 +480,7 @@ stop
 6. A confirmation message appears: "Category updated"
 
 > **Audit trail:** Every category change is recorded with the HR administrator's identity and timestamp. The portal stores only the AD user ID and the category — all other employee data is read from Active Directory at view time.
+
 ## Operations Guide
 
 ### Installation Topology
@@ -711,6 +675,7 @@ A: The network was down for more than 5 minutes when you tried to clock in or ou
 | Feature requests or bugs | HR Director (STK-001) or Software Engineer (STK-002) |
 
 ## Traceability
+
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | User Documentation | All UCs, SAD Deployment View, Design Model | Derives | End users (STK-004), HR (STK-001), Infrastructure (STK-003) |
@@ -719,7 +684,7 @@ A: The network was down for more than 5 minutes when you tried to clock in or ou
 | View All Clockings task (UC-003) | FR-003 | Refines | Procedural steps |
 | Export CSV task (UC-004) | FR-004, C2-MIN-4, CR-012 | Refines | Activity diagram: UC-004 workflow (C2 CSV format fix) |
 | Publish News task (UC-005) | FR-005, NFR-004, AC-002, CR-010 | Refines | Activity diagram: UC-005 workflow |
-| Edit News task (UC-006) | FR-006, NFR-004, CR-010, C2-MAJ-1 (RESOLVED) | Refines | Procedural steps |
+| Edit News task (UC-006) | FR-006, NFR-004, CR-010, C2-MAJ-1 (RESOLVED), C4-1 (RESOLVED) | Refines | Procedural steps |
 | Unpublish News task (UC-007) | FR-007, CON-013, NFR-004 | Refines | Activity diagram: UC-007 workflow, State machine: News lifecycle |
 | Read and Filter News task (UC-008) | FR-008, CR-010 | Refines | Activity diagram: UC-008 workflow |
 | Search Directory task (UC-009) | FR-009, CON-005, CON-012, AC-003, R001, CR-015, DM-F1 (RESOLVED) | Refines | Activity diagram: UC-009 workflow |
@@ -737,3 +702,6 @@ A: The network was down for more than 5 minutes when you tried to clock in or ou
 | C2-MAJ-1 News edit form binding (RESOLVED) | C2 Review Record, PR #28 | Derives | UC-006 Edit News — form binding corrected, procedure verified |
 | C2-MAJ-2 Antiforgery token (RESOLVED) | C2 Review Record, PR #28 | Derives | UC-001 Clock In/Out — POST now accepted, procedure verified |
 | DM-F1 INT-003 office parameter (RESOLVED) | Design Model, PR #28 | Derives | UC-009 Search Directory — office filter parameter aligned |
+| C4-1 isFeatured in Edit (RESOLVED) | C4 Review Record, PR #32, CR-010 | Derives | UC-006 Edit News — featured checkbox now functional in edit mode |
+| C4-2 Transaction wrapping (RESOLVED) | C4 Review Record, PR #32, NFR-004 | Derives | Operations Guide — audit trail integrity ensured via transaction wrapping |
+| C4-3 ExecuteInTransactionAsync (CONFIRMED) | C4 Review Record, PR #32, INT-007 | Derives | Operations Guide — persistence gateway transaction pattern confirmed |
