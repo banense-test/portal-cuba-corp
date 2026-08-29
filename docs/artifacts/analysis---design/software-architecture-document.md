@@ -562,10 +562,12 @@ The solution is organized as a layered .NET 10 solution with projects mirroring 
 > **Construction C1 Refinement:** Project name corrected from `src/PortalCubaCorp.Web` (Elaboration baseline) to `src/PortalCubaCorp` (actual). `ILdapConnection` testability abstraction and additional Domain entities (ClockingResult, LdapSearchResult, DateRange, Enums) added to reflect implementation reality.
 >
 > **Construction C2 Refinement:** Implementation View updated to reflect C1 delivery status — only `Index.cshtml`, `Program.cs`, and `clocking-retry.js` were delivered in C1; the remaining 7 Razor Pages are C2 targets. CR-011 (idempotency key scoping) noted in Infrastructure annotations. Domain layer annotations updated to reflect C2 Design Model contract alignment (NewsStatus Draft removed, CreatedBy→AuthorId, entityId type=string).
+>
+> **Construction C3 Refinement:** Implementation View updated to reflect C2 delivery — 7 Razor Pages delivered in PR #19 (feature/C2-presentation → iteration/C2). INT-003 contract updated with optional `office` parameter (DM-F1 resolution). PR #21 (iteration/C2 → main) architecturally approved but closed without merge — Integrator must re-open or re-create the baseline PR. 3 code-level defects persist in presentation layer (C2-CRIT-1, C2-MAJ-1, C2-MAJ-2) — not architectural, assigned to Implementer.
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Implementation View (Construction C2 — Refined)
+title Portal Cuba Corp — Implementation View (Construction C3 — Refined)
 
 skinparam packageStyle rectangle
 skinparam componentStyle rectangle
@@ -575,11 +577,13 @@ package "PortalCubaCorp.sln" as SLN {
   package "src/PortalCubaCorp" as WEB {
     package "Pages" as PAGES {
       component "Index.cshtml\n(MainPageModel V001)\n[C1 DELIVERED]" as IDX
-      note right of IDX
-        C2 target: Clocking, Directory,
-        AllClockings, PublishNews, EditNews,
-        NewsManagement, WorkerCategory pages
-      end note
+      component "Clocking.cshtml\n(V002) [C2 — PR #19]" as CLK_PG
+      component "Directory.cshtml\n(V007) [C2 — PR #19]" as DIR_PG
+      component "AllClockings.cshtml\n(V003) [C2 — PR #19]" as ALLCLK_PG
+      component "PublishNews.cshtml\n(V004) [C2 — PR #19]" as PUB_PG
+      component "EditNews.cshtml\n(V005) [C2 — PR #19]" as EDIT_PG
+      component "NewsManagement.cshtml\n(V006) [C2 — PR #19]" as NEWSMG_PG
+      component "WorkerCategory.cshtml\n(V008) [C2 — PR #19]" as WC_PG
     }
     package "wwwroot/js" as JS {
       component "clocking-retry.js\n(localStorage + POST retry\nAC-005) [C1 DELIVERED]" as CLK_JS
@@ -590,7 +594,7 @@ package "PortalCubaCorp.sln" as SLN {
   package "src/PortalCubaCorp.Application" as APP {
     component "IClockingService\n(INT-001)" as I_CLK
     component "INewsService\n(INT-002)" as I_NEWS
-    component "IDirectoryService\n(INT-003)" as I_DIR
+    component "IDirectoryService\n(INT-003)\nSearch(query, office?)" as I_DIR
     component "IWorkerCategoryService\n(INT-004)" as I_WC
     component "ClockingService\n(COMP-002)" as CLK_IMPL
     component "NewsService\n(COMP-003)" as NEWS_IMPL
@@ -639,18 +643,26 @@ note bottom of WEB
   Actual project: src/PortalCubaCorp (no .Web suffix)
   SDK: Microsoft.NET.Sdk.Web
   C1 delivered: Index.cshtml, Program.cs, clocking-retry.js
-  C2 target: remaining 7 Razor Pages (Clocking, Directory,
-    AllClockings, PublishNews, EditNews, NewsManagement, WorkerCategory)
+  C2 delivered (PR #19 → iteration/C2): 7 Razor Pages
+    (Clocking, Directory, AllClockings, PublishNews,
+    EditNews, NewsManagement, WorkerCategory)
+  C3 STATUS: PR #19 pending merge to iteration/C2;
+    PR #21 (iteration/C2 → main) closed, not merged
+  OPEN DEFECTS: C2-CRIT-1 (clocking API 404),
+    C2-MAJ-1 (news edit form binding),
+    C2-MAJ-2 (missing antiforgery token)
 end note
 
 note bottom of INFRA
-  CON-003: PostgreSQL via EF Core (Npgsql 10.0.0)
+  CON-003: PostgreSQL via EF Core (Npgsql 10.0.3)
   CON-005: AD over LDAP (read-only)
   CON-004: Keycloak OIDC client
   ILdapConnection abstracts Novell.Directory.Ldap
   for testability (ILdapGateway + ILdapConnection)
   C2 refinement: idempotency key scoped per employee
     (CR-011: unique index on employee_id + idempotency_key)
+  C3 refinement: INT-003 Search() gains optional
+    office parameter (DM-F1 resolution)
 end note
 
 note bottom of DOMAIN
@@ -666,12 +678,12 @@ end note
 
 ### Build Structure
 
-| Project | Layer | SDK | Dependencies | Purpose | C1 Status |
-|---|---|---|---|---|---|
-| PortalCubaCorp | Presentation | Microsoft.NET.Sdk.Web | Application, Infrastructure, Domain | Razor Pages, static files, OIDC middleware wiring, DI registration | Partial — Index.cshtml, Program.cs, clocking-retry.js delivered; 7 pages pending C2 |
-| PortalCubaCorp.Application | Application | Microsoft.NET.Sdk | Infrastructure (interfaces only), Domain | Service interfaces and implementations | Delivered — all 4 interfaces + 4 implementations |
-| PortalCubaCorp.Infrastructure | Infrastructure | Microsoft.NET.Sdk | Domain | EF Core DbContext, LDAP gateway, OIDC middleware, audit interceptor | Delivered — all components present |
-| PortalCubaCorp.Domain | Domain | Microsoft.NET.Sdk | (none) | Domain entities: ClockingRecord, NewsItem, WorkerCategory, AuditRecord, DirectoryEntry, ClockingResult, LdapSearchResult, DateRange, Enums | Delivered — all entities present |
+| Project | Layer | SDK | Dependencies | Purpose | C1 Status | C2/C3 Status |
+|---|---|---|---|---|---|---|
+| PortalCubaCorp | Presentation | Microsoft.NET.Sdk.Web | Application, Infrastructure, Domain | Razor Pages, static files, OIDC middleware wiring, DI registration | Partial — Index.cshtml, Program.cs, clocking-retry.js delivered | C2: 7 Razor Pages delivered in PR #19 (feature/C2-presentation → iteration/C2). 3 code-level defects open (C2-CRIT-1, C2-MAJ-1, C2-MAJ-2). PR #19 pending merge to iteration/C2; PR #21 (iteration/C2 → main) closed without merge. |
+| PortalCubaCorp.Application | Application | Microsoft.NET.Sdk | Infrastructure (interfaces only), Domain | Service interfaces and implementations | Delivered — all 4 interfaces + 4 implementations | C3: INT-003 contract updated with optional `office` parameter (DM-F1 resolution). All other interfaces unchanged. |
+| PortalCubaCorp.Infrastructure | Infrastructure | Microsoft.NET.Sdk | Domain | EF Core DbContext, LDAP gateway, OIDC middleware, audit interceptor | Delivered — all components present | C2: Idempotency key scoping (CR-011) applied. C3: No changes. |
+| PortalCubaCorp.Domain | Domain | Microsoft.NET.Sdk | (none) | Domain entities: ClockingRecord, NewsItem, WorkerCategory, AuditRecord, DirectoryEntry, ClockingResult, LdapSearchResult, DateRange, Enums | Delivered — all entities present | C2: NewsStatus Draft removed, CreatedBy→AuthorId, entityId type=string. C3: No changes. |
 
 ### Dependency Rules
 
@@ -680,7 +692,7 @@ end note
 - **Infrastructure → Domain:** Infrastructure project references Domain for entity types used in persistence.
 - **Domain → (none):** Domain project has no dependencies. Pure entity definitions.
 
-### NuGet Package Inventory (Construction C2)
+### NuGet Package Inventory (Construction C3)
 
 | Package | Version | Project | Constraint | Policy |
 |---|---|---|---|---|
