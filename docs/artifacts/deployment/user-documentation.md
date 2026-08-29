@@ -635,7 +635,6 @@ The portal uses four PostgreSQL tables:
 - **Active Directory and Keycloak:** These are external systems maintained by the Infrastructure team (STK-003). The portal does not back them up.
 
 ## FAQ and Support
-
 ### Frequently Asked Questions
 
 **Q: I forgot to clock in this morning. What should I do?**
@@ -673,6 +672,43 @@ A: The network was down for more than 5 minutes when you tried to clock in or ou
 | Portal is down or slow | Infrastructure team (STK-003) |
 | Feature requests or bugs | HR Director (STK-001) or Software Engineer (STK-002) |
 
+### Documentation Feedback
+
+This user guide is maintained alongside the portal. If you find an error, a missing topic, or a procedure that does not match what you see on screen, please report it.
+
+```plantuml
+@startuml
+title Documentation Feedback Process — Post-Release Maintenance
+
+skinparam activityStyle rounded
+
+start
+:User encounters issue\nor has suggestion;
+:Locate feedback section\nin User Documentation;
+:Send feedback to\nHR Director (STK-001);
+:HR Director triages feedback;
+if (Documentation issue?) then (yes)
+  :Route to Technical Writer;
+  :Update User Documentation;
+  :Publish revised section;
+else (no — system issue)
+  :Route to Infrastructure team\n(STK-003) or Software Engineer (STK-002);
+  :Resolve system issue;
+  :Update documentation\nif behavior changed;
+endif
+stop
+
+@enduml
+```
+
+**How to report a documentation issue:**
+
+1. Note the section name and page where you found the issue
+2. Describe what the documentation says versus what the portal actually does
+3. Send your feedback to the HR Director (STK-001), who routes it to the Technical Writer
+4. You will be notified when the documentation is updated
+
+> **Note:** Documentation is updated whenever the system's behavior changes. If a procedure does not match what you see on screen, the documentation may be out of date — please report it so it can be corrected.
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
