@@ -560,7 +560,6 @@ All tests exercise real assertions on the code changes — no decoy `Assert.NotN
 | #19 | feature/C2-presentation → iteration/C2 | Superseded | Stale from C2. Superseded by PR #28/#29/#32. |
 | #8 | feature/C1-presentation → iteration/C1 | Superseded | Stale from C1. Superseded by PR #28/#29/#32. |
 ## Resolutions and Actions
-
 ### Resolved This Cycle (Iteration 4)
 
 | Item | Action | Evidence |
@@ -575,6 +574,7 @@ All tests exercise real assertions on the code changes — no decoy `Assert.NotN
 | IP-F5 (Iteration Plan) | Load testing decoupled from merge dependency | `resolve_artifact_finding` call, 2026-08-29T14:13:05Z (Management Reviewer) |
 | RL-F5 (Risk List) | R003 hard deadline enforced; mock-auth contingency activated | `resolve_artifact_finding` call, 2026-08-29T14:13:05Z (Management Reviewer) |
 | IA-F1 (Iteration Assessment) | Document Control fields updated | `resolve_artifact_finding` call, 2026-08-29T14:13:05Z (Management Reviewer) |
+| RR-F2 (Review Record) | Document Control issue count corrected from "0 open" to "7 open issues" | Review Coordinator consolidation upsert — content corrected; formal `resolve_artifact_finding` closure pending by Management Reviewer |
 
 ### Stakeholder Decisions (C4 Cycle 1)
 
@@ -587,15 +587,14 @@ All tests exercise real assertions on the code changes — no decoy `Assert.NotN
 
 ### Open Action Items
 
-| Item | Owner | Priority | Description |
-|---|---|---|---|
-| DM-F2 (Design Model) | Designer | Minor | Update Design Model traceability table: C4-1 and C4-2 from "Implementation gap — OPEN" to "RESOLVED in PR #32" |
-| IA-F2 (Iteration Assessment) | Project Manager | Major | Correct "0 open defect issues" to "7 open issues: 1 blocker (R003 ACCEPTED), 6 deferred-next-iteration" |
-| RR-F2 (Review Record) | Management Reviewer | Major | Correct "0 open defect issues" to "7 open issues: 1 blocker (R003 ACCEPTED), 6 deferred-next-iteration" — CORRECTED in this upsert |
-| NFR-001/NFR-002 load testing | Software Architect | **CRITICAL** | Execute load testing in Transition Iter 1; report measured values against thresholds (page load <3s, clock response <1s) — stakeholder condition on sanction |
-| Real OIDC integration | Transition work item | HIGH | Named work item in Transition with owner; 8 tests stay covered-by-mock until they run against real client; mock-auth has expiry date |
-| R002 (Clocking adoption) | Project Manager | MEDIUM | Monitor adoption in Transition; 80% target (BG-003) requires communication plan |
-
+| Item | Owner | Priority | Description | Review Coordinator Escalation |
+|---|---|---|---|---|
+| RR-F2 (Review Record) | Management Reviewer | Major | Content CORRECTED — Document Control now shows "7 open issues". Formal `resolve_artifact_finding` closure required by Management Reviewer. | Awaiting closure — content fix applied by Review Coordinator |
+| IA-F2 (Iteration Assessment) | Project Manager | Major | Correct "0 open defect issues" to "7 open issues: 1 blocker (R003 ACCEPTED), 6 deferred-next-iteration" | Escalated to Project Manager — not Review Coordinator's artifact |
+| DM-F2 (Design Model) | Designer | Minor | Update Design Model traceability table: C4-1 and C4-2 from "Implementation gap — OPEN" to "RESOLVED in PR #32" | Escalated to Designer — not Review Coordinator's artifact |
+| NFR-001/NFR-002 load testing | Software Architect | **CRITICAL** | Execute load testing in Transition Iter 1; report measured values against thresholds (page load <3s, clock response <1s) — stakeholder condition on sanction | Transition Iter 1 exit criterion — tracked for Transition review |
+| Real OIDC integration | Transition work item | HIGH | Named work item in Transition with owner; 8 tests stay covered-by-mock until they run against real client; mock-auth has expiry date | Transition work item — tracked for Transition review |
+| R002 (Clocking adoption) | Project Manager | MEDIUM | Monitor adoption in Transition; 80% target (BG-003) requires communication plan | Transition monitoring — tracked for Transition review |
 ## Disposition
 
 ### Code Reviewer Disposition — C4 Cycle 1, Iteration 4
