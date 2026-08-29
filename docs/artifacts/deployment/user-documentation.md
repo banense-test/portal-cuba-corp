@@ -714,15 +714,15 @@ A: The network was down for more than 5 minutes when you tried to clock in or ou
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | User Documentation | All UCs, SAD Deployment View, Design Model | Derives | End users (STK-004), HR (STK-001), Infrastructure (STK-003) |
-| Clock In/Out task (UC-001) | FR-001, AC-001, AC-005, NFR-002, CR-011 | Refines | Activity diagram: UC-001 workflow |
+| Clock In/Out task (UC-001) | FR-001, AC-001, AC-005, NFR-002, CR-011, C2-CRIT-1 (RESOLVED), C2-MAJ-2 (RESOLVED) | Refines | Activity diagram: UC-001 workflow |
 | View My Clockings task (UC-002) | FR-002 | Refines | Procedural steps |
 | View All Clockings task (UC-003) | FR-003 | Refines | Procedural steps |
 | Export CSV task (UC-004) | FR-004, C2-MIN-4, CR-012 | Refines | Activity diagram: UC-004 workflow (C2 CSV format fix) |
 | Publish News task (UC-005) | FR-005, NFR-004, AC-002, CR-010 | Refines | Activity diagram: UC-005 workflow |
-| Edit News task (UC-006) | FR-006, NFR-004, CR-010 | Refines | Procedural steps |
+| Edit News task (UC-006) | FR-006, NFR-004, CR-010, C2-MAJ-1 (RESOLVED) | Refines | Procedural steps |
 | Unpublish News task (UC-007) | FR-007, CON-013, NFR-004 | Refines | Activity diagram: UC-007 workflow, State machine: News lifecycle |
 | Read and Filter News task (UC-008) | FR-008, CR-010 | Refines | Activity diagram: UC-008 workflow |
-| Search Directory task (UC-009) | FR-009, CON-005, CON-012, AC-003, R001, CR-015 | Refines | Activity diagram: UC-009 workflow |
+| Search Directory task (UC-009) | FR-009, CON-005, CON-012, AC-003, R001, CR-015, DM-F1 (RESOLVED) | Refines | Activity diagram: UC-009 workflow |
 | Manage Worker Category task (UC-010) | FR-010, CON-009, NFR-004 | Refines | Activity diagram: UC-010 workflow |
 | Installation Guide | SAD Deployment View, CON-001..CON-008 | Derives | Infrastructure team (STK-003) |
 | Configuration Reference | SAD Logical View, SAD Implementation View | Derives | Operations procedures |
@@ -733,3 +733,7 @@ A: The network was down for more than 5 minutes when you tried to clock in or ou
 | CR-010 IsFeatured | C1 Review Record MAJOR-1, FR-008 | Derives | UC-005 Publish News (featured checkbox), UC-008 Read and Filter News (featured banner) |
 | CR-011 Idempotency | AC-005, C1 Review Record MINOR-3 | Derives | UC-001 Clock In/Out (offline retry documentation) |
 | CR-015 Directory office filter | C1 Review Record MINOR-1, FR-009 | Derives | UC-009 Search Directory (office filter step) |
+| C2-CRIT-1 Clocking API 404 (RESOLVED) | C2 Review Record, PR #28 | Derives | UC-001 Clock In/Out — API endpoint corrected, procedure verified |
+| C2-MAJ-1 News edit form binding (RESOLVED) | C2 Review Record, PR #28 | Derives | UC-006 Edit News — form binding corrected, procedure verified |
+| C2-MAJ-2 Antiforgery token (RESOLVED) | C2 Review Record, PR #28 | Derives | UC-001 Clock In/Out — POST now accepted, procedure verified |
+| DM-F1 INT-003 office parameter (RESOLVED) | Design Model, PR #28 | Derives | UC-009 Search Directory — office filter parameter aligned |
