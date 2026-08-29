@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | Draft — Iteration 1 (Beta + Acceptance Testing incorporated) |
+| Status | Draft — Iteration 1 (Beta + Acceptance Testing + Lessons Learned incorporated) |
 | Milestone Target | End of Transition (PRD) — NOT YET ACHIEVED |
 | Iteration | 1 (Cycle 1) |
 | Date | 2026-08-29 |
@@ -325,6 +325,42 @@ The stakeholder granted IOC sanction with 3 binding conditions that must be met 
 2. **OIDC Transition work item** — A named work item with an owner must be created for the real OIDC client registration, with 8 tests currently covered by mock.
 3. **Mock-auth expiry date** — The mock-auth configuration expiry date must be documented in the Transition Iteration Plan.
 
+### Deployment Lessons Learned
+
+| ID | Lesson | Category | Impact on Future Work |
+|---|---|---|---|
+| LESSON-001 | External system dependencies (Keycloak OIDC, AD LDAP) require early coordination with the Infrastructure team (STK-003). The R003 OIDC blocker persisted across 4 Construction iterations and remains unresolved in Transition. | Dependency Management | Future projects with external system dependencies should establish a formal coordination protocol at Inception, with named owners and deadlines. |
+| LESSON-002 | Mock-auth was a necessary expedient to unblock development, but its expiry creates a hard deadline for production go-live. The mock-auth expiry date must be tracked as a critical milestone. | Risk Management | When using temporary mocks for external dependencies, document the expiry date and create a transition plan from the start. |
+| LESSON-003 | Beta testing confirmed usability without training (AC-004 alignment) and validated the offline retry mechanism (AC-005). Structured beta with participants across all 3 offices provided representative feedback. | Beta Program | Structured beta programs with cross-office participation are effective for validating multi-location deployments. |
+| LESSON-004 | The LDAP attribute gap (R001) was confirmed in beta — Office 3 has missing "extension" fields in AD. This is an AD data quality issue, not a portal defect (CON-010). The portal correctly displays what AD provides. | Data Quality | AD data quality should be audited before deployment, not after. The Infrastructure team should verify attribute completeness across all offices pre-deployment. |
+| LESSON-005 | The two-gate acceptance process (development site → installation site) ensures that functional defects are caught before production deployment. Gate 1 caught all functional issues; Gate 2 focuses on user acceptance criteria. | Acceptance Testing | Two-gate acceptance is effective for custom-built deployments. Gate 1 should be automated; Gate 2 requires real users. |
+| LESSON-006 | Performance NFRs (NFR-001, NFR-002) were not measured during Construction due to the single-server, intranet-only topology. These must be measured at the production site with real network conditions. | Performance Testing | Performance testing on the actual production hardware and network is essential for intranet applications — development environment measurements are not representative. |
+
+### Training Status
+
+| Audience | Training Material | Status |
+|---|---|---|
+| Employees (STK-004) | User Documentation — Getting Started, User Guide sections | Delivered — covers clocking, news reading, directory search |
+| HR Administrators (STK-001) | User Documentation — User Guide (HR sections), Operations Guide | Delivered — covers news publishing/editing/unpublishing, clocking reports, worker category management |
+| Infrastructure team (STK-003) | User Documentation — Operations Guide, FAQ and Support | Delivered — covers installation, configuration, troubleshooting |
+
+### Final BOM Summary
+
+| Category | Delivered | Pending | Notes |
+|---|---|---|---|
+| Application Code | ✅ .NET 10 + Razor Pages | — | CI green on main, PR #33 merged |
+| Database Schema | ✅ PostgreSQL migrations | — | EF Core migrations ready |
+| External: OIDC | — | ❌ Real Keycloak client | R003 blocker #30 — STK-003 must register |
+| External: LDAP | ✅ Read-only LDAP integration | — | AD attribute gaps in Office 3 (R001) |
+| UI Design | ✅ Mandatory design implemented | — | CON-011 compliance verified |
+| User Documentation | ✅ All UCs covered | — | Approved status |
+| Client-side Offline | ✅ Clocking retry script | — | AC-005 verified in beta |
+| Audit Trail | ✅ All audited actions logged | — | NFR-004 verified |
+| Performance Metrics | — | ❌ NFR-001, NFR-002 | Require production-site measurement |
+| Training | ✅ All audiences covered | — | User Documentation Approved |
+
+**BOM Verdict: 8 of 10 categories delivered. 2 pending (OIDC client registration, performance metrics). Both are stakeholder sanction conditions that must be resolved before production go-live.**
+
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
@@ -352,3 +388,11 @@ The stakeholder granted IOC sanction with 3 binding conditions that must be met 
 | Sanction Condition 1 | NFR-001, NFR-002, Review Record | Derives | Gate 1 acceptance testing |
 | Sanction Condition 2 | R003, CON-004, issue #30 | Derives | OIDC client registration |
 | Sanction Condition 3 | Mock-auth expiry, Review Record | Derives | Transition Iteration Plan |
+| LESSON-001 | R003, STK-003 | Derives | Future project dependency protocols |
+| LESSON-002 | Mock-auth, R003 | Derives | Mock expiry tracking |
+| LESSON-003 | AC-004, AC-005, BETA-002 | Derives | Beta program design |
+| LESSON-004 | R001, CON-010, BETA-003 | Derives | AD data quality audit |
+| LESSON-005 | Two-gate acceptance | Derives | Acceptance process design |
+| LESSON-006 | NFR-001, NFR-002 | Derives | Production-site performance testing |
+| Training Status | User Documentation, STK-001, STK-003, STK-004 | Refines | Go-live readiness |
+| Final BOM Summary | SCM repository, CON-001..CON-005, CON-011 | Realizes | SCM Release (S4) |
