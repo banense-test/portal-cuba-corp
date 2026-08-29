@@ -57,45 +57,56 @@ This review evaluates Construction C3 Cycle 1 against two lenses:
 | User Documentation | UC coverage, accuracy, terminological contract | PASS — all 10 UCs documented, C2 fixes reflected |
 
 ## Findings
-
 ### Prior Findings Reconciled (S_RECONCILE_PRIOR_FINDINGS)
 
 | Finding Key | Artifact | Severity | Lens | Status | Resolution |
 |---|---|---|---|---|---|
-| DM-F1 | Design Model | Minor | Code Reviewer | RESOLVED | INT-003 (IDirectoryService) contract updated to include optional `office` parameter. Verified in source code on iteration/C3 branch. |
-| TC-F2 | Test Case | Minor | Code Reviewer | RESOLVED | UnitTest1.cs placeholder (`Assert.True(true)`) removed on iteration/C3 branch. |
-| IP-F4 | Iteration Plan | Minor | Management Reviewer | RESOLVED | Mid-iteration checkpoints (CP-1 through CP-4) added to C3 Cycle 1 plan with escalation rules. `resolve_artifact_finding` call: 2026-08-29T12:07:38Z. |
-| RL-F2 | Risk List | Minor | Management Reviewer | RESOLVED | R008 contingency activated and completed — status changed to COMPLETE. `resolve_artifact_finding` call: 2026-08-29T12:07:38Z. |
+| DM-F1 | Design Model | Minor | Code Reviewer | RESOLVED (C3) | INT-003 (IDirectoryService) contract updated to include optional `office` parameter. Verified in source code on iteration/C3 branch. |
+| TC-F2 | Test Case | Minor | Code Reviewer | RESOLVED (C3) | UnitTest1.cs placeholder (`Assert.True(true)`) removed on iteration/C3 branch. |
+| IP-F4 | Iteration Plan | Minor | Management Reviewer | RESOLVED (C3) | Mid-iteration checkpoints (CP-1 through CP-4) added to C3 Cycle 1 plan with escalation rules. |
+| RL-F2 | Risk List | Minor | Management Reviewer | RESOLVED (C3) | R008 contingency activated and completed — status changed to COMPLETE. |
+| C4-1 | NewsService / PersistenceGateway | Major | Code Reviewer | RESOLVED (C4) | `EditAsync` now includes `isFeatured` parameter. `UpdateNewsItem` in both `PersistenceGateway.cs` and `InMemoryPersistence` updated. Edit Razor Page has `EditIsFeatured` bindable property. Verified in PR #32. |
+| C4-2 | NewsService / WorkerCategoryService | Major | Code Reviewer | RESOLVED (C4) | All write operations (`PublishAsync`, `EditAsync`, `UnpublishAsync`, `AssignCategoryAsync`) wrapped in `ExecuteInTransactionAsync`. Verified in PR #32. |
+| C4-3 | PersistenceGateway | Minor | Code Reviewer | CONFIRMED (C4) | `ExecuteInTransactionAsync` properly implemented with `BeginTransactionAsync`/`CommitAsync`/`RollbackAsync`. Verified in PR #32. |
 
-### New Findings — Code Reviewer Lens (C3 Cycle 1)
+### New Findings — Code Reviewer Lens (C4 Cycle 1)
 
-No new findings emitted this cycle. All 8 document artifacts evaluated against their type-specific checklists passed every item. Source code inspection of iteration/C3 branch confirmed all interface contracts match Design Model.
-
-### New Findings — Management Reviewer Lens (C3 Cycle 1)
-
-| Finding Key | Artifact | Severity | Description | Recommendation | Verdict |
-|---|---|---|---|---|---|
-| IP-F5 | Iteration Plan | Major | C3 Cycle 1 plan defined NFR-001/NFR-002 load testing as work item 3 but it was not executed. The plan's dependency chain (merge → load testing) meant the merge delay cascaded into unverified performance requirements. No fallback path was documented for testing against the iteration branch if the merge was delayed. | Add a fallback: if merge to main is delayed, execute load testing against iteration/C3 branch (same codebase, CI green). Decouple load testing from the merge dependency. | NeedsRework |
-| RL-F5 | Risk List | Major | R003 (OIDC, HIGH, exposure=9) has been ESCALATED across 4 consecutive cycles with no resolution. Trend is FLAT. The mock-auth contingency has not been formally presented to the stakeholder as a decision point. Perpetual escalation without a decision is a governance failure. | Set a hard deadline for STK-003 OIDC registration. If deadline passes, formally present mock-auth contingency to stakeholder for approval as the IOC path. R003 must transition to RESOLVED or ACCEPTED. | NeedsRework |
-| IA-F1 | Iteration Assessment | Minor | Consolidated Verdict and Management Lens fields still read "PENDING" — stale after the review has been conducted. 2 new Major findings (IP-F5, RL-F5) not reflected. | Update Document Control: Consolidated Verdict = "CONDITIONAL — Stakeholder sanction REFUSED (3rd). IOC NOT ACHIEVED." Management Lens = "2 new Major findings (IP-F5, RL-F5). Prior IP-F4/RL-F2 RESOLVED." | NeedsRework |
+| Finding Key | Artifact | Severity | Description | Location | Remediation | Verdict |
+|---|---|---|---|---|---|---|
+| C4-F1 | Design Model (Interface Contracts) | Minor | Design Model Interface Contracts section not yet updated to reflect async method names (`PublishAsync`, `EditAsync`, `UnpublishAsync`, `AssignCategoryAsync`). The C4-2 transaction wrapping necessitated `Task`-returning signatures, but the Design Model still shows synchronous names from the C2 alignment. | `## Interface Contracts` — INT-002 and INT-004 rows | Update Design Model Interface Contracts to reflect `PublishAsync`, `EditAsync`, `UnpublishAsync`, `AssignCategoryAsync` signatures. `[DEFERRED — requires Design Model update in next iteration]` | Deferred |
 
 ### Code-Level Findings (Code Reviewer)
 
-No code-level findings. Source code inspection of iteration/C3 branch confirmed:
-- INT-001 (IClockingService): `RecordClocking` with `idempotencyKey`, `GetCurrentStatus`, `GetHistory`, `GetAllClockings`, `ExportCsv` — all match Design Model
-- INT-002 (INewsService): `Publish`, `Edit`, `Unpublish`, `GetById`, `GetPublishedNews`, `GetFeaturedNews`, `ListAll` — all match Design Model, `isFeatured` parameter present
-- INT-003 (IDirectoryService): `Search(string query, string? office = null)` — matches Design Model with office parameter
-- ClockingServiceTests.cs: 13 tests with dual coverage (black-box: contract verification; white-box: idempotency scoping, input validation, status logic)
-- CSV header fix (C2-MIN-4): header now `Employee,Date,Time,Direction` matching data columns
+No Critical or Major code-level findings. Source code inspection of `feature/C4-rework` branch confirmed:
+
+- **INT-001 (IClockingService):** `RecordClocking` with `idempotencyKey`, `GetCurrentStatus`, `GetHistory`, `GetAllClockings`, `ExportCsv` — all match Design Model. Unchanged, correct.
+- **INT-002 (INewsService):** `PublishAsync`, `EditAsync`, `UnpublishAsync` now async (Task-returning) for transaction wrapping. `EditAsync` includes `isFeatured` parameter (C4-1 RESOLVED). `GetById`, `GetPublishedNews`, `GetFeaturedNews`, `ListAll` remain synchronous (read-only, no transaction needed).
+- **INT-004 (IWorkerCategoryService):** `AssignCategoryAsync` now async for transaction wrapping. `ListCategories`, `LookupAdUser` remain synchronous.
+- **INT-007 (IPersistence):** `ExecuteInTransactionAsync` properly implemented in `PersistenceGateway.cs` with EF Core transaction. `UpdateNewsItem` includes `isFeatured` parameter.
+- **Transaction wrapping (C4-2):** All write operations in `NewsService` and `WorkerCategoryService` wrap business op + audit in `ExecuteInTransactionAsync` — atomicity ensured per NFR-004.
+- **CON-013 (no hard delete):** `UnpublishAsync` sets status to `Unpublished`, record preserved. Verified.
+- **LDAP injection prevention:** `WorkerCategoryService.LookupAdUser` escapes LDAP filter special characters (`\`, `*`, `(`, `)`, `\0`). Verified.
+
+### Test Coverage Verification
+
+| Test File | Tests | Black-box | White-box | UC Coverage |
+|---|---|---|---|---|
+| NewsServiceTests.cs | 14 | Publish/Edit/Unpublish/GetPublished/GetFeatured/ListAll | Validation branches, audit calls, CON-013 no-delete, isFeatured flag | UC-005..UC-008 |
+| WorkerCategoryServiceTests.cs | 10 | AssignCategory/ListCategories/LookupAdUser | Validation branches, audit record, empty query, missing attributes | UC-010 |
+| ClockingServiceTests.cs | 14 | RecordClocking/Status/History/AllClockings/ExportCsv | Idempotency scoping (CR #11), input validation, status logic, CSV header | UC-001..UC-004 |
+| OfflineRetryTests.cs | 10 | Retry idempotency, client timestamp, multiple retries | Empty key/employee rejected, ExecuteInTransactionAsync commit/rollback | UC-001, AC-005 |
+| DirectoryServiceTests.cs | 11 | Search valid/multiple/no-match | R001 fallback (N/A), empty/null/whitespace, office filter | UC-009 |
+| DomainTests.cs | 11 | FromLdapAttributes all/mixed | DateRange Jan/Mar/Dec, ClockingResult Ok/Duplicate/Fail | Domain entities |
+
+All tests exercise real assertions on the code changes — no decoy `Assert.NotNull` patterns. Dual coverage (black-box + white-box) confirmed for all service classes.
 
 ### PR Disposition (Code Reviewer)
 
 | PR | Branch | Verdict | Rationale |
 |---|---|---|---|
-| #29 | iteration/C3 → main | **APPROVED** | All checklist items pass. CI green. All 7 C2 findings resolved. Design Model conformance verified. Approved for merge to main. |
-| #19 | feature/C2-presentation → iteration/C2 | Superseded | Stale from C2. Superseded by PR #28/#29. Prior REQUEST_CHANGES stands. |
-| #8 | feature/C1-presentation → iteration/C1 | Superseded | Stale from C1. Superseded by PR #28/#29. Prior REQUEST_CHANGES stands. |
-
+| #32 | feature/C4-rework → iteration/C4 | **APPROVED** | All checklist items pass. CI green. C4-1 (isFeatured) and C4-2 (transaction wrapping) RESOLVED. 1 Minor finding (C4-F1) deferred to Design Model update. Approved for Integrator merge. |
+| #19 | feature/C2-presentation → iteration/C2 | Superseded | Stale from C2. Superseded by PR #28/#29/#32. |
+| #8 | feature/C1-presentation → iteration/C1 | Superseded | Stale from C1. Superseded by PR #28/#29/#32. |
 ## Resolutions and Actions
 
 ### Resolved This Cycle
