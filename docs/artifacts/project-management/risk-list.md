@@ -1,16 +1,14 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Construction |
 | Status | Active |
 | Milestone Target | End-of-Construction (IOC) |
-| Iteration | 2 (Cycle 2) |
-| Date | 2026-08-28 |
-| Prior Phase | Construction C1 (REQUEST_CHANGES — 1 Major, 4 Minor; IOC NOT achieved; stakeholder sanction REFUSED) |
-| Evolution | Construction C1 Risk List evolved for C2 Cycle 2: R001 status confirmed MITIGATED (LdapGateway delivered, adapter stub deferred); R003 ESCALATED (OIDC deadline passed, 8 tests blocked); R007 updated (C1 findings RESOLVED via PR #20, C2 new findings OPEN via PR #19 — 1 Critical + 2 Major); R008 added (new schedule risk from rework cycle + stakeholder sanction refusal); R004/R005/R006 status updated for C2 context |
-| Review Finding Addressed | No PM-artifact findings in Review Record; R007/R008 updated from C2 Review Record findings |
-
+| Iteration | 2 (Cycle 3) |
+| Date | 2026-08-29 |
+| Prior Phase | Construction C2 Cycle 2 (REQUEST_CHANGES — 0 of 7 C2 findings resolved; stakeholder sanction REFUSED 2nd time; IP-F4 + RL-F2 findings opened against PM artifacts) |
+| Evolution | C2 Cycle 2 Risk List evolved for Cycle 3: R007 ESCALATED (0 of 7 findings resolved across 2 cycles, probability raised to 3); R008 contingency ACTIVATED — "C3 required" replaces conditional "consider splitting" (RL-F2 resolved); R003 escalation renewed (3rd cycle, STK-003 still unconfirmed); R001/R005/R006 status unchanged |
+| Finding RL-F2 | RESOLVED — R008 contingency activated from conditional to active status |
 ## Risk Classification
 
 Risks are classified by **Probability (P) × Impact (I) = Exposure**, yielding a **Magnitude** rating. The scale is 1–3 for both probability and impact, producing exposure values from 1 to 9.
