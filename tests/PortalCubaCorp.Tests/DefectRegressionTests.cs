@@ -123,7 +123,7 @@ public class DefectRegressionTests
         var propertyNames = properties.Select(p => p.Name).ToList();
 
         // Must NOT have EmployeeId
-n        Assert.DoesNotContain("EmployeeId", propertyNames);
+        Assert.DoesNotContain("EmployeeId", propertyNames);
 
         // Must have Timestamp, ClockType, IdempotencyKey
         Assert.Contains("Timestamp", propertyNames);
