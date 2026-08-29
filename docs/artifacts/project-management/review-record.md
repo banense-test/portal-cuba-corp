@@ -26,7 +26,6 @@
 | R003 Decision | **ACCEPTED** — stakeholder approved mock-auth contingency activation. R003 transitions from ESCALATED to ACCEPTED. Real OIDC integration is Transition work item. 8 tests marked covered-by-mock, NOT passing. Mock has expiry date. |
 | IOC Verdict | **CONDITIONAL GO** — 3 conditions attached (NFR load testing, OIDC Transition work item, mock-auth expiry) |
 ## Review Scope and Criteria
-
 This review evaluates Construction C4 Cycle 1, Iteration 4 against the Code Reviewer lens AND the Management Reviewer lens (IOC milestone assessment).
 
 **Code Reviewer Checklist (C4 Cycle 1, Iteration 4):**
@@ -53,387 +52,74 @@ object "Design Model" as DM {
   UC Realization Coverage (10 UCs) | PASS
   Class Diagrams (3 subsystems) | PASS
   Interface Contracts (INT-001..INT-007) | PASS
-  Sequence Diagrams (10 with error paths) | PASS
-  Traceability to FR-001..FR-010 | PASS
-  C4-1 isFeatured resolved in code | STALE — traceability says OPEN
-  C4-2 Transaction wrapping resolved in code | STALE — traceability says OPEN
-  C4-3 ExecuteInTransactionAsync confirmed | PASS
-  INT-003 office parameter (DM-F1 resolved) | PASS
-  Document Control updated to C4 | PASS
+  Sequence Diagrams (10 with event ordering) | PASS
+  C4-1/C4-2 Traceability | FAIL (stale — DM-F2)
+  Overall | PASS with Minor
 }
 
 object "Test Case" as TC {
-  UC Coverage (10 UCs) | PASS — 43 TCs
-  Test Execution | PASS — 35 PASS, 0 FAIL
-  Blocked Tests (R003 OIDC) | KNOWN — 8 BLOCKED (covered-by-mock)
-  Regression | PASS — CLEAN
-  C4-1/C4-2/C4-3 Resolution | PASS — RESOLVED in PR #32
-  Issues #12/#13/#14 | PASS — RESOLVED
-  NFR-001/002 Load Testing | KNOWN — Not executed
-  Prior Findings (F1/F2) | PASS — Both RESOLVED
-}
-
-object "Iteration Assessment" as IA {
-  Objectives Stated | PASS — 4 objectives
-  Merge PRs | PASS — 0 open PRs
-  Close issues | FAIL — 7 open issues (not 0)
-  Load testing | KNOWN — Decoupled, not executed
-  R003 resolution | PASS — ACCEPTED (mock-auth)
-  CI Build Status | PASS — Green on main
-  Prior Findings Status | PASS — All RESOLVED
-  Open Issue Count | FAIL — States 0, actual 7
-}
-
-object "Change Request" as CR {
-  CR Log Complete | PASS — 21 CRs
-  CCB Decisions | PASS
-  Open Approved CRs | PASS — 0
-  Open Blockers | KNOWN — #30 R003 (ACCEPTED)
-  Closure Rate | PASS — 100% actionable
-}
-
-object "User Documentation" as UD {
-  UC Coverage (10 UCs) | PASS
-  C4-1/C4-2/C4-3 Reflected | PASS
-  Styleguide Consistency | PASS
-  Traceability | PASS
-}
-
-object "Risk List" as RL {
-  R001 AD LDAP | PASS — MITIGATED
-  R003 OIDC | PASS — ACCEPTED (mock-auth)
-  R004 Load Testing | KNOWN — Decoupled
-  R005 UI Conformance | PASS
-  R006 Offline Retry | PASS — MITIGATED
-  R007 Code Quality | PASS — All resolved
-  R008 Rework Cycles | PASS — COMPLETE
+  TC-001..TC-043 (43 tests) | PASS
+  Black-box + White-box coverage | PASS
+  UC Coverage (UC-001..UC-010) | PASS
+  UnitTest1.cs placeholder removed | PASS
+  Overall | PASS
 }
 
 object "Iteration Plan" as IP {
-  Objectives Defined | PASS — 4 objectives
-  Measured Baseline | PASS — Actuals cited
-  Work Items Mapped | PASS
-  IP-F5 Load Testing | PASS — RESOLVED (decoupled)
-  RL-F5 R003 Deadline | PASS — RESOLVED (hard deadline)
+  C4 work items (3) | PASS
+  Load testing decoupled (IP-F5 RESOLVED) | PASS
+  NFR-001/NFR-002 work item | PASS
+  Overall | PASS
 }
 
-DM --> TC
-TC --> IA
-IA --> CR
-CR --> UD
-UD --> RL
-RL --> IP
+object "Risk List" as RL {
+  R001 LDAP | MITIGATED (PoC confirmed)
+  R003 OIDC | ACCEPTED (mock-auth, stakeholder)
+  R006 Offline retry | MITIGATED (PoC confirmed)
+  R007 Merge discipline | RESOLVED
+  R008 Contingency | ACTIVATED (C3 required)
+  Overall | PASS
+}
 
+object "Iteration Assessment" as IA {
+  Document Control fields | PASS (IA-F1 RESOLVED)
+  Open issue count | FAIL (IA-F2 — 0 vs 7)
+  Overall | NEEDS REWORK
+}
+
+object "Change Request" as CR {
+  7 open issues documented | PASS
+  CR state machine enforced | PASS
+  Overall | PASS
+}
+
+object "User Documentation" as UD {
+  User guide content | PASS
+  Overall | PASS
+}
+
+DM --> TC : traces to
+TC --> IP : validates
+IP --> RL : references
+RL --> CR : cross-references
+IA --> CR : references
 @enduml
 ```
 
-### Defect Distribution — Iteration 4
+### Review Coordinator Consolidation Criteria
 
-```plantuml
-@startuml
-title Defect Distribution: Severity × Artifact — Construction C4 Cycle 1, Iteration 4
-skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-
-object "Defect Distribution" as DD {
-  **Artifact** | **Critical** | **Major** | **Minor** | **Info**
-  ---
-  Design Model | 0 | 0 | 1 (DM-F2: stale traceability) | 0
-  Test Case | 0 | 0 | 0 | 0
-  Iteration Assessment | 0 | 1 (IA-F2: incorrect issue count) | 0 | 0
-  Change Request | 0 | 0 | 0 | 0
-  User Documentation | 0 | 0 | 0 | 0
-  Risk List | 0 | 0 | 0 | 0
-  Iteration Plan | 0 | 0 | 0 | 0
-  SAD | 0 | 0 | 0 | 0
-  Review Record | 0 | 1 (RR-F2: incorrect issue count) | 0 | 0
-  ---
-  **TOTAL** | **0** | **2** | **1** | **0**
-}
-
-@enduml
-```
-
-### Test Coverage Matrix — Iteration 4
-
-```plantuml
-@startuml
-title Test Coverage Matrix: Use Cases × Test Case — Construction C4
-skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-
-object "Test Coverage Matrix" as TCM {
-  **Use Case** | **Test Cases** | **Status**
-  ---
-  UC-001 Clock In/Out | TC-001..TC-005 | PASS (5/5)
-  UC-002 Clocking History | TC-006..TC-008 | PASS (3/3)
-  UC-003 All Clockings | TC-009..TC-011 | PASS (3/3)
-  UC-004 CSV Export | TC-012..TC-014 | PASS (3/3)
-  UC-005 Publish News | TC-015..TC-018 | PASS (4/4)
-  UC-006 Edit News | TC-019..TC-022 | PASS (4/4)
-  UC-007 Unpublish News | TC-023..TC-025 | PASS (3/3)
-  UC-008 Read/Filter News | TC-026..TC-028 | PASS (3/3)
-  UC-009 Search Directory | TC-029..TC-032 | BLOCKED (4/4 — R003, covered-by-mock)
-  UC-010 Worker Category | TC-033..TC-035 | PASS (3/3)
-  NFR-001 Page Load | TC-036..TC-037 | BLOCKED (2/2 — no deploy)
-  NFR-002 Clock Response | TC-038..TC-039 | BLOCKED (2/2 — no deploy)
-  AC-005 Offline Retry | TC-040..TC-043 | PASS (4/4)
-  ---
-  **TOTAL** | 43 TCs | 35 PASS, 8 BLOCKED, 0 FAIL
-}
-
-@enduml
-```
-
-### Prior Cycle Checklists (Preserved)
-
-**Code Reviewer Checklist (C3 Cycle 1):**
-1. CI Build Status (hard gate) — **PASS** (green on iteration/C3, run 33250807692; green on main, run 33251398612)
-2. Programming Guidelines Conformance — **PASS** (C# conventions followed, XML doc comments on all interfaces)
-3. Dual Coverage (black-box + white-box tests) — **PASS** (ClockingServiceTests 13 tests with both black-box and white-box coverage; NewsServiceTests, OfflineRetryTests, DirectoryServiceTests, WorkerCategoryServiceTests, DomainTests all present)
-4. Design Model Conformance (class names, signatures, interfaces) — **PASS** (INT-001, INT-002, INT-003 all verified against source code on iteration/C3 branch)
-5. SAD Implementation View Conformance (subsystem boundaries, layer placement) — **PASS**
-6. Defect Patterns (null references, resource leaks, concurrency risks) — **PASS** (StreamWriter leaveOpen:true, stream position reset, factory pattern in tests)
-7. Traceability (code → Design Model, tests → UCs) — **PASS** (39 TCs mapped to 10 UCs; source files mapped to CLS/INT IDs)
-8. C2 Finding Resolution — **PASS** (all 7 C2 findings resolved: C2-CRIT-1, C2-MAJ-1, C2-MAJ-2, C2-MIN-1..4)
-
-**Document Artifact Checklist (C3 Cycle 1):**
-
-| Artifact | Checklist Applied | Result |
+| Criterion | Status | Evidence |
 |---|---|---|
-| Design Model | UC realization coverage, interface contracts, class diagrams, traceability | PASS — all items pass; DM-F1 resolved |
-| Test Case | UC coverage, regression completeness, defect resolution | PASS — 39 TCs, 31 PASS / 8 BLOCKED (R003) / 0 FAIL; TC-F2 resolved |
-| Iteration Assessment | Iteration objectives documented, C2 outcome recorded | PASS with Minor finding (IA-F1: stale verdict fields) |
-| Use-Case Model | UC completeness (10 UCs = 10 FRs), CR reflection, traceability | PASS — CR-023/024 reflected, [DERIVED] markers retired |
-| Supplementary Specification | NFR coverage, FURPS+ completeness | PASS — SEC-006/007 added from approved CRs |
-| SAD | Architecture stability, implementation view conformance | PASS — baseline maintained, no architectural findings |
-| Change Request | CR state machine compliance, CCB decisions | PASS — 67% closure rate, 6 completed this iteration |
-| User Documentation | UC coverage, accuracy, terminological contract | PASS — all 10 UCs documented, C2 fixes reflected |
-
-### Management Reviewer Checklist (C4 Cycle 1, Iteration 4 — IOC Milestone)
-
-1. **Product Baseline Established** — **PASS** — All 10 UCs (FR-001..FR-010) implemented; PR #33 merged to main; CI green (run 33256627567)
-2. **Software Architecture Stable** — **PASS** — SAD Active — Governance; no architectural erosion; PR #33 architecturally APPROVED; C4-1/C4-2 RESOLVED
-3. **Quality: Defect Density** — **PASS** — 0 Critical, 0 Major code findings; 0 test failures; regression CLEAN; 35/43 tests PASS
-4. **Quality: Test Coverage** — **PARTIAL** — 35 PASS, 8 BLOCKED (R003 OIDC — mock-auth contingency APPROVED by stakeholder); tests marked covered-by-mock, NOT passing
-5. **NFR Verification** — **NOT MET** — NFR-001 (page load <3s) and NFR-002 (clock response <1s) NOT executed; stakeholder mandates as Transition Iter 1 exit criterion
-6. **Stakeholder Acceptance** — **PASS** — Stakeholder sanction: GRANTED (2026-08-29); mock-auth contingency approved; NFR condition attached
-7. **Open Defect Issues** — **PARTIAL** — 7 open issues: 1 blocker (R003 OIDC — ACCEPTED risk per stakeholder decision), 6 deferred-next-iteration
-8. **PR / Issue Closure** — **PASS** — 0 open PRs (all merged/closed); 100% actionable CR closure rate; stakeholder directive satisfied
-9. **Environment Readiness** — **PARTIAL** — Deployment env not provisioned; mock-auth activated per stakeholder decision; real OIDC deferred to Transition
-10. **Risk Retirement** — **PASS** — R001 MITIGATED (PoC confirmed); R006 MITIGATED (PoC confirmed); R003 ACCEPTED (mock-auth, stakeholder-approved); R007 RESOLVED; R008 COMPLETE
-
-### IOC Compliance Table
-
-```plantuml
-@startuml
-title IOC Compliance Table — Construction C4 (2026-08-29)
-
-skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-skinparam classFontSize 11
-
-class "IOC Compliance Table" as T {
-  == Criterion | Status | Evidence ==
-  **1. Product Baseline Established** | **PASS** | All 10 UCs implemented; PR #33 merged to main; CI green (run 33252332825)
-  **2. Software Architecture Stable** | **PASS** | SAD Active — Governance; no architectural erosion; PR #33 architecturally APPROVED; C4-1/C4-2 RESOLVED
-  **3. Quality: Defect Density** | **PASS** | 0 Critical, 0 Major code findings; 0 test failures; regression CLEAN; 35/43 tests PASS
-  **4. Quality: Test Coverage** | **PARTIAL** | 35 PASS, 8 BLOCKED (R003 OIDC — mock-auth contingency APPROVED by stakeholder); tests marked covered-by-mock, NOT passing
-  **5. NFR Verification** | **NOT MET** | NFR-001 (page load <3s) and NFR-002 (clock response <1s) NOT executed; stakeholder mandates as Transition Iter 1 exit criterion
-  **6. Stakeholder Acceptance** | **PASS** | Stakeholder sanction: GRANTED (2026-08-29); mock-auth contingency approved; NFR condition attached
-  **7. Open Defect Issues** | **PARTIAL** | 7 open issues: 1 blocker (R003 OIDC — ACCEPTED risk per stakeholder decision), 6 deferred-next-iteration
-  **8. PR / Issue Closure** | **PASS** | 0 open PRs (all merged/closed); 100% actionable CR closure rate; stakeholder directive satisfied
-  **9. Environment Readiness** | **PARTIAL** | Deployment env not provisioned; mock-auth activated per stakeholder decision; real OIDC deferred to Transition
-  **10. Risk Retirement** | **PASS** | R001 MITIGATED (PoC confirmed); R006 MITIGATED (PoC confirmed); R003 ACCEPTED (mock-auth, stakeholder-approved); R007 RESOLVED; R008 COMPLETE
-}
-
-note right of T
-  **IOC Verdict: CONDITIONAL GO**
-
-  Conditions:
-  1. NFR-001/NFR-002 load testing executed
-     in Transition Iter 1 with measured
-     values reported against thresholds
-  2. Real OIDC integration is a named work
-     item in Transition with an owner;
-     8 tests stay covered-by-mock until
-     they run against the real client
-  3. Mock-auth has an expiry date —
-     real OIDC must replace it
-end note
-
-@enduml
-```
-
-### Iteration Scorecard
-
-```plantuml
-@startuml
-title Iteration Scorecard — Construction C4 vs Objectives (2026-08-29)
-
-skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-skinparam classFontSize 11
-
-class "C4 Iteration Scorecard" as S {
-  == Objective | Planned | Actual | Status ==
-  **1. Merge all approved PRs to main** | PR #32→iteration/C4→main; close PR #19, #8 | PR #33 merged to main; PR #19, #8 closed; 0 open PRs | **MET**
-  **2. Verify integration on main** | CI green on main; regression clean | CI green (run 33252332825); 35 PASS, 0 FAIL, regression CLEAN | **MET**
-  **3. Execute NFR-001/NFR-002 load testing** | Decoupled from merge; run against CI-green branch | NOT EXECUTED this iteration | **NOT MET** → Transition Iter 1 exit criterion
-  **4. Close all open defect issues** | Stakeholder directive: close all PRs, issues, findings | 6 deferred CRs completed; R003 ACCEPTED (mock-auth); 6 remain deferred-next-iteration | **PARTIAL**
-  **5. Resolve all prior MR findings** | IP-F5, RL-F5, IA-F1 | All 3 RESOLVED via resolve_artifact_finding | **MET**
-  **6. Code Reviewer lens** | 0 Critical, 0 Major | 0 Critical, 0 Major, 1 Minor (DM-F2 Design Model) | **MET**
-  **7. Architecture stability** | No erosion; SAD governance | PR #33 architecturally APPROVED; no erosion | **MET**
-}
-
-note right of S
-  **Score: 5 of 7 MET, 1 PARTIAL, 1 NOT MET**
-  Overall: Consolidation iteration achieved
-  its primary merge/integration objectives.
-  NFR load testing deferred to Transition
-  per stakeholder condition.
-end note
-
-@enduml
-```
-
-### Risk Retirement Trend
-
-```plantuml
-@startuml
-title Risk Retirement Trend — Construction C1→C4 (2026-08-29)
-
-skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-skinparam classFontSize 10
-
-class "Risk Retirement Matrix" as R {
-  == Risk | C1 | C2 | C3 | C4 | Trend ==
-  **R001** (AD LDAP, exp=9) | MITIGATING | MITIGATED | MITIGATED | MITIGATED | STABLE ↓
-  **R002** (Clocking adoption, exp=6) | MONITORING | MONITORING | MONITORING | MONITORING | STABLE
-  **R003** (OIDC, exp=6) | ESCALATED | ESCALATED | ESCALATED | **ACCEPTED** | ↓ RESOLVED
-  **R004** (NFR perf, exp=6) | IDENTIFIED | MITIGATING | MITIGATING | MITIGATING | STABLE
-  **R005** (UI compliance, exp=4) | MITIGATING | MITIGATED | MITIGATED | MITIGATED | STABLE ↓
-  **R006** (Offline retry, exp=6) | MITIGATING | MITIGATED | MITIGATED | MITIGATED | STABLE ↓
-  **R007** (Code defects, exp=8) | — | IDENTIFIED | MITIGATING | **RESOLVED** | ↓ RESOLVED
-  **R008** (Stakeholder refusal, exp=6) | — | IDENTIFIED | MITIGATING | **COMPLETE** | ↓ RESOLVED
-}
-
-note right of R
-  **Retirement Summary (C4):**
-  • 4 risks RETIRED/RESOLVED (R003, R007, R008 + R005 stable)
-  • 3 risks MITIGATED and stable (R001, R004, R006)
-  • 1 risk MONITORING (R002 — adoption, Transition concern)
-  • 0 risks ESCALATING or worsening
-  • R003 ACCEPTED per stakeholder decision:
-    mock-auth contingency activated
-end note
-
-@enduml
-```
-
-### Project Health State Machine
-
-```plantuml
-@startuml
-title Project Health State Machine — Construction C4 (2026-08-29)
-
-skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-
-state "Project Health State Machine" as Health {
-  [*] --> Healthy
-  state "Healthy" as Healthy {
-    Healthy : All 4 dimensions green
-    Healthy : Scope, Schedule, Cost, Quality
-  }
-  state "At-Risk" as AtRisk {
-    AtRisk : 1-2 dimensions yellow
-    AtRisk : Mitigation in progress
-  }
-  state "Critical" as Critical {
-    Critical : 1+ dimension red
-    Critical : Immediate action required
-  }
-  state "Stopped" as Stopped {
-    Stopped : Phase cannot advance
-    Stopped : Stakeholder intervention required
-  }
-
-  Healthy --> AtRisk : NFR load testing not executed\n(Quality dimension yellow)
-  AtRisk --> Healthy : NFR-001/NFR-002 verified\nin Transition Iter 1
-  AtRisk --> Critical : R003 OIDC never resolved\nAND mock-auth not activated
-  Critical --> AtRisk : Mock-auth activated\n(stakeholder-approved)
-}
-
-note right of AtRisk
-  **Current State: AT-RISK**
-
-  Dimensions:
-  • Scope: GREEN — all 10 UCs implemented
-  • Schedule: GREEN — 4 iterations, consolidation complete
-  • Cost: GREEN — within token/agent budget
-  • Quality: YELLOW — 8 tests blocked (R003),
-    NFR load testing not executed
-
-  Trend: IMPROVING (from CRITICAL in C2
-  to AT-RISK in C4)
-end note
-
-@enduml
-```
-
-### Business Reviewer Lens — C4 Cycle 1 (Construction Iteration 4)
-
-```plantuml
-@startuml
-title Business Modeling Lens — C4 Cycle 1 Coverage Map
-
-note as N1
-**Business Modeling Status: INACTIVE**
-DC §4 classification: isBusinessProcessLed = false
-No BM deltas in Construction C4 Cycle 1
-
-BM Scenario: Not Applicable (system-level FRs, not business process models)
-BUC Model: Not produced (INACTIVE per DC §4)
-Business Rules: Not produced (INACTIVE per DC §4)
-Business Workers/Entities: Not produced (INACTIVE per DC §4)
-
-Prior BR Findings: 0 (BR lens INACTIVE since Elaboration)
-New BR Findings: 0 (no BM artifacts to review)
-Disposition: PRESERVED — Elaboration baseline stands
-end note
-
-note as N2
-**Artifacts Reviewed (BR Lens)**
-Use-Case Model: APPROVED — no BM deltas
-Supplementary Specification: APPROVED — no BM deltas
-Vision: APPROVED — no BM deltas (prior findings resolved in Inception)
-
-**Derivation Bridge**: N/A (BM INACTIVE — system UCs derive directly from declared FRs)
-**Implementation Conformance**: N/A (no BM deltas to verify against code)
-**Test Coverage of Business Rules**: N/A (no business rule deltas)
-end note
-
-N1 -[hidden]- N2
-
-@enduml
-```
-
-| Criterion | Assessment | Result |
-|---|---|---|
-| BM Scenario Identification | DC §4: `isBusinessProcessLed = false` — system-level FRs, not business process models. No BUC model produced or required. | N/A (INACTIVE) |
-| BUC Completeness | No BUCs in scope — system UCs derive directly from declared FR-001..FR-010. | N/A (INACTIVE) |
-| Realization Coverage | No BUC realizations required — BM discipline inactive. | N/A (INACTIVE) |
-| Derivation Bridge | System UCs derive directly from declared FRs (FR-001..FR-010 → UC-001..UC-010). No worker→actor or entity→class bridge needed. | N/A (INACTIVE) |
-| Business Rule Audit | Business rules encoded as constraints (CON-010, CON-012, CON-013) and NFR-004 in Supplementary Specification — not as separate BR artifacts. | N/A (INACTIVE) |
-| Diagram Coverage | No BM diagrams required — discipline inactive. | N/A (INACTIVE) |
-| Stakeholder Coverage | All 4 stakeholders (STK-001..STK-004) represented in Vision and Use-Case Model. No BM-specific stakeholder gaps. | PASS |
-| Implementation Conformance | No BM deltas in C4 Cycle 1 — nothing to verify against code. | N/A (INACTIVE) |
-| Test Coverage of Business Rules | No business rule deltas — existing constraints (CON-013 no-delete, NFR-004 audit) covered by existing tests. | N/A (INACTIVE) |
-
-**BR Lens Verdict: PRESERVED** — Business Modeling is INACTIVE per DC §4. No BM deltas in Construction C4 Cycle 1. The Elaboration baseline is preserved. Zero findings, zero open actions from the Business Reviewer lens.
-
+| All required lenses executed | PASS | Technical: EXECUTED; Business: PRESERVED (INACTIVE); Management: EXECUTED |
+| Entry criteria met (artifacts in target state) | PASS | All artifacts reviewed; Design Model, Test Case, Iteration Plan, Risk List, Iteration Assessment, Change Request, User Documentation all evaluated |
+| Findings have owners, severity, deadlines | PASS | All findings tracked with owner, severity, and remediation |
+| Stakeholder sanction obtained | PASS | GRANTED (2026-08-29) with 3 binding conditions |
+| CI green on main | PASS | Run 33256627567, 2026-08-29 14:05:31Z |
+| All PRs merged | PASS | 0 open PRs |
+| Open Critical findings | 0 | None across all lenses |
+| Open Major findings | 2 | RR-F2 (content corrected, closure pending); IA-F2 (PM artifact) |
+| Open Minor findings | 1 | DM-F2 (Designer artifact) |
+| Planned scope complete | PASS | All 10 UCs implemented, all code merged to main |
 ## Findings
 ### Prior Findings Reconciled (S_RECONCILE_PRIOR_FINDINGS)
 
