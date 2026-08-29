@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using PortalCubaCorp.Domain;
 using PortalCubaCorp.Infrastructure;
 using System.Diagnostics;
@@ -49,14 +50,25 @@ public class PerformanceTests : IClassFixture<WebApplicationFactory<Program>>
 
                 // Add in-memory database for testing
                 services.AddDbContext<PortalDbContext>(options =>
-                    options.UseInMemoryDatabase("PerformanceTestDb"));
+                    options.UseInMemoryDatabase("PerfTestDb"));
 
-                // Add mock authentication as default scheme.
-                // This overrides the DefaultScheme set by Program.cs's AddAuthentication
-                // because IConfigureOptions registered later run after earlier ones.
+                // Register mock auth handler scheme
                 services.AddAuthentication(MockAuthHandler.AuthScheme)
                     .AddScheme<AuthenticationSchemeOptions, MockAuthHandler>(
                         MockAuthHandler.AuthScheme, _ => { });
+
+                // Override the default schemes set by Program.cs (Cookie + OIDC)
+                // PostConfigure runs after all Configure calls, so it overrides
+                // the defaults set by AddAuthentication in Program.cs
+                services.PostConfigure<AuthenticationOptions>(options =>
+                {
+                    options.DefaultScheme = MockAuthHandler.AuthScheme;
+                    options.DefaultChallengeScheme = MockAuthHandler.AuthScheme;
+                    options.DefaultAuthenticateScheme = MockAuthHandler.AuthScheme;
+                    options.DefaultSignInScheme = MockAuthHandler.AuthScheme;
+                    options.DefaultSignOutScheme = MockAuthHandler.AuthScheme;
+                    options.DefaultForbidScheme = MockAuthHandler.AuthScheme;
+                });
             });
         });
     }
@@ -64,11 +76,11 @@ public class PerformanceTests : IClassFixture<WebApplicationFactory<Program>>
     /// <summary>
     /// Ensures the in-memory database is created and seeded with a published news item.
     /// </summary>
-    private void EnsureDatabaseCreated()
+    private async Task EnsureDatabaseCreatedAsync()
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PortalDbContext>();
-        db.Database.EnsureCreated();
+        await db.Database.EnsureCreatedAsync();
         if (!db.NewsItems.Any())
         {
             db.NewsItems.Add(new NewsItem
@@ -83,7 +95,7 @@ public class PerformanceTests : IClassFixture<WebApplicationFactory<Program>>
                 UpdatedAt = DateTime.UtcNow,
                 AuthorId = "test-author"
             });
-            db.SaveChanges();
+            await db.SaveChangesAsync();
         }
     }
 
@@ -95,7 +107,7 @@ public class PerformanceTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task NFR001_PageLoad_Under3Seconds()
     {
-        EnsureDatabaseCreated();
+        await EnsureDatabaseCreatedAsync();
 
         var client = _factory.CreateClient(new WebApplicationFactoryClientOptions
         {
@@ -148,7 +160,7 @@ public class PerformanceTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task NFR002_ClockInResponse_Under1Second()
     {
-        EnsureDatabaseCreated();
+        await EnsureDatabaseCreatedAsync();
 
         var client = _factory.CreateClient();
         var measurements = new List<long>();
