@@ -72,6 +72,130 @@ This Test Case artifact covers **all 10 use-case scenarios** at Construction dep
 
 **Overall Verdict: NOT READY for IOC** — 8 of 39 TCs remain BLOCKED by R003 (OIDC infrastructure). All service-layer functionality PASSES. All C2 findings RESOLVED. No regressions. IOC cannot be achieved until STK-003 confirms OIDC client registration and blocked integration tests are executed.
 
+### C3 Tester Execution Flow Diagram
+
+```plantuml
+@startuml
+title C3 Cycle 1 — Test Execution Evaluation Flow
+
+skinparam activityBorderColor #2C3E50
+skinparam activityBackgroundColor #ECF0F1
+skinparam activityDiamondBackgroundColor #F0E68C
+
+start
+
+:Load iteration/C3 build (CI GREEN run 33250807692);
+:Load main build (CI GREEN run 33249082908);
+
+:Smoke Test: CI green on both branches;
+if (CI Green?) then (yes)
+  else (no)
+    :Log blocker CR;
+    stop
+  endif
+
+partition "Service-Layer Unit Tests (31 TCs)" {
+  :Evaluate TC-001..TC-012 (Clocking);
+  :Evaluate TC-015..TC-027 (News, Directory, WorkerCat);
+  :Evaluate TC-031..TC-039 (C3 Adversarial);
+  
+  if (All C2 findings resolved?) then (yes)
+    :C2-CRIT-1: @page "/api/clocking" verified;
+    :C2-MAJ-1: [BindProperty(Name=...)] verified;
+    :C2-MAJ-2: [IgnoreAntiforgeryToken] verified;
+    :C2-MIN-1: LDAP stub documented verified;
+    :C2-MIN-2: User.FindFirst("sub") verified;
+    :C2-MIN-3: UnitTest1.cs empty verified;
+    :C2-MIN-4: CSV header correct verified;
+  else (no)
+    :Log defect CR;
+  endif
+  
+  :Verdict: 31 PASS;
+}
+
+partition "OIDC-Dependent Integration Tests (8 TCs)" {
+  :Evaluate TC-013, TC-014, TC-028, TC-029, TC-030;
+  if (OIDC infrastructure available?) then (no — R003)
+    :Verdict: 8 BLOCKED;
+    note right: STK-003 has not confirmed OIDC client registration\n4th cycle of escalation
+  else (yes)
+    :Execute integration tests;
+  endif
+}
+
+partition "Regression Analysis" {
+  :Re-verify all prior PASS verdicts;
+  :Check C2 FAIL items now resolved;
+  if (Any regression?) then (no)
+    :Regression: CLEAN — no regressions;
+  else (yes)
+    :Log regression defect CR;
+  endif
+}
+
+partition "Defect Triage" {
+  :Issue #13: Test name contradicts assertion (Minor);
+  :Issue #12: CSV format — resolved by C2-MIN-4 header change;
+  :Issue #14: UnitTest1.cs — resolved in PR #28;
+  :Log new CR for #13 if not already tracked;
+}
+
+:Update Test Case Findings with C3 verdicts;
+:Overall Verdict: 31 PASS, 8 BLOCKED, 0 FAIL;
+
+stop
+
+@enduml
+```
+
+### C2 Finding Resolution Verification Sequence
+
+```plantuml
+@startuml
+title C3 Cycle 1 — C2 Finding Resolution Verification Sequence
+
+skinparam sequenceBorderColor #2C3E50
+skinparam sequenceParticipantBackgroundColor #ECF0F1
+skinparam sequenceLifeLineBackgroundColor #F0E68C
+
+participant "Tester" as T
+participant "CI Build\n(iteration/C3)" as CI
+participant "ClockingApi.cshtml" as CA
+participant "ClockingApi.cshtml.cs" as CAM
+participant "Edit.cshtml.cs" as EM
+participant "ClockingService.cs" as CS
+participant "UnitTest1.cs" as UT
+participant "LDAP Adapter" as LDAP
+
+T -> CI: Check build status
+CI --> T: GREEN (run 33250807692)
+
+T -> CA: Verify @page directive
+CA --> T: @page "/api/clocking" present (C2-CRIT-1 RESOLVED)
+
+T -> CAM: Verify antiforgery + identity
+CAM --> T: [IgnoreAntiforgeryToken] present (C2-MAJ-2 RESOLVED)
+CAM --> T: User.FindFirst("sub")?.Value (C2-MIN-2 RESOLVED)
+
+T -> EM: Verify form binding
+EM --> T: [BindProperty(Name="title")] etc. (C2-MAJ-1 RESOLVED)
+
+T -> CS: Verify CSV header
+CS --> T: "Employee,Date,Time,Direction" (C2-MIN-4 RESOLVED)
+
+T -> UT: Verify placeholder removed
+UT --> T: Empty file with comment (C2-MIN-3 RESOLVED)
+
+T -> LDAP: Verify deferred documentation
+LDAP --> T: DEFERRED comment present (C2-MIN-1 RESOLVED)
+
+T -> T: All 7 C2 findings verified RESOLVED
+T -> T: 31 TCs PASS, 8 TCs BLOCKED (R003), 0 FAIL
+
+@enduml
+```
+
 ### Test Suite Execution Tiers
 
 | Tier | Scope | TCs | Status |
