@@ -1823,6 +1823,10 @@ Two blockers prevent declaring IOC readiness:
 | TC-037 | UC-006, C2-MAJ-1, TI-037 | Tests | Edit.cshtml.cs, NewsServiceTests.cs |
 | TC-038 | UC-001, C2-MAJ-2, SEC-006, TI-038 | Tests | ClockingApi.cshtml.cs, ClockingServiceTests.cs |
 | TC-039 | UC-001, C2-MIN-2, SEC-007, TI-039 | Tests | ClockingApi.cshtml.cs, ClockingServiceTests.cs |
+| TC-040 | UC-005, UC-006, UC-007, UC-010, C4-2, NFR-004 | Tests | NewsService.cs, WorkerCategoryService.cs, PersistenceGateway.cs, TransactionTests.cs |
+| TC-041 | UC-005, UC-006, UC-007, UC-010, C4-2, NFR-004 | Tests | NewsService.cs, WorkerCategoryService.cs, PersistenceGateway.cs, TransactionTests.cs |
+| TC-042 | UC-006, C4-1, FR-008 | Tests | NewsService.cs, Edit.cshtml.cs, NewsServiceTests.cs |
+| TC-043 | UC-005, UC-010, C4-2, NFR-004 | Tests | NewsService.cs, WorkerCategoryService.cs, PersistenceGateway.cs, TransactionTests.cs |
 | C2-CRIT-1 | Review Record (C2) | Derives | PR #28 (RESOLVED), TC-031, TC-036 |
 | C2-MAJ-1 | Review Record (C2) | Derives | PR #28 (RESOLVED), TC-032, TC-037 |
 | C2-MAJ-2 | Review Record (C2) | Derives | PR #28 (RESOLVED), TC-033, TC-038 |
@@ -1831,6 +1835,10 @@ Two blockers prevent declaring IOC readiness:
 | C2-MIN-3 | Review Record (C2) | Derives | PR #28 (RESOLVED) — UnitTest1.cs removed |
 | C2-MIN-4 | Review Record (C2) | Derives | PR #28 (RESOLVED), TC-035 |
 | TC-F2 | Review Record (C3) | Derives | PR #28 (RESOLVED — UnitTest1.cs removed) |
+| C4-1 | Review Record (C4) | Derives | PR #32 (RESOLVED), TC-042 |
+| C4-2 | Review Record (C4) | Derives | PR #32 (RESOLVED), TC-040, TC-041, TC-043 |
+| C4-3 | Review Record (C4) | Derives | PR #32 (CONFIRMED) |
+| C4-F1 | Review Record (C4) | Derives | Design Model (DEFERRED — Minor, Design Model async method names) |
 | C3 Tester Execution | PR #28, CI run 33250807692 (iteration/C3), CI run 33249082908 (main) | Derives | This Test Case artifact — 31 PASS, 8 BLOCKED, 0 FAIL |
 | C3 Defect Pattern P1 | C2-CRIT-1, C2-MAJ-1, C2-MIN-4 | Resolved by | PR #28, TC-031, TC-032, TC-035, TC-036, TC-037 |
 | C3 Defect Pattern P2 | C2-MAJ-2, C2-MIN-2 | Resolved by | PR #28, TC-033, TC-034, TC-038, TC-039 |
@@ -1854,11 +1862,15 @@ Two blockers prevent declaring IOC readiness:
 | C3 Test Analyst Evaluation | NFR-001..004, AC-001..005, SEC-001..007 | Derives | This Test Case artifact |
 | C3 Regression Scope | All 39 TCs, C2 findings resolved | Derives | C3 test execution plan |
 | C3 Regression Verdict | C1/C2 PASS verdicts | Derives | CLEAN — no regressions detected |
-| R003 | STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-028..TC-030 (BLOCKED) |
-| Issue #30 | R003, STK-003, CON-004 | Derives | TC-013, TC-014, TC-028, TC-029, TC-030 (BLOCKED — 4th escalation) |
+| C4 Test Designer Evolution | C4-1, C4-2, C4-3, NFR-004 | Derives | TC-040, TC-041, TC-042, TC-043 |
+| C4 Regression Scope | All 43 TCs (39 existing + 4 new) | Derives | C4 test execution plan |
+| R003 | STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-028..TC-030 (BLOCKED — 5th escalation) |
+| Issue #30 | R003, STK-003, CON-004 | Derives | TC-013, TC-014, TC-028, TC-029, TC-030 (BLOCKED — 5th escalation) |
 | Issue #13 | TC-006 (DirectoryServiceTests) | Derives | Search_NoMatchingEntries test name contradicts assertion (Minor, deferred) |
 | Issue #12 | TC-016 (ClockingServiceTests) | Derives | CSV format — effectively resolved by C2-MIN-4 header change (open in SCM) |
 | Issue #14 | TC-F2 | Derives | UnitTest1.cs placeholder — resolved in PR #28 (open in SCM) |
 | PR #28 | UC-001..UC-010 | Realizes | feature/C3-presentation branch |
+| PR #32 | C4-1, C4-2, C4-3 | Realizes | feature/C4-rework branch (APPROVED) |
+| CI Build (feature/C4-rework) | CON-001, CON-003 | DependsOn | GitHub Actions run 33255680288 |
 | CI Build (iteration/C3) | CON-001, CON-003 | DependsOn | GitHub Actions run 33250807692 |
 | CI Build (main) | CON-001, CON-003 | DependsOn | GitHub Actions run 33249082908 |
