@@ -1185,7 +1185,6 @@ stop
 | TI-049 | Concurrent edit + unpublish | 2 concurrent ops on same news item | No corruption; one op wins, other gets stale-state error — [Pending: concurrency harness] |
 | TI-050 | CSV export during transaction | Export while write in progress | Export sees pre-transaction state (read committed) — [Pending: deployment] |
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | TC-001 | UC-001 (main flow) | Tests | ClockingService.cs, ClockingServiceTests.cs |
@@ -1231,6 +1230,18 @@ stop
 | TC-041 | UC-005, UC-006, UC-007, UC-010, C4-2, NFR-004 | Tests | PersistenceGateway.cs, OfflineRetryTests.cs |
 | TC-042 | UC-006, C4-1 | Tests | NewsService.cs, NewsServiceTests.cs, Edit.cshtml.cs |
 | TC-043 | UC-005, UC-010, C4-2 | Tests | NewsService.cs, WorkerCategoryService.cs, OfflineRetryTests.cs |
+| TI-045 | UC-005, UC-006, UC-007, UC-010, C4-2 | Tests | PersistenceGateway.cs — [Pending: deployment] |
+| TI-046 | UC-005, UC-006, UC-007, UC-010, C4-3 | Tests | PersistenceGateway.cs — [Pending: EF Core investigation] |
+| TI-047 | UC-006, C4-1 | Tests | NewsService.cs — [Pending: concurrency harness] |
+| TI-048 | UC-005, UC-006, UC-007, UC-010, NFR-004, C4-2 | Tests | PersistenceGateway.cs, AuditInterceptor.cs — [Pending: extend TC-040/TC-041] |
+| TI-049 | UC-006, UC-007, C4-2 | Tests | NewsService.cs — [Pending: concurrency harness] |
+| TI-050 | UC-004, NFR-001 | Tests | ClockingService.cs — [Pending: deployment] |
+| TA-C4-F1 | C4-1, C4-2 | Derives | PR #32 (RESOLVED) |
+| TA-C4-F2 | R003, STK-003, CON-004 | Derives | TC-013, TC-014, TC-029, TC-030 (BLOCKED — 5th escalation) |
+| TA-C4-F3 | NFR-001, NFR-002 | Derives | TC-011, TC-012 (BLOCKED — no deployment) |
+| TA-C4-F4 | AC-003, AC-004, CON-011 | Derives | (Manual UAT required) |
+| TA-C4-F5 | All prior PASS TCs | Derives | Regression CLEAN (C4) |
+| TA-C4-F6 | Issue #12, #13, #14 | Derives | RESOLVED in code (C4) |
 | R003 | STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-029, TC-030 (BLOCKED — 5th escalation) |
 | Issue #30 | R003, STK-003, CON-004 | Derives | TC-013, TC-014, TC-029, TC-030 (BLOCKED — 5th escalation) |
 | Issue #13 | TC-006 (DirectoryServiceTests) | Derives | Search_NoMatchingEntries — RESOLVED in code (C4) |
