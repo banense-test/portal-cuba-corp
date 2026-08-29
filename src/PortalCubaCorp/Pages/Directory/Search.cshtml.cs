@@ -5,6 +5,11 @@ using PortalCubaCorp.Domain;
 
 namespace PortalCubaCorp.Pages.Directory;
 
+/// <summary>
+/// Employee directory search page (UC-009: Search Employee Directory).
+/// Searches AD via LDAP for colleagues by name, department, or office (CON-005).
+/// Read-only corporate data only (CON-012).
+/// </summary>
 [Authorize]
 public class SearchModel : PageModel
 {

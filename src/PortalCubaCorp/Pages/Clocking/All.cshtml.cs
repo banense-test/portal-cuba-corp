@@ -6,6 +6,10 @@ using PortalCubaCorp.Domain;
 
 namespace PortalCubaCorp.Pages.Clocking;
 
+/// <summary>
+/// All employee clockings page (UC-003: View All Employee Clockings, UC-004: Export Monthly Clocking Report).
+/// HR-only view of all employees' clockings with CSV export capability.
+/// </summary>
 [Authorize(Roles = "hr,HR")]
 public class AllModel : PageModel
 {
