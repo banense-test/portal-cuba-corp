@@ -6,6 +6,7 @@ namespace PortalCubaCorp.Infrastructure;
 /// <summary>
 /// EF Core implementation of IPersistence (COMP-006).
 /// All database access centralized through this gateway.
+/// UC-001..UC-004: Clocking. UC-005..UC-008: News. UC-010: Worker category.
 /// </summary>
 public class PersistenceGateway : IPersistence
 {
@@ -16,7 +17,7 @@ public class PersistenceGateway : IPersistence
         _db = db;
     }
 
-    // Clocking operations
+    // Clocking operations (UC-001..UC-004)
 
     public List<ClockingRecord> GetClockingsByEmployee(string empId, DateRange range)
     {
@@ -46,7 +47,7 @@ public class PersistenceGateway : IPersistence
         return _db.Clockings.FirstOrDefault(c => c.EmployeeId == employeeId && c.IdempotencyKey == key);
     }
 
-    // News operations
+    // News operations (UC-005..UC-008)
 
     public NewsItem? GetNewsItem(Guid id)
     {
@@ -60,13 +61,15 @@ public class PersistenceGateway : IPersistence
         return item;
     }
 
-    public NewsItem UpdateNewsItem(Guid id, string title, string body, NewsCategory category)
+    // C4-1: isFeatured parameter added (CR-010)
+    public NewsItem UpdateNewsItem(Guid id, string title, string body, NewsCategory category, bool isFeatured)
     {
         var item = _db.NewsItems.FirstOrDefault(n => n.Id == id)
             ?? throw new InvalidOperationException(string.Format("NewsItem {0} not found", id));
         item.Title = title;
         item.Body = body;
         item.Category = category;
+        item.IsFeatured = isFeatured;
         item.UpdatedAt = DateTime.UtcNow;
         _db.SaveChanges();
         return item;
@@ -103,7 +106,7 @@ public class PersistenceGateway : IPersistence
         return _db.NewsItems.OrderByDescending(n => n.CreatedAt).ToList();
     }
 
-    // Worker category operations
+    // Worker category operations (UC-010)
 
     public WorkerCategory UpsertWorkerCategory(string adUserId, string category)
     {
@@ -125,7 +128,7 @@ public class PersistenceGateway : IPersistence
         return _db.WorkerCategories.ToList();
     }
 
-    // Audit operations
+    // Audit operations (NFR-004)
 
     public void InsertAuditRecord(AuditRecord record)
     {
@@ -133,7 +136,7 @@ public class PersistenceGateway : IPersistence
         _db.SaveChanges();
     }
 
-    // Transaction support — callback pattern (INT-007 corrected)
+    // Transaction support — callback pattern (INT-007)
 
     public async Task ExecuteInTransactionAsync(Func<Task> action)
     {

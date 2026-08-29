@@ -7,7 +7,7 @@ namespace PortalCubaCorp.Application;
 /// Worker category service implementation (COMP-004).
 /// UC-010: Manage worker category — AD user id to category (CON-009).
 /// Bridges local DB (worker_categories) and LDAP (AD lookup).
-/// All changes audited (NFR-004).
+/// All changes audited (NFR-004) and wrapped in transactions (C4-2).
 /// </summary>
 public class WorkerCategoryService : IWorkerCategoryService
 {
@@ -22,18 +22,22 @@ public class WorkerCategoryService : IWorkerCategoryService
         _auditLogger = auditLogger;
     }
 
-    public WorkerCategory AssignCategory(string adUserId, string category, string authorId)
+    public async Task<WorkerCategory> AssignCategoryAsync(string adUserId, string category, string authorId)
     {
         if (string.IsNullOrWhiteSpace(adUserId))
             throw new ArgumentException("AD user ID is required", nameof(adUserId));
         if (string.IsNullOrWhiteSpace(category))
             throw new ArgumentException("Category is required", nameof(category));
 
-        // Upsert worker category — only 2 columns (CON-009)
-        var result = _persistence.UpsertWorkerCategory(adUserId, category);
-
-        // Audit trail (NFR-004)
-        _auditLogger.LogAudit("WORKER_CATEGORY", adUserId, AuditAction.CategoryChanged, authorId, DateTime.UtcNow);
+        // C4-2: Wrap business op + audit in a transaction (NFR-004)
+        WorkerCategory result = new WorkerCategory { AdUserId = adUserId, Category = category };
+        var now = DateTime.UtcNow;
+        await _persistence.ExecuteInTransactionAsync(() =>
+        {
+            result = _persistence.UpsertWorkerCategory(adUserId, category);
+            _auditLogger.LogAudit("WORKER_CATEGORY", adUserId, AuditAction.CategoryChanged, authorId, now);
+            return Task.CompletedTask;
+        });
 
         return result;
     }

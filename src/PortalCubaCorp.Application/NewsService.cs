@@ -6,9 +6,10 @@ namespace PortalCubaCorp.Application;
 /// <summary>
 /// News service implementation (COMP-003).
 /// UC-005: Publish news with audit trail (NFR-004).
-/// UC-006: Edit published news — update in place, audit every edit.
+/// UC-006: Edit published news — update in place, audit every edit. isFeatured included (C4-1, CR-010).
 /// UC-007: Unpublish news — hide, never delete (CON-013).
 /// UC-008: Read and filter news — employees see published only.
+/// All write operations wrapped in ExecuteInTransactionAsync for atomicity (C4-2, NFR-004).
 /// </summary>
 public class NewsService : INewsService
 {
@@ -21,7 +22,7 @@ public class NewsService : INewsService
         _auditLogger = auditLogger;
     }
 
-    public NewsItem Publish(string title, string body, NewsCategory category, bool isFeatured, string authorId)
+    public async Task<NewsItem> PublishAsync(string title, string body, NewsCategory category, bool isFeatured, string authorId)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Title is required", nameof(title));
@@ -41,15 +42,19 @@ public class NewsService : INewsService
             AuthorId = authorId
         };
 
-        _persistence.SaveNewsItem(item);
+        // C4-2: Wrap business op + audit in a transaction (NFR-004)
+        NewsItem savedItem = item;
+        await _persistence.ExecuteInTransactionAsync(() =>
+        {
+            savedItem = _persistence.SaveNewsItem(item);
+            _auditLogger.LogAudit("NEWS_ITEM", savedItem.Id.ToString(), AuditAction.Publish, authorId, now);
+            return Task.CompletedTask;
+        });
 
-        // Audit trail (NFR-004)
-        _auditLogger.LogAudit("NEWS_ITEM", item.Id.ToString(), AuditAction.Publish, authorId, now);
-
-        return item;
+        return savedItem;
     }
 
-    public NewsItem Edit(Guid id, string title, string body, NewsCategory category, string authorId)
+    public async Task<NewsItem> EditAsync(Guid id, string title, string body, NewsCategory category, bool isFeatured, string authorId)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Title is required", nameof(title));
@@ -59,24 +64,35 @@ public class NewsService : INewsService
         var existing = _persistence.GetNewsItem(id)
             ?? throw new InvalidOperationException($"NewsItem {id} not found");
 
-        var updated = _persistence.UpdateNewsItem(id, title, body, category);
-
-        // Audit trail (NFR-004)
-        _auditLogger.LogAudit("NEWS_ITEM", id.ToString(), AuditAction.Edit, authorId, DateTime.UtcNow);
+        // C4-1: Pass isFeatured to UpdateNewsItem (CR-010)
+        // C4-2: Wrap business op + audit in a transaction (NFR-004)
+        NewsItem updated = existing;
+        var now = DateTime.UtcNow;
+        await _persistence.ExecuteInTransactionAsync(() =>
+        {
+            updated = _persistence.UpdateNewsItem(id, title, body, category, isFeatured);
+            _auditLogger.LogAudit("NEWS_ITEM", id.ToString(), AuditAction.Edit, authorId, now);
+            return Task.CompletedTask;
+        });
 
         return updated;
     }
 
-    public NewsItem Unpublish(Guid id, string authorId)
+    public async Task<NewsItem> UnpublishAsync(Guid id, string authorId)
     {
         var existing = _persistence.GetNewsItem(id)
             ?? throw new InvalidOperationException($"NewsItem {id} not found");
 
         // Set status to Unpublished — record preserved, NOT deleted (CON-013)
-        var updated = _persistence.UpdateNewsStatus(id, NewsStatus.Unpublished);
-
-        // Audit trail (NFR-004)
-        _auditLogger.LogAudit("NEWS_ITEM", id.ToString(), AuditAction.Unpublish, authorId, DateTime.UtcNow);
+        // C4-2: Wrap business op + audit in a transaction (NFR-004)
+        NewsItem updated = existing;
+        var now = DateTime.UtcNow;
+        await _persistence.ExecuteInTransactionAsync(() =>
+        {
+            updated = _persistence.UpdateNewsStatus(id, NewsStatus.Unpublished);
+            _auditLogger.LogAudit("NEWS_ITEM", id.ToString(), AuditAction.Unpublish, authorId, now);
+            return Task.CompletedTask;
+        });
 
         return updated;
     }
