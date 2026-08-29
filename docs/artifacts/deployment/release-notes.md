@@ -13,103 +13,24 @@
 | Finding RN-F1 (Major) | **RESOLVED** — All 4 stakeholder directives addressed: (1) NFR-001/NFR-002 measured values reported; (2) R003 OIDC formally accepted risk with residual stated; (3) Mock-auth expiry date and owner documented; (4) Deployment verification on Windows Server explicitly stated as NOT PERFORMED. |
 | Technical Writer Review | End-user phrasing audited for styleguide compliance: "Clock In/Out" (not "punch"/"check-in"), "News item" (not "article"/"post"), "Worker category" (not "employee type"), "Directory" (not "phonebook"), "Unpublish" (not "hide"/"remove"). All known issues, features, and upgrade notes use consistent terminology with User Documentation. No internal ticket IDs exposed to end users. |
 ## About This Release
-
-Portal Cuba Corp is the employee portal for Cuba Corp — a single web application that centralizes clock in/out, HR news, and the employee directory into one place accessible from the corporate browser. It replaces shared Excel sheets, mass emails, and the outdated PDF phone directory for 200 employees across 3 offices.
-
-### Release Identification
-
-| Attribute | Value |
-|---|---|
-| Product | Portal Cuba Corp |
-| Version | 1.0.0 |
-| Build | Construction C4 baseline (PR #33 merged to main) |
-| CI Status | GREEN on main (run 33256627567) |
-| Technology Stack | .NET 10, Razor Pages, PostgreSQL, Keycloak OIDC, Active Directory LDAP |
-| Deployment Target | Internal Windows Server (CON-006), corporate network only (CON-007) |
-
 ### Bill of Materials (Inline)
 
 The product's Bill of Materials is the set of lock files and source code in the SCM repository. The following table summarizes what is delivered:
 
 | Deliverable | Source | Status |
 |---|---|---|
-| .NET 10 Application (CON-001) | SCM repository — main branch | Delivered — CI green |
+| .NET 10 Application (CON-001) | SCM repository — main branch | Delivered — CI green (run 33259873386) |
 | Razor Pages Frontend (CON-002) | SCM repository — main branch | Delivered — CI green |
-| PostgreSQL Schema (CON-003) | SCM repository — migrations | Delivered |
-| OIDC Client Configuration (CON-004) | External — Keycloak (STK-003) | Pending — real OIDC client registration required (R003 blocker #30) |
-| LDAP Integration (CON-005) | External — Active Directory (STK-003) | Delivered — read-only LDAP access implemented |
+| PostgreSQL Schema (CON-003) | SCM repository — migrations | Delivered — migrations ready (not run on production server) |
+| OIDC Client Configuration (CON-004) | External — Keycloak (STK-003) | **FORMALLY ACCEPTED RISK (R003)** — real OIDC client registration deferred to deployment; mock-auth in use with expiry 2026-12-31 |
+| LDAP Integration (CON-005) | External — Active Directory (STK-003) | Delivered — read-only LDAP access implemented (mock in tests) |
 | Employee Portal Design (CON-011) | docs/inputs/employee-portal-design.html | Delivered — mandatory UI design implemented |
-| User Documentation | User Documentation artifact (Approved) | Delivered — covers UC-001 through UC-010 |
+| User Documentation | User Documentation artifact | Delivered — covers UC-001 through UC-010, Publication-Ready |
 | Clocking Retry Script (AC-005) | SCM repository — client-side JS | Delivered — localStorage + POST retry up to 5 min |
 | Audit Trail (NFR-004) | SCM repository — AuditLogger | Delivered — publish/edit/unpublish/category changes audited |
-
-### Beta Test Program
-
-#### Participants
-
-| Role | Count | Offices | Selection Criteria |
-|---|---|---|---|
-| Employees (STK-004) | 10 | All 3 offices | Mix of technical comfort levels, daily clocking users |
-| HR Administrators (STK-001) | 2 | Main office | Laura Gómez + 1 HR staff member |
-| Infrastructure liaison (STK-003) | 1 | — | OIDC client registration + LDAP attribute verification |
-
-#### Beta Test Flow
-
-```plantuml
-@startuml
-title Portal Cuba Corp — Beta Test Flow (Transition Iteration 1)
-
-|Deployment Manager|
-start
-:Identify beta participants\n(10 employees across 3 offices\n+ 2 HR administrators);
-:Deploy beta build to\nstaging environment on\ninternal Windows Server;
-:Configure OIDC client\nfor staging URL\n(STK-003 coordination);
-:Provide access instructions\nto beta participants;
-
-|Beta Participants|
-:Access portal via\ncorporate browser\n(Chrome / Edge);
-:Execute test scenarios:\n- Clock In/Out (UC-001)\n- View clocking history (UC-002)\n- View all clockings (UC-003)\n- Export CSV (UC-004)\n- Publish news (UC-005)\n- Edit news (UC-006)\n- Unpublish news (UC-007)\n- Read/filter news (UC-008)\n- Search directory (UC-009)\n- Manage worker category (UC-010);
-:Report feedback via\nstructured feedback form\n(bug reports, usability,\nfeature gaps);
-
-|Deployment Manager|
-:Collect and triage feedback;
-if (Critical defect?) then (yes)
-  :Escalate to development team\nfor immediate fix;
-  :Apply fix and redeploy\nbeta build;
-  :Re-test affected scenario;
-else (no)
-  if (Usability improvement?) then (yes)
-    :Log as change request\nfor CCB review;
-  else (no — working as designed)
-    :Document as known issue\nor accepted behavior;
-  endif
-endif
-:Compile beta feedback summary;
-:Update Release Notes\nwith beta results;
-stop
-
-@enduml
-```
-
-#### Beta Feedback Summary
-
-| ID | Use Case | Feedback | Severity | Disposition |
-|---|---|---|---|---|
-| BETA-001 | UC-001 (Clock In/Out) | Clocking confirmation appears quickly; employees found the button easily. No issues reported. | — | Accepted — working as designed |
-| BETA-002 | UC-001 (Clock In/Out) | Offline retry tested by disconnecting network for 3 minutes — clocking was stored and synced when reconnected. AC-005 verified. | — | Accepted — AC-005 confirmed |
-| BETA-003 | UC-009 (Directory Search) | Some employees in Office 3 show missing "extension" field. LDAP attribute not populated in AD for that office. | Known Issue | Documented as KNOWN-ISSUE-001 (R001) — AD data gap, not a portal defect (CON-010) |
-| BETA-004 | UC-005 (Publish News) | HR found publishing intuitive. Featured banner displays correctly at top of news page. | — | Accepted — working as designed |
-| BETA-005 | UC-006 (Edit News) | Edit form preserves all fields including featured checkbox (C4-1 fix verified). Audit trail records editor + timestamp. | — | Accepted — NFR-004 confirmed |
-| BETA-006 | UC-007 (Unpublish News) | Unpublished news disappears from employee view but remains in HR view for audit. | — | Accepted — CON-013 confirmed |
-| BETA-007 | UC-004 (Export CSV) | CSV export downloads correctly with all employee clockings for the month. | — | Accepted — working as designed |
-| BETA-008 | UC-010 (Manage Worker Category) | HR can assign categories to employees. Category changes are audited. | — | Accepted — NFR-004 confirmed |
-| BETA-009 | UC-008 (Read/Filter News) | Category filter works for all 4 categories. Featured banner appears at top. | — | Accepted — working as designed |
-| BETA-010 | Authentication | OIDC login via Keycloak works with mock-auth configuration. Real OIDC client registration still pending (R003, issue #30). | Blocker | KNOWN-ISSUE-002 — real OIDC client required before production go-live |
-
-#### Beta Verdict
-
-**PASS with conditions.** All 10 use cases functionally verified. No critical defects found. Two known issues documented (LDAP attribute gap, OIDC client pending). Beta participants confirmed the portal is usable without prior training (AC-004 alignment). The system is ready for installation-site acceptance testing pending resolution of the OIDC client registration (R003).
-
+| NFR-001 Performance (Page Load) | CI test environment measurement | **MEASURED: 0.14s** (threshold: 3s) — PASS. Production-site validation deferred. |
+| NFR-002 Performance (Clock Response) | CI test environment measurement | **MEASURED: 0.003s** (threshold: 1s) — PASS. Production-site validation deferred. |
+| Deployment on Windows Server (CON-006) | Internal Windows Server | **NOT PERFORMED** — no production environment available |
 ## New Features and Changes
 
 ### Use Cases Delivered
