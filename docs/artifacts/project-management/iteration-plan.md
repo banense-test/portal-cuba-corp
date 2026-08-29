@@ -193,23 +193,24 @@ title Construction Iteration Sequence — C4 Post-Review (UNANCHORED)
 | 5 | Management Reviewer lens executed; stakeholder sanction decision recorded | MET (target) | **MET** — sanction GRANTED; IOC CONDITIONAL GO; 3 binding conditions |
 | 6 | Iteration Assessment produced with variance analysis; IA-F1 resolved; IA-F2 corrected | MET (target) | **MET** — Iteration Assessment produced; IA-F1 RESOLVED; IA-F2 corrected this iteration |
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| Merge PR #32 (Item 1) | Review Record C4 Cycle 1 (PR #32 APPROVED), UC-001..UC-010 | Derives | main branch, PR #29 (superseded by merge chain), PR #19 (superseded), PR #8 (superseded) |
-| Integration testing (Item 2) | TC-001..TC-039, UC-001..UC-010, FR-001..FR-010 | Tests | Test results: 31 pass, 8 BLOCKED (target) |
-| Load testing (Item 3) | NFR-001, NFR-002, R004 | Derives | IP-F5 RESOLVED: decoupled from merge; executes against any CI-green branch |
-| R003 hard deadline (Item 4) | R003, CON-004, STK-003, STK-001, RL-F5 | DependsOn | OIDC registration, 8 blocked tests, mock-auth contingency to stakeholder |
-| Management Review (Item 5) | Review Record C4 Cycle 1, all C4 findings | Derives | IOC gate decision |
-| Iteration Assessment (Item 6) | C4 Cycle 1 work items, Review Record | Derives | C4 Cycle 1 variance analysis |
-| Budget box (~12.75M) | C3 Cycle 1 measured actual (12,752,568) | Derives | C4 budget box baseline [ASSUMPTION — requires validation] |
-| AC-001 (clocking) | Work Order AC-001 | Refines | Items 1, 2 (merge + integration test) |
-| AC-005 (offline) | Work Order AC-005 | Refines | Items 1, 2 (merge + integration test) |
-| C4-1 (RESOLVED) | Review Record C4-1, INT-002, FR-006 | Resolved by | PR #32 (isFeatured in Edit) |
-| C4-2 (RESOLVED) | Review Record C4-2, INT-007, NFR-004 | Resolved by | PR #32 (transaction wrapping) |
-| C4-3 (CONFIRMED) | Review Record C4-3, INT-007 | Confirmed by | PR #32 (ExecuteInTransactionAsync) |
-| IP-F5 (RESOLVED) | Review Record IP-F5, NFR-001, NFR-002 | Resolved by | Load testing decoupled from merge dependency (C4 work item 3) |
-| RL-F5 (RESOLVED) | Review Record RL-F5, R003, STK-003, CON-004 | Resolved by | R003 hard deadline enforced (5th and final cycle); mock-auth contingency to stakeholder |
-| IA-F1 (RESOLVED) | Review Record IA-F1 | Resolved by | Document Control fields updated (this iteration) |
-| R007 (RESOLVED) | Review Record C2 findings (all 7 resolved) | Resolved by | PR #29 + PR #32 (APPROVED) |
-| R008 (COMPLETE) | Stakeholder sanction refusal, rework cycles | Derives | C3 Cycle 1 plan; C4 is consolidation, not rework |
+| Merge PR #32 + #33 (Item 1) | Review Record C4 Cycle 1 (PR #32 + #33 MERGED), UC-001..UC-010 | Derives | main branch (MERGED), PR #29 (superseded), PR #19 (closed), PR #8 (closed) |
+| Integration testing (Item 2) | TC-001..TC-043, UC-001..UC-010, FR-001..FR-010 | Tests | Test results: 35 pass, 0 fail, 8 covered-by-mock (R003 ACCEPTED) |
+| Load testing (Item 3) | NFR-001, NFR-002, R004 | Derives | NOT EXECUTED — deferred to Transition Iter 1 per stakeholder condition (measured values required) |
+| R003 resolution (Item 4) | R003, CON-004, STK-003, STK-001, RL-F5 | Resolved by | R003 ACCEPTED — STK-001 approved mock-auth; 8 tests covered-by-mock; real OIDC is Transition work item |
+| Management Review (Item 5) | Review Record C4 Cycle 1, all C4 findings | Derives | IOC CONDITIONAL GO — stakeholder sanction GRANTED with 3 binding conditions |
+| Iteration Assessment (Item 6) | C4 Cycle 1 work items, Review Record | Derives | C4 Cycle 1 variance analysis; IA-F2 corrected |
+| Budget box (10,954,157) | C4 Cycle 1 measured actual | Derives | C4 budget box — MEASURED, under C3 baseline (12,752,568) |
+| AC-001 (clocking) | Work Order AC-001 | Refines | Items 1, 2 (merge + integration test) — MET |
+| AC-005 (offline) | Work Order AC-005 | Refines | Items 1, 2 (merge + integration test) — MET |
+| C4-1 (RESOLVED) | Review Record C4-1, INT-002, FR-006 | Resolved by | PR #32 (isFeatured in Edit) — MERGED to main |
+| C4-2 (RESOLVED) | Review Record C4-2, INT-007, NFR-004 | Resolved by | PR #32 (transaction wrapping) — MERGED to main |
+| C4-3 (CONFIRMED) | Review Record C4-3, INT-007 | Confirmed by | PR #32 (ExecuteInTransactionAsync) — MERGED to main |
+| IP-F5 (RESOLVED) | Review Record IP-F5, NFR-001, NFR-002 | Resolved by | Load testing decoupled from merge dependency; deferred to Transition Iter 1 |
+| RL-F5 (RESOLVED) | Review Record RL-F5, R003, STK-003, CON-004 | Resolved by | R003 ACCEPTED — mock-auth activated per STK-001 |
+| IA-F1 (RESOLVED) | Review Record IA-F1 | Resolved by | Document Control fields updated |
+| IA-F2 (RESOLVED) | Review Record IA-F2, Change Request artifact | Resolved by | Incorrect issue count corrected — 7 open issues (1 ACCEPTED, 6 deferred) |
+| R007 (RESOLVED) | Review Record C2 findings (all 7 resolved) | Resolved by | PR #32 + #33 (MERGED to main) |
+| R008 (COMPLETE) | Stakeholder sanction refusal, rework cycles | Derives | C3 Cycle 1 plan; C4 complete — sanction GRANTED |
+| Stakeholder sanction (GRANTED) | STK-001, Review Record C4 Cycle 1 | Refines | IOC CONDITIONAL GO — 3 binding conditions (NFR load testing, OIDC Transition work item, mock-auth expiry) |
