@@ -188,4 +188,3 @@ public class OfflineRetryTests
         // (real EF Core would roll back). This test verifies the exception propagates.
     }
 }
-}
