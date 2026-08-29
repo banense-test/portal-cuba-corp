@@ -1,17 +1,16 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | Draft — Iteration 1 (Beta + Acceptance Testing + Lessons Learned incorporated) |
+| Status | **Finalized** — Technical Writer end-user phrasing review complete (Transition Iter 1, Cycle 1) |
 | Milestone Target | End of Transition (PRD) — NOT YET ACHIEVED |
 | Iteration | 1 (Cycle 1) |
 | Date | 2026-08-29 |
-| Author | Deployment Manager (Deployment Discipline) |
+| Author | Deployment Manager (Deployment Discipline) — primary; Technical Writer (Deployment Discipline) — end-user phrasing contributor |
 | Prior Phase | Construction C4 — IOC CONDITIONAL GO, stakeholder sanction GRANTED with 3 binding conditions |
 | CI Build | main: GREEN (run 33256627567, 2026-08-29 14:05:31Z) |
 | Deployment Mode | Custom-built, single Windows Server (CON-006) |
-
+| Technical Writer Review | End-user phrasing audited for styleguide compliance: "Clock In/Out" (not "punch"/"check-in"), "News item" (not "article"/"post"), "Worker category" (not "employee type"), "Directory" (not "phonebook"), "Unpublish" (not "hide"/"remove"). All known issues, features, and upgrade notes use consistent terminology with User Documentation. No internal ticket IDs exposed to end users. Training Status updated to reflect User Documentation publication-ready status. |
 ## About This Release
 
 Portal Cuba Corp is the employee portal for Cuba Corp — a single web application that centralizes clock in/out, HR news, and the employee directory into one place accessible from the corporate browser. It replaces shared Excel sheets, mass emails, and the outdated PDF phone directory for 200 employees across 3 offices.
