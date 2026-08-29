@@ -1,17 +1,15 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Construction |
 | Status | Active |
-| Milestone Target | End-of-Construction (IOC) — NOT YET ACHIEVED |
+| Milestone Target | End-of-Construction (IOC) — **CONDITIONAL GO — stakeholder sanction GRANTED** |
 | Iteration | 4 (Cycle 1) |
 | Date | 2026-08-29 |
 | Prior Phase | Construction C3 Cycle 1 — PR #29 APPROVED; 0 Critical/0 Major code; 31/39 tests pass, 8 BLOCKED (R003); load test NOT EXECUTED; stakeholder sanction REFUSED 3rd time |
-| Evolution | C4 Cycle 1 Risk List evolved: PR #32 APPROVED (C4-1 isFeatured RESOLVED, C4-2 transaction wrapping RESOLVED); R003 ESCALATED to 5th and FINAL cycle — hard deadline enforced (RL-F5 RESOLVED); R004 load testing decoupled from merge (IP-F5 RESOLVED); R007 updated to reflect PR #32 supersedes PR #29; R008 COMPLETE; R001/R005/R006 status unchanged; stakeholder directive: close all PRs, issues, findings |
+| Evolution | C4 Cycle 1 Risk List evolved (post-review): R003 ACCEPTED — STK-001 approved mock-auth contingency activation; R004 deferred to Transition Iter 1 per stakeholder condition (measured values required); R007 RESOLVED — PR #32 + #33 MERGED to main, 0 open PRs, CI GREEN; R008 COMPLETE; R001/R002/R005/R006 status unchanged; stakeholder sanction GRANTED with 3 binding conditions; IOC CONDITIONAL GO |
 | Finding RL-F2 | RESOLVED — R008 contingency activated and COMPLETE (rework succeeded) |
-| Finding RL-F5 | RESOLVED — R003 hard deadline enforced: 5th and FINAL escalation cycle. If STK-003 does not confirm by end of C4, mock-auth contingency is FORMALLY PRESENTED to STK-001 for binding decision. R003 must transition to RESOLVED or ACCEPTED. No further perpetual escalation. |
-
+| Finding RL-F5 | RESOLVED — R003 ACCEPTED per STK-001 decision. Mock-auth contingency activated. Real OIDC is Transition work item. 8 tests covered-by-mock. Mock-auth has expiry date. |
 ## Risk Classification
 
 Risks are classified by **Probability (P) × Impact (I) = Exposure**, yielding a **Magnitude** rating. The scale is 1–3 for both probability and impact, producing exposure values from 1 to 9.
