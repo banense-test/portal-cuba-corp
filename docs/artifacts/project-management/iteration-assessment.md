@@ -250,14 +250,16 @@ Metric_6 --> Metric_3 : CI green enables test execution
 @enduml
 ```
 ## External Changes
-
 | Change | Source | Impact | Status |
 |---|---|---|---|
-| R003 OIDC registration | STK-003 (Infrastructure team) | 8 tests blocked; IOC achievement blocked | ESCALATED (5th and FINAL cycle) — hard deadline enforced (RL-F5). Mock-auth contingency ready for formal presentation to STK-001 for binding decision. |
-| Stakeholder PR/issue sync directive | STK-001 feedback (C2 Cycle 2 review) | Integrator role added; PR #32 approved | ADDRESSED — PR #32 APPROVED; merge still pending. Stale PRs #8, #19 to be closed. |
-| Stakeholder iteration directive | STK-001 feedback (C3 Cycle 1 review) | C4 iteration required | ADDRESSED — C4 Cycle 1 active. Directive: "Let's iterate again and close all PRs, Github Issues, and findings if any remain." |
-| C4-F1 (Design Model async method names) | Code Reviewer C4 Cycle 1 | Design Model Interface Contracts not updated | DEFERRED — not a PM artifact; deferred to Design Model update in next iteration. Non-blocking. |
-
+| R003 OIDC registration | STK-003 (Infrastructure team) | 8 tests blocked; IOC achievement | **ACCEPTED** — STK-001 approved mock-auth contingency activation. R003 transitions from ESCALATED to ACCEPTED. 8 tests covered-by-mock, NOT passing. Real OIDC integration is named Transition work item with owner. Mock-auth has expiry date. |
+| Stakeholder PR/issue sync directive | STK-001 feedback (C2 Cycle 2 review) | Integrator role added; PR #32 + #33 merged | **ADDRESSED** — PR #32 + #33 MERGED to main. PRs #8, #19 closed. 0 open PRs. 7 open issues remain (1 blocker ACCEPTED, 6 deferred-next-iteration). |
+| Stakeholder iteration directive | STK-001 feedback (C3 Cycle 1 review) | C4 iteration required | **ADDRESSED** — C4 Cycle 1 complete. Stakeholder sanction GRANTED. IOC CONDITIONAL GO. |
+| Stakeholder correction on issue count | STK-001 feedback (C4 Cycle 1 review) | IA-F2 (Major) — incorrect "0 open" count | **CORRECTED THIS ITERATION** — all sections updated to show 7 open issues (1 blocker ACCEPTED, 6 deferred-next-iteration). |
+| Stakeholder condition: NFR load testing | STK-001 sanction condition | NFR-001/NFR-002 deferred to Transition | **RECORDED** — NFR-001 (<3s page load) and NFR-002 (<1s clocking response) are Transition Iter 1 exit criteria. Measured values required, not "tested". |
+| Stakeholder condition: real OIDC | STK-001 sanction condition | Real OIDC integration as Transition work item | **RECORDED** — named work item with owner in Transition Iteration Plan. 8 tests stay covered-by-mock until real client. |
+| Stakeholder condition: mock-auth expiry | STK-001 sanction condition | Mock-auth contingency has expiry date | **RECORDED** — expiry date documented in Transition Iteration Plan. |
+| C4-F1 / DM-F2 (Design Model async method names) | Code Reviewer C4 Cycle 1 | Design Model Interface Contracts not updated | **DEFERRED** — not a PM artifact; deferred to Design Model update in Transition. Non-blocking. |
 ## Rework Required
 
 | Finding | Severity | Artifact | Status | Resolution |
