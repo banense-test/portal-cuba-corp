@@ -15,7 +15,7 @@
 | Phase | Construction |
 | Status | Draft |
 | Milestone Target | End-of-Construction |
-| Iteration | 3 (Cycle 1) |
+| Iteration | 4 (Cycle 1) |
 | Date | 2026-08-29 |
 | Contributors | Designer (Analysis Classes, Use-Case Realizations, Design Classes, Interface Contracts, State Machines, Testability); User-Interface Designer (UI View/Controller Classes, UI Patterns, Boundary Classes and Navigation Map); Database Designer (Persistent Data Classes) |
 
@@ -51,6 +51,13 @@ The design follows a three-layer architecture as defined in the SAD Logical View
 | Audit Trail | Interceptor pattern; append-only; same DB transaction as business operation; author from OIDC token | EF Core SaveInterceptor + audit_records table; `IAuditLogger.LogAudit()` called within `IPersistence.ExecuteInTransactionAsync()` callback | COMP-008 |
 | Offline Retry | Client-side localStorage + POST retry with idempotency key; 5-min window; server accepts client timestamp | clocking-retry.js + IClockingService idempotencyKey param | COMP-002 |
 | CSV Export | Streaming response; HR-only; date-range filtered | IClockingService.ExportCsv returns Stream → Razor Page writes to Response.Body | COMP-002 |
+
+### Construction C4 — Design Model Evolution Summary
+
+| Change | Rationale | Affected Sections |
+|---|---|---|
+| C4-1: `INewsService.Edit` implementation missing `isFeatured` parameter | Source verification: implementation `Edit(Guid id, string title, string body, NewsCategory category, string authorId)` lacks `isFeatured: bool`. Design contract correct per CR-010. `UpdateNewsItem` in PersistenceGateway also missing `isFeatured`. Implementation gap — OPEN. | Interface Contracts (INT-002, INT-007) |
+| C4-2: `ExecuteInTransactionAsync` now implemented | Source verification: `PersistenceGateway.cs` now contains `ExecuteInTransactionAsync(Func<Task> action)` using `BeginTransactionAsync`/`CommitAsync`/`RollbackAsync`. M2 finding updated from "implementation pending" to "implementation confirmed". Services must now wrap business op + audit in this callback — implementation gap OPEN. | Interface Contracts (INT-007), Transaction Boundary diagram |
 
 ### Construction C3 — Design Model Evolution Summary
 
