@@ -2320,3 +2320,9 @@ The design exposes dependency injection seams and observable state at every laye
 | ClockingRecord.cs | CLS-016 | Implements | src/PortalCubaCorp.Domain/ClockingRecord.cs |
 | DirectoryEntry.cs | CLS-020 | Implements | src/PortalCubaCorp.Domain/DirectoryEntry.cs |
 | Enums.cs | CLS-011..CLS-015 | Implements | src/PortalCubaCorp.Domain/Enums.cs |
+| PersistenceGateway.cs | CLS-007, INT-007 | Implements | src/PortalCubaCorp.Infrastructure/PersistenceGateway.cs |
+| LdapGateway.cs | CLS-006, INT-006 | Implements | src/PortalCubaCorp.Infrastructure/LdapGateway.cs |
+| **C4 Source Verification Findings** | | | |
+| C4-1 (Edit missing isFeatured) | INT-002, CR-010, FR-006 | Derives | Implementation gap — OPEN |
+| C4-2 (Transaction wrapping) | INT-007, NFR-004 | Derives | Implementation gap — OPEN |
+| C4-3 (ExecuteInTransactionAsync confirmed) | INT-007, M2 | Derives | PersistenceGateway.cs — IMPLEMENTED |
