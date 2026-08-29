@@ -3,12 +3,14 @@
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | Active |
-| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED** |
+| Status | Active — Updated for Transition Iter 1 Close-Out |
+| Milestone Target | Product Release (PR) — **NOT ACHIEVED — Iteration 2 Required** |
 | Iteration | 1 (Cycle 1) |
 | Date | 2026-08-29 |
-| Prior Phase | Construction C4 Cycle 1 — R003 ACCEPTED (mock-auth); R004 deferred to Transition (measured values required); R007 RESOLVED; R008 COMPLETE; R001/R002/R005/R006 unchanged |
-| Evolution | Transition Iter 1 Risk List evolved from Construction C4. R003 transition action: real OIDC verification. R004 transition action: load testing with measured values. R005/R006/R007: verify in deployment. R008: fulfill 3 binding conditions. New risks: R009 (deployment to Windows Server) and R010 (user acceptance / AC verification). |
+| Author | Project Manager (Project Management Discipline) |
+| Prior Phase | Construction C4 Cycle 1 — R003 ACCEPTED (mock-auth); R004 deferred to Transition; R007 RESOLVED; R008 COMPLETE |
+| Evolution | Transition Iter 1 Risk List evolved from Construction C4. Finding RL-F6 (Major) RESOLVED: R003 converted to FORMALLY ACCEPTED risk with residual stated per STK-001 directive; R004 escalated to HIGH — RELEASE BLOCKER (load tests not executed). R008 status updated to REFUSED. R009 status updated to DEFERRED. R010 status updated to BLOCKED. |
+| Stakeholder Directive | STK-001: "An accepted risk is a decision; 'unverified' is a wound left open." R003 is now a formally accepted risk, not an open verification item. |
 
 ## Risk Classification
 
@@ -28,7 +30,7 @@ Risks are classified by **Probability (P) × Impact (I) = Exposure**, yielding a
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Transition Risk Register
+title Portal Cuba Corp — Transition Risk Register (Iter 1 Close-Out)
 
 skinparam classAttributeIconSize 0
 skinparam classBackgroundColor #F0F4FF
@@ -69,25 +71,26 @@ class R003_OIDC {
   + exposure : 9
   + magnitude : HIGH
   + strategy : Accept
-  + status : ACCEPTED — mock-auth active
+  + status : FORMALLY ACCEPTED (STK-001 directive)
   + owner : Software Architect
-  + mitigation : Mock-auth activated per STK-001
-  + contingency : Real OIDC is Transition work item
-  + transition_action : Real OIDC client registration and verification
+  + mitigation : Mock-auth activated; 8 tests covered by mock
+  + residual : 8 OIDC test cases proven against real client at deployment time only
+  + contingency : Real OIDC verification deferred to deployment
+  + transition_action : CLOSED as accepted risk — no further iteration work
 }
 
 class R004_NFR_Performance {
   + id : R004
-  + P : 2
+  + P : 3
   + I : 3
-  + exposure : 6
-  + magnitude : SIGNIFICANT
+  + exposure : 9
+  + magnitude : HIGH — RELEASE BLOCKER
   + strategy : Accept
-  + status : ACTIVE — Transition exit criterion
+  + status : BLOCKING PR — load tests NOT executed
   + owner : Test Manager
-  + mitigation : Load testing in Transition Iter 1
-  + contingency : Performance optimization sprint if thresholds not met
-  + transition_action : Measured values for NFR-001 and NFR-002
+  + mitigation : Load testing required in Transition Iter 2
+  + contingency : Performance optimization if thresholds not met
+  + transition_action : Execute load tests, report measured values
 }
 
 class R005_Design_Conformance {
@@ -134,16 +137,16 @@ class R007_Code_Quality {
 
 class R008_Stakeholder_Sanction {
   + id : R008
-  + P : 1
+  + P : 2
   + I : 3
-  + exposure : 3
-  + magnitude : MINOR
+  + exposure : 6
+  + magnitude : SIGNIFICANT
   + strategy : Accept
-  + status : COMPLETE
+  + status : REFUSED — 3 binding conditions unmet
   + owner : Project Manager
-  + mitigation : Sanction GRANTED with 3 binding conditions
+  + mitigation : Transition Iter 2 must close all 3 conditions
   + contingency : N/A
-  + transition_action : Fulfill 3 binding conditions for PR
+  + transition_action : Fulfill binding conditions for PR re-submission
 }
 
 class R009_Deployment {
@@ -153,11 +156,11 @@ class R009_Deployment {
   + exposure : 6
   + magnitude : SIGNIFICANT
   + strategy : Accept
-  + status : NEW — Transition risk
+  + status : DEFERRED — environment unavailable
   + owner : Software Architect
-  + mitigation : Deployment verification on internal Windows Server
-  + contingency : Rollback to last known good if deployment fails
-  + transition_action : Verify portal accessible from all 3 offices
+  + mitigation : State explicitly in Release Notes
+  + contingency : N/A
+  + transition_action : Explicit deployment status in Release Notes
 }
 
 class R010_User_Acceptance {
@@ -167,49 +170,71 @@ class R010_User_Acceptance {
   + exposure : 6
   + magnitude : SIGNIFICANT
   + strategy : Accept
-  + status : NEW — Transition risk
+  + status : BLOCKED — PR sanction refused
   + owner : Project Manager
-  + mitigation : AC-001 through AC-005 verification
+  + mitigation : AC-001 through AC-005 verification post-deployment
   + contingency : Targeted rework if acceptance criteria not met
-  + transition_action : Stakeholder sign-off on acceptance criteria
+  + transition_action : Re-submit for PR after binding conditions close
 }
 
 R001_AD_LDAP --> R009_Deployment : "verified in deployment"
-R003_OIDC --> R009_Deployment : "OIDC client must exist"
-R004_NFR_Performance --> R010_User_Acceptance : "performance affects adoption"
+R003_OIDC --> R009_Deployment : "OIDC client must exist at deployment"
+R004_NFR_Performance --> R008_Stakeholder_Sanction : "blocks PR sanction"
 R002_Adoption --> R010_User_Acceptance : "adoption is acceptance criterion"
+R008_Stakeholder_Sanction --> R010_User_Acceptance : "PR refusal blocks acceptance"
 
 @enduml
 ```
 
 ## Risk Mitigation and Contingency
 
-| Risk | P | I | Exposure | Magnitude | Strategy | Status | Owner | Mitigation | Contingency | Transition Action |
-|---|---|---|---|---|---|---|---|---|---|---|
-| R001 | 3 | 3 | 9 | HIGH | Accept | MONITORING | Software Architect | LDAP attribute mapping verified in Elaboration PoC | Manual AD attribute fix via Infra team (CON-010) | Verify directory display in deployment env across 3 offices |
-| R002 | 3 | 2 | 6 | SIGNIFICANT | Accept | ACTIVE | Project Manager | User documentation + stakeholder communication | Targeted training session for low-adoption offices | User docs finalized; adoption tracking plan for BG-003 (80% in 3 months) |
-| R003 | 3 | 3 | 9 | HIGH | Accept | ACCEPTED — mock-auth active | Software Architect | Mock-auth activated per STK-001 | Real OIDC is Transition work item (binding condition #2) | Real OIDC client registration and login flow verification; mock-auth expiry date documented |
-| R004 | 2 | 3 | 6 | SIGNIFICANT | Accept | ACTIVE — Transition exit criterion | Test Manager | Load testing in Transition Iter 1 | Performance optimization sprint if thresholds not met | Measured values for NFR-001 (< 3s) and NFR-002 (< 1s) — binding condition #1 |
-| R005 | 1 | 2 | 2 | LOW | Accept | RESOLVED | UI Designer | Design Model V010 matches CON-011 | N/A | Verify visual conformance in deployment |
-| R006 | 2 | 3 | 6 | SIGNIFICANT | Accept | RESOLVED — PoC verified | Software Architect | ClockingService transaction wrapping verified | N/A | Verify offline sync (AC-005) in deployment env |
-| R007 | 1 | 3 | 3 | MINOR | Accept | RESOLVED | Implementer | All PRs merged, CI green (run 33256627567) | N/A | Monitor CI in deployment |
-| R008 | 1 | 3 | 3 | MINOR | Accept | COMPLETE | Project Manager | Sanction GRANTED with 3 binding conditions | N/A | Fulfill 3 binding conditions for PR milestone |
-| R009 | 2 | 3 | 6 | SIGNIFICANT | Accept | NEW | Software Architect | Deployment verification on internal Windows Server (CON-006) | Rollback to last known good if deployment fails | Verify portal accessible from all 3 offices on corporate network (CON-007) |
-| R010 | 2 | 3 | 6 | SIGNIFICANT | Accept | NEW | Project Manager | AC-001 through AC-005 verification | Targeted rework if acceptance criteria not met | Stakeholder sign-off on all 5 acceptance criteria for PR milestone |
+### R003 — OIDC Integration (FORMALLY ACCEPTED)
 
-### Risk Summary by Magnitude
+**Stakeholder directive (STK-001):** "An accepted risk is a decision; 'unverified' is a wound left open."
 
-| Magnitude | Count | Risks |
-|---|---|---|
-| HIGH | 2 | R001, R003 |
-| SIGNIFICANT | 5 | R002, R004, R006, R009, R010 |
-| MINOR | 2 | R007, R008 |
-| LOW | 1 | R005 |
-| **Total** | **10** | |
+| Attribute | Value |
+|---|---|
+| Strategy | Accept |
+| Decision Date | 2026-08-29 |
+| Decided By | STK-001 (stakeholder directive) |
+| Rationale | STK-003 (Infrastructure team) never responded. Keycloak work is explicitly out of project scope (CON-004). Real OIDC verification cannot be performed by this team. |
+| Residual | 8 OIDC test cases are covered by mock and will only be proven against the real client at deployment time. |
+| Contingency | If real OIDC fails at deployment, mock-auth remains as fallback while Infrastructure team registers the OIDC client. |
+| Closure | This risk is CLOSED as a formally accepted risk. It is no longer an open verification item. It does not block PR. |
 
-### Transition Risk Focus
+### R004 — NFR Performance (RELEASE BLOCKER)
 
-The two HIGH risks (R001, R003) and the Transition-specific SIGNIFICANT risks (R004, R009, R010) dominate this iteration's risk landscape. R003 and R004 are directly tied to stakeholder binding conditions — failure to address them blocks the PR milestone. R009 and R010 are new risks introduced by the Transition phase itself: deployment to the production environment and user acceptance verification.
+| Attribute | Value |
+|---|---|
+| Strategy | Accept (with mitigation) |
+| Status | BLOCKING PR — load tests not executed |
+| Escalation | P raised from 2 to 3, I raised from 3 to 3, exposure from 6 to 9 — magnitude escalated from SIGNIFICANT to HIGH |
+| Rationale | NFR-001 (page load < 3s) and NFR-002 (clock response < 1s) are binding conditions. No measured values exist. "Tested is not a result; two measurements are." |
+| Mitigation | Execute load tests in Transition Iter 2; report measured values against thresholds. |
+| Contingency | If thresholds not met, performance optimization sprint before PR re-submission. |
+| Closure | Closes when measured values for NFR-001 and NFR-002 are reported and meet thresholds. |
+
+### R008 — Stakeholder Sanction (REFUSED)
+
+| Attribute | Value |
+|---|---|
+| Strategy | Accept |
+| Status | REFUSED — 3 binding conditions unmet |
+| Rationale | Stakeholder explicitly refused PR sanction: "Accepting the release now would teach this process that a binding condition is decorative." |
+| Mitigation | Transition Iter 2 must close: (1) load test measured values, (2) R003 formally accepted, (3) mock-auth expiry documented. |
+| Contingency | N/A — conditions are non-negotiable. |
+| Closure | Closes when stakeholder sanctions PR after all 3 conditions are met. |
+
+### R009 — Deployment (DEFERRED)
+
+| Attribute | Value |
+|---|---|
+| Strategy | Accept |
+| Status | DEFERRED — environment unavailable |
+| Rationale | Internal Windows Server (CON-006) not available for deployment verification. Stakeholder directed: "Say so explicitly in the Release Notes rather than leaving it implied." |
+| Mitigation | Explicit deployment status statement in Release Notes. |
+| Contingency | N/A — environment constraint, not a project risk to mitigate. |
+| Closure | Closes when deployment environment becomes available (post-project). |
 
 ## Traceability
 
@@ -217,11 +242,12 @@ The two HIGH risks (R001, R003) and the Transition-specific SIGNIFICANT risks (R
 |---|---|---|---|
 | R001 | Declared Risk R001, CON-005, CON-009 | Derives | T4 (deployment verification), SAD COMP-004 (LDAP) |
 | R002 | Declared Risk R002, BG-003, AC-004 | Derives | T5 (user docs), T6 (assessment) |
-| R003 | CON-004, STK-003, STK-001 binding condition #2 | Derives | T2 (OIDC verification), SAD COMP-001 (OIDC) |
-| R004 | NFR-001, NFR-002, STK-001 binding condition #1 | Derives | T1 (load testing), SAD COMP-006 |
+| R003 | CON-004, STK-003, STK-001 binding condition #2 | Derives | SAD COMP-001 (OIDC), Iteration Assessment (formally accepted) |
+| R004 | NFR-001, NFR-002, STK-001 binding condition #1 | Derives | T1 (load testing), SAD COMP-006, Iteration Assessment (release blocker) |
 | R005 | CON-011, CON-002 | Derives | Design Model V010, T4 (deployment) |
 | R006 | AC-005, SAD Process View | Derives | T4 (deployment), Architectural PoC |
-| R007 | Review Record C2 + C4 findings | Derives | CI build (run 33256627567) |
-| R008 | Stakeholder sanction (IOC) | Derives | T6 (assessment), PR milestone |
-| R009 | CON-006, CON-007 | Derives | T4 (deployment verification) |
-| R010 | AC-001–AC-005, BG-003 | Derives | T6 (assessment), PR milestone review |
+| R007 | Review Record C2 + C4 findings | Derives | CI build (run 33259873386) |
+| R008 | Stakeholder sanction (IOC), STK-001 PR refusal | Derives | T6 (assessment), PR milestone, Iteration Assessment |
+| R009 | CON-006, CON-007, STK-001 directive | Derives | Release Notes (explicit deployment status) |
+| R010 | AC-001..AC-005, BG-003, R008 | Derives | T6 (assessment), PR milestone review |
+| RL-F6 (RESOLVED) | Review Record T1 RL-F6 | Resolved by | R003 formally accepted; R004 escalated to release blocker |
