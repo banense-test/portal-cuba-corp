@@ -783,7 +783,6 @@ The Review Coordinator consolidates the three lens evaluations as follows:
 
 **The IOC milestone is achieved with conditions. The project advances to Transition.**
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | PR #32 | UC-001..UC-010, C4-1, C4-2, C4-3 | Realizes | main branch (MERGED) |
@@ -791,21 +790,21 @@ The Review Coordinator consolidates the three lens evaluations as follows:
 | C4-1 | INT-002, CR-010, FR-006 | Derives | NewsService.cs, PersistenceGateway.cs (RESOLVED) |
 | C4-2 | INT-007, NFR-004, COMP-003, COMP-004 | Derives | NewsService.cs, WorkerCategoryService.cs (RESOLVED) |
 | C4-3 | INT-007, M2 | Derives | PersistenceGateway.cs (CONFIRMED) |
-| DM-F2 | Design Model Traceability table | Derives | C4-1/C4-2 stale entries — OPEN (Minor) |
+| DM-F2 | Design Model Traceability table | Derives | C4-1/C4-2 stale entries — OPEN (Minor) — escalated to Designer |
 | DM-F1 | Design Model INT-003 | Derives | RESOLVED (C3) |
 | TC-F1 | Test Case traceability | Derives | RESOLVED (E2) |
 | TC-F2 | Test Case UnitTest1.cs | Derives | RESOLVED (C3) |
 | IP-F5 | Iteration Plan, NFR-001, NFR-002 | Derives | RESOLVED (C4) — load testing decoupled from merge |
 | RL-F5 | Risk List R003, STK-003, CON-004 | Derives | RESOLVED (C4) — R003 ACCEPTED (mock-auth, stakeholder-approved) |
 | IA-F1 | Iteration Assessment | Derives | RESOLVED (C4) — Document Control fields updated |
-| IA-F2 | Iteration Assessment, Change Request | Derives | OPEN (Major) — incorrect open issue count (0 vs 7) |
-| RR-F2 | Review Record, Change Request | Derives | OPEN (Major) — incorrect open issue count (0 vs 7) — CORRECTED in this upsert |
+| IA-F2 | Iteration Assessment, Change Request | Derives | OPEN (Major) — incorrect open issue count (0 vs 7) — escalated to PM |
+| RR-F2 | Review Record, Change Request | Derives | CONTENT CORRECTED (Major) — Document Control now shows 7 open issues; formal closure pending Management Reviewer |
 | CI Build (main) | CON-001, CON-003 | DependsOn | GitHub Actions run 33256627567 |
 | R003 | STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-029..TC-032 (covered-by-mock — ACCEPTED risk) |
 | Stakeholder sanction (C4) | STK-001 feedback (C4 Cycle 1) | Refines | IOC CONDITIONAL GO — 3 conditions attached |
 | Stakeholder directive (C4) | STK-001 feedback (C4 Cycle 1) | Refines | Close all PRs, Issues, and findings — SATISFIED |
 | Stakeholder directive (C3) | STK-001 feedback (C3 Cycle 1) | Refines | "We absolutely have to iterate again" — ADDRESSED in C4 |
-| Review Coordinator Consolidation | All artifacts, all lenses complete | Refines | Awaiting Review Coordinator consolidation |
+| Review Coordinator Consolidation | All artifacts, all lenses complete | Refines | CONSOLIDATED — IOC CONDITIONAL GO, stakeholder sanction GRANTED |
 | Business Reviewer Lens | DC §4 (isBusinessProcessLed=false) | Refines | PRESERVED — Elaboration baseline stands, 0 findings |
 | NFR-001/NFR-002 condition | STK-001 sanction condition | Refines | Transition Iter 1 exit criterion — measured values required |
 | OIDC Transition work item | STK-001 sanction condition | Refines | Named work item with owner; 8 tests covered-by-mock until real client |
