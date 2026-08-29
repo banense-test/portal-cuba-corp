@@ -15,8 +15,8 @@
 | Phase | Construction |
 | Status | Draft |
 | Milestone Target | End-of-Construction |
-| Iteration | 2 (Cycle 1) |
-| Date | 2026-08-28 |
+| Iteration | 3 (Cycle 1) |
+| Date | 2026-08-29 |
 | Contributors | Designer (Analysis Classes, Use-Case Realizations, Design Classes, Interface Contracts, State Machines, Testability); User-Interface Designer (UI View/Controller Classes, UI Patterns, Boundary Classes and Navigation Map); Database Designer (Persistent Data Classes) |
 
 ### Technology Stack Alignment
@@ -52,9 +52,15 @@ The design follows a three-layer architecture as defined in the SAD Logical View
 | Offline Retry | Client-side localStorage + POST retry with idempotency key; 5-min window; server accepts client timestamp | clocking-retry.js + IClockingService idempotencyKey param | COMP-002 |
 | CSV Export | Streaming response; HR-only; date-range filtered | IClockingService.ExportCsv returns Stream → Razor Page writes to Response.Body | COMP-002 |
 
+### Construction C3 — Design Model Evolution Summary
+
+| Change | Rationale | Affected Sections |
+|---|---|---|
+| INT-003 `Search` method: added optional `office` parameter | DM-F1 finding: Design Model declared `Search(string query)` but iteration/C2 implementation has `Search(string query, string? office = null)` with LDAP AND-filter for office. Design updated to match valid implementation. | Interface Contracts (INT-003), Design Packages and Classes (CLS-003), Domain Model (ACL-005), Use-Case Realizations (SEQ-009) |
+
 ### Construction C2 — Design Model Evolution Summary
 
-This iteration evolves the Design Model to align with implementation divergences discovered during source code inspection. Per the lesson learned ("Design Model must be updated when implementation diverges for good reason — silent divergence is always a finding"), the following changes bring the design contracts in sync with the implemented code. No Review Record findings targeted the Design Model (all 8 document artifacts passed with zero findings); the changes resolve implementation-design divergences proactively.
+This iteration evolved the Design Model to align with implementation divergences discovered during source code inspection. Per the lesson learned ("Design Model must be updated when implementation diverges for good reason — silent divergence is always a finding"), the following changes brought the design contracts in sync with the implemented code.
 
 | Change | Rationale | Affected Sections |
 |---|---|---|
