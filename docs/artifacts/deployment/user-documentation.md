@@ -2,15 +2,15 @@
 | Field | Value |
 |---|---|
 | Phase | Construction |
-| Status | Draft |
-| Milestone Target | End-of-Construction |
-| Iteration | 2 (Cycle 1) |
-| Date | 2026-08-28 |
-| Prior Phase | Construction C1 (REQUEST_CHANGES — 1 Major, 4 Minor; IOC NOT achieved; stakeholder sanction REFUSED) |
+| Status | Draft — C3 Cycle 1 (all C2 defects resolved, PR #28 approved) |
+| Milestone Target | End-of-Construction (IOC) |
+| Iteration | 3 (Cycle 1) |
+| Date | 2026-08-29 |
+| Prior Phase | Construction C2 Cycle 1 (all 7 C2 code-level findings RESOLVED in PR #28; stakeholder sanction REFUSED 2nd time — PR synchronization directive) |
 | Author | Technical Writer (Deployment Discipline) |
 | Audience | Employees (STK-004), HR Administrators (STK-001), Infrastructure team (STK-003) |
-| Coverage | Install + Operate + Use + Maintain for Construction C2 build (UC-001 through UC-010) |
-| C2 Evolution | CSV export format corrected per C2-MIN-4 (header: Employee,Date,Time,Direction). Featured news banner (CR-010) confirmed implemented and documented. Offline retry with idempotency (CR-011) confirmed implemented and documented. Directory office filter (CR-015) confirmed implemented and documented. |
+| Coverage | Install + Operate + Use + Maintain for Construction C3 build (UC-001 through UC-010) |
+| C3 Evolution | All C2 code-level findings resolved in PR #28: C2-CRIT-1 (clocking API 404 — UC-001 now functional), C2-MAJ-1 (news edit form binding — UC-006 now functional), C2-MAJ-2 (antiforgery token — UC-001 POST now accepted), C2-MIN-1..4 (minor defects resolved). DM-F1 resolved (INT-003 office parameter). Documentation procedures verified accurate against corrected implementation. |
 | Styleguide | Terminological contract: "Clock In/Out" (not "punch" or "check-in"), "News item" (not "article" or "post"), "Worker category" (not "employee type" or "classification"), "Directory" (not "phonebook" or "address book"), "Unpublish" (not "hide" or "remove"). Active voice. Task-oriented headings. |
 ## Overview
 
