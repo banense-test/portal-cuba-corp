@@ -710,7 +710,6 @@ stop
 
 > **Note:** Documentation is updated whenever the system's behavior changes. If a procedure does not match what you see on screen, the documentation may be out of date — please report it so it can be corrected.
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | User Documentation | All UCs, SAD Deployment View, Design Model | Derives | End users (STK-004), HR (STK-001), Infrastructure (STK-003) |
@@ -728,6 +727,7 @@ stop
 | Configuration Reference | SAD Logical View, SAD Implementation View | Derives | Operations procedures |
 | Troubleshooting | R001, AC-005, NFR-001..NFR-003 | Derives | Support procedures |
 | FAQ | AC-001..AC-005, CON-007, CON-008, CON-013 | Derives | End-user support |
+| Documentation Feedback | Transition state machine S4 requirement | Derives | Post-release maintenance process |
 | Terminology (Styleguide) | All FRs, all UCs | Refines | All documentation sections |
 | C2-MIN-4 CSV format fix | C2 Review Record, FR-004, CR-012 | Derives | UC-004 CSV export documentation |
 | CR-010 IsFeatured | C1 Review Record MAJOR-1, FR-008 | Derives | UC-005 Publish News (featured checkbox), UC-008 Read and Filter News (featured banner) |
@@ -740,3 +740,4 @@ stop
 | C4-1 isFeatured in Edit (RESOLVED) | C4 Review Record, PR #32, CR-010 | Derives | UC-006 Edit News — featured checkbox now functional in edit mode |
 | C4-2 Transaction wrapping (RESOLVED) | C4 Review Record, PR #32, NFR-004 | Derives | Operations Guide — audit trail integrity ensured via transaction wrapping |
 | C4-3 ExecuteInTransactionAsync (CONFIRMED) | C4 Review Record, PR #32, INT-007 | Derives | Operations Guide — persistence gateway transaction pattern confirmed |
+| Transition Final Quality Pass | SAD Deployment View, Design Model C4 baseline, Review Record (0 findings on User Documentation) | Refines | Publication-Ready status |
