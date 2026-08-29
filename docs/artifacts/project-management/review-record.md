@@ -329,7 +329,6 @@ end note
 5. Update Iteration Assessment stale verdict fields (IA-F1)
 6. Re-verify all 7 IOC exit criteria
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | PR #29 | UC-001..UC-010, C2 findings | Realizes | main branch (pending merge) |
@@ -338,11 +337,13 @@ end note
 | TC-F2 | Test Case UnitTest1.cs | Derives | PR #28 (RESOLVED), PR #29 (APPROVED) |
 | IP-F4 | Iteration Plan | Derives | Project Manager (RESOLVED — ManagementReviewer) |
 | RL-F2 | Risk List | Derives | Project Manager (RESOLVED — ManagementReviewer) |
-| IP-F5 | Iteration Plan, NFR-001, NFR-002 | Derives | C3 Cycle 1 work item 3 (not executed) |
-| RL-F5 | Risk List R003, STK-003, CON-004 | Derives | 8 BLOCKED tests, IOC achievement |
-| IA-F1 | Iteration Assessment | Derives | Document Control fields (stale) |
+| IP-F5 | Iteration Plan, NFR-001, NFR-002 | Derives | C3 Cycle 1 work item 3 (not executed) — OPEN |
+| RL-F5 | Risk List R003, STK-003, CON-004 | Derives | 8 BLOCKED tests, IOC achievement — OPEN |
+| IA-F1 | Iteration Assessment | Derives | Document Control fields (stale) — OPEN |
 | CI Build (iteration/C3) | CON-001, CON-003 | DependsOn | GitHub Actions run 33250807692 |
 | CI Build (main) | CON-001, CON-003 | DependsOn | GitHub Actions run 33251398612 |
 | R003 | STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-028..TC-030 (BLOCKED) |
 | Stakeholder PR directive | STK-001 feedback (C2 Cycle 2) | Refines | PR #29 (APPROVED — pending Integrator merge) |
 | Stakeholder iteration directive | STK-001 feedback (C3 Cycle 1) | Refines | C4 iteration required (IOC not achieved) |
+| Review Coordinator Consolidation | All 15 artifacts, 2 executed lenses | Refines | Milestone verdict: CONDITIONAL (auto-iterate) |
+| Business Reviewer Lens | N/A | N/A | INACTIVE — did not evaluate this review |
