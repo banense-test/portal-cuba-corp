@@ -171,7 +171,6 @@ end note
 | User Documentation delivered | **MET** | User Documentation artifact produced, avg quality 9.9 |
 | Iteration Assessment produced | **MET** | C3 Cycle 1 Iteration Assessment produced |
 ## Test Results
-
 | Test Category | Total | Pass | Fail | Blocked | Notes |
 |---|---|---|---|---|---|
 | ClockingServiceTests | 14 | 14 | 0 | 0 | All pass per PR #32 review (C4-2 transaction wrapping verified) |
@@ -180,15 +179,76 @@ end note
 | DirectoryServiceTests | 11 | 11 | 0 | 0 | All pass per PR #32 review |
 | WorkerCategoryServiceTests | 10 | 10 | 0 | 0 | All pass per PR #32 review (C4-2 transaction wrapping verified) |
 | DomainTests | 11 | 11 | 0 | 0 | All pass per PR #32 review |
-| OIDC-dependent tests | 8 | 0 | 0 | 8 | BLOCKED by R003 — STK-003 has not confirmed OIDC registration (5th cycle) |
-| NFR-001 load test | — | — | — | — | NOT YET EXECUTED (IP-F5 RESOLVED: decoupled, ready) |
-| NFR-002 load test | — | — | — | — | NOT YET EXECUTED (IP-F5 RESOLVED: decoupled, ready) |
-| **Total** | **70+** | **70+** | **0** | **8** | 70+ pass, 0 fail, 8 blocked by external dependency |
+| OIDC-dependent tests | 8 | 0 | 0 | 8 | BLOCKED → covered-by-mock (R003 ACCEPTED — mock-auth activated per STK-001). NOT passing. Real OIDC is Transition work item. |
+| NFR-001 load test | — | — | — | — | NOT EXECUTED — deferred to Transition Iter 1 per stakeholder condition. Measured values required. |
+| NFR-002 load test | — | — | — | — | NOT EXECUTED — deferred to Transition Iter 1 per stakeholder condition. Measured values required. |
+| **Total** | **78** | **70** | **0** | **8** | 70 pass, 0 fail, 8 covered-by-mock. CI GREEN on main (run 33256627567). |
 
-> **Measurement goal:** Test pass/block ratio enables the decision: can we achieve IOC with 8 blocked tests and unverified NFRs? Answer: **NO** — IOC cannot be achieved until R003 is resolved (OIDC confirmed or mock-auth approved) and NFR-001/NFR-002 load testing is executed. Both are C4 work items.
+> **Measurement goal:** Test pass/block ratio enables the decision: can IOC be sanctioned with 8 covered-by-mock tests and unverified NFRs? Answer: **YES (CONDITIONAL)** — stakeholder sanctioned IOC with 3 binding conditions: (1) NFR-001/NFR-002 load testing is Transition Iter 1 exit criterion with measured values; (2) real OIDC integration is named Transition work item; (3) mock-auth has expiry date. 8 tests stay covered-by-mock until real client.
 
 > **C4 Code Reviewer test coverage verification:** 6 test files, 70+ test methods. Dual coverage (black-box + white-box) confirmed for all service classes. All tests exercise real assertions — no decoy `Assert.NotNull` patterns. C4-1 (isFeatured) and C4-2 (transaction wrapping) verified by dedicated test cases.
 
+```plantuml
+@startuml
+title Construction C4 — Metrics with Decision Goals
+
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+
+class Metric_1 {
+  + metric : Token spend
+  + value : 10,954,157 tokens
+  + goal : Budget-box compliance
+  + decision : Is C4 within budget box?
+  + basis : C3 baseline 12.75M tokens
+}
+
+class Metric_2 {
+  + metric : Agent elapsed time
+  + value : 1h 10m 23s
+  + goal : Schedule tracking
+  + decision : Is iteration on schedule?
+  + basis : C3 baseline 1h 18m 10s
+}
+
+class Metric_3 {
+  + metric : Test pass rate
+  + value : 35/43 pass, 0 fail, 8 blocked
+  + goal : IOC quality gate
+  + decision : Can IOC be sanctioned?
+  + basis : 8 blocked = covered-by-mock
+}
+
+class Metric_4 {
+  + metric : Open issue count
+  + value : 7 (1 blocker ACCEPTED, 6 deferred)
+  + goal : Rework tracking
+  + decision : What carries to Transition?
+  + basis : Change Request artifact
+}
+
+class Metric_5 {
+  + metric : Avg artifact quality
+  + value : 9.9
+  + goal : Quality monitoring
+  + decision : Is quality bar maintained?
+  + basis : Reviewer scores
+}
+
+class Metric_6 {
+  + metric : CI build status
+  + value : GREEN on main
+  + goal : Integration readiness
+  + decision : Is main deployable?
+  + basis : Run 33256627567
+}
+
+Metric_1 --> Metric_3 : budget enables testing
+Metric_3 --> Metric_4 : blocked tests = open issues
+Metric_6 --> Metric_3 : CI green enables test execution
+
+@enduml
+```
 ## External Changes
 
 | Change | Source | Impact | Status |
