@@ -451,7 +451,6 @@ The product is feature-complete (all 10 UCs delivered, CI GREEN, 0 open PRs, 0 c
 3. Verify binding condition #2: OIDC integration with real Keycloak (owner: Software Architect)
 4. Verify binding condition #3: Mock-auth expiry documentation (owner: Software Architect)
 ## Resolutions and Actions
-
 ### Prior Findings Reconciliation (Reviewer Lens)
 
 | Finding | Artifact | Phase/Iter Emitted | Resolution Status | Action |
@@ -463,6 +462,12 @@ The product is feature-complete (all 10 UCs delivered, CI GREEN, 0 open PRs, 0 c
 | F1 (Minor) | Design Model | Construction I2 | RESOLVED (Construction I3) | INT-003 office parameter updated — confirmed |
 | F2 (Minor) | Design Model | Construction I4 | **LEFT OPEN** | C4-1/C4-2 traceability still stale — re-recorded under findingKey F2 this iteration |
 
+### Prior Findings Reconciliation (Business Reviewer Lens)
+
+| Finding | Artifact | Phase/Iter Emitted | Resolution Status | Action |
+|---|---|---|---|---|
+| (none) | — | — | — | No prior BusinessReviewer findings exist on any artifact. This is the first iteration the Business Reviewer lens has executed. |
+
 ### Open Action Items
 
 | # | Action | Owner | Severity | Blocking? |
@@ -471,7 +476,8 @@ The product is feature-complete (all 10 UCs delivered, CI GREEN, 0 open PRs, 0 c
 | 2 | NFR-001/NFR-002 load testing with measured values (binding condition #1) | Test Manager | — | Yes (binding condition) |
 | 3 | Real OIDC integration verification (binding condition #2) | Software Architect | — | Yes (binding condition) |
 | 4 | Mock-auth expiry date documentation (binding condition #3) | Software Architect | — | Yes (binding condition) |
-
+| 5 | Document post-deployment goal verification plan for BG-001, BG-002, BG-003 | System Analyst + STK-001 | Minor | No (post-deployment) |
+| 6 | Annotate 3 binding conditions as business-goal-blocking dependencies in post-deployment plan | Project Manager | Major | Yes (business goal confirmation) |
 ## Disposition
 ### Product Acceptance: ACCEPTED WITH CONDITIONS
 
