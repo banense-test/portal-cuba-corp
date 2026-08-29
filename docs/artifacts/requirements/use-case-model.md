@@ -702,7 +702,7 @@ The following diagram shows the complete traceability chain from stakeholder nee
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Requirements Traceability Flow
+title Portal Cuba Corp — Requirements Traceability Flow (Construction C3)
 
 skinparam packageStyle rectangle
 skinparam rectangleFontSize 10
@@ -750,6 +750,8 @@ package "Acceptance Criteria" {
 package "Approved Change Requests (CR-NNN)" {
   rectangle "CR-010: IsFeatured flag\n(UC-005, UC-006)\nCCB-APPROVED" as CR10
   rectangle "CR-011: Idempotency key\n(UC-001)\nCCB-APPROVED" as CR11
+  rectangle "CR-023: Antiforgery token\n(SEC-006, UC-001)\nCCB-APPROVED" as CR23
+  rectangle "CR-024: Server-side identity\n(SEC-007, UC-001)\nCCB-APPROVED" as CR24
 }
 
 BG1 --> FR1 : derives
@@ -784,18 +786,24 @@ UC9 --> AC3 : verifies
 CR10 --> UC5 : derives
 CR10 --> UC6 : derives
 CR11 --> UC1 : derives
+CR23 --> UC1 : derives
+CR24 --> UC1 : derives
 
 note bottom of BG1
   NFR-004 (audit trail) applies to
   UC-005, UC-006, UC-007, UC-010
 end note
 
-note bottom of CR10
-  CR-010 approved by CCB
-  IsFeatured flag is an approved
-  extension of FR-008 featured banner
-  [DERIVED] marker retired —
-  CCB approval constitutes confirmation
+note bottom of CR23
+  CR-023 approved by CCB
+  SEC-006: Antiforgery token
+  on all state-changing POSTs
+end note
+
+note bottom of CR24
+  CR-024 approved by CCB
+  SEC-007: Employee identity
+  from OIDC token server-side
 end note
 
 @enduml
@@ -805,16 +813,16 @@ end note
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| UC-001 | FR-001, AC-005, CR-011 | Refines | REQ-001, REL-003, REL-004, PERF-002, AC-001, AC-004, AC-005 |
+| UC-001 | FR-001, AC-005, CR-011, CR-023, CR-024 | Refines | REQ-001, REL-003, REL-004, SEC-006, SEC-007, PERF-002, AC-001, AC-004, AC-005 |
 | UC-002 | FR-002 | Refines | REQ-002 |
 | UC-003 | FR-003 | Refines | REQ-003, PERF-005, REL-006 |
 | UC-004 | FR-004 | Refines | REQ-004, PERF-004, STD-003 |
-| UC-005 | FR-005, NFR-004, CR-010 | Refines | REQ-005, AUD-001, AC-002 |
-| UC-006 | FR-006, NFR-004, CR-010 | Refines | REQ-006, AUD-001 |
-| UC-007 | FR-007, CON-013, NFR-004 | Refines | REQ-007, AUD-001, AUD-003 |
+| UC-005 | FR-005, NFR-004, CR-010 | Refines | REQ-005, AUD-001, SEC-006, AC-002 |
+| UC-006 | FR-006, NFR-004, CR-010 | Refines | REQ-006, AUD-001, SEC-006 |
+| UC-007 | FR-007, CON-013, NFR-004 | Refines | REQ-007, AUD-001, AUD-003, SEC-006 |
 | UC-008 | FR-008 | Refines | REQ-008, USA-001 |
-| UC-009 | FR-009, CON-005, CON-012 | Refines | REQ-009, SEC-004, SEC-005, PERF-003, SUP-003, R001, AC-003 |
-| UC-010 | FR-010, CON-009, NFR-004 | Refines | REQ-010, AUD-002, DC-006 |
+| UC-009 | FR-009, CON-005, CON-012 | Refines | REQ-009, SEC-004, SEC-005, SEC-007, PERF-003, SUP-003, R001, AC-003 |
+| UC-010 | FR-010, CON-009, NFR-004 | Refines | REQ-010, AUD-002, SEC-006, SEC-007, DC-006 |
 | ACT-001 | STK-004 | Derives | UC-001, UC-002, UC-008, UC-009 |
 | ACT-002 | STK-001 | Derives | UC-003..UC-007, UC-010 |
 | ACT-003 | CON-005, CON-009 | Derives | UC-003, UC-009, UC-010 |
@@ -825,3 +833,5 @@ end note
 | UC-009 | R001 | DependsOn | (LDAP attribute consistency) |
 | CR-010 | FR-008 | Derives | UC-005, UC-006 (IsFeatured flag — CCB-approved) |
 | CR-011 | AC-005 | Derives | UC-001 (idempotency key — CCB-approved) |
+| CR-023 | CON-002, CON-004 | Derives | SEC-006, UC-001 (antiforgery token — CCB-approved) |
+| CR-024 | CON-004 | Derives | SEC-007, UC-001 (server-side identity — CCB-approved) |
