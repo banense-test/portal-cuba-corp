@@ -399,10 +399,9 @@ These items are deployment-time activities that require the Windows Server envir
 | KNOWN-ISSUE-005 | 6 deferred change requests remain open (#12, #15, #17, #18, #30, #34). None are blockers for go-live. | Low — all are non-critical improvements. | None — accepted for post-release backlog. | CCB to prioritize in post-release iterations. |
 | KNOWN-ISSUE-006 | Deployment verification on internal Windows Server (CON-006) has NOT been performed. No production environment available to the project team. | Medium — installation procedures, real PostgreSQL migrations, LDAP connectivity, and OIDC redirect URIs are untested on the target platform. | None — requires Windows Server environment not available to the project. | Deployment-time activities when the Windows Server environment is provisioned. |
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| Release Notes | Construction C4 baseline, Review Record, Test Evaluation Summary | Refines | SCM Release (S4) |
+| Release Notes | Construction C4 baseline, Review Record, Test Evaluation Summary, Test Case (Transition I1) | Refines | SCM Release (S4) |
 | UC-001 | FR-001, AC-001, AC-004, AC-005 | Refines | BETA-001, BETA-002, TC-001, TC-003, KNOWN-ISSUE-002 |
 | UC-002 | FR-002 | Refines | BETA-001, TC-002 |
 | UC-003 | FR-003 | Refines | BETA-001, TC-004 |
@@ -414,22 +413,31 @@ These items are deployment-time activities that require the Windows Server envir
 | UC-009 | FR-009, CON-005, CON-012, R001 | Refines | BETA-003, TC-010, KNOWN-ISSUE-001 |
 | UC-010 | FR-010, CON-009, NFR-004 | Refines | BETA-008, TC-011 |
 | KNOWN-ISSUE-001 | R001, CON-010 | Derives | STK-003 (Infrastructure team) |
-| KNOWN-ISSUE-002 | R003, CON-004, issue #30 | Derives | STK-003 (Infrastructure team) |
-| KNOWN-ISSUE-003 | NFR-001, NFR-002 | Derives | Gate 1/2 acceptance testing |
-| KNOWN-ISSUE-004 | R003, mock-auth expiry | Derives | Transition Iteration Plan |
+| KNOWN-ISSUE-002 | R003, CON-004 | Derives | STK-003 (Infrastructure team) — FORMALLY ACCEPTED RISK |
+| KNOWN-ISSUE-003 | NFR-001, NFR-002 | Derives | CI test environment measurement (run 33259873386) |
+| KNOWN-ISSUE-004 | R003, mock-auth expiry (2026-12-31) | Derives | Software Architect (owner) |
 | KNOWN-ISSUE-005 | Change Request artifact (deferred CRs) | Derives | Post-release backlog |
+| KNOWN-ISSUE-006 | CON-006, R009, STK-001 directive | Derives | Deployment-time activities (Windows Server not available) |
+| NFR-001 Measurement | NFR-001, CI run 33259873386 | Tests | 0.14s measured — PASS (threshold 3s) |
+| NFR-002 Measurement | NFR-002, CI run 33259873386 | Tests | 0.003s measured — PASS (threshold 1s) |
+| R003 (OIDC) | CON-004, STK-003, STK-001 directive | Derives | FORMALLY ACCEPTED — 8 tests covered by mock, residual stated |
+| Mock-Auth Expiry | R003, STK-001 binding condition #3 | Derives | 2026-12-31, Owner: Software Architect |
+| Deployment Status | CON-006, R009, STK-001 directive | Derives | NOT PERFORMED — explicitly stated per stakeholder |
 | Deployment Topology | SAD Deployment View, CON-006, CON-007 | Refines | Installation Steps |
 | BOM (inline) | SCM repository (lock files, source) | Realizes | SCM Release (S4) |
 | Beta Test Flow | AC-001, AC-002, AC-003, AC-004, AC-005 | Refines | Beta Feedback Summary |
 | Acceptance Test Flow | AC-001..AC-005, NFR-001..NFR-004 | Refines | Gate 1, Gate 2 results |
-| Sanction Condition 1 | NFR-001, NFR-002, Review Record | Derives | Gate 1 acceptance testing |
-| Sanction Condition 2 | R003, CON-004, issue #30 | Derives | OIDC client registration |
-| Sanction Condition 3 | Mock-auth expiry, Review Record | Derives | Transition Iteration Plan |
+| Binding Condition 1 (NFR) | NFR-001, NFR-002, STK-001 directive | Derives | CI measurement — MEASURED, values reported |
+| Binding Condition 2 (OIDC) | R003, CON-004, STK-001 directive | Derives | FORMALLY ACCEPTED RISK — CLOSED |
+| Binding Condition 3 (Mock-Auth) | R003, STK-001 directive | Derives | Expiry 2026-12-31, Owner: Software Architect — DOCUMENTED |
+| Deployment Directive | CON-006, STK-001 directive | Derives | NOT PERFORMED — EXPLICITLY STATED |
+| RN-F1 (Major — RESOLVED) | Review Record, STK-001 directives | Derives | All 4 directives addressed in Release Notes |
 | LESSON-001 | R003, STK-003 | Derives | Future project dependency protocols |
-| LESSON-002 | Mock-auth, R003 | Derives | Mock expiry tracking |
+| LESSON-002 | Mock-auth, R003 | Derives | Mock expiry tracking — date and owner documented |
 | LESSON-003 | AC-004, AC-005, BETA-002 | Derives | Beta program design |
 | LESSON-004 | R001, CON-010, BETA-003 | Derives | AD data quality audit |
 | LESSON-005 | Two-gate acceptance | Derives | Acceptance process design |
-| LESSON-006 | NFR-001, NFR-002 | Derives | Production-site performance testing |
+| LESSON-006 | NFR-001, NFR-002 | Derives | CI measurement executed; production-site validation deferred |
+| LESSON-007 | CON-006, R009 | Derives | Deployment environment unavailability must be stated explicitly, not implied |
 | Training Status | User Documentation, STK-001, STK-003, STK-004 | Refines | Go-live readiness |
 | Final BOM Summary | SCM repository, CON-001..CON-005, CON-011 | Realizes | SCM Release (S4) |
