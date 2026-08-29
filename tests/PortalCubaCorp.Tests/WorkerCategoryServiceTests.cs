@@ -9,6 +9,7 @@ namespace PortalCubaCorp.Tests;
 /// Unit tests for WorkerCategoryService (COMP-004).
 /// Black-box: verify IWorkerCategoryService contract — assign category, list categories, lookup AD user.
 /// White-box: exercise validation branches, audit trail calls, empty query handling.
+/// UC-010: Manage Worker Category.
 /// </summary>
 public class WorkerCategoryServiceTests
 {
@@ -21,13 +22,13 @@ public class WorkerCategoryServiceTests
         return (service, persistence, ldap, audit);
     }
 
-    // --- Black-box: AssignCategory ---
+    // --- Black-box: AssignCategory (UC-010) ---
 
     [Fact]
-    public void AssignCategory_NewUser_CreatesCategory()
+    public async Task AssignCategory_NewUser_CreatesCategory()
     {
         var (service, persistence, _, _) = CreateService();
-        var result = service.AssignCategory("jdoe", "IT", "hr1");
+        var result = await service.AssignCategoryAsync("jdoe", "IT", "hr1");
 
         Assert.Equal("jdoe", result.AdUserId);
         Assert.Equal("IT", result.Category);
@@ -36,20 +37,20 @@ public class WorkerCategoryServiceTests
     }
 
     [Fact]
-    public void AssignCategory_ExistingUser_UpdatesCategory()
+    public async Task AssignCategory_ExistingUser_UpdatesCategory()
     {
         var (service, _, _, _) = CreateService();
-        service.AssignCategory("jdoe", "IT", "hr1");
-        var result = service.AssignCategory("jdoe", "Operations", "hr1");
+        await service.AssignCategoryAsync("jdoe", "IT", "hr1");
+        var result = await service.AssignCategoryAsync("jdoe", "Operations", "hr1");
 
         Assert.Equal("Operations", result.Category);
     }
 
     [Fact]
-    public void AssignCategory_CreatesAuditRecord()
+    public async Task AssignCategory_CreatesAuditRecord()
     {
         var (service, _, _, audit) = CreateService();
-        service.AssignCategory("jdoe", "IT", "hr1");
+        await service.AssignCategoryAsync("jdoe", "IT", "hr1");
 
         Assert.Single(audit.Records);
         Assert.Equal(AuditAction.CategoryChanged, audit.Records[0].Action);
@@ -60,27 +61,27 @@ public class WorkerCategoryServiceTests
     // --- White-box: validation ---
 
     [Fact]
-    public void AssignCategory_EmptyAdUserId_Throws()
+    public async Task AssignCategory_EmptyAdUserId_Throws()
     {
         var (service, _, _, _) = CreateService();
-        Assert.Throws<ArgumentException>(() => service.AssignCategory("", "IT", "hr1"));
+        await Assert.ThrowsAsync<ArgumentException>(() => service.AssignCategoryAsync("", "IT", "hr1"));
     }
 
     [Fact]
-    public void AssignCategory_EmptyCategory_Throws()
+    public async Task AssignCategory_EmptyCategory_Throws()
     {
         var (service, _, _, _) = CreateService();
-        Assert.Throws<ArgumentException>(() => service.AssignCategory("jdoe", "", "hr1"));
+        await Assert.ThrowsAsync<ArgumentException>(() => service.AssignCategoryAsync("jdoe", "", "hr1"));
     }
 
-    // --- Black-box: ListCategories ---
+    // --- Black-box: ListCategories (UC-010) ---
 
     [Fact]
-    public void ListCategories_ReturnsAllCategories()
+    public async Task ListCategories_ReturnsAllCategories()
     {
         var (service, _, _, _) = CreateService();
-        service.AssignCategory("jdoe", "IT", "hr1");
-        service.AssignCategory("jsmith", "HR", "hr1");
+        await service.AssignCategoryAsync("jdoe", "IT", "hr1");
+        await service.AssignCategoryAsync("jsmith", "HR", "hr1");
 
         var categories = service.ListCategories();
 
@@ -95,7 +96,7 @@ public class WorkerCategoryServiceTests
         Assert.Empty(categories);
     }
 
-    // --- Black-box: LookupAdUser ---
+    // --- Black-box: LookupAdUser (UC-010) ---
 
     [Fact]
     public void LookupAdUser_ValidQuery_ReturnsResults()
