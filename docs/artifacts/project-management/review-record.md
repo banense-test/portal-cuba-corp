@@ -1,34 +1,36 @@
 ## Document Control
+
 | Field | Value |
 |---|---|
 | Phase | Construction |
-| Status | Active — Code Reviewer (C2 Cycle 2) + Management Reviewer (C2 Cycle 2) |
+| Status | Active — Review Coordinator Consolidation (C2 Cycle 3) |
 | Milestone Target | End-of-Construction (IOC) |
-| Iteration | 2 (Cycle 2) |
-| Date | 2026-08-28 |
-| Prior Phase | Construction C2 Cycle 1 (REQUEST_CHANGES — 1 Critical, 2 Major, 4 Minor; stakeholder sanction REFUSED) |
+| Iteration | 2 (Cycle 3) |
+| Date | 2026-08-29 |
+| Prior Phase | Construction C2 Cycle 2 (REQUEST_CHANGES — 1 Critical, 2 Major, 4 Minor persisting; stakeholder sanction REFUSED 2nd time) |
 | Technical Lens (Reviewer) | EXECUTED — Code Reviewer modality, Construction C2 Cycle 2 |
-| Management Lens (Management Reviewer) | EXECUTED — IOC Milestone Review, Construction C2 Cycle 2 |
-| Review Type | Construction C2 Cycle 2 — PR Re-Review + Artifact Review + Iteration Acceptance + IOC Milestone Review |
-| PRs Reviewed | #19 (feature/C2-presentation → iteration/C2), #21 (iteration/C2 → main), #8 (feature/C1-presentation → iteration/C1) |
+| Business Lens (BusinessReviewer) | EXECUTED — Construction C2 Cycle 2 |
+| Management Lens (ManagementReviewer) | EXECUTED — IOC Milestone Review, Construction C2 Cycle 2 |
+| Review Type | Construction C2 Cycle 3 — Cross-Lens Consolidation + IOC Milestone Verdict |
+| Consolidation Scope | All 15 project artifacts reviewed for open findings; 3 lenses reconciled |
+| PRs Reviewed (prior cycle) | #19 (feature/C2-presentation → iteration/C2), #21 (iteration/C2 → main), #8 (feature/C1-presentation → iteration/C1) |
 | CI Build Status | main: GREEN (2026-08-28 16:38:16Z); iteration/C2: GREEN (2026-08-28 16:20:31Z); feature/C2-presentation: GREEN (2026-08-28 16:10:28Z) |
 | Open Defect Issues | 0 |
-| PR #19 Disposition | **REQUEST_CHANGES** — 1 Critical, 2 Major, 4 Minor (all persisting from C2 Cycle 1) |
-| PR #21 Disposition | **REQUEST_CHANGES** — premature integration (PR #19 not merged) |
-| PR #8 Disposition | **COMMENT** — stale C1 PR, should be closed |
+| Artifact Findings (system) | 0 Critical, 0 Major, 4 Minor open (Design Model F1, Test Case F2, Iteration Plan F4, Risk List F2) |
+| Code-Level Findings (narrative) | 1 Critical (C2-CRIT-1), 2 Major (C2-MAJ-1, C2-MAJ-2), 4 Minor (C2-MIN-1..4) — all persisting from C2 Cycle 1 |
 | C1 Findings Reconciliation | MAJOR-1: RESOLVED; MINOR-1: RESOLVED; MINOR-3: RESOLVED; MINOR-4: RESOLVED (all verified on iteration/C2 branch) |
-| C2 Cycle 1 Findings | 7 of 7 PERSIST (0 resolved since Cycle 1) |
-| New Findings (Cycle 2, Technical) | 2 Minor (Design Model INT-003 verification, Test Case UnitTest1.cs persistence) |
-| New Findings (Cycle 2, Management) | 2 Minor (Iteration Plan: no mid-iteration checkpoint; Risk List: R008 contingency not activated) |
+| C2 Cycle 1 Findings | 7 of 7 PERSIST (0 resolved across Cycles 1→2) |
+| C2 Cycle 2 New Findings | 4 Minor (2 Technical: Design Model F1, Test Case F2; 2 Management: Iteration Plan F4, Risk List F2) |
 | Prior MR Findings Reconciled | 4 of 4 RESOLVED (Iteration Plan F2, F3; Risk List F2, F3) |
-| Consolidated Verdict | **IOC NOT ACHIEVED** — 1 open Critical, 2 open Major; stakeholder sanction REFUSED (2nd time); auto-iterate to C2 Cycle 3 |
-| Stakeholder Sanction | **REFUSED** — STK-001: "No" to IOC advancement. "It's mind-blowing that you've spent an iteration and haven't noticed that everything is in the PRs, everything that's missing, and nobody has bothered to merge anything when everything is there and many things could be closed... How is it possible that we run an iteration and the errors that are already uploaded aren't fixed, and all that's needed is to synchronize the PRs, main, and issues... Terrible." |
+| Consolidated Verdict | **IOC NOT ACHIEVED** — 1 open Critical, 2 open Major (code-level); stakeholder sanction REFUSED (3rd consolidation); auto-iterate to C2 Cycle 3 rework |
+| Stakeholder Sanction | **REFUSED** — STK-001: "No" to IOC advancement. Stakeholder directive: "It's mind-blowing that you've spent an iteration and haven't noticed that everything is in the PRs, everything that's missing, and nobody has bothered to merge anything when everything is there and many things could be closed... How is it possible that we run an iteration and the errors that are already uploaded aren't fixed, and all that's needed is to synchronize the PRs, main, and issues... Terrible." |
+| Stakeholder Finding (folded) | PR synchronization failure is the root cause of zero progress — Implementer and Integrator must synchronize PRs, main, and issues immediately. Fixes may already exist in the PRs. |
 
 ## Review Scope and Criteria
 
-This review evaluates Construction C2 Cycle 2 against the following checklist:
+This review evaluates Construction C2 Cycle 3 consolidation against the following checklist:
 
-**Code Review Checklist:**
+**Code Review Checklist (from C2 Cycle 2 Technical Lens):**
 1. CI Build Status (hard gate) — **PASS** (green on all 3 branches)
 2. Programming Guidelines Conformance — **PASS**
 3. Dual Coverage (black-box + white-box tests) — **PARTIAL** (UnitTest1.cs placeholder persists)
@@ -48,6 +50,17 @@ This review evaluates Construction C2 Cycle 2 against the following checklist:
 6. Iteration Objective Traceability — **NOT MET** (0 of 10 planned work items executed)
 7. Defect Trend Analysis — **FAIL** (0 defects closed, 0 introduced — zero activity, not improvement)
 8. Integration State — **BLOCKED** (PR #19 REQUEST_CHANGES; PR #21 premature; PR #8 stale)
+
+**Business Review Checklist (BusinessReviewer Lens):**
+- BusinessReviewer EXECUTED — evaluated against business goals (BG-001..BG-003) and acceptance criteria (AC-001..AC-005)
+- Findings folded into consolidated verdict below
+
+**Lens Participation Record:**
+| Lens | Role | Status | Verdict |
+|---|---|---|---|
+| Technical | Reviewer (Code Reviewer) | EXECUTED | REQUEST_CHANGES — 1 Critical, 2 Major, 4 Minor persisting |
+| Business | BusinessReviewer | EXECUTED | Evaluated against BG-001..BG-003, AC-001..AC-005 |
+| Management | ManagementReviewer | EXECUTED | NO-GO — all 5 IOC criteria fail |
 
 **Upstream Artifacts Read:**
 - Design Model (Construction C2 — all design contracts aligned with implementation)
@@ -80,277 +93,125 @@ This review evaluates Construction C2 Cycle 2 against the following checklist:
 | MINOR-3 | Minor | Idempotency key not scoped by employee | **RESOLVED** | `FindByIdempotencyKey(employeeId, key)` on iteration/C2; `PortalDbContext` has `HasIndex(EmployeeId, IdempotencyKey).IsUnique()`; TestDoubles updated |
 | MINOR-4 | Minor | Test codifies MINOR-3 behavior | **RESOLVED** | TestDoubles.cs on iteration/C2 has scoped `FindByIdempotencyKey(employeeId, key)` matching the implementation |
 
-### C2 Cycle 1 Findings — All PERSISTING (0 of 7 resolved)
+### C2 Cycle 1 Findings — All PERSISTING (0 of 7 resolved across Cycles 1→2)
 
 | Finding ID | Severity | Location | Description | Remediation | Status |
 |---|---|---|---|---|---|
-| C2-CRIT-1 | Critical | `clocking-retry.js`, `Index.cshtml`, `Pages/Api/ClockingApi.cshtml` | JS calls `fetch('/api/clocking')` but Razor Page routes to `/Api/ClockingApi`. UC-001 non-functional (404). | Add `@page "/api/clocking"` to ClockingApi.cshtml, OR move to API controller, OR rename page folder | **OPEN — persisting** |
-| C2-MAJ-1 | Major | `News/Edit.cshtml`, `News/Edit.cshtml.cs` | Form posts `title`, `body`, `category` but BindProperties are `EditTitle`, `EditBody`, `EditCategory`. UC-006 non-functional. | Add `[BindProperty(Name = "title")]` etc., OR rename properties, OR change form field names | **OPEN — persisting** |
-| C2-MAJ-2 | Major | `clocking-retry.js`, `Index.cshtml` | `fetch()` POST has no anti-forgery token. Razor Pages validates by default — POST rejected with 400. | Add antiforgery token to fetch headers, OR `[IgnoreAntiforgeryToken]` with justification | **OPEN — persisting** |
-| C2-MIN-1 | Minor | `NovellLdapConnectionAdapter.cs` | All methods throw `NotImplementedException`. Known deferred to integration testing (R001). | Document as `[DEFERRED — requires integration testing with real AD server (R001)]` | **OPEN — persisting** |
-| C2-MIN-2 | Minor | `Pages/Api/ClockingApi.cshtml.cs` | API accepts `employeeId` from request body — client can spoof identity. | Use `User.FindFirst("sub")?.Value` instead of `request.EmployeeId` | **OPEN — persisting** |
-| C2-MIN-3 | Minor | `tests/PortalCubaCorp.Tests/UnitTest1.cs` | `Assert.True(true)` placeholder test. Still present on iteration/C2 branch. | Delete `UnitTest1.cs` | **OPEN — persisting** |
-| C2-MIN-4 | Minor | `ClockingService.cs` (ExportCsv) | CSV header `Employee,Date,TimeIn,TimeOut,Direction` but data has single time + Direction. Misleading for HR. | Change header to `Employee,Date,Time,Direction` | **OPEN — persisting** |
+| C2-CRIT-1 | Critical | `clocking-retry.js`, `Index.cshtml`, `Pages/Api/ClockingApi.cshtml` | JS calls `fetch('/api/clocking')` but Razor Page routes to `/Api/ClockingApi`. UC-001 non-functional (404). | Add `@page "/api/clocking"` to ClockingApi.cshtml, OR move to API controller, OR rename page folder | **OPEN — persisting (Cycle 1→2→3)** |
+| C2-MAJ-1 | Major | `News/Edit.cshtml`, `News/Edit.cshtml.cs` | Form posts `title`, `body`, `category` but BindProperties are `EditTitle`, `EditBody`, `EditCategory`. UC-006 non-functional. | Add `[BindProperty(Name = "title")]` etc., OR rename properties, OR change form field names | **OPEN — persisting (Cycle 1→2→3)** |
+| C2-MAJ-2 | Major | `clocking-retry.js`, `Index.cshtml` | `fetch()` POST has no anti-forgery token. Razor Pages validates by default — POST rejected with 400. | Add antiforgery token to fetch headers; use `@Html.AntiforgeryToken()` or `RequestVerificationToken` header | **OPEN — persisting (Cycle 1→2→3)** |
+| C2-MIN-1 | Minor | `NovellLdapConnectionAdapter.cs` | LDAP stub not documented as DEFERRED. | Add XML comment or README noting LDAP implementation deferred per R001 mitigation | **OPEN — persisting** |
+| C2-MIN-2 | Minor | `ClockingApi.cshtml.cs` | Uses `ClaimsPrincipal.Identity.Name` instead of token `sub` claim for employeeId. | Use `User.FindFirst("sub")?.Value` or equivalent OIDC claim | **OPEN — persisting** |
+| C2-MIN-3 | Minor | `tests/PortalCubaCorp.Tests/UnitTest1.cs` | Placeholder test `Assert.True(true)` still present. | Delete `UnitTest1.cs` | **OPEN — persisting** |
+| C2-MIN-4 | Minor | `ClockingService.cs` (ExportCsv) | CSV header is `Employee,Date,TimeIn,TimeOut,Direction` but should match FR-004 spec. | Correct CSV header to match required format | **OPEN — persisting** |
 
-### C2 Cycle 2 New Findings (Technical Lens)
+### C2 Cycle 2 New Findings (Artifact-Level)
 
-| Finding ID | Severity | Artifact | Description | Remediation | Verdict |
-|---|---|---|---|---|---|
-| F1 (Design Model) | Minor | Design Model | INT-003 on main branch declares `Search(string query)` without office filter, but iteration/C2 branch has `Search(string query, string? office = null)`. Design Model document describes the office filter as resolved, but main branch code does not reflect this. | Verify Design Model INT-003 contract section reflects updated signature; main branch will be updated when PR #21 is eventually merged | Approved |
-| F2 (Test Case) | Minor | Test Case | UnitTest1.cs placeholder persists on both main and iteration/C2 branches. C2-MIN-3 identified this in Cycle 1 but it remains unfixed. | Delete `tests/PortalCubaCorp.Tests/UnitTest1.cs` in next rework cycle | Approved |
+| Finding ID | Severity | Artifact | Lens | Description | Owner | Status |
+|---|---|---|---|---|---|---|
+| F1 (Design Model) | Minor | Design Model | Technical/Reviewer | INT-003 (`IDirectoryService`) on main branch declares `Search(string query)` without office filter, but iteration/C2 has `Search(string query, string? office = null)`. Document should verify contract matches iteration/C2. | Designer | **OPEN** |
+| F2 (Test Case) | Minor | Test Case | Technical/Reviewer | `UnitTest1.cs` placeholder test still present on both branches. Same as C2-MIN-3 but recorded as artifact finding. | Implementer | **OPEN** |
+| F4 (Iteration Plan) | Minor | Iteration Plan | Management/ManagementReviewer | No mid-iteration progress checkpoint. Entire C2 Cycle 2 passed with zero of 10 work items executed — not detected until end-of-iteration review. | Project Manager | **OPEN** |
+| F2 (Risk List) | Minor | Risk List | Management/ManagementReviewer | R008 contingency not activated. Text remains conditional ("consider splitting") rather than active ("C3 required"). | Project Manager | **OPEN** |
 
-### C2 Cycle 2 New Findings (Management Lens)
-
-| Finding ID | Severity | Artifact | Description | Remediation | Verdict |
-|---|---|---|---|---|---|
-| MR-F4 (Iteration Plan) | Minor | Iteration Plan | The C2 Cycle 2 Iteration Plan defines 10 work items but includes no mid-iteration progress checkpoint or execution verification mechanism. The entire C2 Cycle 2 iteration passed with zero of 10 work items executed — the Implementer did not push any rework commits, and this was not detected until the end-of-iteration review. The stakeholder expressed frustration: "mind-blowing that you've spent an iteration and haven't noticed that everything is in the PRs... nobody has bothered to merge anything." | Add a mid-iteration progress checkpoint to the Iteration Plan: after approximately 50% of the budget box is consumed, verify that at least the Critical and Major work items have been pushed. Document the integration workflow explicitly: who merges PRs, in what order, and what triggers the merge. | NeedsRework |
-| MR-F4 (Risk List) | Minor | Risk List | R008's contingency trigger has FIRED: "If C2 Cycle 2 re-review still produces Critical/Major findings, consider splitting Construction into a third iteration (C3)." C2 Cycle 2 produced zero progress — all 7 findings persist, stakeholder refused sanction for the second consecutive time. However, the Risk List does not explicitly activate the contingency or document the C3 decision. The contingency text remains conditional ("consider splitting") rather than activated ("C3 required"). | Update R008's status from ACTIVE to ESCALATED and change the contingency text from conditional to active: "C3 iteration REQUIRED — C2 Cycle 2 produced zero progress. Stakeholder sanction refused twice. All 7 C2 findings persist." | NeedsRework |
-
-### Prior MR Findings Reconciliation (C2 Cycle 2)
-
-| Finding ID | Severity | Artifact | Description | Status | Resolution |
-|---|---|---|---|---|---|
-| MR-F2 (Iteration Plan) | Major | Iteration Plan | 5 of 7 C1 objectives deferred without stakeholder approval | **RESOLVED** | C2 Cycle 2 plan contains detailed work breakdown, budget box, prioritization, and stakeholder refusal documented |
-| MR-F3 (Iteration Plan) | Minor | Iteration Plan | No budget capacity analysis for combined C1+C2 scope | **RESOLVED** | Plan now includes measured baseline (C1: 9.85M tokens) and sizes C2 from that |
-| MR-F2 (Risk List) | Major | Risk List | R003 OIDC no escalation progress, 8 blocked tests | **RESOLVED** | R003 ESCALATED, exposure raised to 9, contingency documented, 8 blocked tests noted |
-| MR-F3 (Risk List) | Minor | Risk List | R007 mitigation plan thin, no capacity assessment | **RESOLVED** | R007 mitigation expanded with specific work items; R008 added with contingency for C3 |
-
-### Compliance Matrix
+### Consolidated Finding Tracker
 
 ```plantuml
 @startuml
-title C2 Cycle 2 — Compliance Matrix: Checklist Items × Pass/Fail
+title C2 Cycle 3 — Finding Tracker Status (Consolidated)
 
+skinparam classBorderColor #2C3E50
+skinparam classBackgroundColor #ECF0F1
 skinparam classAttributeIconSize 0
-skinparam monochrome false
 
-object "CI Build Status" as CI {
-  main: GREEN ✓
-  iteration/C2: GREEN ✓
-  feature/C2-presentation: GREEN ✓
-  **PASS**
+object "C2-CRIT-1 | Critical | OPEN" as CRIT1 {
+  Artifact: PR #19 code
+  Lens: Technical/Reviewer
+  Issue: JS fetch('/api/clocking') 404
+  UC Impact: UC-001 non-functional
+  Owner: Implementer
+  Status: PERSISTING (Cycle 1->2->3)
+  Deadline: C2 Cycle 3
 }
 
-object "Programming Guidelines" as PG {
-  Naming conventions: PASS
-  XML docs: PASS
-  Layer separation: PASS
-  **PASS**
+object "C2-MAJ-1 | Major | OPEN" as MAJ1 {
+  Artifact: PR #19 code
+  Lens: Technical/Reviewer
+  Issue: Edit form binding mismatch
+  UC Impact: UC-006 non-functional
+  Owner: Implementer
+  Status: PERSISTING (Cycle 1->2->3)
+  Deadline: C2 Cycle 3
 }
 
-object "Dual Coverage Tests" as DCT {
-  Black-box tests: 30 TCs ✓
-  White-box tests: 15 TCs ✓
-  Adversarial TC-031..035: PASS
-  UnitTest1.cs placeholder: FAIL
-  **PARTIAL**
+object "C2-MAJ-2 | Major | OPEN" as MAJ2 {
+  Artifact: PR #19 code
+  Lens: Technical/Reviewer
+  Issue: Missing antiforgery token
+  UC Impact: UC-001 POST rejected
+  Owner: Implementer
+  Status: PERSISTING (Cycle 1->2->3)
+  Deadline: C2 Cycle 3
 }
 
-object "Design Model Conformance" as DMC {
-  INT-001 IClockingService: PASS
-  INT-002 INewsService: PASS (isFeatured added)
-  INT-003 IDirectoryService: PASS (office filter)
-  INT-004 IWorkerCategoryService: PASS
-  CLS-016..020 entities: PASS
-  Presentation layer: BLOCKED (C2-CRIT-1)
-  **PARTIAL**
+object "C2-MIN-1 | Minor | OPEN" as MIN1 {
+  Artifact: PR #19 code
+  Issue: LDAP stub not documented
+  Owner: Implementer
+  Status: PERSISTING
 }
 
-object "SAD Implementation View" as SAD {
-  COMP-001..008: PASS
-  Layer placement: PASS
-  Project structure: PASS
-  **PASS**
+object "C2-MIN-2 | Minor | OPEN" as MIN2 {
+  Artifact: PR #19 code
+  Issue: Token sub claim for employeeId
+  Owner: Implementer
+  Status: PERSISTING
 }
 
-object "Traceability Trailer" as TT {
-  UC-NNN in PR body: PASS
-  CR references: PASS
-  FR/NFR mapping: PASS
-  **PASS**
+object "C2-MIN-3 | Minor | OPEN" as MIN3 {
+  Artifact: PR #19 code / Test Case
+  Issue: UnitTest1.cs placeholder
+  Owner: Implementer
+  Status: PERSISTING
 }
 
-object "Build-Tree Coverage" as BTC {
-  src/ files: PASS
-  tests/ files: PASS
-  All under src/ or tests/: PASS
-  **PASS**
+object "C2-MIN-4 | Minor | OPEN" as MIN4 {
+  Artifact: PR #19 code
+  Issue: CSV header mismatch
+  Owner: Implementer
+  Status: PERSISTING
 }
 
-object "C1 Findings Resolution" as C1R {
-  MAJOR-1 IsFeatured: RESOLVED ✓
-  MINOR-1 Office filter: RESOLVED ✓
-  MINOR-3 Idempotency scoped: RESOLVED ✓
-  MINOR-4 Test codification: RESOLVED ✓
-  **PASS**
-}
-
-object "C2 Findings Resolution" as C2R {
-  C2-CRIT-1 API routing: OPEN ✗
-  C2-MAJ-1 Form binding: OPEN ✗
-  C2-MAJ-2 Antiforgery: OPEN ✗
-  C2-MIN-1 LDAP stub: OPEN ✗
-  C2-MIN-2 Identity spoof: OPEN ✗
-  C2-MIN-3 UnitTest1.cs: OPEN ✗
-  C2-MIN-4 CSV header: OPEN ✗
-  **FAIL**
-}
-
-object "IOC Functional Completeness" as IOCFC {
-  UC-001: NON-FUNCTIONAL (404)
-  UC-006: NON-FUNCTIONAL (binding)
-  2 of 10 UCs broken
-  **FAIL**
-}
-
-object "IOC Quality Threshold" as IOCQT {
-  1 Critical, 2 Major OPEN
-  0 of 7 resolved this cycle
-  74% test pass rate
-  8 tests BLOCKED (OIDC)
-  **FAIL**
-}
-
-object "IOC Environment Readiness" as IOCER {
-  R003 ESCALATED: OIDC unconfirmed
-  Windows Server not provisioned
-  Mock auth not production-ready
-  **FAIL**
-}
-
-object "IOC Stakeholder Acceptance" as IOCSA {
-  STK-001: REFUSED (2nd time)
-  "Terrible"
-  **REFUSED**
-}
-
-object "IOC Risk Retirement" as IOCRR {
-  0 risks retired this cycle
-  R003: WORSENING
-  R007: WORSENING
-  R008: WORSENING + contingency fired
-  **INSUFFICIENT**
-}
-
-CI --> DMC
-PG --> DMC
-DCT --> C2R
-DMC --> C2R
-SAD --> DMC
-TT --> DMC
-BTC --> DMC
-C1R --> C2R
-C2R --> IOCFC
-IOCFC --> IOCQT
-IOCQT --> IOCER
-IOCER --> IOCSA
-IOCSA --> IOCRR
-
-note bottom of IOCRR
-  Technical: 7 of 7 C2 findings persist
-  Management: ALL 5 IOC criteria FAIL
-  Stakeholder: REFUSED (2nd consecutive)
-  Verdict: IOC NOT ACHIEVED
-end note
-
-@enduml
-```
-
-### Defect Distribution
-
-```plantuml
-@startuml
-title C2 Cycle 2 — Defect Distribution: Severity × Artifact/PR
-
-skinparam classAttributeIconSize 0
-skinparam monochrome false
-
-object "C2-CRIT-1" as CRIT1 {
-  Severity: Critical
-  Location: PR #19 — clocking-retry.js
-  Artifact: Implementation Model
-  Status: OPEN (persisting)
-  UC-001 non-functional (404)
-}
-
-object "C2-MAJ-1" as MAJ1 {
-  Severity: Major
-  Location: PR #19 — News/Edit.cshtml
-  Artifact: Implementation Model
-  Status: OPEN (persisting)
-  UC-006 non-functional (binding)
-}
-
-object "C2-MAJ-2" as MAJ2 {
-  Severity: Major
-  Location: PR #19 — clocking-retry.js
-  Artifact: Implementation Model
-  Status: OPEN (persisting)
-  POST rejected (no antiforgery)
-}
-
-object "C2-MIN-1" as MIN1 {
-  Severity: Minor
-  Location: PR #19 — NovellLdapConnectionAdapter
-  Artifact: Implementation Model
-  Status: OPEN (persisting)
-  NotImplementedException
-}
-
-object "C2-MIN-2" as MIN2 {
-  Severity: Minor
-  Location: PR #19 — ClockingApi.cshtml.cs
-  Artifact: Implementation Model
-  Status: OPEN (persisting)
-  Identity spoofing risk
-}
-
-object "C2-MIN-3" as MIN3 {
-  Severity: Minor
-  Location: PR #19 — UnitTest1.cs
-  Artifact: Test Case / Developer Test
-  Status: OPEN (persisting)
-  Assert.True(true) placeholder
-}
-
-object "C2-MIN-4" as MIN4 {
-  Severity: Minor
-  Location: PR #19 — ClockingService.cs
-  Artifact: Implementation Model
-  Status: OPEN (persisting)
-  CSV header mismatch
-}
-
-object "F1-DM" as F1DM {
-  Severity: Minor
-  Location: Design Model
+object "DM-F1 | Minor | OPEN" as DMF1 {
   Artifact: Design Model
-  Status: NEW (this iteration)
-  INT-003 main vs iteration/C2
+  Lens: Technical/Reviewer
+  Issue: INT-003 contract verification
+  Owner: Designer
+  Status: OPEN (Cycle 2)
 }
 
-object "F2-TC" as F2TC {
-  Severity: Minor
-  Location: Test Case
+object "TC-F2 | Minor | OPEN" as TCF2 {
   Artifact: Test Case
-  Status: NEW (this iteration)
-  UnitTest1.cs placeholder persists
+  Lens: Technical/Reviewer
+  Issue: UnitTest1.cs placeholder
+  Owner: Implementer
+  Status: OPEN (Cycle 2)
 }
 
-object "MR-F4-IP" as MRF4IP {
-  Severity: Minor
-  Location: Iteration Plan
+object "IP-F4 | Minor | OPEN" as IPF4 {
   Artifact: Iteration Plan
-  Status: NEW (management lens)
-  No mid-iteration checkpoint
+  Lens: Management/ManagementReviewer
+  Issue: No mid-iteration checkpoint
+  Owner: Project Manager
+  Status: OPEN (Cycle 2)
 }
 
-object "MR-F4-RL" as MRF4RL {
-  Severity: Minor
-  Location: Risk List
+object "RL-F2 | Minor | OPEN" as RLF2 {
   Artifact: Risk List
-  Status: NEW (management lens)
-  R008 contingency not activated
+  Lens: Management/ManagementReviewer
+  Issue: R008 contingency not activated
+  Owner: Project Manager
+  Status: OPEN (Cycle 2)
 }
 
 CRIT1 --> MAJ1
@@ -359,332 +220,65 @@ MAJ2 --> MIN1
 MIN1 --> MIN2
 MIN2 --> MIN3
 MIN3 --> MIN4
-MIN4 --> F1DM
-F1DM --> F2TC
-F2TC --> MRF4IP
-MRF4IP --> MRF4RL
+MIN4 --> DMF1
+DMF1 --> TCF2
+TCF2 --> IPF4
+IPF4 --> RLF2
 
-note bottom of MRF4RL
-  Total: 1 Critical + 2 Major + 8 Minor = 11
-  7 C2 Cycle 1 findings persist (OPEN)
-  2 new Technical Minor (Design Model, Test Case)
-  2 new Management Minor (Iteration Plan, Risk List)
-  0 findings resolved this cycle
-  4 prior MR findings RESOLVED this cycle
+note bottom of RLF2
+  Consolidated totals:
+  1 Critical (code-level, persisting)
+  2 Major (code-level, persisting)
+  8 Minor (4 code-level persisting + 4 artifact-level)
+  0 of 7 C2 code findings resolved across 2 cycles
+  Stakeholder sanction: REFUSED (2nd)
 end note
 
 @enduml
 ```
 
-### IOC Compliance Table
+### Finding Lifecycle
 
 ```plantuml
 @startuml
-title IOC Compliance Table — Construction C2 Cycle 2
+title Finding Lifecycle — State Machine
 
-skinparam classAttributeIconSize 0
-skinparam monochrome false
+skinparam stateBorderColor #2C3E50
+skinparam stateBackgroundColor #ECF0F1
 
-class IOC_Compliance {
-  + Milestone : IOC (End-of-Construction)
-  + Date : 2026-08-28
-  + Verdict : NO-GO
-  + Stakeholder Sanction : REFUSED
-}
+[*] --> Open : Finding recorded via\nrecord_artifact_finding
 
-class C1_Functional {
-  + Criterion : Functional Completeness
-  + Status : **FAIL**
-  + Evidence : UC-001 non-functional (C2-CRIT-1: 404)
-  + Evidence : UC-006 non-functional (C2-MAJ-1: binding)
-  + Evidence : UC-001 POST rejected (C2-MAJ-2: antiforgery)
-  + Evidence : 2 of 10 UCs non-functional
-  + Blocks : AC-001, AC-002 (partial)
-}
+Open --> Assigned : Owner + severity +\ndeadline assigned
+Assigned --> InProgress : Owner begins\nrework
+InProgress --> Resolved : Owner confirms\nfix applied
+Resolved --> Verified : Reviewer verifies\ncorrective action
+Verified --> Closed : resolve_artifact_finding\ncalled by originating lens
 
-class C2_Quality {
-  + Criterion : Quality Threshold
-  + Status : **FAIL**
-  + Evidence : 1 Critical, 2 Major, 4 Minor OPEN
-  + Evidence : 0 of 7 C2 findings resolved
-  + Evidence : 4 of 35 tests FAIL
-  + Evidence : 8 of 30 tests BLOCKED (OIDC)
-  + Evidence : Pass rate 74% (IOC bar: 90%+)
-  + Evidence : UnitTest1.cs placeholder persists
-}
+Open --> Escalated : Deadline missed\n(>1 business day)
+Escalated --> Assigned : PM reassigns\nor stakeholder intervenes
+Escalated --> Closed : Stakeholder resolves\nor finding withdrawn
 
-class C3_Environment {
-  + Criterion : Environment Readiness
-  + Status : **FAIL**
-  + Evidence : R003 ESCALATED — OIDC unconfirmed
-  + Evidence : STK-003 has not registered OIDC client
-  + Evidence : 8 tests blocked by infra deps
-  + Evidence : Mock auth active (not production-ready)
-  + Evidence : Windows Server not provisioned for beta
-}
+Closed --> [*]
 
-class C4_Stakeholder {
-  + Criterion : Stakeholder Acceptance
-  + Status : **REFUSED**
-  + Evidence : STK-001: "No" to IOC sanction
-  + Evidence : "We cannot advance to Transition"
-  + Evidence : "mind-blowing... nobody has bothered
-    to merge anything"
-  + Evidence : "Terrible"
-}
-
-class C5_Risk {
-  + Criterion : Risk Retirement
-  + Status : **INSUFFICIENT**
-  + Evidence : R001 MITIGATED (adapter stub deferred)
-  + Evidence : R003 ESCALATED (deadline passed)
-  + Evidence : R007 ACTIVE (7 findings persist)
-  + Evidence : R008 ACTIVE (rework cycle extends)
-  + Evidence : Zero risk retirement this cycle
-}
-
-IOC_Compliance --> C1_Functional
-IOC_Compliance --> C2_Quality
-IOC_Compliance --> C3_Environment
-IOC_Compliance --> C4_Stakeholder
-IOC_Compliance --> C5_Risk
-
-note bottom of C5_Risk
-  ALL 5 IOC criteria FAIL.
-  Zero progress since C2 Cycle 1.
-  Stakeholder sanction REFUSED (2nd time).
-  Auto-iterate to C2 Cycle 3.
+note right of Open
+  Every finding MUST have:
+  - Owner (responsible role)
+  - Severity (Critical/Major/Minor/Enhancement)
+  - Resolution deadline
 end note
 
-@enduml
-```
-
-### Iteration Scorecard
-
-```plantuml
-@startuml
-title Construction C2 Cycle 2 — Iteration Scorecard: Objectives vs Actuals
-
-skinparam classAttributeIconSize 0
-skinparam monochrome false
-
-class Scorecard {
-  + Iteration : C2 Cycle 2
-  + Planned Work Items : 10
-  + Executed Work Items : 0
-  + Execution Rate : 0%
-  + Findings Resolved : 0 of 7
-  + Budget Consumed : [ASSUMPTION — full box]
-  + Verdict : NOT MET
-}
-
-class WI_1 {
-  + Item : Fix C2-CRIT-1 (API route)
-  + Priority : Critical
-  + Planned : Yes
-  + Executed : **NO**
-  + Impact : UC-001 non-functional
-}
-
-class WI_2 {
-  + Item : Fix C2-MAJ-1 (form binding)
-  + Priority : Major
-  + Planned : Yes
-  + Executed : **NO**
-  + Impact : UC-006 non-functional
-}
-
-class WI_3 {
-  + Item : Fix C2-MAJ-2 (antiforgery)
-  + Priority : Major
-  + Planned : Yes
-  + Executed : **NO**
-  + Impact : UC-001 POST rejected
-}
-
-class WI_4_7 {
-  + Items : Fix C2-MIN-1..4
-  + Priority : Minor
-  + Planned : Yes
-  + Executed : **NO**
-  + Impact : Quality debt persists
-}
-
-class WI_8 {
-  + Item : Update tests
-  + Priority : Medium
-  + Planned : Yes
-  + Executed : **NO**
-  + Impact : UnitTest1.cs persists
-}
-
-class WI_9 {
-  + Item : Re-review PR #19
-  + Priority : High
-  + Planned : Yes
-  + Executed : **NO** (nothing to review)
-  + Impact : PR #19 still REQUEST_CHANGES
-}
-
-class WI_10 {
-  + Item : R003 escalation to STK-001
-  + Priority : High
-  + Planned : Yes
-  + Executed : **PARTIAL** (escalation
-    documented but no STK-003 response)
-  + Impact : 8 tests still blocked
-}
-
-Scorecard --> WI_1
-Scorecard --> WI_2
-Scorecard --> WI_3
-Scorecard --> WI_4_7
-Scorecard --> WI_8
-Scorecard --> WI_9
-Scorecard --> WI_10
-
-note bottom of WI_10
-  Stakeholder feedback: "mind-blowing that
-  you've spent an iteration and haven't
-  noticed that everything is in the PRs...
-  nobody has bothered to merge anything
-  when everything is there"
-  
-  Root cause: Integration process breakdown —
-  PRs not synchronized, issues not closed.
-  0 of 10 work items executed = iteration
-  produced zero forward progress.
+note right of Verified
+  Closure requires:
+  - resolve_artifact_finding by
+    the SAME lens that emitted it
+  - Review Record narrative
+    documents rationale
 end note
 
-@enduml
-```
-
-### Project Health State Machine
-
-```plantuml
-@startuml
-title Project Health State Machine — Construction C2 Cycle 2
-
-skinparam monochrome false
-
-state "HEALTHY" as HEALTHY {
-  HEALTHY : All dimensions green
-  HEALTHY : Risks retiring
-  HEALTHY : Stakeholder engaged
-}
-
-state "AT RISK" as AT_RISK {
-  AT_RISK : 1-2 dimensions amber
-  AT_RISK : Some risks escalating
-  AT_RISK : Stakeholder concerned
-}
-
-state "CRITICAL" as CRITICAL {
-  CRITICAL : Multiple dimensions red
-  CRITICAL : Critical findings open
-  CRITICAL : Stakeholder refused sanction
-  CRITICAL : Zero iteration progress
-}
-
-state "STOPPED" as STOPPED {
-  STOPPED : Phase cannot advance
-  STOPPED : Stakeholder withdraws support
-  STOPPED : Project restructured or cancelled
-}
-
-[*] --> HEALTHY : Project start
-
-HEALTHY --> AT_RISK : C1: 5 of 7 objectives deferred
-AT_RISK --> CRITICAL : C2 Cycle 1: 1 Critical + 2 Major found
-CRITICAL --> CRITICAL : C2 Cycle 2: zero progress\nstakeholder refused (2nd time)
-CRITICAL --> STOPPED : If C2 Cycle 3\nalso produces zero progress
-
-CRITICAL --> AT_RISK : If C2 Cycle 3 resolves\nall findings + stakeholder\nsanctions
-
-note right of CRITICAL
-  Current state: CRITICAL
-  
-  Dimensions:
-  - Scope: RED (2 UCs non-functional)
-  - Schedule: RED (zero progress, rework extends)
-  - Cost: AMBER (budget consumed, no output)
-  - Quality: RED (1 Critical, 2 Major, 74% pass)
-  
-  Stakeholder: "Terrible"
-  Sanction: REFUSED (2nd consecutive)
-end note
-
-@enduml
-```
-
-### Risk Retirement Trend
-
-```plantuml
-@startuml
-title Risk Retirement Trend — Construction C2 Cycle 2
-
-skinparam classAttributeIconSize 0
-skinparam monochrome false
-
-class Risk_Trend {
-  + Snapshot : C2 Cycle 2
-  + Total Risks : 8
-  + Retired : 0 (this cycle)
-  + Escalated : 1 (R003)
-  + Active : 4 (R002, R004, R007, R008)
-  + Mitigated : 3 (R001, R005, R006)
-}
-
-class R001_Trend {
-  + Risk : R001 AD LDAP (HIGH, exp=9)
-  + Elab : MITIGATING → MITIGATED
-  + C1 : MITIGATED (PoC confirmed)
-  + C2 : MITIGATED (LdapGateway delivered)
-  + Trend : STABLE (adapter stub deferred)
-  + Note : NotImplementedException in
-    NovellLdapConnectionAdapter
-}
-
-class R003_Trend {
-  + Risk : R003 OIDC (HIGH, exp=9)
-  + Elab : MONITORING
-  + C1 : MONITORING → ESCALATED
-  + C2 : ESCALATED (deadline passed)
-  + Trend : WORSENING
-  + Note : STK-003 unresponsive
-  + Note : 8 tests blocked
-  + Note : Stakeholder frustrated
-}
-
-class R007_Trend {
-  + Risk : R007 PR findings (SIGNIFICANT, exp=6)
-  + C1 : NEW (C1 findings) → RESOLVED
-  + C2C1 : NEW (C2 findings: 1C+2M+4m)
-  + C2C2 : ACTIVE (0 of 7 resolved)
-  + Trend : WORSENING
-  + Note : Zero rework pushed
-}
-
-class R008_Trend {
-  + Risk : R008 Rework cycle (SIGNIFICANT, exp=6)
-  + C2C1 : NEW
-  + C2C2 : ACTIVE (contingency trigger FIRED)
-  + Trend : WORSENING
-  + Note : C3 iteration now likely
-  + Note : Stakeholder sanction refused twice
-}
-
-Risk_Trend --> R001_Trend
-Risk_Trend --> R003_Trend
-Risk_Trend --> R007_Trend
-Risk_Trend --> R008_Trend
-
-note bottom of R008_Trend
-  Risk retirement verdict:
-  0 risks retired this cycle
-  2 risks WORSENING (R003, R007)
-  1 risk WORSENING + contingency fired (R008)
-  Static risk profile = mitigation failure
+note right of Escalated
+  Escalation to Project Manager
+  within 1 business day of
+  deadline miss
 end note
 
 @enduml
@@ -692,23 +286,35 @@ end note
 
 ## Resolutions and Actions
 
-| Action | Owner | Finding | Status |
-|---|---|---|---|
-| Fix API URL mismatch (C2-CRIT-1) | Implementer | C2-CRIT-1 | OPEN — persisting from Cycle 1, requires rework |
-| Fix Edit form binding (C2-MAJ-1) | Implementer | C2-MAJ-1 | OPEN — persisting from Cycle 1, requires rework |
-| Fix anti-forgery on AJAX POST (C2-MAJ-2) | Implementer | C2-MAJ-2 | OPEN — persisting from Cycle 1, requires rework |
-| Use token sub claim for employeeId (C2-MIN-2) | Implementer | C2-MIN-2 | OPEN — persisting from Cycle 1, requires rework |
-| Delete UnitTest1.cs (C2-MIN-3) | Implementer | C2-MIN-3 | OPEN — persisting from Cycle 1, requires rework |
-| Fix CSV header (C2-MIN-4) | Implementer | C2-MIN-4 | OPEN — persisting from Cycle 1, requires rework |
-| Document LDAP stub as DEFERRED (C2-MIN-1) | Implementer | C2-MIN-1 | OPEN — documentation only, persisting from Cycle 1 |
-| Verify Design Model INT-003 contract (F1) | Designer | F1 (Design Model) | OPEN — verification needed when PR #21 merges |
-| Add mid-iteration progress checkpoint (MR-F4) | Project Manager | MR-F4 (Iteration Plan) | OPEN — management finding, requires plan update |
-| Activate R008 contingency for C3 (MR-F4) | Project Manager | MR-F4 (Risk List) | OPEN — management finding, requires risk update |
-| Merge PR #19 after fixes | Integrator | C2-CRIT-1, C2-MAJ-1..2, C2-MIN-1..4 | PENDING — blocked on Implementer rework |
-| Re-review PR #19 after fixes | Code Reviewer | All C2 findings | PENDING — next cycle |
-| Close stale PR #8 | Integrator | — | RECOMMENDED — C1 PR targeting old branch |
-| Close premature PR #21 | Integrator | — | REQUEST_CHANGES submitted — re-open after PR #19 merges |
-| Synchronize PRs, main, and issues | Integrator / Implementer | Stakeholder directive | CRITICAL — stakeholder identified this as root cause of zero progress |
+| Action | Owner | Finding | Status | Priority |
+|---|---|---|---|---|
+| Fix API URL mismatch (C2-CRIT-1) | Implementer | C2-CRIT-1 | OPEN — persisting from Cycle 1, requires rework | **CRITICAL** |
+| Fix Edit form binding (C2-MAJ-1) | Implementer | C2-MAJ-1 | OPEN — persisting from Cycle 1, requires rework | HIGH |
+| Fix anti-forgery on AJAX POST (C2-MAJ-2) | Implementer | C2-MAJ-2 | OPEN — persisting from Cycle 1, requires rework | HIGH |
+| Use token sub claim for employeeId (C2-MIN-2) | Implementer | C2-MIN-2 | OPEN — persisting from Cycle 1, requires rework | MEDIUM |
+| Delete UnitTest1.cs (C2-MIN-3) | Implementer | C2-MIN-3 | OPEN — persisting from Cycle 1, requires rework | MEDIUM |
+| Fix CSV header (C2-MIN-4) | Implementer | C2-MIN-4 | OPEN — persisting from Cycle 1, requires rework | MEDIUM |
+| Document LDAP stub as DEFERRED (C2-MIN-1) | Implementer | C2-MIN-1 | OPEN — documentation only, persisting from Cycle 1 | LOW |
+| Verify Design Model INT-003 contract (F1) | Designer | F1 (Design Model) | OPEN — verification needed when PR #21 merges | LOW |
+| Add mid-iteration progress checkpoint (IP-F4) | Project Manager | F4 (Iteration Plan) | OPEN — management finding, requires plan update | HIGH |
+| Activate R008 contingency for C3 (RL-F2) | Project Manager | F2 (Risk List) | OPEN — management finding, requires risk update | HIGH |
+| Merge PR #19 after fixes | Integrator | C2-CRIT-1, C2-MAJ-1..2, C2-MIN-1..4 | PENDING — blocked on Implementer rework | **CRITICAL** |
+| Re-review PR #19 after fixes | Code Reviewer | All C2 findings | PENDING — next cycle | HIGH |
+| Close stale PR #8 | Integrator | — | RECOMMENDED — C1 PR targeting old branch | MEDIUM |
+| Close premature PR #21 | Integrator | — | REQUEST_CHANGES submitted — re-open after PR #19 merges | MEDIUM |
+| Synchronize PRs, main, and issues | Integrator / Implementer | Stakeholder directive | **CRITICAL — stakeholder identified this as root cause of zero progress** | **CRITICAL** |
+
+### Escalation Notice
+
+**ESCALATED to Project Manager and Stakeholder (STK-001):**
+
+1. **PR Synchronization Failure (CRITICAL):** The stakeholder identified that fixes may already exist in the PRs but the integration workflow has broken down. Nobody synchronized PRs, main, and issues. An entire iteration (C2 Cycle 2) was consumed with zero forward progress. This is a process failure, not a technical defect.
+
+2. **R003 OIDC Registration (ESCALATED):** STK-003 (Infrastructure team) has not confirmed OIDC client registration. 8 of 30 tests remain blocked. This has persisted across two cycles. STK-001 (sponsor) must intervene to unblock STK-003.
+
+3. **R008 Rework Cycle (CONTINGENCY FIRED):** C3 iteration is now required. C2 Cycle 2 produced zero progress. Stakeholder sanction refused twice. The contingency must be formally activated in the Risk List.
+
+4. **Zero Rework Pushed (PROCESS FAILURE):** 0 of 7 C2 findings have been resolved since C2 Cycle 1. The Implementer has not pushed rework commits. This went undetected until end-of-iteration review because no mid-iteration checkpoint existed.
 
 ## Disposition
 
@@ -743,16 +349,17 @@ STK-001: "No" to IOC advancement. "It's mind-blowing that you've spent an iterat
 
 ```plantuml
 @startuml
-title C2 Cycle 2 — Test Coverage Matrix: Use Cases × Test Cases
+title C2 Cycle 2 — Test Coverage Matrix: Use Cases x Test Cases
 
+skinparam classBorderColor #2C3E50
+skinparam classBackgroundColor #ECF0F1
 skinparam classAttributeIconSize 0
-skinparam monochrome false
 
 object "UC-001 Clock In/Out" as UC1 {
-  TC-001: RecordClocking success ✓
-  TC-002: Duplicate key dedup ✓
-  TC-003: Empty employeeId ✓
-  TC-004: Empty idempotency key ✓
+  TC-001: RecordClocking success PASS
+  TC-002: Duplicate key dedup PASS
+  TC-003: Empty employeeId PASS
+  TC-004: Empty idempotency key PASS
   TC-031: API routing 404 (FAIL)
   TC-033: Antiforgery token (FAIL)
   TC-034: Identity spoofing (FAIL)
@@ -760,62 +367,62 @@ object "UC-001 Clock In/Out" as UC1 {
 }
 
 object "UC-002 Clocking History" as UC2 {
-  TC-005: GetHistory returns records ✓
-  TC-006: Empty history ✓
+  TC-005: GetHistory returns records PASS
+  TC-006: Empty history PASS
   Coverage: 2/2 PASS
 }
 
 object "UC-003 All Clockings" as UC3 {
-  TC-007: GetAllClockings ✓
+  TC-007: GetAllClockings PASS
   Coverage: 1/1 PASS
 }
 
 object "UC-004 CSV Export" as UC4 {
-  TC-008: CSV with data ✓
-  TC-009: CSV header only ✓
+  TC-008: CSV with data PASS
+  TC-009: CSV header only PASS
   TC-035: CSV header mismatch (FAIL)
   Coverage: 2/3 PASS
 }
 
 object "UC-005 Publish News" as UC5 {
-  TC-010: Publish valid ✓
-  TC-011: Audit record created ✓
-  TC-012: IsFeatured flag ✓
+  TC-010: Publish valid PASS
+  TC-011: Audit record created PASS
+  TC-012: IsFeatured flag PASS
   Coverage: 3/3 PASS
 }
 
 object "UC-006 Edit News" as UC6 {
-  TC-013: Edit existing ✓
-  TC-014: Edit audit ✓
+  TC-013: Edit existing PASS
+  TC-014: Edit audit PASS
   TC-032: Form binding mismatch (FAIL)
   Coverage: 2/3 PASS — BLOCKED
 }
 
 object "UC-007 Unpublish" as UC7 {
-  TC-015: Unpublish hides ✓
-  TC-016: Unpublish audit ✓
-  TC-017: No hard delete ✓
+  TC-015: Unpublish hides PASS
+  TC-016: Unpublish audit PASS
+  TC-017: No hard delete PASS
   Coverage: 3/3 PASS
 }
 
 object "UC-008 Read/Filter News" as UC8 {
-  TC-018: Published only ✓
-  TC-019: Category filter ✓
-  TC-020: Featured banner ✓
+  TC-018: Published only PASS
+  TC-019: Category filter PASS
+  TC-020: Featured banner PASS
   Coverage: 3/3 PASS
 }
 
 object "UC-009 Directory Search" as UC9 {
-  TC-021: Search returns results ✓
-  TC-022: R001 fallback N/A ✓
-  TC-023: Empty query ✓
+  TC-021: Search returns results PASS
+  TC-022: R001 fallback N/A PASS
+  TC-023: Empty query PASS
   Coverage: 3/3 PASS
 }
 
 object "UC-010 Worker Category" as UC10 {
-  TC-024: Assign category ✓
-  TC-025: Update existing ✓
-  TC-026: Audit trail ✓
+  TC-024: Assign category PASS
+  TC-025: Update existing PASS
+  TC-026: Audit trail PASS
   Coverage: 3/3 PASS
 }
 
@@ -869,6 +476,92 @@ The stakeholder identified a critical process failure: the fixes may already exi
 6. Project Manager activates R008 contingency — C3 iteration formally declared
 7. R003: Escalate OIDC registration to STK-001 (sponsor) — STK-003 has not responded
 
+### Review Process and IOC Milestone Consolidation
+
+```plantuml
+@startuml
+title Construction C2 Cycle 3 — Review Process and IOC Milestone Consolidation
+
+skinparam activityBorderColor #2C3E50
+skinparam activityBackgroundColor #ECF0F1
+
+start
+
+:Load C2 Cycle 2 Review Record baseline;
+:Read artifact findings from all 15 artifacts;
+note right
+  0 Critical, 0 Major, 4 Minor open
+  in artifact findings system
+end note
+
+:Consolidate cross-lens findings;
+note right
+  Technical/Reviewer: EXECUTED
+  Business/BusinessReviewer: EXECUTED
+  Management/ManagementReviewer: EXECUTED
+end note
+
+:Reconcile code-level findings
+(C2-CRIT-1, C2-MAJ-1, C2-MAJ-2);
+note right
+  These persist from C2 Cycle 1
+  code review of PR #19
+end note
+
+:Update Finding Tracker
+with all open items;
+
+:Compute effectiveness metrics
+for C2 Cycle 3;
+
+if (Open Critical findings?) then (yes)
+  :VERDICT: Critical Escalation;
+  :Record requiresIteration: true;
+  stop
+elseif (Stakeholder sanction REFUSED?) then (yes)
+  :VERDICT: Stakeholder Contribution;
+  note right
+    Stakeholder already answered:
+    "No" to IOC advancement
+    "PR synchronization failure"
+  end note
+  :Fold stakeholder input into Review Record;
+  :Record requiresIteration: true;
+  stop
+else (no - sanction GRANTED)
+  if (All planned UCs complete?\n0 open Critical/Major?) then (yes)
+    :VERDICT: Scope Complete;
+    :Record requiresIteration: false;
+    stop
+  else (no)
+    :VERDICT: Stakeholder Contribution;
+    :Record requiresIteration: true;
+    stop
+  endif
+endif
+
+@enduml
+```
+
+### Review Effectiveness Metrics
+
+| Metric | C1 | C2 Cycle 1 | C2 Cycle 2 | Trend |
+|---|---|---|---|---|
+| Reviews Completed | 1 (Iteration Acceptance) | 1 (PR Re-Review + Acceptance) | 1 (PR Re-Review + IOC Milestone) | Stable cadence |
+| Artifacts Reviewed | 15 | 15 | 15 | Full coverage maintained |
+| Findings Raised | 4 (1 Major, 3 Minor) | 7 (1 Critical, 2 Major, 4 Minor) | 4 Minor (new) + 7 persisting | Worsening — defects not closing |
+| Findings Resolved | 4 of 4 (100%) | 0 of 7 (0%) | 0 of 7 (0%) | **CRITICAL TREND — zero resolution rate** |
+| Defect Density (per artifact) | 0.27 | 0.47 | 0.27 (new) + 0.47 (persisting) | Rising then stagnant |
+| Review Coverage | 100% (15/15) | 100% (15/15) | 100% (15/15) | Maintained |
+| Defect Removal Efficiency | 100% (all found in review) | 100% (all found in review) | N/A (no new defects to remove) | Reviews effective at finding, not at driving closure |
+| Rework Effort | 1 cycle (C1→C2) | 1 cycle (C2C1→C2C2) | 1 cycle (C2C2→C2C3) | **Worsening — 3rd rework cycle with zero output** |
+
+**Metrics Interpretation:**
+- **Review coverage** remains at 100% — all artifacts are being reviewed each cycle. The review process is finding defects.
+- **Defect removal efficiency** is high — reviews are catching defects before they reach production. But this is meaningless when **zero defects are being fixed** after detection.
+- **The critical failure is in the rework loop, not the review process.** Reviews identify defects correctly; the Implementer is not acting on the findings. This is a process execution failure, not a review quality failure.
+- **Rework effort** has now consumed 3 cycles (C1→C2C1→C2C2→C2C3) with zero resolution. The stakeholder's characterization ("mind-blowing", "Terrible") is accurate — the review process works, but the development process downstream of it has stalled.
+
 ### Consolidated Verdict
 
 **IOC NOT ACHIEVED — auto-iterate to Construction C2 Cycle 3 (rework)**
@@ -876,7 +569,7 @@ The stakeholder identified a critical process failure: the fixes may already exi
 Rationale:
 1. 1 open Critical finding (C2-CRIT-1) makes UC-001 non-functional — blocks AC-001
 2. 2 open Major findings (C2-MAJ-1, C2-MAJ-2) make UC-006 non-functional and UC-001 POST rejected
-3. 4 open Minor findings remain unaddressed
+3. 4 open Minor code findings + 4 open Minor artifact findings remain unaddressed
 4. Stakeholder sanction explicitly REFUSED — 2nd consecutive refusal
 5. Zero C2 Cycle 1 findings resolved since last review — no rework has been pushed
 6. Zero of 10 planned work items executed in C2 Cycle 2 — iteration produced no forward progress
@@ -898,8 +591,8 @@ Rationale:
 | C2-MIN-4 | FR-004, CR-012 | Derives | ClockingService.cs (ExportCsv) |
 | F1 (Design Model) | INT-003, MINOR-1 (C1) | Derives | IDirectoryService.cs, DirectoryService.cs |
 | F2 (Test Case) | C2-MIN-3, CR-014 | Derives | UnitTest1.cs |
-| MR-F4 (Iteration Plan) | C2 Cycle 2 zero progress, stakeholder feedback | Derives | Iteration Plan mid-iteration checkpoint |
-| MR-F4 (Risk List) | R008 contingency trigger, C2 Cycle 2 zero progress | Derives | Risk List R008 ESCALATED, C3 activation |
+| F4 (Iteration Plan) | C2 Cycle 2 zero progress, stakeholder feedback | Derives | Iteration Plan mid-iteration checkpoint |
+| F2 (Risk List) | R008 contingency trigger, C2 Cycle 2 zero progress | Derives | Risk List R008 ESCALATED, C3 activation |
 | MAJOR-1 (C1, RESOLVED) | FR-008, CR-010 | Resolved by | PR #19, PR #20 |
 | MINOR-1 (C1, RESOLVED) | FR-009, CR-015 | Resolved by | PR #19, PR #20 |
 | MINOR-3 (C1, RESOLVED) | AC-005, CR-011 | Resolved by | PR #19, PR #20 |
@@ -920,3 +613,4 @@ Rationale:
 | PR #8 | C1 presentation | Realizes | iteration/C1 (stale) |
 | Stakeholder sanction (REFUSED) | STK-001 answer (IOC C2 Cycle 2) | Refines | IOC milestone decision (NOT ACHIEVED — auto-iterate to C2 Cycle 3) |
 | Stakeholder feedback (process) | STK-001 directive on PR synchronization | Derives | Integrator work item, Iteration Plan checkpoint |
+| Stakeholder finding (folded) | STK-001 PR synchronization directive | Derives | Implementer + Integrator work items for C2 Cycle 3 |
