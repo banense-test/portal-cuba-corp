@@ -280,6 +280,7 @@ All tests exercise real assertions on the code changes — no decoy `Assert.NotN
 | **Condition: NFR-001/NFR-002 are Transition Iter 1 exit criterion with measured values** | STK-001 C4 sanction response | RECORDED — load testing must execute in Transition Iter 1; report measured values against thresholds (page load <3s, clock response <1s) | Verified against AC-001, AC-003, NFR-001, NFR-002 — these are declared acceptance criteria |
 | **Condition: Real OIDC integration is named Transition work item with owner; 8 tests stay covered-by-mock** | STK-001 C4 sanction response | RECORDED — Transition work item; 8 tests stay covered-by-mock until real client | Verified against R003, STK-003, CON-004 |
 | **Condition: Mock-auth has expiry date** | STK-001 C4 sanction response | RECORDED — expiry date must be documented in Transition Iteration Plan | Verified — cheap option becomes permanent unless expiry is named |
+| **Stakeholder C4 verdict question response: "Nothing new that I haven't already mentioned to the Management Reviewer"** | STK-001 C4 verdict question response | RECORDED — stakeholder confirms no additional findings beyond what was already provided to the Management Reviewer (sanction GRANTED, 3 conditions, issue count correction, mock-auth decision) | No new findings to fold; stakeholder's prior C4 input is complete and final |
 
 ### Open Action Items
 
