@@ -4,10 +4,10 @@
 | Phase | Construction |
 | Status | Draft |
 | Milestone Target | End-of-Construction |
-| Iteration | 2 (Cycle 1) |
-| Date | 2026-08-28 |
-| Prior Phase | Elaboration (LCA achieved, 0 open Critical/Major findings, stakeholder sanction GRANTED) |
-| Evolution | Construction C1: Designer class diagrams added (Portal.Services, Portal.Infrastructure, Portal.Domain) with full method signatures; NewsItem state machine added; subsystem interface dependency diagram added; testability entry points defined. UI Designer and Database Designer sections preserved. Construction C2: All design contracts aligned with implementation source code — INT-002 method names (Publish/Edit/Unpublish/GetById/ListAll), INT-001 GetAllClockings, INT-005 entityId type Guid→string, NewsStatus Draft state removed, NewsItem CreatedBy→AuthorId, AuditAction enum values aligned, isFeatured retained as correct design (CR-010), ExecuteInTransactionAsync retained as correct design (M2). All 10 sequence diagrams updated with error paths and implementation-aligned method names. Traceability extended with implementation source file mappings. |
+| Iteration | 3 (Cycle 1) |
+| Date | 2026-08-29 |
+| Prior Phase | Construction C2 Cycle 1 (DM-F1 opened — INT-003 contract mismatch) |
+| Evolution | Construction C1: Designer class diagrams added (Portal.Services, Portal.Infrastructure, Portal.Domain) with full method signatures; NewsItem state machine added; subsystem interface dependency diagram added; testability entry points defined. UI Designer and Database Designer sections preserved. Construction C2: All design contracts aligned with implementation source code — INT-002 method names (Publish/Edit/Unpublish/GetById/ListAll), INT-001 GetAllClockings, INT-005 entityId type Guid→string, NewsStatus Draft state removed, NewsItem CreatedBy→AuthorId, AuditAction enum values aligned, isFeatured retained as correct design (CR-010), ExecuteInTransactionAsync retained as correct design (M2). All 10 sequence diagrams updated with error paths and implementation-aligned method names. Traceability extended with implementation source file mappings. Construction C3: DM-F1 resolved — INT-003 (IDirectoryService) contract updated to include optional `office` parameter matching iteration/C2 implementation `Search(string query, string? office = null)`. ACL-005 analysis class, SEQ-009 sequence diagram, and Design Packages class diagram all updated to reflect the office filter. |
 | Contributors | Designer (Analysis Classes, Use-Case Realizations, Design Classes, Interface Contracts, State Machines, Testability); User-Interface Designer (UI View/Controller Classes, UI Patterns, Boundary Classes and Navigation Map); Database Designer (Persistent Data Classes) |
 ## Design Overview
 | Field | Value |
