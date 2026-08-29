@@ -13,9 +13,14 @@
 | Build ID | main — CI run 33259873386 (2026-08-29 15:19:19Z) |
 | Test Environment | .NET 10 test project (xUnit); InMemoryDb; MockLdapGateway; OIDC mock tokens; 35 TCs no external deps; 8 TCs require OIDC (R003 — FORMALLY ACCEPTED RISK). Performance tests (TC-011, TC-012) specified in CR #37 — pending Implementer materialization and CI execution. |
 ## Test Scope
-### All Use Cases Under Test — Transition I1 Final Quality Assessment
+### All Use Cases Under Test — Transition I2 Acceptance Testing
 
 This Test Case artifact covers **all 10 use-case scenarios** at Transition depth. The Transition iteration focuses on **acceptance testing** against the 5 declared acceptance criteria (AC-001 through AC-005) and **regression verification** of all 35 PASS TCs from Construction C4.
+
+**Transition I2 Focus:** Closing the 3 binding conditions set by the stakeholder at the PR gate:
+1. **NFR-001/NFR-002 Load Testing** — Performance test code specified in CR #37 for Implementer to materialize. Service-layer timing tests using in-memory test doubles, accepted by stakeholder as sufficient ("depends on nobody outside the team and needs no production infrastructure").
+2. **R003/OIDC — Formally Accepted Risk** — Converted from UNVERIFIED to FORMALLY ACCEPTED. Residual: 8 TCs (TC-013, TC-014, TC-029, TC-030) covered by mock authentication; will only be proven against the real OIDC client at deployment time. STK-003 never responded; Keycloak work is explicitly out of scope (CON-004).
+3. **Mock-Auth Expiry** — Expiry date: 2026-11-29 (90 days from work order date). Owner: STK-003 (Infrastructure team). Fallback: Deployment Manager. If the mock is still in use past this date, it must be formally re-evaluated as a permanent implementation risk.
 
 | Priority | UC ID | UC Name | TCs | Test Focus | Risk |
 |---|---|---|---|---|---|
@@ -30,200 +35,83 @@ This Test Case artifact covers **all 10 use-case scenarios** at Transition depth
 | 9 | UC-008 | Read and Filter News | TC-017, TC-025 | Category filter, featured banner, sorted by date | — |
 | 10 | UC-010 | Manage Worker Category | TC-018, TC-019, TC-026, TC-043 | AD user id → category, audit trail, C4 transaction atomicity | — |
 
-### Transition I1 Final Test Summary
+### Transition I2 Test Summary
 
 | Metric | Value |
 |---|---|
-| Total Test Cases | 43 (TC-001..TC-043) |
+| Total Test Cases | 43 (TC-001..TC-043) + 2 performance test specs (CR #37) |
 | PASS | 35 |
-| BLOCKED | 8 (R003 — OIDC, stakeholder ACCEPTED) |
+| BLOCKED — R003 Formally Accepted | 8 (TC-013, TC-014, TC-029, TC-030 — mock auth; proven at deployment) |
+| BLOCKED — NFR Performance (CR #37 pending) | 2 (TC-011, TC-012 — test code specified, awaiting Implementer) |
 | FAIL | 0 |
-| Regression Status | CLEAN — 35/35 PASS TCs re-verified against build 33256627567 |
-| CI Build | GREEN — main, run 33256627567 (2026-08-29 14:05:31Z) |
-| Open Defect Issues | 6 (1 blocker ACCEPTED, 5 minor/deferred) |
+| Regression | CLEAN — 35/35 PASS TCs re-verified against build 33259873386 |
+| Open Defect Issues | 5 (all minor/deferred — #12, #15, #17, #18, #34) |
 | Critical/High Unresolved | 0 |
+| CI Status | GREEN — main, run 33259873386 (2026-08-29 15:19:19Z) |
 
-### Final Quality Gate Assessment Flow
+### Binding Condition Closure Status
 
-```plantuml
-@startuml
-title Final Quality Gate Assessment — Transition I1 (2026-08-29)
-
-skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-skinparam activityBorderColor #333333
-skinparam activityBackgroundColor #F5F5F5
-
-start
-
-partition "1. Regression Verification" {
-  :Re-execute 35 PASS TCs\nagainst build 33256627567;
-  if (All 35 PASS?) then (Yes)
-    #LightGreen:Regression: CLEAN;
-  else (No)
-    #LightCoral:Regression: FAIL\nBlock release;
-    stop
-  endif
-}
-
-partition "2. Acceptance Criteria Verdict" {
-  :Evaluate 5 ACs against\nevidence from C1-C4 + Transition I1;
-  if (AC-001 Clock In/Out?) then (PASS)
-    if (AC-002 Publish News?) then (PASS)
-      if (AC-003 Directory Search?) then (PASS - functional\nperf UNVERIFIED)
-        if (AC-004 80% Adoption?) then (PASS - automated\nmanual UAT needed)
-          if (AC-005 Offline?) then (PASS)
-            #LightGreen:All 5 ACs: PASS or\nPASS-with-conditions;
-          else (FAIL)
-            #LightCoral:AC-005 FAIL - Block release;
-            stop
-          endif
-        else (FAIL)
-          #LightCoral:AC-004 FAIL - Block release;
-          stop
-        endif
-      else (FAIL)
-        #LightCoral:AC-003 FAIL - Block release;
-        stop
-      endif
-    else (FAIL)
-      #LightCoral:AC-002 FAIL - Block release;
-      stop
-    endif
-  else (FAIL)
-    #LightCoral:AC-001 FAIL - Block release;
-    stop
-  endif
-}
-
-partition "3. NFR Assessment" {
-  if (NFR-001 Page Load <3s?) then (BLOCKED - no deployment)
-    if (NFR-002 Clock Response <1s?) then (BLOCKED - no deployment)
-      #LightYellow:NFR-001/NFR-002:\nBLOCKED - Transition exit\ncriterion unmet;
-    else (PASS)
-      #LightGreen:NFR-002: PASS;
-    endif
-  else (PASS)
-    #LightGreen:NFR-001: PASS;
-  endif
-  if (NFR-003 Availability?) then (PASS - offline retry verified)
-    #LightGreen:NFR-003: PASS;
-  else (FAIL)
-    #LightCoral:NFR-003: FAIL;
-  endif
-  if (NFR-004 Audit Trail?) then (PASS - all audit TCs green)
-    #LightGreen:NFR-004: PASS;
-  else (FAIL)
-    #LightCoral:NFR-004: FAIL;
-  endif
-}
-
-partition "4. Defect Triage" {
-  :Review 6 open defect issues;
-  if (Any Critical/High unresolved?) then (No)
-    if (Blocker #30 R003 OIDC?) then (ACCEPTED by stakeholder)
-      #LightGreen:No Critical/High unresolved\n1 blocker ACCEPTED\n5 minor/deferred;
-    else (Unaccepted)
-      #LightCoral:Unaccepted blocker -\nBlock release;
-      stop
-    endif
-  else (Yes)
-    #LightCoral:Critical/High unresolved -\nBlock release;
-    stop
-  endif
-}
-
-partition "5. Production Readiness Verdict" {
-  :Aggregate all quality dimensions;
-  if (All ACs PASS + NFR-003/004 PASS\n+ No unaccepted blockers?) then (Yes)
-    if (NFR-001/NFR-002 deployment\navailable?) then (No)
-      #LightYellow:CONDITIONAL RELEASE\nREADY - pending NFR load\ntesting in production env;
-    else (Yes)
-      #LightGreen:RELEASE READY;
-    endif
-  else (No)
-    #LightCoral:NOT READY - Block release;
-    stop
-  endif
-}
-
-stop
-@enduml
-```
-
-### Acceptance Criteria — Final Verdict
-
-| AC ID | Description | Verdict | Evidence | Conditions |
-|---|---|---|---|---|
-| AC-001 | Employee can clock in/out without HR/dev help | **PASS** | TC-001..TC-005, TC-021, TC-022, TC-031, TC-033, TC-034, TC-036, TC-038, TC-039 — all PASS. UI shows Clock In/Out button based on ClockStatus. Confirmation displayed. Idempotency prevents double-clocking. | None |
-| AC-002 | HR can publish news without technical assistance | **PASS** | TC-008, TC-009, TC-010, TC-023, TC-024, TC-027, TC-032, TC-037, TC-040, TC-041, TC-042 — all PASS. Publish, edit, unpublish flows verified. Audit trail (author + timestamp) confirmed on all operations. | None |
-| AC-003 | Employee finds colleague's phone/email in <10 seconds | **PASS (functional)** | TC-006, TC-007, TC-020, TC-028 — all PASS. Search by name, department, office verified. Corporate-data-only filter (CON-012) confirmed. LDAP attribute gaps handled (R001). | **Performance UNVERIFIED** — no deployment environment to measure real LDAP latency. TD-013 (200 entries) available but cannot measure without real AD/LDAP. |
-| AC-004 | 80% of employees complete ≥1 clocking with no prior training | **PASS (automated)** | TC-001, TC-002 — PASS. Clock in/out flow is intuitive (single button, confirmation). UI conforms to mandatory design (CON-011). | **Manual UAT required** — automated tests verify the flow works; real-world adoption measurement requires post-launch observation of 160/200 employees. |
-| AC-005 | System works temporarily offline; data syncs when network returns | **PASS** | TC-003, TC-004, TC-021 — PASS. Service-layer retry logic + client-side JavaScript (clocking-retry.js) verified. Offline queue persists clocking, syncs on reconnect. | None |
-
-### NFR Assessment — Final Verdict
-
-| NFR ID | Description | Verdict | Evidence | Blocking? |
-|---|---|---|---|---|
-| NFR-001 | Page load <3s on corporate network | **BLOCKED** | TC-011 designed but cannot execute — no production-equivalent deployment. InMemoryDb + mock LDAP do not represent real network latency. | **YES — Transition exit criterion** |
-| NFR-002 | Clock in/out response <1s | **BLOCKED** | TC-012 designed but cannot execute — no production-equivalent deployment. Service-layer timing in test env is sub-millisecond but not representative. | **YES — Transition exit criterion** |
-| NFR-003 | Availability 7:00–19:00 Mon–Fri, fault tolerance | **PASS** | TC-003, TC-004, TC-021 — offline retry verified at service + JS layer. Fault tolerance within corporate network confirmed by design (CON-006, CON-007). | No |
-| NFR-004 | Mandatory audit trail (publish/edit/unpublish + worker category) | **PASS** | TC-008, TC-009, TC-010, TC-018, TC-023, TC-024, TC-027, TC-040, TC-041 — all audit TCs PASS. Author + timestamp recorded on every news operation. Worker category changes audited. No hard delete (CON-013) preserves records. | No |
-
-### Defect Triage — Final Assessment
-
-| Issue | Severity | Status | Impact | Disposition |
-|---|---|---|---|---|
-| #30 (R003 OIDC) | Blocker | OPEN — stakeholder ACCEPTED | 8 TCs BLOCKED (TC-013, TC-014, TC-029, TC-030 + 4 others). Real OIDC integration untested. STK-003 (Infrastructure team) has not confirmed OIDC client registration after 4 escalation cycles. | **ACCEPTED RISK** — stakeholder sanctioned with binding condition: OIDC work item named with owner for Transition. Mock-auth expiry documented. |
-| #12 (CSV export format) | Minor | RESOLVED in C4 | CSV header format fixed in ClockingServiceTests | CLOSED |
-| #13 (Directory search no-match) | Minor | RESOLVED in C4 | Search_NoMatchingEntries test fixed in DirectoryServiceTests | CLOSED |
-| #14 (UnitTest1 placeholder) | Minor | RESOLVED in C4 | Placeholder test removed | CLOSED |
-| #15 (Branch naming) | Minor | Deferred | CI/CD naming convention — non-functional | Deferred — non-blocking |
-| #17 (Dead code DTO) | Minor | Deferred | RecordClockingRequest DTO cleanup pending | Deferred — non-blocking |
-| #18 (Test idempotency) | Minor | Deferred | Test expectation alignment pending | Deferred — non-blocking |
-
-**Defect Pattern Analysis:**
-
-1. **OIDC dependency (R003)** — Root cause: external infrastructure dependency (STK-003). Pattern: all OIDC-gated tests are blocked by the same root cause. Severity: Blocker. Priority: High. Triggering conditions: any test requiring real OIDC token validation. Mitigation: stakeholder ACCEPTED with binding conditions (named work item, mock-auth expiry date). This is the single largest quality risk at release.
-
-2. **Test infrastructure gaps** — Root cause: no production-equivalent deployment environment. Pattern: NFR-001/NFR-002 and TI-045..TI-050 all blocked by same root cause. Severity: Major (blocks Transition exit). Priority: High. Triggering conditions: any performance/concurrency/deployment-dependent test. Mitigation: deployment environment must be provisioned before Transition can close.
-
-3. **Minor code quality issues** — Root cause: iterative development leaving small cleanup items. Pattern: #15, #17, #18 are non-functional cleanup items. Severity: Minor. Priority: Low. Triggering conditions: code review surface. Mitigation: defer to post-release maintenance.
-
-### Quality Lessons Learned
-
-| Lesson | Source | Applicability |
+| Condition | Status | Evidence |
 |---|---|---|
-| External infrastructure dependencies (OIDC, LDAP) are the highest-risk testing blockers — escalate early and often | R003, R001 across C1–C4 + Transition I1 | Future projects with external system dependencies |
-| InMemoryDb + mock services are sufficient for functional verification but CANNOT substitute for deployment-environment NFR testing | NFR-001/NFR-002 BLOCKED across all iterations | Any project with performance NFRs |
-| Stakeholder-accepted risks must be documented with explicit binding conditions and expiry dates | R003 stakeholder sanction with 3 binding conditions | All projects with accepted risks |
-| Iterative test evolution (20→30→35→39→43 TCs) effectively grew coverage without rework | TC evolution across Elaboration→C4 | All RUP iterative projects |
-| Regression vigilance across iterations caught zero regressions — the incremental approach preserved quality at each step | CLEAN regression across C1–C4 + Transition I1 | All iterative projects |
-| Audit trail testing must verify both creation and preservation (no hard delete) — not just creation | CON-013, NFR-004, TC-009, TC-027 | Any project with audit requirements |
-| Corporate-data-only filtering must be tested with data that INCLUDES private fields to verify filtering | CON-012, TC-007, TD-009 | Any project with data privacy constraints |
+| NFR-001/NFR-002 Load Testing | **IN PROGRESS** — CR #37 filed with full test specification | Performance test code specified for Implementer; service-layer timing using in-memory doubles; stakeholder accepted test-env measurements |
+| R003/OIDC Accepted Risk | **CLOSED** — Formally accepted with residual stated | 8 TCs covered by mock; proven at deployment time against real OIDC client; STK-003 non-responsive; Keycloak out of scope (CON-004) |
+| Mock-Auth Expiry | **CLOSED** — Date and owner documented | Expiry: 2026-11-29; Owner: STK-003; Fallback: Deployment Manager |
 
-### Release Recommendation
+### Acceptance Criteria Verdict — Transition I2
 
-**VERDICT: CONDITIONAL RELEASE READY**
+| AC | Description | Verdict | Evidence |
+|---|---|---|---|
+| AC-001 | Employee clocks in/out without HR help | **PASS** | TC-001, TC-002 — automated PASS; UI shows Clock In/Out button based on status |
+| AC-002 | HR publishes news without technical assistance | **PASS** | TC-008, TC-009, TC-010 — automated PASS; Publish/Edit/Unpublish flows verified |
+| AC-003 | Find colleague's phone/email < 10 seconds | **PASS** (functional) | TC-006, TC-007 — automated PASS; service-layer latency measured at deployment |
+| AC-004 | 80% employees complete ≥1 clocking, no training | **PASS** (automated) | TC-001, TC-002 — flow verified; manual UAT required for adoption metric |
+| AC-005 | System works temporarily offline (5-min network drop) | **PASS** | TC-003, TC-004, TC-021 — service-layer idempotency + client-side JS retry verified |
 
-The system has demonstrated functional correctness across all 10 use cases and all 5 acceptance criteria. The audit trail (NFR-004) and fault tolerance (NFR-003) are fully verified. Regression is clean across 5 iterations of testing. No Critical or High-severity defects remain unresolved. The single blocker (R003 OIDC) is explicitly accepted by the stakeholder with binding conditions.
-
-**Conditions for full release:**
-
-1. **NFR-001/NFR-002 load testing** — Must be executed in a production-equivalent deployment environment (Windows Server, PostgreSQL, real LDAP). Page load <3s and clock response <1s must be measured and verified. This is the primary Transition exit criterion.
-2. **OIDC integration testing** — The 8 BLOCKED TCs (TC-013, TC-014, TC-029, TC-030 + 4 others) must be executed once STK-003 confirms OIDC client registration. Mock-auth expiry date must be enforced.
-3. **Manual UAT for AC-003 and AC-004** — Real-world directory search latency must be measured against AC-003's <10-second criterion. Real-world adoption (AC-004's 80% target) requires post-launch observation.
-
-**Quality dimensions summary:**
+### Quality Dimensions Summary — Transition I2
 
 | Dimension | Assessment | Confidence |
 |---|---|---|
 | **Functionality** | All 10 UCs verified, 35/35 PASS, 0 FAIL | HIGH — comprehensive coverage |
 | **Reliability** | NFR-003 PASS (offline retry), fault tolerance verified | HIGH for tested scenarios |
-| **Performance** | NFR-001/NFR-002 BLOCKED — no deployment | LOW — cannot assess without production env |
+| **Performance** | NFR-001/NFR-002 — test code specified in CR #37, pending CI execution | MEDIUM — service-layer tests will provide measured values; production latency at deployment |
 | **Usability** | UI conforms to mandatory design (CON-011), intuitive clocking flow | MEDIUM — automated tests pass, manual UAT pending |
+| **Security** | R003 FORMALLY ACCEPTED — 8 TCs covered by mock, proven at deployment | MEDIUM — accepted risk with documented residual |
 
-**NOTE:** The TestManager consumes these finalized Test Cases to author the Test Evaluation Summary (release recommendation). The Test Analyst does NOT upsert the Test Evaluation Summary — that is the TestManager's artifact.
+### Open Defect Issues — Transition I2 Review
+
+| Issue | Severity | Priority | Status | Notes |
+|---|---|---|---|---|
+| #34 | Minor | Low | Deferred | Design Model async method names — documentation only |
+| #18 | Minor | Low | Deferred | Test codifies idempotency collision — test-only, no user impact |
+| #17 | Minor | Medium | Deferred | Dead code DTO field — no runtime impact |
+| #15 | Minor | Medium | Deferred | Naming violation — no functional impact |
+| #12 | Minor | Medium | Deferred | CSV export format — edge case, deferred |
+
+**All 5 open issues are minor severity. No Critical or High defects remain unresolved.**
+
+### Mock-Authentication Expiry Documentation
+
+| Field | Value |
+|---|---|
+| Mock Component | OIDC Mock Token Provider (TD-011, TD-012) |
+| Affected TCs | TC-013, TC-014, TC-029, TC-030 (8 test cases total) |
+| Expiry Date | **2026-11-29** (90 days from work order date 2026-08-29) |
+| Owner | **STK-003** (Infrastructure team — operates Keycloak) |
+| Fallback Owner | **Deployment Manager** — if STK-003 is non-responsive at deployment |
+| Residual Risk | If mock is still in use past expiry, it must be formally re-evaluated as a permanent implementation risk. A mock that unblocks 8 tests and has no expiry becomes the permanent implementation, and nobody notices until authentication has never been tested for real. |
+| Stakeholder Directive | "A date and an owner. A mock that unblocks 8 tests and has no expiry becomes the permanent implementation, and nobody notices until authentication has never been tested for real." |
+
+### R003 — Formally Accepted Risk
+
+| Field | Value |
+|---|---|
+| Risk ID | R003 (OIDC integration — STK-003 non-responsive) |
+| Previous Status | UNVERIFIED / BLOCKED |
+| Current Status | **FORMALLY ACCEPTED RISK** — stakeholder decision |
+| Stakeholder Directive | "Stop carrying it as unverified. STK-003 never responded and Keycloak work is explicitly out of this project's scope, so it will not be verified by us. Convert it into a formally accepted risk, closed as such, with the residual stated." |
+| Residual | 8 test cases (TC-013, TC-014, TC-029, TC-030) are covered by mock authentication and will only be proven against the real OIDC client at deployment time. |
+| Scope Reference | CON-004 — Keycloak is already running and maintained separately; portal is an OIDC client only |
+| Closure Rationale | An accepted risk is a decision; "unverified" is a wound left open. The stakeholder formally accepts that OIDC integration cannot be verified by this team and directs that it be closed as an accepted risk. |
 ## Test Case Catalog
 
 ### TC-001: Clock In — Main Flow (Happy Path)
