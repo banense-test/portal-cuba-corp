@@ -903,8 +903,10 @@ Per the Development Case, the Architectural Proof-of-Concept artifact is trigger
 | Construction C3 Governance — PR #21 architectural review | PR #21, Issue #26 | Realizes | Iteration C2 baseline merge (architectural sign-off — PR closed, Integrator to re-open) |
 | Construction C3 Governance — Stakeholder PR synchronization directive | STK-001 feedback (C2 Cycle 2) | Derives | Integrator work item (merge PR #19 + re-open PR #21) |
 | Construction C4 Governance — Issue #31 resolution | Issue #31, PR #29 | Realizes | PR #29 closed (architectural sign-off confirmed, issue closed) |
-| Construction C4 Governance — C4-1 Edit isFeatured gap | INT-002, CR-010, FR-006 | DependsOn | Implementer (add isFeatured to Edit + UpdateNewsItem) |
-| Construction C4 Governance — C4-2 Transaction wrapping gap | INT-007, NFR-004, COMP-003, COMP-008 | DependsOn | Implementer (wrap business op + audit in ExecuteInTransactionAsync) |
+| Construction C4 Governance — C4-1 Edit isFeatured RESOLVED | INT-002, CR-010, FR-006 | Realizes | PR #33 (EditAsync includes isFeatured — implementation matches design contract) |
+| Construction C4 Governance — C4-2 Transaction wrapping RESOLVED | INT-007, NFR-004, COMP-003, COMP-008 | Realizes | PR #33 (async + transaction wrapping per INT-007 — implementation matches design contract) |
 | Construction C4 Governance — C4-3 ExecuteInTransactionAsync confirmed | INT-007, M2 | Derives | PersistenceGateway.cs — IMPLEMENTED |
 | Construction C4 Governance — Layer boundary verification | ADR-001, COMP-001..COMP-008 | Refines | Quality (no architectural erosion detected) |
 | Construction C4 Governance — PR #29 architectural sign-off | PR #29, Issue #31 | Realizes | Iteration C3 baseline merge (architectural sign-off — PR closed) |
+| Construction C4 Governance — PR #33 architectural sign-off | PR #33, iteration/C4 → main | Realizes | Iteration C4 baseline merge (architectural sign-off — APPROVED) |
+| Construction C4 Governance — Async migration conformance | INT-002, INT-004, Process View | Refines | Implementation View (sync → Task<T> across Application layer, consistent with Process View) |
