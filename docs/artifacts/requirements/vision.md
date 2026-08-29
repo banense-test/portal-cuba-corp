@@ -84,24 +84,25 @@ Cuba Corp (200 employees, 3 offices) manages three core HR processes with fragme
 - Hard delete of news items
 
 ## Features
+| Requirement ID | Feature | Source | MoSCoW | Volatility | Success Metric | Delivery Status |
+|---|---|---|---|---|---|---|
+| REQ-001 | Clock In/Out with confirmation | FR-001 | Must | Low | AC-001, AC-004, AC-005 | ✅ Delivered — offline retry (CR-011), antiforgery (CR-023), server-side identity (CR-024) |
+| REQ-002 | Personal clocking history | FR-002 | Must | Low | Employee self-service | ✅ Delivered |
+| REQ-003 | HR clocking overview | FR-003 | Must | Low | BG-001 (50% HR time reduction) | ✅ Delivered |
+| REQ-004 | CSV clocking export | FR-004 | Must | Low | BG-002 (eliminate Excel) | ✅ Delivered — CR #12 (edge cases) deferred |
+| REQ-005 | News publishing with audit | FR-005, NFR-004 | Must | Medium | AC-002 | ✅ Delivered — IsFeatured flag added (CR-010) |
+| REQ-006 | News editing with audit | FR-006, NFR-004 | Must | Medium | AC-002 | ✅ Delivered — IsFeatured flag added (CR-010) |
+| REQ-007 | News unpublish (no delete) | FR-007, CON-013 | Must | Low | Audit trail preserved | ✅ Delivered |
+| REQ-008 | News reading with filter & banners | FR-008 | Must | Medium | BG-003 (80% adoption) | ✅ Delivered |
+| REQ-009 | Employee directory search (AD/LDAP) | FR-009, CON-005 | Must | High | AC-003 (<10s lookup) | ✅ Delivered — R001 (LDAP attr consistency) partially unverified |
+| REQ-010 | Worker category management | FR-010, CON-009 | Must | Medium | HR self-service | ✅ Delivered |
 
-| Requirement ID | Feature | Source | MoSCoW | Volatility | Success Metric |
-|---|---|---|---|---|---|
-| REQ-001 | Clock In/Out with confirmation | FR-001 | Must | Low | AC-001, AC-004, AC-005 |
-| REQ-002 | Personal clocking history | FR-002 | Must | Low | Employee self-service |
-| REQ-003 | HR clocking overview | FR-003 | Must | Low | BG-001 (50% HR time reduction) |
-| REQ-004 | CSV clocking export | FR-004 | Must | Low | BG-002 (eliminate Excel) |
-| REQ-005 | News publishing with audit | FR-005, NFR-004 | Must | Medium | AC-002 |
-| REQ-006 | News editing with audit | FR-006, NFR-004 | Must | Medium | AC-002 |
-| REQ-007 | News unpublish (no delete) | FR-007, CON-013 | Must | Low | Audit trail preserved |
-| REQ-008 | News reading with filter & banners | FR-008 | Must | Medium | BG-003 (80% adoption) |
-| REQ-009 | Employee directory search (AD/LDAP) | FR-009, CON-005 | Must | High | AC-003 (<10s lookup) |
-| REQ-010 | Worker category management | FR-010, CON-009 | Must | Medium | HR self-service |
-
-### System Boundary Diagram
+### Delivered System Boundary Diagram
 
 ```plantuml
 @startuml
+title Portal Cuba Corp — Delivered System Boundary (Transition T1)
+
 left to right direction
 skinparam packageStyle rectangle
 skinparam actorStyle hollow
@@ -111,17 +112,17 @@ actor "HR Administrator" as HR
 actor "Active Directory\n(LDAP)" as AD <<external>>
 actor "Keycloak\n(OIDC)" as KC <<external>>
 
-rectangle "Portal Cuba Corp" {
-  usecase "UC-001\nClock In / Clock Out" as UC001
-  usecase "UC-002\nView Own Clocking\nHistory" as UC002
-  usecase "UC-003\nView All Employee\nClockings" as UC003
-  usecase "UC-004\nExport Monthly\nClocking Report" as UC004
-  usecase "UC-005\nPublish News" as UC005
-  usecase "UC-006\nEdit Published News" as UC006
-  usecase "UC-007\nUnpublish News" as UC007
-  usecase "UC-008\nRead and Filter News" as UC008
-  usecase "UC-009\nSearch Employee\nDirectory" as UC009
-  usecase "UC-010\nManage Worker\nCategory" as UC010
+rectangle "Portal Cuba Corp — Delivered System" {
+  usecase "UC-001\nClock In / Clock Out\n✅ Delivered" as UC001
+  usecase "UC-002\nView Own Clocking\nHistory\n✅ Delivered" as UC002
+  usecase "UC-003\nView All Employee\nClockings\n✅ Delivered" as UC003
+  usecase "UC-004\nExport Monthly\nClocking Report\n✅ Delivered" as UC004
+  usecase "UC-005\nPublish News\n✅ Delivered" as UC005
+  usecase "UC-006\nEdit Published News\n✅ Delivered" as UC006
+  usecase "UC-007\nUnpublish News\n✅ Delivered" as UC007
+  usecase "UC-008\nRead and Filter News\n✅ Delivered" as UC008
+  usecase "UC-009\nSearch Employee\nDirectory\n✅ Delivered" as UC009
+  usecase "UC-010\nManage Worker\nCategory\n✅ Delivered" as UC010
 }
 
 EMP --> UC001
@@ -143,17 +144,53 @@ note right of KC
   OIDC authentication & authorization
   Cross-cutting mechanism — not a UC
   See Supplementary Specification
+  ⚠ Real OIDC verification pending
+  (binding condition #2)
 end note
 
-note bottom of UC007
-  Audit trail (NFR-004):
-  UC-005, UC-006, UC-007, UC-010
-  record author + timestamp
+note bottom of UC004
+  CR #12 (CSV edge cases)
+  deferred for future release
+end note
+
+note bottom of UC009
+  R001: LDAP attribute
+  consistency across 3 offices
+  partially unverified
 end note
 
 @enduml
 ```
 
+### Closure Summary — Delivered Product
+
+All 10 declared features (FR-001 through FR-010) have been implemented and delivered. The system provides:
+
+1. **Clock in/out** with single-button UI, offline retry with idempotency key (AC-005), antiforgery protection, and server-side identity extraction from OIDC token.
+2. **Clocking history** for employees (current month) and HR overview of all employees with CSV export.
+3. **News management** — publish, edit, unpublish with mandatory audit trail (author + timestamp). IsFeatured flag for banner display (CR-010). No hard delete per CON-013.
+4. **News reading** with category filter (General, HR, IT, Events), date sorting, and featured banners.
+5. **Employee directory** — read-only LDAP search by name, department, or office. Corporate data only per CON-012.
+6. **Worker category management** — AD user id → category link table with audit trail.
+
+### Deferred Items for Future Releases
+
+| Item | Source | Description |
+|---|---|---|
+| CR #12 | FR-004 | CSV export edge cases (special characters, large datasets) |
+| CR #15 | CI/CD | Branch naming convention cleanup |
+| CR #17 | C2-MIN-2 | Dead code DTO cleanup (RecordClockingRequest) |
+| CR #18 | CR #11 | Test idempotency scoping refinement |
+| CR #30 | R003/CON-004 | Real OIDC integration verification (8 tests mock-covered) |
+| CR #34 | C4-F1 | Design Model async method naming consistency |
+
+### Pending Verification (Binding Conditions — Not Deferred)
+
+| Condition | Owner | Description |
+|---|---|---|
+| #1 | Test Manager | NFR-001/NFR-002 load testing with measured values |
+| #2 | Software Architect | Real OIDC integration verification (8 tests covered by mock) |
+| #3 | Software Architect | Deployment verification on internal Windows Server |
 ## Assumptions and Dependencies
 
 | ID | Assumption / Dependency | Impact |
