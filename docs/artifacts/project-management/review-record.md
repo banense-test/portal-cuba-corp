@@ -341,19 +341,25 @@ end note
 ## Traceability
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| PR #29 | UC-001..UC-010, C2 findings | Realizes | main branch (pending merge) |
+| PR #32 | UC-001..UC-010, C4-1, C4-2, C4-3 | Realizes | iteration/C4 branch (pending Integrator merge) |
+| PR #29 | UC-001..UC-010, C2 findings | Realizes | main branch (pending merge from C3) |
 | PR #28 | C2-CRIT-1, C2-MAJ-1..2, C2-MIN-1..4 | Realizes | iteration/C3 branch (merged) |
-| DM-F1 | Design Model INT-003 | Derives | PR #28 (RESOLVED), PR #29 (APPROVED) |
-| TC-F2 | Test Case UnitTest1.cs | Derives | PR #28 (RESOLVED), PR #29 (APPROVED) |
-| IP-F4 | Iteration Plan | Derives | Project Manager (RESOLVED — ManagementReviewer) |
-| RL-F2 | Risk List | Derives | Project Manager (RESOLVED — ManagementReviewer) |
-| IP-F5 | Iteration Plan, NFR-001, NFR-002 | Derives | C3 Cycle 1 work item 3 (not executed) — OPEN |
-| RL-F5 | Risk List R003, STK-003, CON-004 | Derives | 8 BLOCKED tests, IOC achievement — OPEN |
-| IA-F1 | Iteration Assessment | Derives | Document Control fields (stale) — OPEN |
+| C4-1 | INT-002, CR-010, FR-006 | Derives | PR #32 (RESOLVED — isFeatured in Edit) |
+| C4-2 | INT-007, NFR-004, COMP-003, COMP-004 | Derives | PR #32 (RESOLVED — transaction wrapping) |
+| C4-3 | INT-007, M2 | Derives | PR #32 (CONFIRMED — ExecuteInTransactionAsync implemented) |
+| C4-F1 | INT-002, INT-004, Design Model | Derives | Design Model Interface Contracts update — DEFERRED |
+| DM-F1 | Design Model INT-003 | Derives | PR #28 (RESOLVED C3), PR #29 (APPROVED C3) |
+| TC-F2 | Test Case UnitTest1.cs | Derives | PR #28 (RESOLVED C3), PR #29 (APPROVED C3) |
+| IP-F4 | Iteration Plan | Derives | Project Manager (RESOLVED C3 — ManagementReviewer) |
+| RL-F2 | Risk List | Derives | Project Manager (RESOLVED C3 — ManagementReviewer) |
+| IP-F5 | Iteration Plan, NFR-001, NFR-002 | Derives | C3 Cycle 1 work item 3 (not executed) — OPEN (Management Reviewer) |
+| RL-F5 | Risk List R003, STK-003, CON-004 | Derives | 8 BLOCKED tests, IOC achievement — OPEN (Management Reviewer) |
+| IA-F1 | Iteration Assessment | Derives | Document Control fields (stale) — OPEN (Management Reviewer) |
+| CI Build (feature/C4-rework) | CON-001, CON-003 | DependsOn | GitHub Actions run 33255680288 |
 | CI Build (iteration/C3) | CON-001, CON-003 | DependsOn | GitHub Actions run 33250807692 |
 | CI Build (main) | CON-001, CON-003 | DependsOn | GitHub Actions run 33251398612 |
 | R003 | STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-028..TC-030 (BLOCKED) |
-| Stakeholder PR directive | STK-001 feedback (C2 Cycle 2) | Refines | PR #29 (APPROVED — pending Integrator merge) |
 | Stakeholder iteration directive | STK-001 feedback (C3 Cycle 1) | Refines | C4 iteration required (IOC not achieved) |
-| Review Coordinator Consolidation | All 15 artifacts, 2 executed lenses | Refines | Milestone verdict: CONDITIONAL (auto-iterate) |
+| Stakeholder PR directive | STK-001 feedback (C2 Cycle 2) | Refines | PR #29 (APPROVED — pending Integrator merge) |
+| Review Coordinator Consolidation | All artifacts, Code Reviewer lens complete | Refines | Awaiting Management Reviewer lens |
 | Business Reviewer Lens | N/A | N/A | INACTIVE — did not evaluate this review |
