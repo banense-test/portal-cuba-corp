@@ -6,6 +6,10 @@ using PortalCubaCorp.Domain;
 
 namespace PortalCubaCorp.Pages.News;
 
+/// <summary>
+/// News management page (UC-005..UC-007: Publish, Edit, Unpublish).
+/// C4-2: OnPostUnpublishAsync calls UnpublishAsync (transaction-wrapped).
+/// </summary>
 [Authorize(Roles = "hr,HR")]
 public class ManagementModel : PageModel
 {
@@ -23,10 +27,10 @@ public class ManagementModel : PageModel
         AllNews = _newsService.ListAll();
     }
 
-    public IActionResult OnPostUnpublish(Guid id)
+    public async Task<IActionResult> OnPostUnpublishAsync(Guid id)
     {
         var authorId = User.FindFirst("sub")?.Value ?? User.Identity?.Name ?? "unknown";
-        _newsService.Unpublish(id, authorId);
+        await _newsService.UnpublishAsync(id, authorId);
         TempData["SuccessMessage"] = "News item unpublished. Record preserved for audit trail.";
         return RedirectToPage();
     }

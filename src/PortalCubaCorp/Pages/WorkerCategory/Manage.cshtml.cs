@@ -6,6 +6,10 @@ using PortalCubaCorp.Domain;
 
 namespace PortalCubaCorp.Pages.WorkerCategory;
 
+/// <summary>
+/// Worker category management page (UC-010: Manage Worker Category).
+/// C4-2: OnPostAssignAsync calls AssignCategoryAsync (transaction-wrapped).
+/// </summary>
 [Authorize(Roles = "hr,HR")]
 public class ManageModel : PageModel
 {
@@ -23,7 +27,7 @@ public class ManageModel : PageModel
         Categories = _workerCategoryService.ListCategories();
     }
 
-    public IActionResult OnPostAssign(string adUserId, string category)
+    public async Task<IActionResult> OnPostAssignAsync(string adUserId, string category)
     {
         if (string.IsNullOrWhiteSpace(adUserId) || string.IsNullOrWhiteSpace(category))
         {
@@ -32,7 +36,7 @@ public class ManageModel : PageModel
         }
 
         var authorId = User.FindFirst("sub")?.Value ?? User.Identity?.Name ?? "unknown";
-        _workerCategoryService.AssignCategory(adUserId, category, authorId);
+        await _workerCategoryService.AssignCategoryAsync(adUserId, category, authorId);
         TempData["SuccessMessage"] = $"Category '{category}' assigned to {adUserId}.";
         return RedirectToPage();
     }

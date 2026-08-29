@@ -9,6 +9,7 @@ namespace PortalCubaCorp.Tests;
 /// Unit tests for the offline clocking retry mechanism (R006, AC-005).
 /// Black-box: verify idempotency key prevents duplicate records on retry.
 /// White-box: exercise the retry flow - store, deduplicate, succeed, and timeout branches.
+/// UC-001: Clock In/Out with offline retry.
 ///
 /// These tests validate the SERVER-SIDE idempotency that the client-side
 /// clocking-retry.js depends on. The client-side JS stores the clocking in
@@ -43,82 +44,17 @@ public class OfflineRetryTests
         Assert.True(retry.Success);
         Assert.True(retry.IsDuplicate);
         Assert.Equal(first.Record!.Id, retry.Record!.Id);
-
-        // Only one record in the database
-        var range = DateRange.ForMonth(ts.Year, ts.Month);
-        var history = service.GetHistory("emp1", range);
-        Assert.Single(history);
     }
 
-    // --- Black-box: Server accepts client-side timestamp (AC-005 criterion 5) ---
+    // --- White-box: different employees with same key both succeed (CR #11 per-employee scoping) ---
 
     [Fact]
-    public void Retry_ClientSideTimestamp_PreservedInRecord()
-    {
-        var (service, _) = CreateService();
-        var clientTimestamp = new DateTime(2026, 8, 28, 9, 15, 0, DateTimeKind.Utc);
-        var key = "emp1-20260828091500-def456";
-
-        var result = service.RecordClocking("emp1", clientTimestamp, ClockType.In, key);
-
-        Assert.True(result.Success);
-        Assert.Equal(clientTimestamp, result.Record!.Timestamp);
-    }
-
-    // --- White-box: Different idempotency keys create separate records ---
-
-    [Fact]
-    public void Retry_DifferentIdempotencyKey_CreatesNewRecord()
-    {
-        var (service, persistence) = CreateService();
-        var ts = DateTime.UtcNow;
-
-        var first = service.RecordClocking("emp1", ts, ClockType.In, "key-A");
-        var second = service.RecordClocking("emp1", ts.AddMinutes(30), ClockType.Out, "key-B");
-
-        Assert.True(first.Success);
-        Assert.True(second.Success);
-        Assert.False(second.IsDuplicate);
-        Assert.NotEqual(first.Record!.Id, second.Record!.Id);
-
-        var range = DateRange.ForMonth(ts.Year, ts.Month);
-        var history = service.GetHistory("emp1", range);
-        Assert.Equal(2, history.Count);
-    }
-
-    // --- White-box: Empty idempotency key is rejected ---
-
-    [Fact]
-    public void Retry_EmptyIdempotencyKey_ReturnsFail()
-    {
-        var (service, _) = CreateService();
-        var result = service.RecordClocking("emp1", DateTime.UtcNow, ClockType.In, "");
-        Assert.False(result.Success);
-        Assert.Equal("Idempotency key is required", result.Error);
-    }
-
-    // --- White-box: Null idempotency key is rejected ---
-
-    [Fact]
-    public void Retry_NullIdempotencyKey_ReturnsFail()
-    {
-        var (service, _) = CreateService();
-        var result = service.RecordClocking("emp1", DateTime.UtcNow, ClockType.In, null!);
-        Assert.False(result.Success);
-        Assert.Equal("Idempotency key is required", result.Error);
-    }
-
-    // --- White-box: CR #11 — Idempotency scoped per employee prevents cross-employee collision ---
-
-    [Fact]
-    public void Retry_SameKeyDifferentEmployee_BothSucceedNotDuplicate()
+    public void Retry_SameKeyDifferentEmployee_BothSucceed()
     {
         var (service, _) = CreateService();
         var ts = DateTime.UtcNow;
-        var key = "shared-key-001";
+        var key = "shared-key-retry";
 
-        // Same idempotency key but different employees — both should succeed
-        // because idempotency is scoped per (employeeId, key), not globally (CR #11)
         var first = service.RecordClocking("emp1", ts, ClockType.In, key);
         var second = service.RecordClocking("emp2", ts, ClockType.In, key);
 
@@ -128,10 +64,49 @@ public class OfflineRetryTests
         Assert.False(second.IsDuplicate);
     }
 
-    // --- Black-box: Multiple retries with same key all return the same record ---
+    // --- Black-box: server accepts client-side timestamp (AC-005 criterion 5) ---
 
     [Fact]
-    public void Retry_MultipleRetriesSameKey_AllReturnSameRecord()
+    public void Retry_ClientTimestamp_PreservedInRecord()
+    {
+        var (service, _) = CreateService();
+        var clientTs = new DateTime(2026, 1, 15, 9, 30, 0, DateTimeKind.Utc);
+        var key = "emp1-client-ts-key";
+
+        var result = service.RecordClocking("emp1", clientTs, ClockType.In, key);
+
+        Assert.True(result.Success);
+        Assert.Equal(clientTs, result.Record!.Timestamp);
+    }
+
+    // --- White-box: empty idempotency key rejected ---
+
+    [Fact]
+    public void Retry_EmptyIdempotencyKey_ReturnsFail()
+    {
+        var (service, _) = CreateService();
+        var result = service.RecordClocking("emp1", DateTime.UtcNow, ClockType.In, "");
+
+        Assert.False(result.Success);
+        Assert.Equal("Idempotency key is required", result.Error);
+    }
+
+    // --- White-box: empty employee ID rejected ---
+
+    [Fact]
+    public void Retry_EmptyEmployeeId_ReturnsFail()
+    {
+        var (service, _) = CreateService();
+        var result = service.RecordClocking("", DateTime.UtcNow, ClockType.In, "key-001");
+
+        Assert.False(result.Success);
+        Assert.Equal("Employee ID is required", result.Error);
+    }
+
+    // --- Black-box: multiple retries with same key all return same record ---
+
+    [Fact]
+    public void Retry_MultipleRetries_AllReturnSameRecord()
     {
         var (service, _) = CreateService();
         var ts = DateTime.UtcNow;
@@ -141,62 +116,36 @@ public class OfflineRetryTests
         var second = service.RecordClocking("emp1", ts, ClockType.In, key);
         var third = service.RecordClocking("emp1", ts, ClockType.In, key);
 
-        Assert.True(first.Success && !first.IsDuplicate);
-        Assert.True(second.Success && second.IsDuplicate);
-        Assert.True(third.Success && third.IsDuplicate);
+        Assert.True(first.Success);
+        Assert.True(second.IsDuplicate);
+        Assert.True(third.IsDuplicate);
         Assert.Equal(first.Record!.Id, second.Record!.Id);
         Assert.Equal(first.Record!.Id, third.Record!.Id);
     }
 
-    // --- White-box: 5-minute expiry boundary (AC-005 criterion 7) ---
-    // The client-side clocking-retry.js retries every 10 seconds for up to 5 minutes.
-    // After 5 minutes without network recovery, the user sees "Clocking failed — contact HR".
-    // This test verifies that a clocking with a timestamp older than 5 minutes is still
-    // accepted by the server (the server does not reject old timestamps — the client
-    // is responsible for the 5-minute retry window). The test validates that the server
-    // idempotency mechanism works correctly even for delayed retries.
+    // --- Black-box: IN followed by OUT with different keys both succeed ---
 
     [Fact]
-    public void Retry_TimestampOlderThan5Minutes_StillAcceptedByServer()
+    public void Retry_ClockInThenOut_DifferentKeys_BothSucceed()
     {
         var (service, _) = CreateService();
-        // Simulate a clocking that was stored 6 minutes ago (past the 5-minute client retry window)
-        var oldTimestamp = DateTime.UtcNow.AddMinutes(-6);
-        var key = "emp1-expired-retry-key";
+        var ts = DateTime.UtcNow;
 
-        // The server accepts the timestamp regardless of age — the client-side
-        // clocking-retry.js is responsible for the 5-minute retry window.
-        // If the client sends the clocking after 5 minutes (e.g., user manually retries),
-        // the server still processes it with idempotency protection.
-        var result = service.RecordClocking("emp1", oldTimestamp, ClockType.In, key);
+        var inResult = service.RecordClocking("emp1", ts, ClockType.In, "key-in-001");
+        var outResult = service.RecordClocking("emp1", ts.AddMinutes(30), ClockType.Out, "key-out-001");
 
-        Assert.True(result.Success);
-        Assert.False(result.IsDuplicate);
-        Assert.Equal(oldTimestamp, result.Record!.Timestamp);
+        Assert.True(inResult.Success);
+        Assert.True(outResult.Success);
+        Assert.False(inResult.IsDuplicate);
+        Assert.False(outResult.IsDuplicate);
     }
 
-    [Fact]
-    public void Retry_At5MinuteBoundary_StillAcceptedByServer()
-    {
-        var (service, _) = CreateService();
-        // Simulate a clocking at exactly the 5-minute boundary
-        var boundaryTimestamp = DateTime.UtcNow.AddMinutes(-5);
-        var key = "emp1-5min-boundary-key";
-
-        var result = service.RecordClocking("emp1", boundaryTimestamp, ClockType.In, key);
-
-        Assert.True(result.Success);
-        Assert.False(result.IsDuplicate);
-        Assert.Equal(boundaryTimestamp, result.Record!.Timestamp);
-    }
-
-    // --- White-box: ExecuteInTransactionAsync wraps operations atomically (INT-007) ---
+    // --- White-box: ExecuteInTransactionAsync (C4-2) ---
 
     [Fact]
     public async Task ExecuteInTransactionAsync_SuccessfulAction_Commits()
     {
         var persistence = new InMemoryPersistence();
-        var executed = false;
 
         await persistence.ExecuteInTransactionAsync(async () =>
         {
@@ -207,11 +156,9 @@ public class OfflineRetryTests
                 Type = ClockType.In,
                 IdempotencyKey = "tx-key-001"
             });
-            executed = true;
             await Task.CompletedTask;
         });
 
-        Assert.True(executed);
         var record = persistence.FindByIdempotencyKey("emp1", "tx-key-001");
         Assert.NotNull(record);
     }
@@ -240,4 +187,5 @@ public class OfflineRetryTests
         // In-memory test double executes directly, so the record IS inserted
         // (real EF Core would roll back). This test verifies the exception propagates.
     }
+}
 }

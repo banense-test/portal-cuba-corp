@@ -9,6 +9,7 @@ namespace PortalCubaCorp.Tests;
 /// Unit tests for DirectoryService (COMP-001).
 /// Black-box: verify IDirectoryService contract — search returns DirectoryEntry list from LDAP.
 /// White-box: exercise empty query branch, R001 fallback (missing attributes → "N/A"), office filter.
+/// UC-009: Search Employee Directory.
 /// </summary>
 public class DirectoryServiceTests
 {
@@ -19,7 +20,7 @@ public class DirectoryServiceTests
         return (service, ldap);
     }
 
-    // --- Black-box: Search ---
+    // --- Black-box: Search (UC-009) ---
 
     [Fact]
     public void Search_ValidQuery_ReturnsResults()
@@ -138,18 +139,14 @@ public class DirectoryServiceTests
     }
 
     // --- Black-box: no results ---
-
+    // Issue #13 fix: test name and assertion now match — empty results when no match
     [Fact]
     public void Search_NoMatchingEntries_ReturnsEmptyList()
     {
         var (service, ldap) = CreateService();
-        ldap.Entries.Add(new LdapSearchResult { AdUserId = "jdoe", DisplayName = "John Doe" });
-
+        // Empty mock — no entries configured, simulates no LDAP match
         var results = service.Search("nonexistent");
-
-        // Mock returns all entries regardless of filter, so we get results
-        // In real LDAP, the filter would exclude non-matching entries
-        Assert.Single(results);
+        Assert.Empty(results);
     }
 
     // --- White-box: office filter (MINOR-1 fix) ---
@@ -165,8 +162,6 @@ public class DirectoryServiceTests
             Office = "Havana"
         });
 
-        // The mock returns all entries regardless of filter, but we verify
-        // the service does not throw and returns results when office filter is applied
         var results = service.Search("john", "Havana");
 
         Assert.Single(results);
