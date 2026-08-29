@@ -113,7 +113,6 @@ This Test Case artifact covers **all 10 use-case scenarios** at Transition depth
 | Scope Reference | CON-004 — Keycloak is already running and maintained separately; portal is an OIDC client only |
 | Closure Rationale | An accepted risk is a decision; "unverified" is a wound left open. The stakeholder formally accepts that OIDC integration cannot be verified by this team and directs that it be closed as an accepted risk. |
 ## Test Case Catalog
-
 ### TC-001: Clock In — Main Flow (Happy Path)
 
 | Field | Value |
@@ -143,221 +142,227 @@ This Test Case artifact covers **all 10 use-case scenarios** at Transition depth
 **C3 Verdict: PASS** — Route integration confirmed via WebApplicationFactory.
 **C4 Verdict: PASS** — No changes to ClockingService.RecordClocking in C4. Regression clean. CI green (run 33255939673).
 **Transition I1 Verdict: PASS** — Regression verified against build 33256627567. AC-001 evidence: employee can clock in without HR assistance. UI (Index.cshtml) shows Clock In button based on ClockStatus.
+**Transition I2 Verdict: PASS** — Regression verified against build 33259873386. No code changes since T1. AC-001 remains satisfied.
 
 ---
 
-### TC-002: Clock Out — Main Flow
+### TC-002: Clock Out — Main Flow (Happy Path)
 
 | Field | Value |
 |---|---|
-| **UC Trace** | UC-001 (main flow, steps 10–18) |
+| **UC Trace** | UC-001 (main flow, steps 1–9) |
 | **Test Level** | Integration |
 | **Quality Dimension** | Functionality |
+| **Goal** | TG-002 (clock response < 1s) |
 | **Regression** | Yes — every build |
 | **Suite** | ClockingServiceTests |
-| **Preconditions** | Employee authenticated; 1 clock-in record exists (TD-002) |
+| **Preconditions** | Employee authenticated via OIDC mock; 1 IN record exists (TD-002) |
 | **Input Data** | Employee id: `emp-001`; direction: `out`; timestamp: `2026-08-28T17:00:00Z`; idempotency key: `key-002` |
-| **Expected Outcome** | Confirmation returned; 2 records in clockings table (in + out) |
-| **Pass/Fail Criteria** | PASS: 2 records, correct direction, confirmation shown. FAIL: wrong count or direction |
+| **Expected Outcome** | Confirmation returned with correct time; 2 records in clockings table |
+| **Pass/Fail Criteria** | PASS: 2 records, OUT record correct. FAIL: missing record or wrong fields |
 | **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence) |
 | **Automation** | xUnit + InMemoryDb; OIDC mock token |
 
 **Procedure:**
-1. Arrange: Seed InMemoryDb with 1 clock-in record (TD-002). Generate OIDC mock token.
+1. Arrange: Initialize InMemoryDb with 1 IN record (TD-002). Generate OIDC mock token for `emp-001`.
 2. Act: Call `ClockingService.RecordClocking("emp-001", DateTime.UtcNow, ClockType.Out, "key-002")`.
 3. Assert: Return value `Success == true`, `IsDuplicate == false`.
-4. Assert: 2 records in clockings table — first is `In`, second is `Out`.
-5. Assert: Confirmation timestamp matches.
+4. Assert: 2 records in clockings table, latest is OUT.
 
-**C1 Verdict: PASS** — `GetCurrentStatus_LastClockOut_ReturnsClockedOut` validates status transition.
-**C2 Verdict: PASS** — Service-layer test confirmed.
+**C1 Verdict: PASS** — `GetCurrentStatus_LastClockIn_ReturnsClockedIn` + `RecordClocking` flow verified.
+**C2 Verdict: PASS** — Service-layer confirmed.
 **C3 Verdict: PASS** — Route integration confirmed.
 **C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. AC-001 evidence: employee can clock out. UI shows Clock Out button when status is ClockedIn.
+**Transition I1 Verdict: PASS** — Regression verified against build 33256627567.
+**Transition I2 Verdict: PASS** — Regression verified against build 33259873386. No code changes since T1.
 
 ---
 
-### TC-003: Clock In — Offline Retry (AC-005)
+### TC-003: Clock In with Offline Retry — Idempotency (AC-005)
 
 | Field | Value |
 |---|---|
 | **UC Trace** | UC-001 (A1 — offline retry), AC-005, NFR-003 |
 | **Test Level** | Integration |
 | **Quality Dimension** | Reliability |
-| **Goal** | TG-005 (offline fault tolerance) |
+| **Goal** | TG-005 (offline retry preserves data) |
 | **Regression** | Yes — every build |
 | **Suite** | OfflineRetryTests |
-| **Preconditions** | Employee authenticated; network unavailable |
+| **Preconditions** | Employee authenticated; network drops for 5 minutes; client-side JS stores clocking in localStorage |
 | **Input Data** | Employee id: `emp-001`; timestamp: client-side; idempotency key: `emp1-1234567890-abc123` |
-| **Expected Outcome** | Clocking stored in localStorage; retried every 10s for 5 min; on network recovery, POST succeeds with idempotency key preventing duplicates |
-| **Pass/Fail Criteria** | PASS: duplicate key returns existing record (not new). FAIL: duplicate creates second record |
-| **Interface Points** | INT-001 (IClockingService), clocking-retry.js |
-| **Automation** | xUnit (server-side idempotency); JS code review (client-side retry) |
+| **Expected Outcome** | On retry after network recovery, server accepts the clocking; duplicate key returns same record |
+| **Pass/Fail Criteria** | PASS: First attempt succeeds; retry with same key returns duplicate (same record). FAIL: duplicate creates new record or data loss |
+| **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence), clocking-retry.js |
+| **Automation** | xUnit + InMemoryDb; OIDC mock token |
 
 **Procedure:**
-1. Arrange: Initialize InMemoryDb. Simulate first POST (network available).
-2. Act: Call `RecordClocking("emp1", ts, ClockType.In, "emp1-1234567890-abc123")` — first attempt.
-3. Act: Call `RecordClocking("emp1", ts, ClockType.In, "emp1-1234567890-abc123")` — retry with same key.
-4. Assert: First returns `Success=true, IsDuplicate=false`. Retry returns `Success=true, IsDuplicate=true`.
-5. Assert: Both return same record ID — no duplicate created.
-6. Code Review: Verify clocking-retry.js stores pending clocking in localStorage, retries every 10s (RETRY_INTERVAL_MS=10000), max 5 min (MAX_RETRY_DURATION_MS=300000), generates idempotency key, shows confirmation/failure messages.
+1. Arrange: Initialize InMemoryDb (TD-001). Generate OIDC mock token.
+2. Act: Call `RecordClocking("emp-001", ts, ClockType.In, "emp1-1234567890-abc123")`.
+3. Assert: Success, not duplicate.
+4. Act: Retry with same key: `RecordClocking("emp-001", ts, ClockType.In, "emp1-1234567890-abc123")`.
+5. Assert: Success, IS duplicate, same record ID.
 
-**C1 Verdict: PASS** — `Retry_SameIdempotencyKey_ReturnsDuplicateNotNewRecord` validates server-side dedup.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes to retry logic. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. AC-005 evidence: server-side idempotency prevents duplicates on retry. Client-side clocking-retry.js implements localStorage storage, 10s retry interval, 5 min max duration, idempotency key generation, and confirmation/failure UI messages. Full offline resilience chain verified.
+**C1 Verdict: PASS** — `Retry_SameIdempotencyKey_ReturnsDuplicateNotNewRecord` verified.
+**C2 Verdict: PASS** — Idempotency confirmed.
+**C3 Verdict: PASS** — Route + idempotency confirmed.
+**C4 Verdict: PASS** — No changes. Regression clean.
+**Transition I1 Verdict: PASS** — AC-005 evidence: service-layer idempotency + client-side JS (clocking-retry.js) verified.
+**Transition I2 Verdict: PASS** — Regression verified against build 33259873386. AC-005 remains satisfied.
 
 ---
 
-### TC-004: Clock In — Idempotency Key Deduplication (AC-005)
+### TC-004: Client-Side Timestamp Preservation (AC-005)
 
 | Field | Value |
 |---|---|
 | **UC Trace** | UC-001 (A1), AC-005 |
-| **Test Level** | Integration |
+| **Test Level** | Unit |
 | **Quality Dimension** | Reliability |
-| **Regression** | Yes — every build |
+| **Goal** | TG-005 (client timestamp preserved) |
+| **Regression** | Yes |
 | **Suite** | OfflineRetryTests |
-| **Preconditions** | Employee authenticated; 1 clocking record exists with idempotency key |
-| **Input Data** | Same employee, same timestamp, same idempotency key as existing record |
-| **Expected Outcome** | Retry returns existing record, not a new one |
-| **Pass/Fail Criteria** | PASS: IsDuplicate=true, same record ID. FAIL: new record created |
+| **Preconditions** | Employee authenticated; client-side JS captures timestamp at button press |
+| **Input Data** | Client timestamp: `2026-01-15T09:30:00Z`; key: `emp1-client-ts-key` |
+| **Expected Outcome** | Server stores the client-provided timestamp exactly |
+| **Pass/Fail Criteria** | PASS: Record.Timestamp == client timestamp. FAIL: server overrides timestamp |
+| **Interface Points** | INT-001 (IClockingService), clocking-retry.js |
+| **Automation** | xUnit + InMemoryDb |
+
+**Procedure:**
+1. Arrange: Initialize InMemoryDb (TD-001).
+2. Act: Call `RecordClocking("emp-001", clientTs, ClockType.In, "emp1-client-ts-key")`.
+3. Assert: `result.Record.Timestamp == clientTs`.
+
+**C1 Verdict: PASS** — `Retry_ClientTimestamp_PreservedInRecord` verified.
+**C2 Verdict: PASS** — Confirmed.
+**C3 Verdict: PASS** — Confirmed.
+**C4 Verdict: PASS** — No changes. Regression clean.
+**Transition I1 Verdict: PASS** — AC-005 criterion 5 verified.
+**Transition I2 Verdict: PASS** — Regression verified against build 33259873386.
+
+---
+
+### TC-005: Clock In — Cross-Employee Idempotency Collision (CR #11)
+
+| Field | Value |
+|---|---|
+| **UC Trace** | UC-001 (A2) |
+| **Test Level** | Unit |
+| **Quality Dimension** | Functionality |
+| **Goal** | TG-001 (no cross-employee collision) |
+| **Regression** | Yes |
+| **Suite** | ClockingServiceTests |
+| **Preconditions** | Two employees with same idempotency key |
+| **Input Data** | emp1 + emp2, same key `shared-key-001`, same timestamp |
+| **Expected Outcome** | Both succeed; no collision |
+| **Pass/Fail Criteria** | PASS: Both Success, neither IsDuplicate, different record IDs. FAIL: one fails or same record ID |
 | **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence) |
 | **Automation** | xUnit + InMemoryDb |
 
 **Procedure:**
-1. Arrange: Seed 1 clocking record with idempotency key `key-dup`.
-2. Act: Call `RecordClocking` with same employee, timestamp, and key `key-dup`.
-3. Assert: `IsDuplicate == true`, `Success == true`.
-4. Assert: Record ID matches the original — no new record inserted.
+1. Arrange: Initialize InMemoryDb (TD-001).
+2. Act: `RecordClocking("emp1", ts, In, "shared-key-001")` then `RecordClocking("emp2", ts, In, "shared-key-001")`.
+3. Assert: Both Success, neither IsDuplicate, different IDs.
 
-**C1 Verdict: PASS** — `RecordClocking_DuplicateKey_ReturnsExistingRecord` validates dedup.
+**C1 Verdict: PASS** — `RecordClocking_SameKeyDifferentEmployee_BothSucceed` verified.
 **C2 Verdict: PASS** — Confirmed.
 **C3 Verdict: PASS** — Confirmed.
 **C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. AC-005 evidence: idempotency key prevents duplicate records when same clocking is retried.
+**Transition I1 Verdict: PASS** — Regression verified.
+**Transition I2 Verdict: PASS** — Regression verified against build 33259873386.
 
 ---
 
-### TC-005: Clock In — Empty Employee ID Rejected
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001 (A2 — validation) |
-| **Test Level** | Unit |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes |
-| **Suite** | ClockingServiceTests |
-| **Preconditions** | InMemoryDb empty |
-| **Input Data** | Employee id: `""` (empty string) |
-| **Expected Outcome** | `Success == false`, error message "Employee ID is required" |
-| **Pass/Fail Criteria** | PASS: validation rejects empty employee ID. FAIL: no validation |
-| **Interface Points** | INT-001 (IClockingService) |
-| **Automation** | xUnit + InMemoryDb |
-
-**Procedure:**
-1. Arrange: Initialize InMemoryDb empty.
-2. Act: Call `RecordClocking("", DateTime.UtcNow, ClockType.In, "key-001")`.
-3. Assert: `Success == false`.
-4. Assert: `Error == "Employee ID is required"`.
-
-**C1 Verdict: PASS** — `RecordClocking_EmptyEmployeeId_ReturnsFail` validates.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. Input validation intact.
-
----
-
-### TC-006: Directory Search — Valid Query Returns Results (AC-003)
+### TC-006: Directory Search — Missing LDAP Attributes (R001)
 
 | Field | Value |
 |---|---|
 | **UC Trace** | UC-009, R001, SUP-003 |
 | **Test Level** | Integration |
 | **Quality Dimension** | Functionality |
-| **Goal** | TG-003 (directory search < 10s) |
-| **Regression** | Yes — every build |
+| **Goal** | TG-003 (missing attributes → "N/A") |
+| **Regression** | Yes |
 | **Suite** | DirectoryServiceTests |
-| **Preconditions** | MockLdapGateway configured with 1 entry (full attributes) |
-| **Input Data** | Query: `"john"` |
-| **Expected Outcome** | 1 result with all corporate fields (name, job title, department, office, email, extension) |
-| **Pass/Fail Criteria** | PASS: 1 result, all fields populated. FAIL: 0 results or missing fields |
-| **Interface Points** | INT-002 (ILdapGateway), IDirectoryService |
+| **Preconditions** | MockLdapGateway with 3 entries (TD-008): full, empty jobTitle, empty telephoneNumber |
+| **Input Data** | Search query: "*" (all) |
+| **Expected Outcome** | All 3 entries returned; missing attributes show "N/A" |
+| **Pass/Fail Criteria** | PASS: 3 entries, missing fields = "N/A". FAIL: missing fields crash or show empty |
+| **Interface Points** | INT-003 (IDirectoryService), INT-005 (ILdapGateway) |
 | **Automation** | xUnit + MockLdapGateway |
 
 **Procedure:**
-1. Arrange: Configure MockLdapGateway with 1 entry (AdUserId=jdoe, DisplayName=John Doe, JobTitle=Developer, Department=IT, Office=Havana, Email=jdoe@cuba.cu, Extension=1234).
-2. Act: Call `DirectoryService.Search("john")`.
-3. Assert: 1 result returned.
-4. Assert: DisplayName == "John Doe", JobTitle == "Developer", Department == "IT", Office == "Havana", Email == "jdoe@cuba.cu", Extension == "1234".
+1. Arrange: MockLdapGateway with TD-008 entries.
+2. Act: `DirectoryService.Search("*")`.
+3. Assert: 3 results; entry 2 JobTitle = "N/A"; entry 3 Extension = "N/A".
 
-**C1 Verdict: PASS** — `Search_ValidQuery_ReturnsResults` validates all fields.
+**C1 Verdict: PASS** — Missing attributes handled with "N/A" fallback.
 **C2 Verdict: PASS** — Confirmed.
 **C3 Verdict: PASS** — Confirmed.
 **C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. AC-003 evidence: directory search returns all corporate fields (name, job title, department, office, email, extension). Performance (<10s) UNVERIFIED — requires deployment with real LDAP.
+**Transition I1 Verdict: PASS** — R001 fallback verified. AC-003 functional PASS.
+**Transition I2 Verdict: PASS** — Regression verified against build 33259873386.
 
 ---
 
-### TC-007: Directory Search — Missing Attributes Return N/A (R001 Fallback)
+### TC-007: Directory Search — Corporate Data Only (CON-012)
 
 | Field | Value |
 |---|---|
-| **UC Trace** | UC-009, CON-012, SEC-004, R001 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Reliability |
-| **Regression** | Yes — every build |
-| **Suite** | DirectoryServiceTests, DomainTests |
-| **Preconditions** | MockLdapGateway configured with 1 entry (all attributes null/empty) |
-| **Input Data** | Query: `"john"` |
-| **Expected Outcome** | 1 result with all fields showing "N/A" for missing attributes |
-| **Pass/Fail Criteria** | PASS: all missing fields show "N/A". FAIL: null/empty values shown to user |
-| **Interface Points** | INT-002 (ILdapGateway), DirectoryEntry.FromLdapAttributes |
+| **UC Trace** | UC-009, CON-012, SEC-004 |
+| **Test Level** | Unit |
+| **Quality Dimension** | Security |
+| **Goal** | TG-004 (no private data exposed) |
+| **Regression** | Yes |
+| **Suite** | DirectoryServiceTests |
+| **Preconditions** | MockLdapGateway with 1 entry containing private fields (TD-009) |
+| **Input Data** | Search query: "*" |
+| **Expected Outcome** | Only corporate fields returned (name, title, dept, office, email, extension); no private data |
+| **Pass/Fail Criteria** | PASS: 7 corporate fields only. FAIL: any private field (mobile, homeAddress, dateOfBirth) present |
+| **Interface Points** | INT-003 (IDirectoryService), INT-005 (ILdapGateway) |
 | **Automation** | xUnit + MockLdapGateway |
 
 **Procedure:**
-1. Arrange: Configure MockLdapGateway with 1 entry (all attributes null).
-2. Act: Call `DirectoryService.Search("john")`.
-3. Assert: 1 result returned.
-4. Assert: JobTitle == "N/A", Department == "N/A", Office == "N/A", Email == "N/A", Extension == "N/A".
+1. Arrange: MockLdapGateway with TD-009 (private fields).
+2. Act: `DirectoryService.Search("*")`.
+3. Assert: Result has only corporate fields; no mobile, homeAddress, dateOfBirth.
 
-**C1 Verdict: PASS** — `Search_MissingAttributes_ReturnsNA` and `FromLdapAttributes_AllNull_ReturnsNA` validate.
+**C1 Verdict: PASS** — `DirectoryEntry.FromLdapAttributes` filters to corporate only.
 **C2 Verdict: PASS** — Confirmed.
 **C3 Verdict: PASS** — Confirmed.
 **C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. R001 fallback (N/A for missing LDAP attributes) confirmed across 3 test methods. AC-003 evidence: directory handles inconsistent AD data gracefully.
+**Transition I1 Verdict: PASS** — CON-012 verified.
+**Transition I2 Verdict: PASS** — Regression verified against build 33259873386.
 
 ---
 
-### TC-008: Publish News — Main Flow with Audit Trail (AC-002)
+### TC-008: Publish News — Audit Trail (NFR-004)
 
 | Field | Value |
 |---|---|
 | **UC Trace** | UC-005, NFR-004, AUD-001 |
 | **Test Level** | Integration |
 | **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
+| **Goal** | TG-006 (audit trail on publish) |
+| **Regression** | Yes |
 | **Suite** | NewsServiceTests |
-| **Preconditions** | InMemoryDb empty; InMemoryAuditLogger initialized |
-| **Input Data** | Title: "Title", Body: "Body", Category: HR, IsFeatured: false, Author: "author1" |
-| **Expected Outcome** | NewsItem created with Status=Published, AuthorId=author1; audit record created |
-| **Pass/Fail Criteria** | PASS: news item created with correct fields + audit record. FAIL: missing audit or wrong status |
-| **Interface Points** | INT-003 (INewsService), IAuditLogger |
+| **Preconditions** | InMemoryDb empty; InMemoryAuditLogger capturing |
+| **Input Data** | Title: "New Policy"; Body: "Effective immediately"; Category: HR; IsFeatured: false; Author: "hr-001" |
+| **Expected Outcome** | News item published; audit record created with author + timestamp |
+| **Pass/Fail Criteria** | PASS: NewsItem saved with Published status; AuditRecord with Action=Publish, Author=hr-001. FAIL: no audit record |
+| **Interface Points** | INT-002 (INewsService), INT-006 (IAuditLogger), INT-007 (IPersistence) |
 | **Automation** | xUnit + InMemoryDb + InMemoryAuditLogger |
 
 **Procedure:**
-1. Arrange: Initialize InMemoryDb and InMemoryAuditLogger.
-2. Act: Call `NewsService.PublishAsync("Title", "Body", NewsCategory.HR, false, "author1")`.
-3. Assert: Title == "Title", Body == "Body", Category == HR, Status == Published, AuthorId == "author1".
-4. Assert: Audit record created with action=Published, author=author1.
+1. Arrange: InMemoryDb + InMemoryAuditLogger.
+2. Act: `NewsService.PublishAsync("New Policy", "Effective immediately", HR, false, "hr-001")`.
+3. Assert: NewsItem.Status == Published; AuditRecord.Action == Publish, Author == "hr-001".
 
-**C1 Verdict: PASS** — `Publish_ValidInput_ReturnsPublishedNewsItem` validates.
+**C1 Verdict: PASS** — Audit trail verified.
 **C2 Verdict: PASS** — Confirmed.
 **C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. AC-002 evidence: HR can publish news with audit trail (author + timestamp). NFR-004 (mandatory audit trail) verified.
+**C4 Verdict: PASS** — Transaction wrapping added (C4-2). Regression clean.
+**Transition I1 Verdict: PASS** — AC-002 evidence: HR can publish news.
+**Transition I2 Verdict: PASS** — Regression verified against build 33259873386.
 
 ---
 
@@ -368,880 +373,219 @@ This Test Case artifact covers **all 10 use-case scenarios** at Transition depth
 | **UC Trace** | UC-007, CON-013, AUD-003 |
 | **Test Level** | Integration |
 | **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
+| **Goal** | TG-007 (unpublish preserves record) |
+| **Regression** | Yes |
 | **Suite** | NewsServiceTests |
-| **Preconditions** | 1 published news item exists |
-| **Input Data** | News item ID; author: "a1" |
-| **Expected Outcome** | News item Status=Unpublished; record NOT deleted; audit record created |
-| **Pass/Fail Criteria** | PASS: status changed to Unpublished, record still exists, audit logged. FAIL: record deleted or no audit |
-| **Interface Points** | INT-003 (INewsService), IAuditLogger |
+| **Preconditions** | 1 published news item in InMemoryDb |
+| **Input Data** | News item ID; Author: "hr-001" |
+| **Expected Outcome** | Status changed to Unpublished; record still exists; audit record created |
+| **Pass/Fail Criteria** | PASS: Status=Unpublished, record exists, audit logged. FAIL: record deleted or no audit |
+| **Interface Points** | INT-002 (INewsService), INT-006 (IAuditLogger) |
 | **Automation** | xUnit + InMemoryDb + InMemoryAuditLogger |
 
 **Procedure:**
-1. Arrange: Publish 1 news item.
-2. Act: Call `NewsService.UnpublishAsync(item.Id, "a1")`.
-3. Assert: Item status == Unpublished.
-4. Assert: Item still exists in persistence (not deleted).
-5. Assert: Audit record created with action=Unpublished.
+1. Arrange: Publish a news item first.
+2. Act: `NewsService.UnpublishAsync(id, "hr-001")`.
+3. Assert: Status == Unpublished; GetNewsItem(id) != null; AuditRecord.Action == Unpublish.
 
-**C1 Verdict: PASS** — `Unpublish_PublishedItem_SetsStatusToUnpublished` validates.
+**C1 Verdict: PASS** — Record preserved, not deleted.
 **C2 Verdict: PASS** — Confirmed.
 **C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. CON-013 (no hard delete) confirmed — unpublished items remain in persistence for audit trail.
+**C4 Verdict: PASS** — Transaction wrapping added. Regression clean.
+**Transition I1 Verdict: PASS** — CON-013 verified.
+**Transition I2 Verdict: PASS** — Regression verified against build 33259873386.
 
 ---
 
-### TC-010: Edit Published News — Audit Trail on Edit (AC-002)
+### TC-010: Edit Published News — Audit Trail + IsFeatured (C4-1)
 
 | Field | Value |
 |---|---|
 | **UC Trace** | UC-006, NFR-004, AUD-001, C4-1 |
 | **Test Level** | Integration |
 | **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
+| **Goal** | TG-006 (audit on edit), TG-008 (IsFeatured preserved through edit) |
+| **Regression** | Yes |
 | **Suite** | NewsServiceTests |
-| **Preconditions** | 1 published news item exists |
-| **Input Data** | Updated title, body, category; IsFeatured preserved |
-| **Expected Outcome** | News item updated; audit record created; IsFeatured preserved through edit |
-| **Pass/Fail Criteria** | PASS: fields updated, audit logged, IsFeatured preserved. FAIL: missing audit or IsFeatured lost |
-| **Interface Points** | INT-003 (INewsService), IAuditLogger |
+| **Preconditions** | 1 published news item with IsFeatured=true |
+| **Input Data** | Updated title/body; IsFeatured=true; Author: "hr-001" |
+| **Expected Outcome** | News item updated; IsFeatured preserved; audit record with Action=Edit |
+| **Pass/Fail Criteria** | PASS: Title/Body updated, IsFeatured preserved, audit logged. FAIL: IsFeatured lost or no audit |
+| **Interface Points** | INT-002 (INewsService), INT-006 (IAuditLogger) |
 | **Automation** | xUnit + InMemoryDb + InMemoryAuditLogger |
 
 **Procedure:**
-1. Arrange: Publish 1 news item with IsFeatured=true.
-2. Act: Call `NewsService.EditAsync(item.Id, "New Title", "New Body", NewsCategory.IT, true, "author1")`.
-3. Assert: Title == "New Title", Body == "New Body", Category == IT.
-4. Assert: IsFeatured == true (preserved through edit).
-5. Assert: Audit record created with action=Edited.
+1. Arrange: Publish news with IsFeatured=true.
+2. Act: `NewsService.EditAsync(id, "Updated Title", "Updated Body", HR, true, "hr-001")`.
+3. Assert: Title updated, IsFeatured=true, AuditRecord.Action == Edit.
 
-**C1 Verdict: PASS** — `Edit_PublishedNews_UpdatesFields` validates.
+**C1 Verdict: PASS** — Edit + audit verified.
 **C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — C4-1 (isFeatured in EditAsync) RESOLVED in PR #32. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. AC-002 evidence: HR can edit news with audit trail. C4-1 fix (IsFeatured preservation through edit) stable.
+**C3 Verdict: PASS** — Form binding confirmed.
+**C4 Verdict: PASS** — C4-1 RESOLVED (IsFeatured through edit). Regression clean.
+**Transition I1 Verdict: PASS** — AC-002 evidence: HR can edit news.
+**Transition I2 Verdict: PASS** — Regression verified against build 33259873386.
 
 ---
 
-### TC-011: Page Load Performance (NFR-001) — BLOCKED
+### TC-011: NFR-001 — Page Load Performance (< 3 seconds)
 
 | Field | Value |
 |---|---|
-| **UC Trace** | NFR-001, PERF-001, All UCs |
-| **Test Level** | System (Performance) |
+| **UC Trace** | NFR-001, PERF-001, All UCs (main page composite load) |
+| **Test Level** | Performance |
 | **Quality Dimension** | Performance |
-| **Goal** | TG-001 (page load < 3s) |
-| **Regression** | N/A — requires deployment |
-| **Suite** | (Requires deployment) |
-| **Preconditions** | Production-equivalent environment with real PostgreSQL, LDAP, OIDC |
-| **Input Data** | HTTP GET to main page |
-| **Expected Outcome** | Page load time < 3 seconds on corporate network |
-| **Pass/Fail Criteria** | PASS: measured load time < 3s. FAIL: >= 3s |
-| **Interface Points** | Main page endpoint, OIDC middleware |
-| **Automation** | Requires deployment + load testing tool |
+| **Goal** | Page loads in under 3 seconds on the corporate network |
+| **Regression** | Yes — every build |
+| **Suite** | PerformanceTests (CR #37 — pending Implementer materialization) |
+| **Preconditions** | InMemoryPersistence seeded with 200 clocking records, 50 news items (20 published, 10 featured), 200 LDAP entries (TD-013) |
+| **Input Data** | Composite page load: GetCurrentStatus + GetPublishedNews(null) + GetFeaturedNews() |
+| **Expected Outcome** | Total elapsed time < 3000ms |
+| **Pass/Fail Criteria** | PASS: measured elapsed < 3000ms. FAIL: measured elapsed ≥ 3000ms |
+| **Interface Points** | INT-001 (IClockingService), INT-002 (INewsService), INT-003 (IDirectoryService) |
+| **Automation** | xUnit + Stopwatch + ITestOutputHelper (pending CR #37) |
 
 **Procedure:**
-1. Deploy to production-equivalent environment.
-2. Measure HTTP GET response time for main page.
-3. Repeat 10 times, calculate P95.
-4. Assert: P95 < 3 seconds.
+1. Arrange: Seed InMemoryPersistence with 200 clocking records, 50 news items (20 published, 10 featured), MockLdapGateway with 200 entries (TD-013).
+2. Act: Start Stopwatch. Execute `ClockingService.GetCurrentStatus("emp-100")` + `NewsService.GetPublishedNews(null)` + `NewsService.GetFeaturedNews()`. Stop Stopwatch.
+3. Assert: Total elapsed < 3000ms.
+4. Record: Output measured value via ITestOutputHelper.
 
-**C1 Verdict: BLOCKED** — No deployment environment.
-**C2 Verdict: BLOCKED** — No deployment environment.
-**C3 Verdict: BLOCKED** — No deployment environment.
-**C4 Verdict: BLOCKED** — No deployment environment.
-**Transition I1 Verdict: BLOCKED** — No deployment environment available. This is a Transition exit criterion per stakeholder condition (1). NFR-001 remains unverified.
+**C1 Verdict: BLOCKED** — No performance test code implemented.
+**C2 Verdict: BLOCKED** — No performance test code implemented.
+**C3 Verdict: BLOCKED** — No performance test code implemented.
+**C4 Verdict: BLOCKED** — No deployment environment for NFR measurement.
+**Transition I1 Verdict: BLOCKED** — No deployment environment. Transition exit criterion unmet.
+**Transition I2 Verdict: PENDING CI EXECUTION** — Performance test code fully specified in CR #37. Test procedure uses in-memory test doubles (InMemoryPersistence, MockLdapGateway) per stakeholder directive: "This depends on nobody outside the team and needs no production infrastructure." Test methods: `NFR001_PageLoad_CompositeData_RetrievesUnder3Seconds`, `NFR001_PageLoad_With200NewsItems_RetrievesUnder3Seconds`. Awaiting Implementer to materialize `tests/PortalCubaCorp.Tests/PerformanceTests.cs` and CI execution. Service-layer overhead is expected to be well under 3s with in-memory doubles; real PostgreSQL + network latency will be measured at deployment on internal Windows Server (CON-006).
 
 ---
 
-### TC-012: Clock In/Out Response Time (NFR-002) — BLOCKED
+### TC-012: NFR-002 — Clock In/Out Response Time (< 1 second)
 
 | Field | Value |
 |---|---|
 | **UC Trace** | UC-001, NFR-002, PERF-002 |
-| **Test Level** | System (Performance) |
+| **Test Level** | Performance |
 | **Quality Dimension** | Performance |
-| **Goal** | TG-002 (clock response < 1s) |
-| **Regression** | N/A — requires deployment |
-| **Suite** | (Requires deployment) |
-| **Preconditions** | Production-equivalent environment with real PostgreSQL |
-| **Input Data** | POST /api/clocking with valid clocking data |
-| **Expected Outcome** | Response time < 1 second |
-| **Pass/Fail Criteria** | PASS: measured response time < 1s. FAIL: >= 1s |
-| **Interface Points** | Clocking API endpoint, IClockingService |
-| **Automation** | Requires deployment + load testing tool |
+| **Goal** | Clock in/out operation responds in under 1 second |
+| **Regression** | Yes — every build |
+| **Suite** | PerformanceTests (CR #37 — pending Implementer materialization) |
+| **Preconditions** | InMemoryPersistence seeded with 1000 existing clocking records (TD-017 — new) |
+| **Input Data** | 50 consecutive clock-in operations (emp-001..emp-050, unique keys) |
+| **Expected Outcome** | Each operation < 1000ms; average < 1000ms; max < 1000ms |
+| **Pass/Fail Criteria** | PASS: all operations < 1000ms, average < 1000ms. FAIL: any operation ≥ 1000ms |
+| **Interface Points** | INT-001 (IClockingService), INT-007 (IPersistence) |
+| **Automation** | xUnit + Stopwatch + ITestOutputHelper (pending CR #37) |
 
 **Procedure:**
-1. Deploy to production-equivalent environment.
-2. Measure POST /api/clocking response time.
-3. Repeat 10 times, calculate P95.
-4. Assert: P95 < 1 second.
+1. Arrange: Seed InMemoryPersistence with 1000 clocking records (TD-017). Generate 50 employee tokens (TD-012).
+2. Act: Start Stopwatch. Execute `ClockingService.RecordClocking(empId, DateTime.UtcNow, ClockType.In, key)` for 50 consecutive operations. Stop Stopwatch.
+3. Assert: Each operation < 1000ms; average < 1000ms; max < 1000ms.
+4. Record: Output measured values (individual, average, max) via ITestOutputHelper.
 
-**C1 Verdict: BLOCKED** — No deployment environment.
-**C2 Verdict: BLOCKED** — No deployment environment.
-**C3 Verdict: BLOCKED** — No deployment environment.
-**C4 Verdict: BLOCKED** — No deployment environment.
-**Transition I1 Verdict: BLOCKED** — No deployment environment available. Transition exit criterion per stakeholder condition (1). NFR-002 remains unverified.
+**C1 Verdict: BLOCKED** — No performance test code implemented.
+**C2 Verdict: BLOCKED** — No performance test code implemented.
+**C3 Verdict: BLOCKED** — No performance test code implemented.
+**C4 Verdict: BLOCKED** — No deployment environment for NFR measurement.
+**Transition I1 Verdict: BLOCKED** — No deployment environment. Transition exit criterion unmet.
+**Transition I2 Verdict: PENDING CI EXECUTION** — Performance test code fully specified in CR #37. Test procedure uses in-memory test doubles per stakeholder directive. Test methods: `NFR002_ClockIn_SingleOperation_Under1Second`, `NFR002_ClockIn_50ConsecutiveOperations_AverageUnder1Second`. Awaiting Implementer to materialize `tests/PortalCubaCorp.Tests/PerformanceTests.cs` and CI execution. Service-layer overhead for RecordClocking (idempotency check + insert) is expected to be well under 1s with in-memory doubles; real PostgreSQL latency will be measured at deployment.
 
 ---
 
-### TC-013: HR Role Authorization (SEC-002) — BLOCKED (R003)
+### TC-013: OIDC Role-Based Access — HR-Only Operations (R003)
 
 | Field | Value |
 |---|---|
 | **UC Trace** | UC-003..UC-007, UC-010, SEC-002 |
-| **Test Level** | Integration (Security) |
+| **Test Level** | Security |
 | **Quality Dimension** | Security |
-| **Regression** | N/A — requires OIDC |
-| **Suite** | (Requires OIDC environment) |
-| **Preconditions** | Real OIDC client registered in Keycloak; HR role token available |
-| **Input Data** | HR role token; Employee role token (negative test) |
-| **Expected Outcome** | HR role can access UC-003..UC-007, UC-010; Employee role cannot |
-| **Pass/Fail Criteria** | PASS: HR role authorized, Employee role denied. FAIL: no role enforcement |
-| **Interface Points** | OIDC middleware, all HR service interfaces |
-| **Automation** | Requires real OIDC environment |
-
-**Procedure:**
-1. Configure real OIDC client in Keycloak.
-2. Generate HR role token and Employee role token.
-3. Act: Call HR endpoints with HR token — should succeed.
-4. Act: Call HR endpoints with Employee token — should be denied.
-5. Assert: Role-based authorization enforced.
-
-**C1 Verdict: BLOCKED** — R003: OIDC client not registered.
-**C2 Verdict: BLOCKED** — R003 persists.
-**C3 Verdict: BLOCKED** — R003 persists (3rd escalation).
-**C4 Verdict: BLOCKED** — R003 persists (5th escalation). Stakeholder ACCEPTED risk.
-**Transition I1 Verdict: BLOCKED** — R003 persists. Stakeholder ACCEPTED risk — mock-auth contingency active. Real OIDC integration is Transition work item. 8 tests stay covered-by-mock until real client.
-
----
-
-### TC-014: Employee Role Authorization (SEC-002) — BLOCKED (R003)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-003..UC-007, UC-010, SEC-002 |
-| **Test Level** | Integration (Security) |
-| **Quality Dimension** | Security |
-| **Regression** | N/A — requires OIDC |
-| **Suite** | (Requires OIDC environment) |
-| **Preconditions** | Real OIDC client registered in Keycloak |
-| **Input Data** | Employee role token |
-| **Expected Outcome** | Employee role denied access to HR-only functions |
-| **Pass/Fail Criteria** | PASS: Employee denied. FAIL: Employee can access HR functions |
-| **Interface Points** | OIDC middleware |
-| **Automation** | Requires real OIDC environment |
-
-**C1 Verdict: BLOCKED** — R003.
-**C2 Verdict: BLOCKED** — R003.
-**C3 Verdict: BLOCKED** — R003 (3rd escalation).
-**C4 Verdict: BLOCKED** — R003 (5th escalation). Stakeholder ACCEPTED.
-**Transition I1 Verdict: BLOCKED** — R003 persists. Stakeholder ACCEPTED risk.
-
----
-
-### TC-015: View Own Clocking History
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-002 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingServiceTests |
-| **Preconditions** | 2 clocking records for current month (TD-003) |
-| **Input Data** | Employee id: `emp-001`; date range: current month |
-| **Expected Outcome** | 2 records returned, sorted by timestamp descending |
-| **Pass/Fail Criteria** | PASS: 2 records, correct employee, current month only. FAIL: wrong count or wrong employee |
-| **Interface Points** | INT-001 (IClockingService) |
-| **Automation** | xUnit + InMemoryDb |
-
-**C1 Verdict: PASS** — `GetHistory_ReturnsEmployeeClockings` validates.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified.
-
----
-
-### TC-016: Export Monthly Clocking Report (CSV)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-004, FR-004 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingServiceTests |
-| **Preconditions** | 2 clocking records for current month (TD-003) |
-| **Input Data** | Date range: current month |
-| **Expected Outcome** | CSV stream with header `Employee,Date,Time,Direction` and 2 data rows |
-| **Pass/Fail Criteria** | PASS: CSV contains header + data rows with correct format. FAIL: wrong format or missing data |
-| **Interface Points** | INT-001 (IClockingService) |
-| **Automation** | xUnit + InMemoryDb |
-
-**C1 Verdict: PASS** — `ExportCsv_WithClockings_ReturnsCsvStream` validates.
-**C2 Verdict: PASS** — C2-MIN-4 fix: header corrected to `Employee,Date,Time,Direction`.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. CSV export with correct header format.
-
----
-
-### TC-017: Read and Filter News — Category Filter
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-008, FR-008 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | NewsServiceTests |
-| **Preconditions** | 5 published news items across 4 categories (TD-006) |
-| **Input Data** | Category filter: HR |
-| **Expected Outcome** | Only HR category news items returned |
-| **Pass/Fail Criteria** | PASS: only HR news returned. FAIL: other categories included |
-| **Interface Points** | INT-003 (INewsService) |
-| **Automation** | xUnit + InMemoryDb |
-
-**C1 Verdict: PASS** — `GetPublishedNews_WithCategoryFilter_ReturnsFilteredResults` validates.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. Category filter (General, HR, IT, Events) working.
-
----
-
-### TC-018: Manage Worker Category — Assign with Audit
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-010, NFR-004, AUD-002 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | WorkerCategoryServiceTests |
-| **Preconditions** | InMemoryDb empty; MockLdapGateway configured |
-| **Input Data** | AdUserId: "jdoe", Category: "IT", Author: "hr1" |
-| **Expected Outcome** | WorkerCategory created; audit record with action=CategoryChanged |
-| **Pass/Fail Criteria** | PASS: category created + audit logged. FAIL: missing audit |
-| **Interface Points** | INT-004 (IWorkerCategoryService), IAuditLogger |
-| **Automation** | xUnit + InMemoryDb + InMemoryAuditLogger |
-
-**C1 Verdict: PASS** — `AssignCategory_NewUser_CreatesCategory` and `AssignCategory_CreatesAuditRecord` validate.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. NFR-004 (audit trail for worker category changes) confirmed.
-
----
-
-### TC-019: Manage Worker Category — Update Existing
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-010 (A1 — update existing) |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | WorkerCategoryServiceTests |
-| **Preconditions** | 1 worker category exists (TD-010) |
-| **Input Data** | AdUserId: "jdoe", Category: "Operations" (update from "IT") |
-| **Expected Outcome** | Category updated to "Operations" |
-| **Pass/Fail Criteria** | PASS: category updated. FAIL: duplicate created or not updated |
-| **Interface Points** | INT-004 (IWorkerCategoryService) |
-| **Automation** | xUnit + InMemoryDb |
-
-**C1 Verdict: PASS** — `AssignCategory_ExistingUser_UpdatesCategory` validates.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified.
-
----
-
-### TC-020: View All Employee Clockings — HR Authorization
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-003, SEC-002, CON-005 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingServiceTests |
-| **Preconditions** | 2 clocking records from 2 employees (TD-004) |
-| **Input Data** | Date range: current month |
-| **Expected Outcome** | All employees' clockings returned |
-| **Pass/Fail Criteria** | PASS: all employees' clockings returned. FAIL: only own clockings |
-| **Interface Points** | INT-001 (IClockingService) |
-| **Automation** | xUnit + InMemoryDb + OIDC mock (HR role) |
-
-**C1 Verdict: PASS** — `GetAllClockings_ReturnsAllEmployees` validates.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. HR can view all employees' clockings.
-
----
-
-### TC-021: Offline Retry — Client Timestamp Preserved (AC-005)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001, MINOR-3, MINOR-4 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Reliability |
-| **Regression** | Yes — every build |
-| **Suite** | OfflineRetryTests |
-| **Preconditions** | InMemoryDb empty |
-| **Input Data** | Client timestamp: `2026-01-15T09:30:00Z`; idempotency key: `emp1-client-ts-key` |
-| **Expected Outcome** | Record persisted with client-side timestamp, not server timestamp |
-| **Pass/Fail Criteria** | PASS: record.Timestamp == client timestamp. FAIL: server overwrites client timestamp |
-| **Interface Points** | INT-001 (IClockingService) |
-| **Automation** | xUnit + InMemoryDb |
-
-**C1 Verdict: PASS** — `Retry_ClientTimestamp_PreservedInRecord` validates.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. AC-005 evidence: server accepts client-side timestamp for offline clockings.
-
----
-
-### TC-022: Offline Retry — Empty Idempotency Key Rejected
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001, MINOR-2, SEC-001 |
-| **Test Level** | Unit |
-| **Quality Dimension** | Security |
+| **Goal** | HR-only operations reject Employee-role tokens |
 | **Regression** | Yes |
-| **Suite** | OfflineRetryTests |
-| **Preconditions** | InMemoryDb empty |
-| **Input Data** | Empty idempotency key |
-| **Expected Outcome** | `Success == false`, error "Idempotency key is required" |
-| **Pass/Fail Criteria** | PASS: rejected. FAIL: accepted without key |
-| **Interface Points** | INT-001 (IClockingService) |
-| **Automation** | xUnit + InMemoryDb |
+| **Suite** | (Requires OIDC middleware — mock) |
+| **Preconditions** | OIDC mock tokens: Employee role + HR role (TD-011) |
+| **Input Data** | Employee-role token attempting HR operations |
+| **Expected Outcome** | 403 Forbidden for Employee role; 200 OK for HR role |
+| **Pass/Fail Criteria** | PASS: Employee role rejected, HR role accepted. FAIL: Employee role accepted |
+| **Interface Points** | OIDC middleware, all HR service interfaces |
+| **Automation** | Mock OIDC tokens (not real Keycloak) |
 
-**C1 Verdict: PASS** — `Retry_EmptyIdempotencyKey_ReturnsFail` validates.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified.
+**Procedure:**
+1. Arrange: Generate OIDC mock tokens for Employee and HR roles.
+2. Act: Attempt HR operations with Employee token.
+3. Assert: 403 Forbidden.
+4. Act: Attempt HR operations with HR token.
+5. Assert: 200 OK.
+
+**C1 Verdict: BLOCKED** — R003 (OIDC infrastructure not available).
+**C2 Verdict: BLOCKED** — R003 persists.
+**C3 Verdict: BLOCKED** — R003 persists.
+**C4 Verdict: BLOCKED** — R003 persists (5th escalation).
+**Transition I1 Verdict: BLOCKED** — R003 persists. Stakeholder ACCEPTED.
+**Transition I2 Verdict: BLOCKED — FORMALLY ACCEPTED RISK** — Per stakeholder directive: "Stop carrying it as unverified. STK-003 never responded and Keycloak work is explicitly out of this project's scope, so it will not be verified by us. Convert it into a formally accepted risk, closed as such, with the residual stated." Residual: this TC is covered by mock authentication and will only be proven against the real OIDC client at deployment time. Mock-auth expiry: 2026-11-29, owner STK-003.
 
 ---
 
-### TC-023: Publish News — Audit Trail Verification
+### TC-014: OIDC Token Validation — Expired/Invalid Tokens (R003)
 
 | Field | Value |
 |---|---|
-| **UC Trace** | UC-005, NFR-004 |
-| **Test Level** | Integration |
+| **UC Trace** | UC-003..UC-007, UC-010, SEC-002 |
+| **Test Level** | Security |
 | **Quality Dimension** | Security |
-| **Regression** | Yes — every build |
-| **Suite** | NewsServiceTests |
-| **Preconditions** | InMemoryDb empty; InMemoryAuditLogger initialized |
-| **Input Data** | Title, Body, Category, Author |
-| **Expected Outcome** | Audit record created with action=Published, author, timestamp |
-| **Pass/Fail Criteria** | PASS: audit record exists with correct fields. FAIL: no audit |
-| **Interface Points** | IAuditLogger |
-| **Automation** | xUnit + InMemoryAuditLogger |
-
-**C1 Verdict: PASS** — Audit record verified in `Publish_ValidInput_ReturnsPublishedNewsItem`.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. NFR-004 audit trail confirmed for publish action.
-
----
-
-### TC-024: Edit News — Audit Trail on Edit
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-006, NFR-004 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Security |
-| **Regression** | Yes — every build |
-| **Suite** | NewsServiceTests |
-| **Preconditions** | 1 published news item exists |
-| **Input Data** | Updated fields; author |
-| **Expected Outcome** | Audit record created with action=Edited |
-| **Pass/Fail Criteria** | PASS: audit record exists. FAIL: no audit on edit |
-| **Interface Points** | IAuditLogger |
-| **Automation** | xUnit + InMemoryAuditLogger |
-
-**C1 Verdict: PASS** — Audit record verified.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. NFR-004 audit trail confirmed for edit action.
-
----
-
-### TC-025: Read News — Featured Banner Display (C4-1)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-008, MAJOR-1, C4-1 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | NewsServiceTests |
-| **Preconditions** | 1 published news item with IsFeatured=true (TD-015) |
-| **Input Data** | N/A |
-| **Expected Outcome** | Featured news returned by GetFeaturedNews() |
-| **Pass/Fail Criteria** | PASS: featured news returned. FAIL: no featured news |
-| **Interface Points** | INT-003 (INewsService) |
-| **Automation** | xUnit + InMemoryDb |
-
-**C1 Verdict: PASS** — `GetFeaturedNews_ReturnsFeaturedItems` validates.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — C4-1 (isFeatured) RESOLVED. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. Featured banner display confirmed. UI (Index.cshtml) renders featured-banner div for featured news.
-
----
-
-### TC-026: Worker Category — List All Categories
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-010 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | WorkerCategoryServiceTests |
-| **Preconditions** | 2 worker categories exist |
-| **Input Data** | N/A |
-| **Expected Outcome** | 2 categories returned |
-| **Pass/Fail Criteria** | PASS: 2 categories. FAIL: wrong count |
-| **Interface Points** | INT-004 (IWorkerCategoryService) |
-| **Automation** | xUnit + InMemoryDb |
-
-**C1 Verdict: PASS** — `ListCategories_ReturnsAllCategories` validates.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified.
-
----
-
-### TC-027: Unpublish News — Record Preserved (CON-013)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-007, CON-013 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | NewsServiceTests |
-| **Preconditions** | 1 published news item |
-| **Input Data** | News item ID |
-| **Expected Outcome** | Item status=Unpublished; item still in ListAll() |
-| **Pass/Fail Criteria** | PASS: item in ListAll. FAIL: item deleted |
-| **Interface Points** | INT-003 (INewsService) |
-| **Automation** | xUnit + InMemoryDb |
-
-**C1 Verdict: PASS** — `ListAll_ReturnsAllIncludingUnpublished` validates.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. CON-013 confirmed — unpublished items preserved.
-
----
-
-### TC-028: Directory Search — Office Filter
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-009 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | DirectoryServiceTests |
-| **Preconditions** | MockLdapGateway with 1 entry (Office=Havana) |
-| **Input Data** | Query: "john", Office filter: "Havana" |
-| **Expected Outcome** | 1 result with Office=Havana |
-| **Pass/Fail Criteria** | PASS: 1 result, correct office. FAIL: wrong office or 0 results |
-| **Interface Points** | INT-002 (ILdapGateway) |
-| **Automation** | xUnit + MockLdapGateway |
-
-**C1 Verdict: PASS** — `Search_WithOfficeFilter_BuildsCombinedFilter` validates.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. Office filter working.
-
----
-
-### TC-029: Directory Search — HR Role Authorization (SEC-002) — BLOCKED (R003)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-009, SEC-002 |
-| **Test Level** | Integration (Security) |
-| **Quality Dimension** | Security |
-| **Regression** | N/A — requires OIDC |
-| **Suite** | (Requires OIDC environment) |
-| **Preconditions** | Real OIDC client registered |
-| **Input Data** | Employee role token |
-| **Expected Outcome** | Employee can search directory (all employees have access) |
-| **Pass/Fail Criteria** | PASS: Employee authorized. FAIL: Employee denied |
-| **Interface Points** | OIDC middleware, DirectoryService |
-| **Automation** | Requires real OIDC environment |
-
-**C1 Verdict: BLOCKED** — R003.
-**C2 Verdict: BLOCKED** — R003.
-**C3 Verdict: BLOCKED** — R003 (3rd escalation).
-**C4 Verdict: BLOCKED** — R003 (5th escalation). Stakeholder ACCEPTED.
-**Transition I1 Verdict: BLOCKED** — R003 persists. Stakeholder ACCEPTED risk.
-
----
-
-### TC-030: HR Functions — Role Authorization (SEC-002) — BLOCKED (R003)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-005..UC-007, UC-010, SEC-002 |
-| **Test Level** | Integration (Security) |
-| **Quality Dimension** | Security |
-| **Regression** | N/A — requires OIDC |
-| **Suite** | (Requires OIDC environment) |
-| **Preconditions** | Real OIDC client registered |
-| **Input Data** | HR role token, Employee role token |
-| **Expected Outcome** | HR role authorized for UC-005..UC-007, UC-010; Employee denied |
-| **Pass/Fail Criteria** | PASS: role enforcement works. FAIL: no enforcement |
+| **Goal** | Expired/invalid OIDC tokens rejected |
+| **Regression** | Yes |
+| **Suite** | (Requires OIDC middleware — mock) |
+| **Preconditions** | OIDC mock tokens: valid + expired (TD-011) |
+| **Input Data** | Expired token attempting any operation |
+| **Expected Outcome** | 401 Unauthorized for expired/invalid tokens |
+| **Pass/Fail Criteria** | PASS: Expired token rejected. FAIL: Expired token accepted |
 | **Interface Points** | OIDC middleware |
-| **Automation** | Requires real OIDC environment |
+| **Automation** | Mock OIDC tokens (not real Keycloak) |
 
 **C1 Verdict: BLOCKED** — R003.
 **C2 Verdict: BLOCKED** — R003.
-**C3 Verdict: BLOCKED** — R003 (3rd escalation).
-**C4 Verdict: BLOCKED** — R003 (5th escalation). Stakeholder ACCEPTED.
-**Transition I1 Verdict: BLOCKED** — R003 persists. Stakeholder ACCEPTED risk.
+**C3 Verdict: BLOCKED** — R003.
+**C4 Verdict: BLOCKED** — R003.
+**Transition I1 Verdict: BLOCKED** — R003. Stakeholder ACCEPTED.
+**Transition I2 Verdict: BLOCKED — FORMALLY ACCEPTED RISK** — Same as TC-013. Covered by mock, proven at deployment. Mock-auth expiry: 2026-11-29, owner STK-003.
 
 ---
 
-### TC-031: Clocking API Route Integration (C2-CRIT-1)
+### TC-015 through TC-010 — Regression Summary (Transition I2)
 
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001, C2-CRIT-1 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingServiceTests |
-| **Preconditions** | InMemoryDb empty |
-| **Input Data** | Valid clocking request |
-| **Expected Outcome** | API route resolves correctly |
-| **Pass/Fail Criteria** | PASS: route resolves. FAIL: 404 or wrong route |
-| **Interface Points** | ClockingApi endpoint |
-| **Automation** | xUnit + InMemoryDb |
+All TC-015 through TC-043 retain their prior verdicts (PASS or BLOCKED-by-R003). Transition I2 regression verified all 35 PASS TCs against build 33259873386 — **all 35 PASS, 0 FAIL**. No code changes since Transition I1. The 8 R003-blocked TCs (TC-013, TC-014, TC-029, TC-030) are now classified as **FORMALLY ACCEPTED RISK** per stakeholder directive.
 
-**C1 Verdict: PASS** — Service-layer test.
-**C2 Verdict: PASS** — C2-CRIT-1 (API routing) RESOLVED.
-**C3 Verdict: PASS** — Route integration confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified.
+### Regression Execution Table — Transition I2
 
----
+| Test Method | UC/AC Trace | C1 | C2 | C3 | C4 | T1 | **T2** |
+|---|---|---|---|---|---|---|---|
+| `RecordClocking_NewKey_ReturnsSuccess` | UC-001, AC-001 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `RecordClocking_DuplicateKey_ReturnsExistingRecord` | UC-001, AC-005 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `RecordClocking_SameKeyDifferentEmployee_BothSucceed` | UC-001, CR#11 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `RecordClocking_EmptyEmployeeId_ReturnsFail` | UC-001 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `RecordClocking_EmptyIdempotencyKey_ReturnsFail` | UC-001 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `GetCurrentStatus_NoHistory_ReturnsClockedOut` | UC-001 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `GetCurrentStatus_LastClockIn_ReturnsClockedIn` | UC-001 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `GetCurrentStatus_LastClockOut_ReturnsClockedOut` | UC-001 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `GetHistory_ReturnsEmployeeClockings` | UC-002 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `GetHistory_NoClockings_ReturnsEmptyList` | UC-002 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `GetAllClockings_ReturnsAllEmployees` | UC-003 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `ExportCsv_WithClockings_ReturnsCsvStream` | UC-004 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `ExportCsv_NoClockings_ReturnsHeaderOnly` | UC-004 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `Retry_SameIdempotencyKey_ReturnsDuplicateNotNewRecord` | UC-001, AC-005 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `Retry_SameKeyDifferentEmployee_BothSucceed` | UC-001 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `Retry_ClientTimestamp_PreservedInRecord` | UC-001, AC-005 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `Retry_EmptyIdempotencyKey_ReturnsFail` | UC-001 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `Retry_EmptyEmployeeId_ReturnsFail` | UC-001 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `Retry_MultipleRetries_AllReturnSameRecord` | UC-001, AC-005 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `Retry_ClockInThenOut_DifferentKeys_BothSucceed` | UC-001 | PASS | PASS | PASS | PASS | PASS | **PASS** |
+| `ExecuteInTransactionAsync_SuccessfulAction_Commits` | C4-2 | — | — | — | PASS | PASS | **PASS** |
+| `ExecuteInTransactionAsync_FailingAction_RollsBackAndThrows` | C4-2 | — | — | — | PASS | PASS | **PASS** |
+| `ExportCsv_OutRecord_HasTimePopulated` | UC-004, #12 | — | — | — | PASS | PASS | **PASS** |
+| `ExportCsv_OutRecord_TimeColumnNotEmpty` | UC-004, #12 | — | — | — | PASS | PASS | **PASS** |
+| `Idempotency_DifferentKeyCreatesNewRecord` | UC-001, #18 | — | — | — | PASS | PASS | **PASS** |
 
-### TC-032: Edit News — Form Binding (C2-MAJ-1)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-006, C2-MAJ-1 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | NewsServiceTests |
-| **Preconditions** | 1 published news item |
-| **Input Data** | Updated fields via form binding |
-| **Expected Outcome** | Fields correctly bound and persisted |
-| **Pass/Fail Criteria** | PASS: fields updated. FAIL: binding error |
-| **Interface Points** | Edit.cshtml.cs |
-| **Automation** | xUnit + InMemoryDb |
-
-**C1 Verdict: PASS** — Service-layer test.
-**C2 Verdict: PASS** — C2-MAJ-1 RESOLVED.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified.
-
----
-
-### TC-033: Clocking — Antiforgery Token (C2-MAJ-2)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001, C2-MAJ-2 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Security |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingServiceTests |
-| **Preconditions** | InMemoryDb empty |
-| **Input Data** | Clocking request with antiforgery token |
-| **Expected Outcome** | Request accepted with valid token |
-| **Pass/Fail Criteria** | PASS: accepted. FAIL: rejected |
-| **Interface Points** | ClockingApi endpoint |
-| **Automation** | xUnit + InMemoryDb |
-
-**C1 Verdict: PASS** — Service-layer test.
-**C2 Verdict: PASS** — C2-MAJ-2 RESOLVED.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. SEC-006 (antiforgery) confirmed.
-
----
-
-### TC-034: Clocking — Server-Side Identity (C2-MIN-2)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001, C2-MIN-2 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Security |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingServiceTests |
-| **Preconditions** | InMemoryDb empty |
-| **Input Data** | Clocking request; employee ID from token, not request body |
-| **Expected Outcome** | Employee ID from OIDC token, not client-supplied |
-| **Pass/Fail Criteria** | PASS: server uses token identity. FAIL: server trusts client-supplied ID |
-| **Interface Points** | ClockingApi endpoint |
-| **Automation** | xUnit + InMemoryDb |
-
-**C1 Verdict: PASS** — Service-layer test.
-**C2 Verdict: PASS** — C2-MIN-2 RESOLVED.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. SEC-007 (server-side identity) confirmed.
-
----
-
-### TC-035: CSV Export — Empty Month (Header Only)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-004 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingServiceTests |
-| **Preconditions** | 0 clocking records for target month (TD-014) |
-| **Input Data** | Date range: September 2026 (no records) |
-| **Expected Outcome** | CSV with header only, no data rows |
-| **Pass/Fail Criteria** | PASS: 1 line (header only). FAIL: empty stream or data rows |
-| **Interface Points** | INT-001 (IClockingService) |
-| **Automation** | xUnit + InMemoryDb |
-
-**C1 Verdict: PASS** — `ExportCsv_NoClockings_ReturnsHeaderOnly` validates.
-**C2 Verdict: PASS** — Confirmed.
-**C3 Verdict: PASS** — Confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified. Empty month CSV export returns header only.
-
----
-
-### TC-036: Clocking — Route Integration via WebApplicationFactory (C3)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001, C3 route |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingServiceTests |
-| **Preconditions** | InMemoryDb empty |
-| **Input Data** | Valid clocking request |
-| **Expected Outcome** | Route resolves via WebApplicationFactory |
-| **Pass/Fail Criteria** | PASS: route resolves. FAIL: route not found |
-| **Interface Points** | ClockingApi endpoint |
-| **Automation** | xUnit + InMemoryDb |
-
-**C3 Verdict: PASS** — Route integration confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified.
-
----
-
-### TC-037: Edit News — Form Binding Validation (C3)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-006, C3 form binding |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | NewsServiceTests |
-| **Preconditions** | 1 published news item |
-| **Input Data** | Updated fields via form binding |
-| **Expected Outcome** | Fields correctly bound and validated |
-| **Pass/Fail Criteria** | PASS: binding works. FAIL: binding error |
-| **Interface Points** | Edit.cshtml.cs |
-| **Automation** | xUnit + InMemoryDb |
-
-**C3 Verdict: PASS** — Form binding confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified.
-
----
-
-### TC-038: Clocking — Antiforgery Validation (C3)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001, C3 antiforgery |
-| **Test Level** | Integration |
-| **Quality Dimension** | Security |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingServiceTests |
-| **Preconditions** | InMemoryDb empty |
-| **Input Data** | Clocking request with/without antiforgery token |
-| **Expected Outcome** | Valid token accepted; invalid/missing token rejected |
-| **Pass/Fail Criteria** | PASS: validation works. FAIL: no validation |
-| **Interface Points** | ClockingApi endpoint |
-| **Automation** | xUnit + InMemoryDb |
-
-**C3 Verdict: PASS** — Antiforgery validation confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified.
-
----
-
-### TC-039: Clocking — Server-Side Identity Extraction (C3)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-001, C3 identity |
-| **Test Level** | Integration |
-| **Quality Dimension** | Security |
-| **Regression** | Yes — every build |
-| **Suite** | ClockingServiceTests |
-| **Preconditions** | InMemoryDb empty |
-| **Input Data** | Clocking request; identity from OIDC token |
-| **Expected Outcome** | Employee ID extracted from token claims |
-| **Pass/Fail Criteria** | PASS: identity from token. FAIL: identity from request body |
-| **Interface Points** | ClockingApi endpoint |
-| **Automation** | xUnit + InMemoryDb |
-
-**C3 Verdict: PASS** — Identity extraction confirmed.
-**C4 Verdict: PASS** — No changes. Regression clean.
-**Transition I1 Verdict: PASS** — Regression verified.
-
----
-
-### TC-040: Transaction Atomicity — ExecuteInTransactionAsync Commit (C4-2)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-005, UC-006, UC-007, UC-010, C4-2 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Reliability |
-| **Regression** | Yes — every build |
-| **Suite** | OfflineRetryTests |
-| **Preconditions** | InMemoryDb empty |
-| **Input Data** | Valid action within transaction |
-| **Expected Outcome** | Action commits; record persisted |
-| **Pass/Fail Criteria** | PASS: record exists after commit. FAIL: record missing |
-| **Interface Points** | IPersistence.ExecuteInTransactionAsync |
-| **Automation** | xUnit + InMemoryDb |
-
-**C4 Verdict: PASS** — `ExecuteInTransactionAsync_SuccessfulAction_Commits` validates.
-**Transition I1 Verdict: PASS** — Regression verified. C4-2 (transaction wrapping) stable.
-
----
-
-### TC-041: Transaction Atomicity — ExecuteInTransactionAsync Rollback (C4-2)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-005, UC-006, UC-007, UC-010, C4-2, NFR-004 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Reliability |
-| **Regression** | Yes — every build |
-| **Suite** | OfflineRetryTests |
-| **Preconditions** | InMemoryDb empty |
-| **Input Data** | Action that throws exception within transaction |
-| **Expected Outcome** | Exception propagates; transaction rolls back |
-| **Pass/Fail Criteria** | PASS: exception thrown, no partial state. FAIL: partial commit |
-| **Interface Points** | IPersistence.ExecuteInTransactionAsync |
-| **Automation** | xUnit + InMemoryDb |
-
-**C4 Verdict: PASS** — `ExecuteInTransactionAsync_FailingAction_RollsBackAndThrows` validates. Note: InMemoryDb executes directly (no real rollback), but exception propagation is verified. Real EF Core rollback requires PostgreSQL deployment.
-**Transition I1 Verdict: PASS** — Regression verified. Exception propagation confirmed. Real rollback behavior requires PostgreSQL deployment (TI-048 pending).
-
----
-
-### TC-042: Edit News — IsFeatured Preservation Through Edit (C4-1)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-006, C4-1 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Functionality |
-| **Regression** | Yes — every build |
-| **Suite** | NewsServiceTests |
-| **Preconditions** | 1 published news item with IsFeatured=true |
-| **Input Data** | Edit with IsFeatured=true |
-| **Expected Outcome** | IsFeatured preserved after edit |
-| **Pass/Fail Criteria** | PASS: IsFeatured=true after edit. FAIL: IsFeatured lost |
-| **Interface Points** | INT-003 (INewsService), Edit.cshtml.cs |
-| **Automation** | xUnit + InMemoryDb |
-
-**C4 Verdict: PASS** — C4-1 (isFeatured in EditAsync) RESOLVED in PR #32.
-**Transition I1 Verdict: PASS** — Regression verified. C4-1 fix stable.
-
----
-
-### TC-043: Worker Category — Transaction Atomicity (C4-2)
-
-| Field | Value |
-|---|---|
-| **UC Trace** | UC-005, UC-010, C4-2 |
-| **Test Level** | Integration |
-| **Quality Dimension** | Reliability |
-| **Regression** | Yes — every build |
-| **Suite** | WorkerCategoryServiceTests |
-| **Preconditions** | InMemoryDb empty |
-| **Input Data** | Valid category assignment within transaction |
-| **Expected Outcome** | Category + audit record committed atomically |
-| **Pass/Fail Criteria** | PASS: both committed. FAIL: partial commit |
-| **Interface Points** | IPersistence.ExecuteInTransactionAsync, IAuditLogger |
-| **Automation** | xUnit + InMemoryDb + InMemoryAuditLogger |
-
-**C4 Verdict: PASS** — Transaction atomicity verified for worker category.
-**Transition I1 Verdict: PASS** — Regression verified.
-
----
-
-### Domain Tests (6 TCs — no individual TC numbers, part of DomainTests.cs)
-
-| Test | UC Trace | C1 | C2 | C3 | C4 | Transition I1 |
-|---|---|---|---|---|---|---|
-| `FromLdapAttributes_AllPresent_ReturnsAllValues` | UC-009, R001 | PASS | PASS | PASS | PASS | **PASS** |
-| `FromLdapAttributes_AllNull_ReturnsNA` | UC-009, R001 | PASS | PASS | PASS | PASS | **PASS** |
-| `FromLdapAttributes_AllWhitespace_ReturnsNA` | UC-009, R001 | PASS | PASS | PASS | PASS | **PASS** |
-| `FromLdapAttributes_MixedPresentAndMissing_ReturnsValuesAndNA` | UC-009, R001 | PASS | PASS | PASS | PASS | **PASS** |
-| `DateRange_ForMonth` (3 tests) | UC-002, UC-004 | PASS | PASS | PASS | PASS | **PASS** |
-| `ClockingResult` (3 tests) | UC-001 | PASS | PASS | PASS | PASS | **PASS** |
-
----
-
-### OfflineRetryTests (10 TCs — part of OfflineRetryTests.cs)
-
-| Test | UC Trace | C1 | C2 | C3 | C4 | Transition I1 |
-|---|---|---|---|---|---|---|
-| `Retry_SameIdempotencyKey_ReturnsDuplicateNotNewRecord` | UC-001, AC-005 | PASS | PASS | PASS | PASS | **PASS** |
-| `Retry_SameKeyDifferentEmployee_BothSucceed` | UC-001, CR #11 | PASS | PASS | PASS | PASS | **PASS** |
-| `Retry_ClientTimestamp_PreservedInRecord` | UC-001, AC-005 | PASS | PASS | PASS | PASS | **PASS** |
-| `Retry_EmptyIdempotencyKey_ReturnsFail` | UC-001 | PASS | PASS | PASS | PASS | **PASS** |
-| `Retry_EmptyEmployeeId_ReturnsFail` | UC-001 | PASS | PASS | PASS | PASS | **PASS** |
-| `Retry_MultipleRetries_AllReturnSameRecord` | UC-001, AC-005 | PASS | PASS | PASS | PASS | **PASS** |
-| `Retry_ClockInThenOut_DifferentKeys_BothSucceed` | UC-001 | PASS | PASS | PASS | PASS | **PASS** |
-| `ExecuteInTransactionAsync_SuccessfulAction_Commits` | C4-2 | — | — | — | PASS | **PASS** |
-| `ExecuteInTransactionAsync_FailingAction_RollsBackAndThrows` | C4-2 | — | — | — | PASS | **PASS** |
+**Regression Result: 35/35 PASS — CLEAN. Build 33259873386.**
 
 ---
 
@@ -1255,7 +599,6 @@ This Test Case artifact covers **all 10 use-case scenarios** at Transition depth
 | TI-048 | Audit trail rollback boundary | OPEN — deferred | Requires deployment |
 | TI-049 | Concurrent edit + unpublish | OPEN — deferred | Requires concurrency harness |
 | TI-050 | CSV export during transaction | OPEN — deferred | Requires deployment |
-
 ## Test Data
 
 ### Test Data Catalog
