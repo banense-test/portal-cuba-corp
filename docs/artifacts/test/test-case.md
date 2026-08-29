@@ -14,7 +14,6 @@
 | Build ID | iteration/C4 — CI run 33255939673 (2026-08-29 13:49:10Z); main — CI run 33252332825 (2026-08-29 12:23:43Z) |
 | Test Environment | .NET 10 test project (xUnit); InMemoryDb; MockLdapGateway; OIDC mock tokens; 35 TCs no external deps; 8 TCs require OIDC (R003 BLOCKED) |
 ## Test Scope
-
 ### All Use Cases Under Test — Construction C4 Full Coverage
 
 This Test Case artifact covers **all 10 use-case scenarios** at Construction depth. PR #32 (feature/C4-rework) resolves C4-1 (isFeatured in EditAsync) and C4-2 (transaction wrapping via ExecuteInTransactionAsync).
@@ -111,14 +110,171 @@ stop
 @enduml
 ```
 
+### C4 Test Analyst — Defect Pattern Analysis
+
+```plantuml
+@startuml
+title C4 Defect Pattern Analysis Flow
+
+start
+:Analyze C4 test results (43 TCs);
+:35 PASS, 0 FAIL, 8 BLOCKED;
+
+partition "Defect Pattern: Code-Level (C4)" {
+  :C4-1: isFeatured not set in EditAsync;
+  note right: Severity: Major\nPriority: P1\nTrigger: Edit news with isFeatured=true\nStatus: RESOLVED in PR #32
+  :C4-2: Write ops not transactional;
+  note right: Severity: Major\nPriority: P1\nTrigger: Audit insert fails after business op\nStatus: RESOLVED in PR #32
+  :C4-3: Transaction API verification;
+  note right: Severity: Minor\nPriority: P2\nTrigger: ExecuteInTransactionAsync contract\nStatus: CONFIRMED in PR #32
+}
+
+partition "Defect Pattern: Infrastructure (Persistent)" {
+  :R003: OIDC registration unconfirmed;
+  note right: Severity: Major (blocker)\nPriority: P0\nTrigger: Any OIDC-dependent test\nStatus: OPEN — 5th escalation\nImpact: 8 TCs BLOCKED (18.6%)
+  :NFR-001/NFR-002: Performance unverified;
+  note right: Severity: Major\nPriority: P1\nTrigger: No deployment environment\nStatus: OPEN — no load testing
+}
+
+partition "Resolved Issues (C4)" {
+  :Issue #12: CSV header format;
+  note right: Was: header mismatch\nFixed: Employee,Date,Time,Direction
+  :Issue #13: Search_NoMatchingEntries;
+  note right: Was: incorrect test name\nFixed: Empty(results) assertion
+  :Issue #14: UnitTest1.cs placeholder;
+  note right: Was: Assert.True(true)\nFixed: file cleaned
+}
+
+:Pattern: All C4 code defects resolved on first re-test;
+:Pattern: Infrastructure blockers persist across 5 cycles;
+:Pattern: No regression introduced by C4 changes;
+
+stop
+@enduml
+```
+
+### C4 Test Analyst — Quality Dimension Assessment
+
+```plantuml
+@startuml
+title Quality Dimension Assessment Matrix — C4
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+rectangle "Functionality" as FUNC #LightGreen {
+  note "UC-001 Clock In/Out: 12 TCs PASS\nUC-002 History: 1 TC PASS\nUC-003 All Clockings: 1 TC PASS\nUC-004 CSV Export: 2 TCs PASS\nUC-005 Publish: 2 TCs PASS\nUC-006 Edit: 4 TCs PASS\nUC-007 Unpublish: 2 TCs PASS\nUC-008 Read/Filter: 2 TCs PASS\nUC-009 Directory: 3 TCs PASS\nUC-010 Worker Cat: 3 TCs PASS\nBLOCKED: 8 TCs (R003 OIDC)\nCoverage: 35/43 = 81.4%" as func_note
+}
+
+rectangle "Reliability" as REL #LightGreen {
+  note "AC-005 Offline Retry: 3 TCs PASS\nIdempotency: 2 TCs PASS\nTransaction Atomicity: 2 TCs PASS (NEW C4)\nConcurrency Isolation: 1 TC PASS (NEW C4)\nNo regression detected\nVerdict: VERIFIED at service layer" as rel_note
+}
+
+rectangle "Performance" as PERF #LightYellow {
+  note "NFR-001 (<3s page load): UNVERIFIED\nNFR-002 (<1s clocking): UNVERIFIED\nNo deployment environment\nService-layer timing: acceptable\nEnd-to-end: BLOCKED\nVerdict: UNVERIFIED — requires deployment" as perf_note
+}
+
+rectangle "Security" as SEC #LightYellow {
+  note "SEC-006 (CSRF antiforgery): 1 TC PASS\nSEC-007 (server-side identity): 1 TC PASS\nSEC-002 (role-based access): BLOCKED (R003)\nSEC-004 (corporate data only): 1 TC PASS\nSEC-005 (AD read-only): verified by design\nLDAP injection prevention: verified\nVerdict: PARTIAL — 2/4 verified, 2 BLOCKED" as sec_note
+}
+
+rectangle "Usability" as USA #LightCoral {
+  note "No UI automation in scope\nAC-003 (<10s directory search): not timed\nAC-004 (80% adoption): not testable in CI\nCON-011 (mandatory design): visual review only\nVerdict: NOT TESTED — requires manual/UAT" as usa_note
+}
+
+note bottom of FUNC : GREEN — 81.4% pass, 0 FAIL
+note bottom of REL   : GREEN — all tested aspects verified
+note bottom of PERF   : YELLOW — blocked by deployment
+note bottom of SEC    : YELLOW — partial, blocked by R003
+note bottom of USA    : RED — not testable in automated CI
+
+@enduml
+```
+
+### C4 Test Analyst — Regression Assessment & New Test Ideas
+
+```plantuml
+@startuml
+title C4 Regression Assessment & New Test Idea Generation
+
+start
+:Load C4 baseline (43 TCs);
+:35 PASS, 8 BLOCKED, 0 FAIL;
+
+partition "Regression Scope Assessment" {
+  :Identify C4 code changes;
+  note right: C4-1: isFeatured in EditAsync\nC4-2: Transaction wrapping\nC4-3: ExecuteInTransactionAsync
+  :Map changes to affected UCs;
+  note right: UC-005 (Publish), UC-006 (Edit)\nUC-007 (Unpublish), UC-010 (Worker Cat)
+  :Re-execute all prior PASS tests;
+  if (Any regression?) then (no)
+    :Regression CLEAN;
+  else (yes)
+    :Log regression defect;
+  endif
+  :Verify new TCs (TC-040..TC-043);
+  if (All 4 new TCs pass?) then (yes)
+    :C4 changes verified;
+  else (no)
+    :Log new defect;
+  endif
+}
+
+partition "New Test Ideas from C4 Execution" {
+  :Idea TI-045: Transaction timeout boundary;
+  note right: What if ExecuteInTransactionAsync\nexceeds DB timeout? Priority: Medium
+  :Idea TI-046: Nested transaction behavior;
+  note right: Does ExecuteInTransactionAsync\nsupport nesting? Priority: Low
+  :Idea TI-047: IsFeatured toggle rapid-fire;
+  note right: Rapid toggle true->false->true\nin quick succession. Priority: Medium
+  :Idea TI-048: Audit trail under transaction rollback;
+  note right: Verify NO audit record persists\nwhen transaction rolls back. Priority: High
+  :Idea TI-049: Concurrent edit + unpublish;
+  note right: Two HR users: one edits,\none unpublishes same item. Priority: High
+  :Idea TI-050: CSV export during transaction;
+  note right: Export while another op writes.\nPriority: Low
+}
+
+:Compile C4 Test Analyst Findings;
+:Update Test Case artifact;
+
+stop
+@enduml
+```
+
+### C4 Test Analyst — Findings
+
+| Finding ID | Category | Severity | Priority | Triggering Conditions | Status | Description |
+|---|---|---|---|---|---|---|
+| TA-C4-F1 | Defect Pattern | Info | P3 | C4 code changes (isFeatured, transaction wrapping) | RESOLVED | All C4 code-level defects (C4-1, C4-2) resolved on first re-test. No new defects introduced. Pattern: code quality improved — transaction wrapping adds atomicity safety. |
+| TA-C4-F2 | Infrastructure Blocker | Major | P0 | Any OIDC-dependent test execution | OPEN | R003 OIDC registration by STK-003 remains unconfirmed after 5 escalation cycles. 8 TCs (18.6% of suite) BLOCKED. Impact: SEC-002 (role-based access), authenticated directory search, OIDC integration unverified. This is the #1 quality risk. |
+| TA-C4-F3 | Performance Gap | Major | P1 | NFR-001/NFR-002 load testing | OPEN | NFR-001 (<3s page load) and NFR-002 (<1s clocking) remain unverified. No deployment environment provisioned. Service-layer timing acceptable but end-to-end performance including OIDC middleware, LDAP queries, and database access cannot be assessed. |
+| TA-C4-F4 | Usability Gap | Minor | P2 | AC-003, AC-004, CON-011 verification | OPEN | Usability acceptance criteria (AC-003: <10s directory search, AC-004: 80% adoption) and mandatory UI design conformance (CON-011) are not testable in automated CI. Requires manual UAT with real users. |
+| TA-C4-F5 | Regression | Info | P3 | All 31 prior PASS tests re-executed | CLEAN | No regression detected. All C1/C2/C3 tests remain PASS after C4 code changes. Transaction wrapping did not break any existing functionality. |
+| TA-C4-F6 | Resolved Issues | Info | P3 | Issues #12, #13, #14 re-tested | RESOLVED | All three prior-cycle issues resolved in C4 code. CSV header format (Issue #12), search test name (Issue #13), and UnitTest1.cs placeholder (Issue #14) all verified fixed. |
+
+### C4 Test Analyst — New Test Ideas (TI-045..TI-050)
+
+| Idea ID | Description | UC Trace | Quality Dimension | Priority | Risk | Status |
+|---|---|---|---|---|---|---|
+| TI-045 | Transaction timeout boundary — what happens when `ExecuteInTransactionAsync` exceeds PostgreSQL statement timeout? | UC-005, UC-006, UC-007, UC-010 | Reliability | Medium | Transaction hangs or partial commit | [Pending — requires deployment with real PostgreSQL] |
+| TI-046 | Nested transaction behavior — does `ExecuteInTransactionAsync` support nested calls? | UC-005, UC-006, UC-007, UC-010 | Reliability | Low | Nested calls may fail silently | [Pending — requires investigation of EF Core nesting behavior] |
+| TI-047 | IsFeatured toggle rapid-fire — rapidly toggle isFeatured true→false→true in quick succession | UC-006 | Functionality | Medium | Race condition or stale state | [Pending — requires concurrency test harness] |
+| TI-048 | Audit trail under transaction rollback — verify NO audit record persists when transaction rolls back | UC-005, UC-006, UC-007, UC-010 | Reliability, Security | High | Audit trail integrity violated if rollback doesn't clean audit | [Pending — TC-040/TC-041 partially cover; extend with explicit audit-table assertion] |
+| TI-049 | Concurrent edit + unpublish — two HR users simultaneously edit and unpublish the same news item | UC-006, UC-007 | Reliability, Functionality | High | Data corruption or inconsistent state | [Pending — requires concurrency test harness] |
+| TI-050 | CSV export during active transaction — export clockings while another write operation is in progress | UC-004 | Reliability, Performance | Low | Dirty read or incomplete export | [Pending — requires deployment with real PostgreSQL] |
+
 ### Open Quality Risks
 
 1. **R003 OIDC Integration (Major)**: 8 TCs (18.6% of suite) remain BLOCKED. Without OIDC integration testing, we cannot verify role-based access control (SEC-002), authenticated directory search, or performance under realistic authentication load. This is the #1 quality risk and has persisted for 5 escalation cycles.
 
 2. **Performance NFR Verification (Major)**: NFR-001 (<3s page load) and NFR-002 (<1s clocking) are unverified against a deployed system. Service-layer timing is acceptable, but end-to-end performance including OIDC middleware, LDAP queries, and database access cannot be assessed without deployment.
 
-**Recommendation**: The system is functionally complete at the service layer with C4 transaction atomicity verified. IOC can be declared CONDITIONALLY if STK-003 confirms OIDC registration and a deployment environment is provisioned for integration + performance testing. Without these, the quality verdict remains BLOCKED on 2 of 6 quality dimensions (Performance, partial Functionality/Security).
+3. **Concurrency Edge Cases (Medium)**: C4 introduced transaction wrapping, but concurrent operations on the same entity (TI-047, TI-049) are not yet tested. The transaction isolation level and locking behavior need verification under real PostgreSQL.
 
+4. **Usability Verification (Minor)**: AC-003 (<10s directory search), AC-004 (80% adoption), and CON-011 (mandatory UI design) require manual UAT and cannot be verified in automated CI.
+
+**Quality Verdict**: The system is functionally complete at the service layer with C4 transaction atomicity verified. 35 of 43 TCs PASS with 0 FAIL and CLEAN regression. However, IOC cannot be declared until: (1) R003 OIDC registration is confirmed by STK-003 to unblock 8 integration tests, and (2) a deployment environment is provisioned for NFR-001/NFR-002 performance load testing. The quality verdict remains **CONDITIONAL** — code quality is high, but 2 of 5 quality dimensions (Performance, partial Security) are blocked by infrastructure dependencies outside the development team's control.
 ## Test Case Catalog
 
 ### TC-001: Clock In — Main Flow (Happy Path)
