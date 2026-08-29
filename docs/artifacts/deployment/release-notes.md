@@ -307,7 +307,6 @@ stop
 [OMITTED: Deployment Model — trigger not fired. Single-node, non-distributed topology per SAD Deployment View. Deployment topology is documented inline in these Release Notes and in the SAD Deployment View.]
 
 ## Known Issues and Limitations
-
 | ID | Issue | Impact | Workaround | Resolution Path |
 |---|---|---|---|---|
 | KNOWN-ISSUE-001 | LDAP attribute "extension" (phone) not consistently populated in AD across all 3 offices (R001). Directory search may show blank extension for some employees. | Low — directory still shows name, title, department, office, email. | Fix the missing AD attributes directly in Active Directory (CON-010 — AD is the system of record, not the portal). | Infrastructure team (STK-003) to audit and fill missing AD attributes. Not a portal defect. |
@@ -339,9 +338,9 @@ The stakeholder granted IOC sanction with 3 binding conditions that must be met 
 
 | Audience | Training Material | Status |
 |---|---|---|
-| Employees (STK-004) | User Documentation — Getting Started, User Guide sections | Delivered — covers clocking, news reading, directory search |
-| HR Administrators (STK-001) | User Documentation — User Guide (HR sections), Operations Guide | Delivered — covers news publishing/editing/unpublishing, clocking reports, worker category management |
-| Infrastructure team (STK-003) | User Documentation — Operations Guide, FAQ and Support | Delivered — covers installation, configuration, troubleshooting |
+| Employees (STK-004) | User Documentation — Getting Started, User Guide sections | Delivered — covers clocking, news reading, directory search. User Documentation status: Publication-Ready (Transition final quality pass complete). |
+| HR Administrators (STK-001) | User Documentation — User Guide (HR sections), Operations Guide | Delivered — covers news publishing/editing/unpublishing, clocking reports, worker category management. User Documentation status: Publication-Ready. |
+| Infrastructure team (STK-003) | User Documentation — Operations Guide, FAQ and Support | Delivered — covers installation, configuration, troubleshooting, documentation feedback process. User Documentation status: Publication-Ready. |
 
 ### Final BOM Summary
 
@@ -352,14 +351,13 @@ The stakeholder granted IOC sanction with 3 binding conditions that must be met 
 | External: OIDC | — | ❌ Real Keycloak client | R003 blocker #30 — STK-003 must register |
 | External: LDAP | ✅ Read-only LDAP integration | — | AD attribute gaps in Office 3 (R001) |
 | UI Design | ✅ Mandatory design implemented | — | CON-011 compliance verified |
-| User Documentation | ✅ All UCs covered | — | Approved status |
+| User Documentation | ✅ All UCs covered | — | Publication-Ready (Transition final quality pass) |
 | Client-side Offline | ✅ Clocking retry script | — | AC-005 verified in beta |
 | Audit Trail | ✅ All audited actions logged | — | NFR-004 verified |
 | Performance Metrics | — | ❌ NFR-001, NFR-002 | Require production-site measurement |
-| Training | ✅ All audiences covered | — | User Documentation Approved |
+| Training | ✅ All audiences covered | — | User Documentation Publication-Ready |
 
 **BOM Verdict: 8 of 10 categories delivered. 2 pending (OIDC client registration, performance metrics). Both are stakeholder sanction conditions that must be resolved before production go-live.**
-
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
