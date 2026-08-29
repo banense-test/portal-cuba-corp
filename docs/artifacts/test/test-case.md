@@ -600,7 +600,6 @@ All TC-015 through TC-043 retain their prior verdicts (PASS or BLOCKED-by-R003).
 | TI-049 | Concurrent edit + unpublish | OPEN — deferred | Requires concurrency harness |
 | TI-050 | CSV export during transaction | OPEN — deferred | Requires deployment |
 ## Test Data
-
 ### Test Data Catalog
 
 | Data Set ID | Description | UCs | Seed Method |
@@ -621,14 +620,15 @@ All TC-015 through TC-043 retain their prior verdicts (PASS or BLOCKED-by-R003).
 | TD-014 | Empty month clockings (no records) | UC-004 | Seed: 0 clocking records for September 2026 — CSV export should return headers only |
 | TD-015 | News item with IsFeatured=true (pre-seeded) | UC-008, MAJOR-1 | Seed: 1 published news item with IsFeatured=true |
 | TD-016 | Double clock-in same key | UC-001 | Seed: 1 clocking record, retry with same key |
+| TD-017 | 1000 clocking records (load simulation) | UC-001, NFR-002 | Seed: 1000 clocking records across 50 employees for August 2026 — for TC-012 performance test (CR #37) |
 
 ### Test Data Notes
 
-- All test data uses InMemoryDb (no real PostgreSQL) — sufficient for functional verification.
-- TD-013 (200 LDAP entries) is available for performance testing but cannot measure real latency without deployment.
+- All test data uses InMemoryDb (no real PostgreSQL) — sufficient for functional verification and service-layer performance measurement.
+- TD-013 (200 LDAP entries) is available for performance testing (TC-011 page load composite).
+- TD-017 (1000 clocking records) is new for Transition I2 — supports TC-012 (NFR-002 clock response under load). Specified in CR #37.
 - TD-009 (private attributes) verifies CON-012 (corporate data only) — MockLdapGateway returns all fields, DirectoryService filters to corporate only.
-- TD-011/TD-012 (OIDC mock tokens) simulate authentication but do not test real OIDC integration (R003).
-
+- TD-011/TD-012 (OIDC mock tokens) simulate authentication but do not test real OIDC integration (R003 — FORMALLY ACCEPTED RISK). Mock-auth expiry: 2026-11-29, owner STK-003.
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
