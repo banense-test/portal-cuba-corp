@@ -33,7 +33,7 @@ if (-not $BackupDir) {
     Write-Log "Using most recent backup: $BackupDir"
 }
 
-if (-not (Test-Path $BackupDir) {
+if (-not (Test-Path $BackupDir)) {
     Write-Log "ERROR: Backup directory not found: $BackupDir"
     exit 1
 }
