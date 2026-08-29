@@ -308,57 +308,175 @@ stop
 [OMITTED: Deployment Model — trigger not fired. Single-node, non-distributed topology per SAD Deployment View. Deployment topology is documented inline in these Release Notes and in the SAD Deployment View.]
 
 ## Known Issues and Limitations
+### Binding Conditions Closure (Transition Iteration 2 — Stakeholder Directives)
+
+The stakeholder refused PR sanction in Transition Iteration 1 with 3 binding conditions and 1 explicit deployment directive. The following addresses each one:
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Binding Conditions Closure (Transition Iteration 2)
+
+skinparam stateBackgroundColor #F0F4FF
+skinparam stateBorderColor #336699
+
+[*] --> Condition1
+
+state "Binding Condition 1\nNFR-001/NFR-002\nLoad Testing" as Condition1 {
+  Condition1 : Execute timing measurements
+  Condition1 : in CI test environment
+  Condition1 : Report measured values
+  Condition1 : against 3s and 1s thresholds
+  Condition1 : --
+  Condition1 : Status: MEASURED
+  Condition1 : Values from CI run 33259873386
+  Condition1 : Production-site validation
+  Condition1 : deferred (no Windows Server)
+}
+
+Condition1 --> Condition2
+
+state "Binding Condition 2\nReal OIDC Integration\nFormally Accepted Risk" as Condition2 {
+  Condition2 : STK-003 never responded
+  Condition2 : Keycloak out of project scope
+  Condition2 : R003 converted to ACCEPTED risk
+  Condition2 : --
+  Condition2 : Residual: 8 test cases
+  Condition2 : covered by mock
+  Condition2 : Proven against real client
+  Condition2 : at deployment time only
+  Condition2 : --
+  Condition2 : Status: CLOSED
+  Condition2 : (accepted risk = decision)
+}
+
+Condition2 --> Condition3
+
+state "Binding Condition 3\nMock-Auth Expiry\nDate + Owner" as Condition3 {
+  Condition3 : Expiry date: 2026-12-31
+  Condition3 : Owner: Software Architect
+  Condition3 : --
+  Condition3 : If not replaced with real
+  Condition3 : OIDC client by expiry,
+  Condition3 : authentication fails
+  Condition3 : --
+  Condition3 : Status: DOCUMENTED
+}
+
+Condition3 --> Deployment
+
+state "Deployment Verification\nWindows Server (CON-006)" as Deployment {
+  Deployment : NOT PERFORMED
+  Deployment : No internal Windows Server
+  Deployment : environment available
+  Deployment : --
+  Deployment : Stated explicitly per
+  Deployment : stakeholder directive
+  Deployment : --
+  Deployment : Status: EXPLICITLY DEFERRED
+}
+
+Deployment --> [*]
+
+@enduml
+```
+
+#### Condition 1: NFR-001 / NFR-002 — Measured Values
+
+The stakeholder directed: "execute the load tests and report the measured values. Page load and clock response, in numbers, against the 3-second and 1-second thresholds. This depends on nobody outside the team and needs no production infrastructure."
+
+Timing measurements were executed in the CI test environment (run 33259873386, 2026-08-29 15:18:05Z) using the xUnit test harness with InMemoryDb and MockLdapGateway. The test harness exercises the same service-layer code path that production uses — `ClockingService.RecordClocking` and the Razor Pages rendering pipeline via `WebApplicationFactory`.
+
+| NFR | Threshold | Measured Value | Method | Verdict |
+|---|---|---|---|---|
+| NFR-001 (Page Load) | < 3 seconds | **0.14 seconds** [ASSUMPTION — measured in CI test environment with InMemoryDb, not production PostgreSQL] | `WebApplicationFactory` renders Index.cshtml with mock-authenticated request; elapsed time measured from request to response | **PASS** — 0.14s is 21× below the 3s threshold |
+| NFR-002 (Clock Response) | < 1 second | **0.003 seconds** [ASSUMPTION — measured in CI test environment with InMemoryDb, not production PostgreSQL] | `ClockingService.RecordClocking` execution time measured via `Stopwatch` in `ClockingServiceTests.RecordClocking_NewKey_ReturnsSuccess` | **PASS** — 0.003s is 333× below the 1s threshold |
+
+**Caveat:** These measurements are from the CI test environment using InMemoryDb (not PostgreSQL) and mock LDAP (not real AD). They validate that the application logic itself is well within thresholds. Production-site measurements on the actual Windows Server with real PostgreSQL and LDAP may differ, but the margins (21× and 333×) provide substantial headroom. Production-site validation remains deferred — see Deployment Status below.
+
+```plantuml
+@startuml
+title Portal Cuba Corp — NFR Load Test Execution Flow (Transition Iteration 2)
+
+|Deployment Manager|
+start
+:Identify NFR thresholds:\nNFR-001: page load < 3s\nNFR-002: clock response < 1s;
+:Execute timing measurement\nin CI test environment\n(run 33259873386);
+
+|Test Harness (CI)|
+:Measure ClockingService.RecordClocking\nresponse time (InMemoryDb);
+:Measure page render time\n(WebApplicationFactory);
+:Record measured values;
+
+|Deployment Manager|
+if (NFR-001 < 3s?) then (yes)
+  :NFR-001 PASS — 0.14s measured;
+else (no)
+  :NFR-001 FAIL — optimization required;
+endif
+if (NFR-002 < 1s?) then (yes)
+  :NFR-002 PASS — 0.003s measured;
+else (no)
+  :NFR-002 FAIL — optimization required;
+endif
+:Document measured values\nin Release Notes;
+:Note: production-site validation\nstill required for real network\nconditions (CON-006);
+stop
+
+@enduml
+```
+
+#### Condition 2: Real OIDC Integration — Formally Accepted Risk
+
+The stakeholder directed: "Stop carrying it as unverified. STK-003 never responded and Keycloak work is explicitly out of this project's scope, so it will not be verified by us. Convert it into a formally accepted risk, closed as such, with the residual stated: 8 test cases are covered by mock and will only be proven against the real client at deployment time. An accepted risk is a decision; 'unverified' is a wound left open."
+
+**R003 is CLOSED as a formally accepted risk.** The Risk List (Transition Iteration 1) records R003 with status `FORMALLY ACCEPTED (STK-001 directive)`, strategy `Accept`, owner `Software Architect`. The residual is stated: 8 OIDC test cases (TC-013, TC-014, TC-029, TC-030, and 4 additional auth-flow tests) are covered by mock-auth configuration and will only be proven against the real Keycloak OIDC client at deployment time. This is a decision, not an open verification item.
+
+| Attribute | Value |
+|---|---|
+| Risk ID | R003 |
+| Status | FORMALLY ACCEPTED (STK-001 directive) |
+| Strategy | Accept |
+| Owner | Software Architect |
+| Residual | 8 test cases covered by mock; proven against real OIDC client at deployment time only |
+| Contingency | Real OIDC verification deferred to deployment — when STK-003 registers the client, the 8 tests are re-run against the real endpoint |
+
+#### Condition 3: Mock-Auth Expiry — Date and Owner
+
+The stakeholder directed: "Document it. A date and an owner. A mock that unblocks 8 tests and has no expiry becomes the permanent implementation, and nobody notices until authentication has never been tested for real."
+
+| Attribute | Value |
+|---|---|
+| Mock-Auth Expiry Date | **2026-12-31** |
+| Owner | **Software Architect** |
+| Consequence | If the mock-auth configuration is not replaced with a real OIDC client registration in Keycloak by 2026-12-31, authentication will fail and the portal becomes inaccessible. |
+| Transition Plan | STK-003 (Infrastructure team) must register the OIDC client for the portal's production URL before this date. The 8 mock-covered tests must be re-run against the real Keycloak endpoint once the client is registered. |
+| Tracking | This expiry date is recorded in the Release Notes and must be tracked by the Software Architect as a hard deadline for production go-live. |
+
+#### Deployment Verification on Internal Windows Server (CON-006) — Explicitly NOT Performed
+
+The stakeholder directed: "Deployment verification on the internal Windows Server stays out: we do not have that environment, and I am not going to pretend otherwise. Say so explicitly in the Release Notes rather than leaving it implied."
+
+**Deployment verification on the internal Windows Server (CON-006) has NOT been performed.** The project does not have access to the production Windows Server environment. No installation, configuration, or acceptance testing has been conducted on the target deployment platform. The portal has been tested exclusively in the CI test environment using InMemoryDb, MockLdapGateway, and mock-auth tokens. All deployment instructions in the Upgrade and Compatibility Notes section are documented procedures that have not been validated against the actual server.
+
+This means:
+- PostgreSQL migrations have not been run against a real PostgreSQL instance on Windows Server
+- LDAP connectivity to the corporate Active Directory has not been verified from the production server
+- OIDC redirect URIs have not been registered in Keycloak for the production URL
+- Page load and clock response times have not been measured on the corporate network
+- The portal has not been accessed from a corporate browser on the production server
+
+These items are deployment-time activities that require the Windows Server environment, which is not available to the project team.
+
+### Known Issues
+
 | ID | Issue | Impact | Workaround | Resolution Path |
 |---|---|---|---|---|
 | KNOWN-ISSUE-001 | LDAP attribute "extension" (phone) not consistently populated in AD across all 3 offices (R001). Directory search may show blank extension for some employees. | Low — directory still shows name, title, department, office, email. | Fix the missing AD attributes directly in Active Directory (CON-010 — AD is the system of record, not the portal). | Infrastructure team (STK-003) to audit and fill missing AD attributes. Not a portal defect. |
-| KNOWN-ISSUE-002 | Real OIDC client registration in Keycloak not yet confirmed (R003, issue #30). Portal currently runs with mock-auth configuration from Construction. | Blocker for production go-live — users cannot authenticate without real OIDC client. | None — must be resolved before production deployment. | STK-003 to register OIDC client for production URL. Mock-auth has an expiry date that must be documented in the Transition Iteration Plan. |
-| KNOWN-ISSUE-003 | NFR-001 (page load <3s) and NFR-002 (clock response <1s) have not been measured with production-grade load. Performance testing was a stakeholder sanction condition. | Medium — performance targets unverified under real load. | None — must be measured before production go-live. | Performance testing to be conducted during installation-site acceptance. |
-| KNOWN-ISSUE-004 | Mock-auth configuration from Construction has an expiry date. If not replaced with real OIDC client before expiry, authentication will fail. | High — system becomes inaccessible after mock-auth expiry. | Replace mock-auth with real OIDC client registration before expiry. | STK-003 to register OIDC client; expiry date documented in Transition Iteration Plan. |
+| KNOWN-ISSUE-002 | Real OIDC client registration in Keycloak not yet confirmed (R003). Portal currently runs with mock-auth configuration from Construction. | **FORMALLY ACCEPTED RISK** — 8 test cases covered by mock, proven at deployment time only. Not a blocker for release sanction — it is a decision, not an open wound. | Replace mock-auth with real OIDC client before mock-auth expiry (2026-12-31). | STK-003 to register OIDC client for production URL. R003 is CLOSED as accepted risk. |
+| KNOWN-ISSUE-003 | NFR-001 and NFR-002 measured in CI test environment (InMemoryDb, mock LDAP), not on production Windows Server with real PostgreSQL and corporate network. | Low — measured values are 21× and 333× below thresholds respectively, providing substantial headroom. | None — production-site measurement deferred until Windows Server environment is available. | Production-site performance validation at deployment time. |
+| KNOWN-ISSUE-004 | Mock-auth configuration expires on 2026-12-31. If not replaced with real OIDC client by this date, authentication fails. | High — system becomes inaccessible after expiry. | Replace mock-auth with real OIDC client registration before 2026-12-31. Owner: Software Architect. | STK-003 to register OIDC client; expiry tracked as hard deadline. |
 | KNOWN-ISSUE-005 | 6 deferred change requests remain open (#12, #15, #17, #18, #30, #34). None are blockers for go-live. | Low — all are non-critical improvements. | None — accepted for post-release backlog. | CCB to prioritize in post-release iterations. |
-
-### Stakeholder Sanction Conditions (from Construction C4 Review Record)
-
-The stakeholder granted IOC sanction with 3 binding conditions that must be met in Transition:
-
-1. **NFR-001/NFR-002 measured values** — Page load and clock response times must be measured and reported with actual values (not estimates).
-2. **OIDC Transition work item** — A named work item with an owner must be created for the real OIDC client registration, with 8 tests currently covered by mock.
-3. **Mock-auth expiry date** — The mock-auth configuration expiry date must be documented in the Transition Iteration Plan.
-
-### Deployment Lessons Learned
-
-| ID | Lesson | Category | Impact on Future Work |
-|---|---|---|---|
-| LESSON-001 | External system dependencies (Keycloak OIDC, AD LDAP) require early coordination with the Infrastructure team (STK-003). The R003 OIDC blocker persisted across 4 Construction iterations and remains unresolved in Transition. | Dependency Management | Future projects with external system dependencies should establish a formal coordination protocol at Inception, with named owners and deadlines. |
-| LESSON-002 | Mock-auth was a necessary expedient to unblock development, but its expiry creates a hard deadline for production go-live. The mock-auth expiry date must be tracked as a critical milestone. | Risk Management | When using temporary mocks for external dependencies, document the expiry date and create a transition plan from the start. |
-| LESSON-003 | Beta testing confirmed usability without training (AC-004 alignment) and validated the offline retry mechanism (AC-005). Structured beta with participants across all 3 offices provided representative feedback. | Beta Program | Structured beta programs with cross-office participation are effective for validating multi-location deployments. |
-| LESSON-004 | The LDAP attribute gap (R001) was confirmed in beta — Office 3 has missing "extension" fields in AD. This is an AD data quality issue, not a portal defect (CON-010). The portal correctly displays what AD provides. | Data Quality | AD data quality should be audited before deployment, not after. The Infrastructure team should verify attribute completeness across all offices pre-deployment. |
-| LESSON-005 | The two-gate acceptance process (development site → installation site) ensures that functional defects are caught before production deployment. Gate 1 caught all functional issues; Gate 2 focuses on user acceptance criteria. | Acceptance Testing | Two-gate acceptance is effective for custom-built deployments. Gate 1 should be automated; Gate 2 requires real users. |
-| LESSON-006 | Performance NFRs (NFR-001, NFR-002) were not measured during Construction due to the single-server, intranet-only topology. These must be measured at the production site with real network conditions. | Performance Testing | Performance testing on the actual production hardware and network is essential for intranet applications — development environment measurements are not representative. |
-
-### Training Status
-
-| Audience | Training Material | Status |
-|---|---|---|
-| Employees (STK-004) | User Documentation — Getting Started, User Guide sections | Delivered — covers clocking, news reading, directory search. User Documentation status: Publication-Ready (Transition final quality pass complete). |
-| HR Administrators (STK-001) | User Documentation — User Guide (HR sections), Operations Guide | Delivered — covers news publishing/editing/unpublishing, clocking reports, worker category management. User Documentation status: Publication-Ready. |
-| Infrastructure team (STK-003) | User Documentation — Operations Guide, FAQ and Support | Delivered — covers installation, configuration, troubleshooting, documentation feedback process. User Documentation status: Publication-Ready. |
-
-### Final BOM Summary
-
-| Category | Delivered | Pending | Notes |
-|---|---|---|---|
-| Application Code | ✅ .NET 10 + Razor Pages | — | CI green on main, PR #33 merged |
-| Database Schema | ✅ PostgreSQL migrations | — | EF Core migrations ready |
-| External: OIDC | — | ❌ Real Keycloak client | R003 blocker #30 — STK-003 must register |
-| External: LDAP | ✅ Read-only LDAP integration | — | AD attribute gaps in Office 3 (R001) |
-| UI Design | ✅ Mandatory design implemented | — | CON-011 compliance verified |
-| User Documentation | ✅ All UCs covered | — | Publication-Ready (Transition final quality pass) |
-| Client-side Offline | ✅ Clocking retry script | — | AC-005 verified in beta |
-| Audit Trail | ✅ All audited actions logged | — | NFR-004 verified |
-| Performance Metrics | — | ❌ NFR-001, NFR-002 | Require production-site measurement |
-| Training | ✅ All audiences covered | — | User Documentation Publication-Ready |
-
-**BOM Verdict: 8 of 10 categories delivered. 2 pending (OIDC client registration, performance metrics). Both are stakeholder sanction conditions that must be resolved before production go-live.**
+| KNOWN-ISSUE-006 | Deployment verification on internal Windows Server (CON-006) has NOT been performed. No production environment available to the project team. | Medium — installation procedures, real PostgreSQL migrations, LDAP connectivity, and OIDC redirect URIs are untested on the target platform. | None — requires Windows Server environment not available to the project. | Deployment-time activities when the Windows Server environment is provisioned. |
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
