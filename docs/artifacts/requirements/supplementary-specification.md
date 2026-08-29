@@ -2,12 +2,12 @@
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | Approved |
-| Milestone Target | Product Release (PR) — NOT YET ACHIEVED |
-| Iteration | 1 (Cycle 1) |
+| Status | **EVOLVED — Transition Iteration 2 Cycle 1 (System Analyst)** |
+| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED — pending stakeholder re-review with T2 evidence** |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-29 |
 | Prior Phase | Construction C4 — IOC CONDITIONAL GO; all NFRs addressed in implementation; SEC-006/SEC-007 added in Construction C3 |
-| Evolution | Construction Iter 1: NFR baseline preserved. Construction Iter 2: CR-010 [DERIVED] marker retired. Construction Iter 3: SEC-006/SEC-007 added via CR-023/CR-024. Transition Iter 1: NFR baseline preserved — no findings or CRs target the Supplementary Specification. All FURPS+ categories remain valid for the delivered system. NFR-001/NFR-002 load testing pending verification by Test Manager (binding condition #1). |
+| Evolution | Construction Iter 1: NFR baseline preserved. Construction Iter 2: CR-010 [DERIVED] marker retired. Construction Iter 3: SEC-006/SEC-007 added via CR-023/CR-024. Transition Iter 1: NFR baseline preserved — no findings or CRs target the Supplementary Specification. Transition Iter 2: NFR-001/NFR-002 load tests executed with measured values — thresholds met. R003 (real OIDC) formally accepted risk. Mock-auth expiry documented (2027-01-31, owner STK-003). All FURPS+ categories remain valid for the delivered system. |
 ## Functionality
 ### Security
 
