@@ -1,18 +1,17 @@
 ## Document Control
 | Field | Value |
 |---|---|
-| Phase | Construction |
-| Status | Approved — C4 Cycle 1 (PR #32 approved, 0 Critical, 0 Major, 1 Minor on Design Model only) |
-| Milestone Target | End-of-Construction (IOC) — **NOT ACHIEVED** |
-| Iteration | 4 (Cycle 1) |
+| Phase | Transition |
+| Status | **Publication-Ready** — Final quality pass complete (Transition Iter 1, Cycle 1) |
+| Milestone Target | End-of-Transition (PRD) — **NOT YET ACHIEVED** |
+| Iteration | 1 (Cycle 1) |
 | Date | 2026-08-29 |
-| Prior Phase | Construction C3 Cycle 1 (all C2 defects resolved, PR #28 approved; stakeholder sanction REFUSED 3rd time — R003 OIDC blocker + NFR-001/002 performance testing incomplete) |
+| Prior Phase | Construction C4 Cycle 1 (PR #32/#33 approved & merged; IOC CONDITIONAL GO; stakeholder sanction GRANTED with 3 binding conditions) |
 | Author | Technical Writer (Deployment Discipline) |
 | Audience | Employees (STK-004), HR Administrators (STK-001), Infrastructure team (STK-003) |
-| Coverage | Install + Operate + Use + Maintain for Construction C4 build (UC-001 through UC-010) |
-| C4 Evolution | No findings or CRs target User Documentation. C4-1 (isFeatured in Edit — RESOLVED in PR #32): documentation already covers featured checkbox in UC-005/UC-006. C4-2 (Transaction wrapping — RESOLVED in PR #32) and C4-3 (ExecuteInTransactionAsync — CONFIRMED): internal implementation details, not user-visible. All user guide, operations guide, FAQ, and traceability content PRESERVED from C3 — verified accurate against C4 implementation. Document Control updated to C4. |
+| Coverage | Install + Operate + Use + Maintain for final release build (UC-001 through UC-010) |
+| Transition Evolution | Final quality pass: Document Control updated to Transition phase. All user guide, operations guide, FAQ, and traceability content verified accurate against final system behavior (SAD deployment view, Design Model C4 baseline). Styleguide compliance audit passed — terminology consistent across all sections. No findings or CRs target User Documentation in any iteration. Documentation feedback mechanism added to FAQ and Support section. All content PRESERVED from Construction C4 — no behavioral changes in Transition. |
 | Styleguide | Terminological contract: "Clock In/Out" (not "punch" or "check-in"), "News item" (not "article" or "post"), "Worker category" (not "employee type" or "classification"), "Directory" (not "phonebook" or "address book"), "Unpublish" (not "hide" or "remove"). Active voice. Task-oriented headings. |
-
 ## Overview
 
 Portal Cuba Corp is the employee portal for Cuba Corp — a single web application that centralizes clock in/out, HR news, and the employee directory into one place accessible from the corporate browser. It replaces shared Excel sheets, mass emails, and the outdated PDF phone directory.
