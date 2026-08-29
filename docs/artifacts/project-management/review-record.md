@@ -500,8 +500,9 @@ The Review Coordinator consolidates the three lens evaluations as follows:
 | R003 | STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-029..TC-032 (covered-by-mock — ACCEPTED risk) |
 | Stakeholder sanction (C4) | STK-001 feedback (C4 Cycle 1) | Refines | IOC CONDITIONAL GO — 3 conditions attached |
 | Stakeholder directive (C4) | STK-001 feedback (C4 Cycle 1) | Refines | Close all PRs, Issues, and findings — SATISFIED |
+| Stakeholder verdict response (C4) | STK-001 verdict question response (C4 Cycle 1) | Refines | "Nothing new that I haven't already mentioned to the Management Reviewer" — no additional findings; prior C4 input is complete and final |
 | Stakeholder directive (C3) | STK-001 feedback (C3 Cycle 1) | Refines | "We absolutely have to iterate again" — ADDRESSED in C4 |
-| Review Coordinator Consolidation | All artifacts, all lenses complete | Refines | CONSOLIDATED — IOC CONDITIONAL GO, stakeholder sanction GRANTED |
+| Review Coordinator Consolidation | All artifacts, all lenses complete | Refines | CONSOLIDATED — IOC CONDITIONAL GO, stakeholder sanction GRANTED; 2 open Major findings require auto-iteration for closure |
 | Business Reviewer Lens | DC §4 (isBusinessProcessLed=false) | Refines | PRESERVED — Elaboration baseline stands, 0 findings |
 | NFR-001/NFR-002 condition | STK-001 sanction condition | Refines | Transition Iter 1 exit criterion — measured values required |
 | OIDC Transition work item | STK-001 sanction condition | Refines | Named work item with owner; 8 tests covered-by-mock until real client |
