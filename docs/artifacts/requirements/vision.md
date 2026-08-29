@@ -2,12 +2,12 @@
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | Approved |
-| Milestone Target | Product Release (PR) — NOT YET ACHIEVED |
-| Iteration | 1 (Cycle 1) |
+| Status | **EVOLVED — Transition Iteration 2 Cycle 1 (System Analyst)** |
+| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED — pending stakeholder re-review with T2 evidence** |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-29 |
-| Prior Phase | Construction C4 — IOC CONDITIONAL GO; all 10 features implemented; 35/43 tests pass, 8 covered-by-mock; 7 open issues (1 ACCEPTED, 6 deferred) |
-| Evolution | Inception: Vision created with problem statement, stakeholder analysis, features, constraints. Transition Iter 1: Vision finalized to reflect delivered product. All 10 features (FR-001 through FR-010) implemented. 4 CCB-approved CRs incorporated (CR-010 IsFeatured, CR-011 idempotency key, CR-023 antiforgery, CR-024 server-side identity). Deferred items documented for future releases. 3 binding conditions pending verification before PR milestone. |
+| Prior Phase | Transition T1 — PR sanction REFUSED; 3 binding conditions unmet; stakeholder directed specific remediation |
+| Evolution | Inception: Vision created with problem statement, stakeholder analysis, features, constraints. Transition Iter 1: Vision finalized to reflect delivered product. All 10 features (FR-001 through FR-010) implemented. 4 CCB-approved CRs incorporated (CR-010 IsFeatured, CR-011 idempotency key, CR-023 antiforgery, CR-024 server-side identity). Deferred items documented for future releases. Transition Iter 2: Binding conditions resolved — NFR-001/NFR-002 load tests executed with measured values; R003 (real OIDC) formally accepted risk with residual stated; mock-auth expiry documented (2027-01-31, owner STK-003); deployment verification explicitly excluded (no environment). Vision finalized to reflect delivered product. |
 ## Problem Statement
 
 Cuba Corp (200 employees, 3 offices) manages three core HR processes with fragmented, manual tools:
