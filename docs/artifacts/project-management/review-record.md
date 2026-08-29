@@ -1,21 +1,20 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | **ACTIVE — Reviewer Product Acceptance T1 Cycle 1** |
+| Status | **ACTIVE — Reviewer Product Acceptance T1 Cycle 1 + Business Reviewer Lens EXECUTED** |
 | Milestone Target | Product Release (PR) — **NOT YET ACHIEVED** |
 | Iteration | 1 (Cycle 1) |
 | Date | 2026-08-29 |
 | Prior Phase | Construction C4 Cycle 1 — IOC CONDITIONAL GO; stakeholder sanction GRANTED with 3 binding conditions; 0 open PRs; CI GREEN; 35/43 tests pass, 8 covered-by-mock; 7 open issues (1 ACCEPTED, 6 deferred) |
 | Technical Lens (Code Reviewer) | **EXECUTED** — Transition T1 Cycle 1. 0 Critical, 0 Major, 1 Minor. PR #35 (hotfix/T1-defect-fixes → main) APPROVED. CI GREEN. 13 new tests covering defect regressions and offline retry. Design Model conformance verified. |
 | Product Acceptance Lens (Reviewer) | **EXECUTED** — Transition T1 Cycle 1. 0 Critical, 0 Major, 1 Minor (persisting). All 16 artifacts evaluated against Product Acceptance checklist. CI GREEN on main. 0 open PRs. 7 open issues (all minor/deferred). Disposition: **ACCEPTED WITH CONDITIONS**. |
-| Review Type | Transition T1 Cycle 1 — Product Release Milestone Review (Reviewer lens) |
+| Business Lens (Business Reviewer) | **EXECUTED** — Transition T1 Cycle 1. 0 Critical, 1 Major (BR-T1-002: binding conditions unverified), 1 Minor (BR-T1-001: no goal measurement plan). All 10 UCs delivered. Handover materials complete. Business goals PENDING (post-deployment metrics). Disposition: **CONDITIONAL**. |
+| Review Type | Transition T1 Cycle 1 — Product Release Milestone Review (Reviewer + Business Reviewer lenses) |
 | PRs Reviewed | #35 (hotfix/T1-defect-fixes → main, APPROVED by Code Reviewer) |
 | CI Build Status | main: GREEN (run 33259634182, 2026-08-29 15:14:05Z) |
 | Open Defect Issues | 7 open issues (all minor severity, deferred-next-iteration): #36 (release summary), #34 (Design Model async names), #18 (test idempotency), #17 (dead code DTO), #15 (naming violation), #12 (CSV export format), #5 (Elaboration E1 deferred). 0 critical/high defects. |
-| Disposition | **ACCEPTED WITH CONDITIONS** — Product is release-ready pending: (1) Design Model DM-F2 traceability update (Minor, documentation-only), (2) NFR-001/NFR-002 load testing with measured values (binding condition #1), (3) real OIDC integration verification (binding condition #2), (4) mock-auth expiry date documentation (binding condition #3). No Critical or Major findings from this lens. |
-
+| Disposition | **CONDITIONAL** — Product is release-ready pending: (1) Design Model DM-F2 traceability update (Minor, documentation-only), (2) NFR-001/NFR-002 load testing with measured values (binding condition #1), (3) real OIDC integration verification (binding condition #2), (4) mock-auth expiry date documentation (binding condition #3), (5) post-deployment goal verification plan for BG-001..BG-003 (Minor, BR-T1-001). Combined: 0 Critical, 1 Major, 2 Minor across both lenses. |
 ## Review Scope and Criteria
 
 ### Scope
