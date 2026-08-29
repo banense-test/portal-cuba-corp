@@ -1434,7 +1434,6 @@ This Test Case artifact covers **all 10 use-case scenarios** at Construction dep
 | TC-038 | Antiforgery token | Valid vs expired vs missing vs tampered | Only valid accepted |
 
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | TC-001 | UC-001 (main flow) | Tests | ClockingService.cs, ClockingServiceTests.cs |
@@ -1484,7 +1483,7 @@ This Test Case artifact covers **all 10 use-case scenarios** at Construction dep
 | C2-MIN-3 | Review Record (C2) | Derives | PR #28 (RESOLVED) — UnitTest1.cs removed |
 | C2-MIN-4 | Review Record (C2) | Derives | PR #28 (RESOLVED), TC-035 |
 | TC-F2 | Review Record (C3) | Derives | PR #28 (RESOLVED — UnitTest1.cs removed) |
-| C3 Execution Results | PR #28, CI run 33250579948 | Derives | This Test Case artifact |
+| C3 Tester Execution | PR #28, CI run 33250807692 (iteration/C3), CI run 33249082908 (main) | Derives | This Test Case artifact — 31 PASS, 8 BLOCKED, 0 FAIL |
 | C3 Defect Pattern P1 | C2-CRIT-1, C2-MAJ-1, C2-MIN-4 | Resolved by | PR #28, TC-031, TC-032, TC-035, TC-036, TC-037 |
 | C3 Defect Pattern P2 | C2-MAJ-2, C2-MIN-2 | Resolved by | PR #28, TC-033, TC-034, TC-038, TC-039 |
 | C3 Defect Pattern P3 | C2-MIN-1, C2-MIN-3 | Resolved by | PR #28 — UnitTest1.cs removed |
@@ -1494,6 +1493,12 @@ This Test Case artifact covers **all 10 use-case scenarios** at Construction dep
 | TI-039 | C2-MIN-2, Pattern P2 | Refines | TC-039 (formalized) |
 | C3 Quality Dimension Assessment | NFR-001..004, AC-001..005, SEC-001..007 | Derives | This Test Case artifact |
 | C3 Regression Scope | All 39 TCs, C2 findings resolved | Derives | C3 test execution plan |
+| C3 Regression Verdict | C1/C2 PASS verdicts | Derives | CLEAN — no regressions detected |
 | R003 | STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-028..TC-030 (BLOCKED) |
+| Issue #30 | R003, STK-003, CON-004 | Derives | TC-013, TC-014, TC-028, TC-029, TC-030 (BLOCKED — 4th escalation) |
+| Issue #13 | TC-006 (DirectoryServiceTests) | Derives | Search_NoMatchingEntries test name contradicts assertion (Minor, deferred) |
+| Issue #12 | TC-016 (ClockingServiceTests) | Derives | CSV format — effectively resolved by C2-MIN-4 header change (open in SCM) |
+| Issue #14 | TC-F2 | Derives | UnitTest1.cs placeholder — resolved in PR #28 (open in SCM) |
 | PR #28 | UC-001..UC-010 | Realizes | feature/C3-presentation branch |
-| CI Build (feature/C3-presentation) | CON-001, CON-003 | DependsOn | GitHub Actions run 33250579948 |
+| CI Build (iteration/C3) | CON-001, CON-003 | DependsOn | GitHub Actions run 33250807692 |
+| CI Build (main) | CON-001, CON-003 | DependsOn | GitHub Actions run 33249082908 |
