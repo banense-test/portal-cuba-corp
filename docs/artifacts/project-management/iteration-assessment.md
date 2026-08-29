@@ -261,20 +261,55 @@ Metric_6 --> Metric_3 : CI green enables test execution
 | Stakeholder condition: mock-auth expiry | STK-001 sanction condition | Mock-auth contingency has expiry date | **RECORDED** — expiry date documented in Transition Iteration Plan. |
 | C4-F1 / DM-F2 (Design Model async method names) | Code Reviewer C4 Cycle 1 | Design Model Interface Contracts not updated | **DEFERRED** — not a PM artifact; deferred to Design Model update in Transition. Non-blocking. |
 ## Rework Required
-
 | Finding | Severity | Artifact | Status | Resolution |
 |---|---|---|---|---|
-| IP-F5 | Major | Iteration Plan | **RESOLVED** | Load testing decoupled from merge dependency. C4 work item 3 executes independently against any CI-green branch. IP-F5 finding closed. |
-| RL-F5 | Major | Risk List | **RESOLVED** | R003 hard deadline enforced: 5th and FINAL escalation cycle. Mock-auth contingency ready for formal presentation to STK-001 for binding decision. R003 must transition to RESOLVED or ACCEPTED. RL-F5 finding closed. |
-| IA-F1 | Minor | Iteration Assessment | **RESOLVED** | Document Control fields updated with C4 Cycle 1 review state. IA-F1 finding closed. |
+| IA-F2 | Major | Iteration Assessment | **RESOLVED THIS ITERATION** | Incorrect open issue count — "0 open" stated but 7 open issues exist per Change Request artifact. Stakeholder corrected this in sanction response. All sections of this artifact updated to show 7 open issues (1 blocker ACCEPTED, 6 deferred-next-iteration). |
+| IP-F5 | Major | Iteration Plan | **RESOLVED** | Load testing decoupled from merge dependency. C4 work item 3 executes independently against any CI-green branch. |
+| RL-F5 | Major | Risk List | **RESOLVED** | R003 hard deadline enforced: 5th and FINAL escalation cycle. Mock-auth contingency activated per STK-001. R003 ACCEPTED. |
+| IA-F1 | Minor | Iteration Assessment | **RESOLVED** | Document Control fields updated with C4 Cycle 1 review state. |
 | IP-F4 | Minor | Iteration Plan | **RESOLVED** | Mid-iteration checkpoints present since C2 Cycle 3. |
 | RL-F2 | Minor | Risk List | **RESOLVED** | R008 contingency activated in C2 Cycle 3; R008 now COMPLETE. |
 | DM-F1 | Minor | Design Model | **RESOLVED** | INT-003 office parameter updated (resolved by Code Reviewer in C3). |
 | TC-F2 | Minor | Test Case | **RESOLVED** | UnitTest1.cs placeholder removed (resolved by Code Reviewer in C3). |
-| C4-F1 | Minor | Design Model | **DEFERRED** | Design Model Interface Contracts not updated for async method names. Not a PM artifact. Deferred to Design Model update. Non-blocking. |
+| C4-F1 / DM-F2 | Minor | Design Model | **DEFERRED** | Design Model Interface Contracts not updated for async method names / stale traceability. Not a PM artifact. Deferred to Design Model update in Transition. Non-blocking. |
+| RR-F2 | Major | Review Record | **OPEN (not PM artifact)** | Review Record issue count corrected — awaiting formal closure by Management Reviewer. Not a PM artifact. |
 
-> **All PM-owned findings (IP-F5, RL-F5, IA-F1) are RESOLVED.** All prior findings (IP-F4, RL-F2, DM-F1, TC-F2) are RESOLVED. C4-F1 (Design Model) is DEFERRED — not a PM artifact, non-blocking.
+> **All PM-owned findings are RESOLVED.** IA-F2 (Major) — the only finding on this artifact — is corrected this iteration. RR-F2 (Major) is on the Review Record (not a PM artifact). DM-F2 (Minor) is on the Design Model (not a PM artifact). No open findings remain on PM-owned artifacts.
 
+```plantuml
+@startuml
+title Construction C4 — Issue and Finding Status (Post-Review)
+
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+
+rectangle "Open Issues (7)" as OPEN {
+  rectangle "CR #30 / R003\nseverity: blocker\npriority: critical\nstatus: ACCEPTED\n(mock-auth activated)" as ISS_30 #LightCoral
+  rectangle "#12\ncr:deferred-next-iteration\n(CSV export)" as ISS_12 #LightYellow
+  rectangle "#15\ncr:deferred-next-iteration\n(naming violation)" as ISS_15 #LightYellow
+  rectangle "#17\ncr:deferred-next-iteration\n(dead code DTO)" as ISS_17 #LightYellow
+  rectangle "#18\ncr:deferred-next-iteration\n(test idempotency)" as ISS_18 #LightYellow
+  rectangle "#30\ncr:deferred-next-iteration\n(R003 OIDC — also blocker)" as ISS_30b #LightYellow
+  rectangle "#34\ncr:deferred-next-iteration\n(Design Model async names)" as ISS_34 #LightYellow
+}
+
+rectangle "Open Findings (2 Major, 1 Minor)" as FIND {
+  rectangle "IA-F2 (Major)\nIteration Assessment\nincorrect issue count\nRESOLVED THIS ITERATION" as F_IA2 #LightGreen
+  rectangle "RR-F2 (Major)\nReview Record\nissue count corrected\nawaiting formal closure\nNOT PM artifact" as F_RR2 #LightSalmon
+  rectangle "DM-F2 (Minor)\nDesign Model\nstale traceability\nNOT PM artifact" as F_DM2 #LightYellow
+}
+
+rectangle "Resolved PM Findings" as RESOLVED {
+  rectangle "IP-F5 (Major) RESOLVED" as R_IP5 #LightGreen
+  rectangle "RL-F5 (Major) RESOLVED" as R_RL5 #LightGreen
+  rectangle "IA-F1 (Minor) RESOLVED" as R_IA1 #LightGreen
+}
+
+ISS_30 --> F_IA2 : stakeholder corrected count
+F_IA2 --> R_IP5 : prior findings all closed
+
+@enduml
+```
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
