@@ -1697,11 +1697,23 @@ However, two BLOCKERS prevent declaring IOC readiness:
 | C3 Defect Pattern P1 | C2-CRIT-1, C2-MAJ-1, C2-MIN-4 | Resolved by | PR #28, TC-031, TC-032, TC-035, TC-036, TC-037 |
 | C3 Defect Pattern P2 | C2-MAJ-2, C2-MIN-2 | Resolved by | PR #28, TC-033, TC-034, TC-038, TC-039 |
 | C3 Defect Pattern P3 | C2-MIN-1, C2-MIN-3 | Resolved by | PR #28 — UnitTest1.cs removed |
+| C3 Defect Pattern P4 | R003, STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-028, TC-029, TC-030 (BLOCKED — OPEN) |
+| C3 Defect Pattern P5 | Issue #13, TC-006 | Derives | DirectoryServiceTests.cs (OPEN — Minor) |
 | TI-036 | C2-CRIT-1, Pattern P1 | Refines | TC-036 (formalized) |
 | TI-037 | C2-MAJ-1, Pattern P1 | Refines | TC-037 (formalized) |
 | TI-038 | C2-MAJ-2, Pattern P2 | Refines | TC-038 (formalized) |
 | TI-039 | C2-MIN-2, Pattern P2 | Refines | TC-039 (formalized) |
-| C3 Quality Dimension Assessment | NFR-001..004, AC-001..005, SEC-001..007 | Derives | This Test Case artifact |
+| TI-040 | R003, SEC-006 | Refines | [Pending — blocked by R003 OIDC environment] |
+| TI-041 | NFR-002, R002 | Refines | [Pending — requires deployment for realistic concurrency] |
+| TI-042 | R001, NFR-003 | Refines | [Pending — requires LDAP integration environment] |
+| TI-043 | FR-008 | Refines | [Pending — low risk, defer to next iteration] |
+| TI-044 | NFR-001, FR-004 | Refines | [Pending — requires deployment for realistic data volume] |
+| TA-C3-F1 | R003, STK-003 | Derives | TC-013, TC-014, TC-028, TC-029, TC-030 (OPEN — Major) |
+| TA-C3-F2 | NFR-001, NFR-002, R004 | Derives | TC-011, TC-029, TC-030 (OPEN — Major) |
+| TA-C3-F3 | Issue #13, TC-006 | Derives | DirectoryServiceTests.cs (OPEN — Minor) |
+| TA-C3-F4 | AC-003, AC-004 | Derives | UAT deferred to Transition (OPEN — Minor) |
+| TA-C3-F5 | TC-F2, Issue #14 | Derives | PR #28 (RESOLVED — UnitTest1.cs removed) |
+| C3 Test Analyst Evaluation | NFR-001..004, AC-001..005, SEC-001..007 | Derives | This Test Case artifact |
 | C3 Regression Scope | All 39 TCs, C2 findings resolved | Derives | C3 test execution plan |
 | C3 Regression Verdict | C1/C2 PASS verdicts | Derives | CLEAN — no regressions detected |
 | R003 | STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-028..TC-030 (BLOCKED) |
