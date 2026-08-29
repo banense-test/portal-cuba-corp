@@ -114,20 +114,21 @@ end note
 | C3-OBJ-3: Prepare Documentation | **MET** | User Documentation delivered. Avg quality 9.9. | No action |
 | C3-OBJ-4: Ready for Deployment | **NOT MET** | PR #29 not merged. R003 unconfirmed. Load test not executed. IOC NOT ACHIEVED. | C4: PRs merged, R003 ACCEPTED, load testing deferred to Transition. IOC CONDITIONAL GO. |
 ## Adherence to Plan
-
 | Plan Element | Planned | Actual | Variance |
 |---|---|---|---|
-| C2 + C4 findings resolved | All resolved | C4-1 RESOLVED, C4-2 RESOLVED, C4-3 CONFIRMED in PR #32 | **ON TARGET** — all code-level findings resolved |
-| PR merge to main | PR #32 merged to main | PR #32 APPROVED, NOT merged | **PENDING** — Integrator merge pending |
-| R003 OIDC escalation | STK-003 confirms or mock-auth decision | STK-003 still unconfirmed (5th cycle) | **BLOCKED** — hard deadline enforced (RL-F5); mock-auth contingency ready |
-| Tests passing | 39 of 39 | 31 of 39 (8 BLOCKED by R003) | **BLOCKED** — 8 tests cannot run without OIDC registration |
-| NFR-001/NFR-002 load testing | Executed (decoupled from merge) | NOT YET EXECUTED | **PENDING** — IP-F5 RESOLVED: decoupled, ready to execute |
-| Budget box | ~12.75M tokens (C3 baseline) | [ASSUMPTION — C4 not yet closed] | **IN PROGRESS** |
+| C2 + C4 findings resolved | All resolved | C4-1 RESOLVED, C4-2 RESOLVED, C4-3 CONFIRMED in PR #32 | **MET** — all code-level findings resolved |
+| PR merge to main | PR #32 + #33 merged to main | PR #32 + #33 MERGED to main; PRs #8, #19 closed | **MET** — 0 open PRs |
+| R003 OIDC resolution | STK-003 confirms or mock-auth decision | STK-001 approved mock-auth contingency; R003 ACCEPTED | **RESOLVED (ACCEPTED)** — external dependency retired; 8 tests covered-by-mock |
+| Tests passing | 43 of 43 | 35 of 43 pass, 0 fail, 8 blocked (covered-by-mock) | **PARTIAL** — 8 tests covered-by-mock, not passing; real OIDC is Transition work item |
+| NFR-001/NFR-002 load testing | Executed (decoupled from merge) | NOT EXECUTED | **NOT MET** — deferred to Transition Iter 1 per stakeholder condition (measured values required) |
+| Open issues | All defect issues closed | 7 open issues: 1 blocker (R003 ACCEPTED), 6 deferred-next-iteration | **PARTIAL** — stakeholder corrected: "all defect issues closed (0 open)" was WRONG; 7 open issues exist |
+| Budget box | ~12.75M tokens (C3 baseline) | 10,954,157 tokens | **WITHIN BOX** — under C3 baseline |
+| Agent elapsed time | ~1h 18m (C3 baseline) | 1h 10m 23s | **WITHIN BOX** — faster than C3 |
 | Mid-iteration checkpoints (IP-F4) | CP-1 through CP-4 | Checkpoints present in C4 plan | **RESOLVED** — IP-F4 finding closed |
 | IP-F5 (Major finding) | RESOLVED | Load testing decoupled from merge dependency | **RESOLVED** — work item 3 independent of work item 1 |
-| RL-F5 (Major finding) | RESOLVED | R003 hard deadline enforced, 5th and final cycle | **RESOLVED** — mock-auth contingency ready for stakeholder decision |
-| IA-F1 (Minor finding) | RESOLVED | Document Control fields updated with C4 Cycle 1 state | **RESOLVED** — this update |
-
+| RL-F5 (Major finding) | RESOLVED | R003 hard deadline enforced, mock-auth activated | **RESOLVED** — R003 ACCEPTED per stakeholder |
+| IA-F1 (Minor finding) | RESOLVED | Document Control fields updated with C4 Cycle 1 state | **RESOLVED** |
+| IA-F2 (Major finding) | OPEN | Incorrect open issue count ("0 open" stated, 7 open exist) | **RESOLVED THIS ITERATION** — all sections corrected to show 7 open issues |
 ## Use Cases and Scenarios Implemented
 
 | UC ID | Use Case | FR ID | C4 Finding | Current Status |
