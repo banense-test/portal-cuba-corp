@@ -172,7 +172,6 @@ R008_Rework_Cycle --|> "COMPLETE"
 | R007 | Schedule | PR review findings blocking merge — **ALL C2 + C4 findings RESOLVED in PR #32. PR #32 + #33 MERGED to main.** PR #29, PR #19, and PR #8 superseded and closed. | 1 | 3 | 3 | MINOR | Avoid | **RESOLVED** | Implementer | All C2 findings (1 Critical, 2 Major, 4 Minor) and C4 findings (2 Major: isFeatured, transaction wrapping) resolved in PR #32. Code Reviewer approved. PR #32 + #33 MERGED to main. 0 open PRs. CI GREEN on main (run 33256627567). | N/A — risk retired. If new findings emerge on merged main, re-open as new risk. |
 | R008 | Schedule | **Rework cycle COMPLETE.** C2 Cycle 3 succeeded — PR #28 approved with all findings resolved. C3 Cycle 1 is the integration/IOC iteration. C4 is the final consolidation iteration. | 1 | 2 | 2 | LOW | Accept | **COMPLETE** | Project Manager | Rework succeeded. C4 Cycle 1 complete — PRs merged, R003 ACCEPTED, stakeholder sanction GRANTED. IOC CONDITIONAL GO. | N/A — rework cycle closed. |
 ## Risk Mitigation and Contingency
-
 ### R001 — AD LDAP Attribute Consistency (HIGH, MITIGATED)
 
 **Mitigation status:** PoC decision recorded in Architectural Proof-of-Concept artifact. CR-001 concurred. LdapGateway delivered in C2. NovellLdapConnectionAdapter methods throw NotImplementedException — documented as `[DEFERRED — requires integration testing with real AD server (R001)]` (C2-MIN-1). Missing AD attributes default to "N/A" per PoC decision.
@@ -186,52 +185,52 @@ R008_Rework_Cycle --|> "COMPLETE"
 **Contingency trigger:** Adoption <50% after 1 month.
 **Contingency action:** Mandatory training + disable Excel template sharing.
 
-### R003 — OIDC Registration (HIGH, ESCALATED) — 5TH AND FINAL CYCLE — RL-F5 GOVERNANCE CORRECTION
+### R003 — OIDC Registration (HIGH, ACCEPTED) — STAKEHOLDER DECISION: MOCK-AUTH ACTIVATED
 
-**Mitigation status:** Mock auth active for development. STK-003 has NOT confirmed OIDC client registration. **Escalation has PASSED across 5 cycles — this is the FINAL escalation (RL-F5).**
+**Mitigation status:** STK-001 approved mock-auth contingency activation (2026-08-29). R003 transitions from ESCALATED to ACCEPTED. This is not a process failure — five escalations to an external party detected the dependency, chased it, and prepared the alternative. STK-003 owes this iteration nothing; OIDC registration is Infrastructure's, and this project's scope explicitly excludes all Keycloak work (CON-004).
 
-**RL-F5 RESOLUTION — Hard deadline and binding decision point:**
-- **Hard deadline:** End of C4 iteration. This is the 5th and FINAL escalation cycle. If STK-003 does not confirm OIDC registration by this deadline, the mock-auth contingency is FORMALLY PRESENTED to STK-001 (Laura Gómez, HR Director — project sponsor) for a BINDING decision.
-- **Decision presented to stakeholder:** (a) Approve mock-auth + manual user-mapping as the IOC path — R003 transitions to ACCEPTED; or (b) Reject mock-auth — Construction extends until OIDC is confirmed by STK-003.
-- **R003 must transition to RESOLVED (OIDC confirmed) or ACCEPTED (mock-auth approved) by end of C4.** Perpetual escalation without a decision is no longer tolerated. This is the final cycle.
+**Stakeholder decision (binding):**
+- Mock-auth contingency is ACTIVATED. Portal proceeds to Transition with mock auth.
+- Real OIDC integration is a named work item in Transition with an owner.
+- 8 tests stay marked as covered-by-mock — NOT passing — until they run against the real client.
+- Mock-auth has an expiry date documented in the Transition Iteration Plan.
 
-**Escalation history:** 5 cycles of escalation to STK-001 with no response from STK-003. 8 of 39 tests remain BLOCKED. This is the critical path for IOC achievement.
+**Escalation history:** 5 cycles of escalation to STK-003 with no confirmation. 8 tests covered-by-mock. This is the critical path for IOC — now retired by stakeholder decision.
 
-**Contingency action:** If STK-003 cannot provide OIDC registration by end of C4, portal launches with mock auth and a manual user-mapping table — a scope reduction requiring STK-001 stakeholder approval. This is formally presented as a decision point, not perpetually deferred.
+**Contingency action:** Real OIDC integration is a Transition work item. If real OIDC is not integrated by the mock-auth expiry date, escalate to STK-001 for a binding decision on whether to extend mock-auth or delay deployment.
 
-### R004 — Performance (MODERATE, ACTIVE — C4 EXECUTION)
+### R004 — Performance (MODERATE, ACTIVE — DEFERRED TO TRANSITION ITER 1)
 
-**Mitigation status:** SAD specifies 8 indexed queries, connection pooling. **IP-F5 RESOLVED:** Load testing DECOUPLED from merge dependency — in C4, load testing runs against feature/C4-rework branch (CI green, run 33255680288) if merge to main is delayed. Same codebase. This eliminates the cascade failure where a merge delay blocked performance verification.
+**Mitigation status:** SAD specifies 8 indexed queries, connection pooling. **IP-F5 RESOLVED:** Load testing decoupled from merge dependency. **Stakeholder condition:** NFR-001/NFR-002 load testing is Transition Iter 1 exit criterion. Measured values required — not "tested", the numbers. Page load under 3 seconds and clock response under 1 second are acceptance criteria that depend on nobody outside the team. Sanctioning operational capability without measuring them is sanctioning on faith.
 **Contingency trigger:** Load test exceeds NFR-001 (3s page load) or NFR-002 (1s clocking response).
-**Contingency action:** Query optimization → caching layer → stakeholder consultation on threshold adjustment.
+**Contingency action:** Query optimization → caching layer → stakeholder consultation on threshold adjustment. Report measured values against thresholds.
 
 ### R005 — UI Conformance (MODERATE, MITIGATED)
 
-**Mitigation status:** Design Model V001–V010 aligned with CON-011. PR #32 approved — presentation layer conformance verified by Code Reviewer.
+**Mitigation status:** Design Model V001–V010 aligned with CON-011. PR #32 approved and merged to main — presentation layer conformance verified by Code Reviewer.
 **Contingency trigger:** Reviewer flags visual divergence from employee-portal-design.html.
 **Contingency action:** UI Designer updates Razor Pages to match design source exactly.
 
 ### R006 — Offline Retry (SIGNIFICANT, MITIGATED)
 
-**Mitigation status:** PoC decision recorded (CR-002 concurred). ClockingService implements localStorage retry with idempotency key. C2-MAJ-2 (antiforgery token) fix RESOLVED. C4-2 (transaction wrapping) RESOLVED in PR #32 — all write operations wrapped in `ExecuteInTransactionAsync`, ensuring atomic retry. Offline retry mechanism functional.
+**Mitigation status:** PoC decision recorded (CR-002 concurred). ClockingService implements localStorage retry with idempotency key. C2-MAJ-2 (antiforgery token) fix RESOLVED. C4-2 (transaction wrapping) RESOLVED in PR #32 (MERGED to main) — all write operations wrapped in `ExecuteInTransactionAsync`, ensuring atomic retry. Offline retry mechanism functional.
 
 **Contingency trigger:** localStorage retry fails in >10% of 5-minute network drop test cases.
 **Contingency action:** Narrow AC-005 scope with stakeholder — reduce retry window or accept manual re-clocking after extended outages.
 
 ### R007 — PR Review Findings (MINOR, RESOLVED)
 
-**Mitigation status:** All C2 findings (C2-CRIT-1, C2-MAJ-1, C2-MAJ-2, C2-MIN-1..4) and C4 findings (C4-1 isFeatured, C4-2 transaction wrapping) RESOLVED in PR #32. Code Reviewer approved PR #32. PR #29, PR #19, and PR #8 superseded. Integrator to merge PR #32 to main in C4.
+**Mitigation status:** All C2 findings (C2-CRIT-1, C2-MAJ-1, C2-MAJ-2, C2-MIN-1..4) and C4 findings (C4-1 isFeatured, C4-2 transaction wrapping) RESOLVED in PR #32. Code Reviewer approved. PR #32 + #33 MERGED to main. 0 open PRs. CI GREEN on main (run 33256627567).
 
 **Contingency trigger:** N/A — risk retired.
-**Contingency action:** If new Critical/Major findings emerge on merged main during C4 re-review, register as a new risk.
+**Contingency action:** If new Critical/Major findings emerge on merged main, register as a new risk.
 
 ### R008 — Rework Cycle Schedule Risk (LOW, COMPLETE)
 
-**Mitigation status:** Rework cycle COMPLETE. C2 Cycle 3 succeeded — PR #28 approved with all 7 findings resolved. C3 Cycle 1 is the integration/IOC iteration. C4 is the final consolidation iteration. The rework cycle spanned C2 Cycles 2-3 (2 cycles) due to a process failure (zero-execution in C2 Cycle 2), which was corrected by adding the Integrator role and mid-iteration checkpoints (IP-F4).
+**Mitigation status:** Rework cycle COMPLETE. C2 Cycle 3 succeeded — PR #28 approved with all 7 findings resolved. C3 Cycle 1 is the integration/IOC iteration. C4 is the final consolidation iteration. The rework cycle spanned C2 Cycles 2-3 (2 cycles) due to a process failure (zero-execution in C2 Cycle 2), which was corrected by adding the Integrator role and mid-iteration checkpoints (IP-F4). C4 Cycle 1 complete — stakeholder sanction GRANTED, IOC CONDITIONAL GO.
 
 **Contingency trigger:** N/A — rework cycle closed.
 **Contingency action:** If C4 re-review produces new Critical/Major findings, a new rework risk would be registered with a focused mitigation plan.
-
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
