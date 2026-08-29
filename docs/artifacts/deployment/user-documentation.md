@@ -2,15 +2,15 @@
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | **Publication-Ready** — Final quality pass complete (Transition Iter 1, Cycle 1) |
+| Status | **Publication-Ready** — Final quality pass complete (Transition Iter 2, Cycle 1) |
 | Milestone Target | End-of-Transition (PRD) — **NOT YET ACHIEVED** |
-| Iteration | 1 (Cycle 1) |
+| Iteration | 2 (Cycle 1) |
 | Date | 2026-08-29 |
-| Prior Phase | Construction C4 Cycle 1 (PR #32/#33 approved & merged; IOC CONDITIONAL GO; stakeholder sanction GRANTED with 3 binding conditions) |
+| Prior Phase | Transition Iteration 1 — Publication-Ready; zero findings on User Documentation |
 | Author | Technical Writer (Deployment Discipline) |
 | Audience | Employees (STK-004), HR Administrators (STK-001), Infrastructure team (STK-003) |
 | Coverage | Install + Operate + Use + Maintain for final release build (UC-001 through UC-010) |
-| Transition Evolution | Final quality pass: Document Control updated to Transition phase. All user guide, operations guide, FAQ, and traceability content verified accurate against final system behavior (SAD deployment view, Design Model C4 baseline). Styleguide compliance audit passed — terminology consistent across all sections. No findings or CRs target User Documentation in any iteration. Documentation feedback mechanism added to FAQ and Support section. All content PRESERVED from Construction C4 — no behavioral changes in Transition. |
+| Transition Evolution | Iteration 1: Final quality pass — all content verified against final system behavior. Iteration 2: Operations Guide updated with deployment readiness status — mock-auth expiry (2026-12-31), R003 OIDC formally accepted risk, Windows Server deployment NOT PERFORMED, NFR measured values from CI. Deployment readiness state machine diagram added. All other sections PRESERVED — no behavioral changes. |
 | Styleguide | Terminological contract: "Clock In/Out" (not "punch" or "check-in"), "News item" (not "article" or "post"), "Worker category" (not "employee type" or "classification"), "Directory" (not "phonebook" or "address book"), "Unpublish" (not "hide" or "remove"). Active voice. Task-oriented headings. |
 ## Overview
 
