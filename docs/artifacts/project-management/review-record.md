@@ -271,6 +271,16 @@ All tests exercise real assertions on the code changes — no decoy `Assert.NotN
 | **NFR-001/NFR-002: Transition Iter 1 exit criterion** | Page load <3s and clock response <1s are acceptance criteria that depend on nobody outside the team; sanctioning without measuring is sanctioning on faith | Load testing must execute in Transition Iter 1 with measured values reported against thresholds — not "tested", the numbers |
 | **Open issues correction: 7, not 0** | Stakeholder corrected the "0 open defect issues" claim — 1 blocker (R003) + 6 deferred-next-iteration | IA-F2/RR-F2 findings recorded; artifacts must correct the count |
 
+### Stakeholder Findings (C4 Cycle 1 — folded from stakeholder feedback)
+
+| Stakeholder Finding | Source | Status | Review Coordinator Action |
+|---|---|---|---|
+| **Correction: "all defect issues closed (0 open)" is wrong — 7 open issues, 1 blocker (R003 OIDC, severity:blocker + priority:critical)** | STK-001 C4 sanction response | ADDRESSED — RR-F2 content corrected in Review Record Document Control; IA-F2 escalated to PM for Iteration Assessment correction | Verified against Change Request artifact: 7 open issues confirmed (1 blocker R003, 6 deferred-next-iteration) |
+| **Decision: Activate mock-auth contingency now** | STK-001 C4 sanction response | ACCEPTED — R003 transitions to ACCEPTED; 8 tests marked covered-by-mock; real OIDC is Transition work item | Verified against project scope: CON-004 excludes Keycloak work; STK-003 has no obligation to this project |
+| **Condition: NFR-001/NFR-002 are Transition Iter 1 exit criterion with measured values** | STK-001 C4 sanction response | RECORDED — load testing must execute in Transition Iter 1; report measured values against thresholds (page load <3s, clock response <1s) | Verified against AC-001, AC-003, NFR-001, NFR-002 — these are declared acceptance criteria |
+| **Condition: Real OIDC integration is named Transition work item with owner; 8 tests stay covered-by-mock** | STK-001 C4 sanction response | RECORDED — Transition work item; 8 tests stay covered-by-mock until real client | Verified against R003, STK-003, CON-004 |
+| **Condition: Mock-auth has expiry date** | STK-001 C4 sanction response | RECORDED — expiry date must be documented in Transition Iteration Plan | Verified — cheap option becomes permanent unless expiry is named |
+
 ### Open Action Items
 
 | Item | Owner | Priority | Description | Review Coordinator Escalation |
