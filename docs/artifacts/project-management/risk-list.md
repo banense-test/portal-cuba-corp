@@ -1,16 +1,17 @@
 ## Document Control
+
 | Field | Value |
 |---|---|
-| Phase | Construction |
+| Phase | Transition |
 | Status | Active |
-| Milestone Target | End-of-Construction (IOC) — **CONDITIONAL GO — stakeholder sanction GRANTED** |
-| Iteration | 4 (Cycle 1) |
+| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED** |
+| Iteration | 1 (Cycle 1) |
 | Date | 2026-08-29 |
-| Prior Phase | Construction C3 Cycle 1 — PR #29 APPROVED; 0 Critical/0 Major code; 31/39 tests pass, 8 BLOCKED (R003); load test NOT EXECUTED; stakeholder sanction REFUSED 3rd time |
-| Evolution | C4 Cycle 1 Risk List evolved (post-review): R003 ACCEPTED — STK-001 approved mock-auth contingency activation; R004 deferred to Transition Iter 1 per stakeholder condition (measured values required); R007 RESOLVED — PR #32 + #33 MERGED to main, 0 open PRs, CI GREEN; R008 COMPLETE; R001/R002/R005/R006 status unchanged; stakeholder sanction GRANTED with 3 binding conditions; IOC CONDITIONAL GO |
-| Finding RL-F2 | RESOLVED — R008 contingency activated and COMPLETE (rework succeeded) |
-| Finding RL-F5 | RESOLVED — R003 ACCEPTED per STK-001 decision. Mock-auth contingency activated. Real OIDC is Transition work item. 8 tests covered-by-mock. Mock-auth has expiry date. |
+| Prior Phase | Construction C4 Cycle 1 — R003 ACCEPTED (mock-auth); R004 deferred to Transition (measured values required); R007 RESOLVED; R008 COMPLETE; R001/R002/R005/R006 unchanged |
+| Evolution | Transition Iter 1 Risk List evolved from Construction C4. R003 transition action: real OIDC verification. R004 transition action: load testing with measured values. R005/R006/R007: verify in deployment. R008: fulfill 3 binding conditions. New risks: R009 (deployment to Windows Server) and R010 (user acceptance / AC verification). |
+
 ## Risk Classification
+
 Risks are classified by **Probability (P) × Impact (I) = Exposure**, yielding a **Magnitude** rating. The scale is 1–3 for both probability and impact, producing exposure values from 1 to 9.
 
 | Exposure | Magnitude | Action |
@@ -23,220 +24,204 @@ Risks are classified by **Probability (P) × Impact (I) = Exposure**, yielding a
 
 **Strategy options:** Avoid (eliminate the threat), Transfer (shift to a third party), Accept (acknowledge and prepare mitigation + contingency).
 
+## Risk Register
+
 ```plantuml
 @startuml
-title Portal Cuba Corp — Construction Risk Register (C4 Cycle 1 — Post-Review)
+title Portal Cuba Corp — Transition Risk Register
 
 skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F0F4FF
+skinparam classBorderColor #336699
 
 class R001_AD_LDAP {
   + id : R001
-  + category : TECHNICAL
   + P : 3
   + I : 3
   + exposure : 9
   + magnitude : HIGH
-  + strategy : ACCEPT
-  + status : MITIGATED
+  + strategy : Accept
+  + status : MONITORING
   + owner : Software Architect
-  + action : LdapGateway delivered (C2);
-    NovellLdapConnectionAdapter stub
-    deferred to integration testing
+  + mitigation : LDAP attribute mapping verified in Elaboration PoC
+  + contingency : Manual AD attribute fix via Infra team
+  + transition_action : Verify directory display in deployment env
 }
 
 class R002_Adoption {
   + id : R002
-  + category : BUSINESS
   + P : 3
   + I : 2
   + exposure : 6
   + magnitude : SIGNIFICANT
-  + strategy : ACCEPT
+  + strategy : Accept
   + status : ACTIVE
   + owner : Project Manager
-  + action : Transition communication plan
+  + mitigation : User documentation + stakeholder communication
+  + contingency : Targeted training session for low-adoption offices
+  + transition_action : User docs finalized, adoption tracking plan
 }
 
 class R003_OIDC {
   + id : R003
-  + category : EXTERNAL
   + P : 3
   + I : 3
   + exposure : 9
   + magnitude : HIGH
-  + strategy : ACCEPT
-  + status : ACCEPTED
+  + strategy : Accept
+  + status : ACCEPTED — mock-auth active
   + owner : Software Architect
-  + action : STK-001 approved mock-auth;
-    8 tests covered-by-mock;
-    real OIDC = Transition work item;
-    mock-auth has expiry date
+  + mitigation : Mock-auth activated per STK-001
+  + contingency : Real OIDC is Transition work item
+  + transition_action : Real OIDC client registration and verification
 }
 
-class R004_Performance {
+class R004_NFR_Performance {
   + id : R004
-  + category : TECHNICAL
-  + P : 2
-  + I : 2
-  + exposure : 4
-  + magnitude : MODERATE
-  + strategy : ACCEPT
-  + status : ACTIVE — Transition Iter 1
-  + owner : Software Architect
-  + action : NFR-001 NFR-002 load testing
-    deferred to Transition Iter 1;
-    measured values required
-}
-
-class R005_UI_Conformance {
-  + id : R005
-  + category : TECHNICAL
-  + P : 2
-  + I : 2
-  + exposure : 4
-  + magnitude : MODERATE
-  + strategy : ACCEPT
-  + status : MITIGATED
-  + owner : UI Designer
-  + action : PR #32 MERGED to main;
-    design conformance verified
-}
-
-class R006_Offline_Retry {
-  + id : R006
-  + category : TECHNICAL
   + P : 2
   + I : 3
   + exposure : 6
   + magnitude : SIGNIFICANT
-  + strategy : ACCEPT
-  + status : MITIGATED
-  + owner : Software Architect
-  + action : C4-2 transaction wrapping
-    RESOLVED in PR #32 MERGED;
-    retry mechanism functional
+  + strategy : Accept
+  + status : ACTIVE — Transition exit criterion
+  + owner : Test Manager
+  + mitigation : Load testing in Transition Iter 1
+  + contingency : Performance optimization sprint if thresholds not met
+  + transition_action : Measured values for NFR-001 and NFR-002
 }
 
-class R007_PR_Findings {
-  + id : R007
-  + category : SCHEDULE
-  + P : 1
-  + I : 3
-  + exposure : 3
-  + magnitude : MINOR
-  + strategy : AVOID
-  + status : RESOLVED
-  + owner : Implementer
-  + action : All C2 + C4 findings
-    RESOLVED; PR #32 + #33 MERGED
-}
-
-class R008_Rework_Cycle {
-  + id : R008
-  + category : SCHEDULE
+class R005_Design_Conformance {
+  + id : R005
   + P : 1
   + I : 2
   + exposure : 2
   + magnitude : LOW
-  + strategy : ACCEPT
-  + status : COMPLETE
-  + owner : Project Manager
-  + action : Rework succeeded;
-    sanction GRANTED; IOC CONDITIONAL GO
+  + strategy : Accept
+  + status : RESOLVED
+  + owner : UI Designer
+  + mitigation : Design Model V010 matches CON-011
+  + contingency : N/A
+  + transition_action : Verify in deployment
 }
 
-R001_AD_LDAP --|> "HIGH"
-R002_Adoption --|> "SIGNIFICANT"
-R003_OIDC --|> "HIGH (ACCEPTED)"
-R004_Performance --|> "MODERATE"
-R005_UI_Conformance --|> "MODERATE"
-R006_Offline_Retry --|> "SIGNIFICANT"
-R007_PR_Findings --|> "RESOLVED"
-R008_Rework_Cycle --|> "COMPLETE"
+class R006_Offline_Sync {
+  + id : R006
+  + P : 2
+  + I : 3
+  + exposure : 6
+  + magnitude : SIGNIFICANT
+  + strategy : Accept
+  + status : RESOLVED — PoC verified
+  + owner : Software Architect
+  + mitigation : ClockingService transaction wrapping verified
+  + contingency : N/A
+  + transition_action : Verify in deployment env
+}
+
+class R007_Code_Quality {
+  + id : R007
+  + P : 1
+  + I : 3
+  + exposure : 3
+  + magnitude : MINOR
+  + strategy : Accept
+  + status : RESOLVED
+  + owner : Implementer
+  + mitigation : All PRs merged, CI green
+  + contingency : N/A
+  + transition_action : Monitor CI in deployment
+}
+
+class R008_Stakeholder_Sanction {
+  + id : R008
+  + P : 1
+  + I : 3
+  + exposure : 3
+  + magnitude : MINOR
+  + strategy : Accept
+  + status : COMPLETE
+  + owner : Project Manager
+  + mitigation : Sanction GRANTED with 3 binding conditions
+  + contingency : N/A
+  + transition_action : Fulfill 3 binding conditions for PR
+}
+
+class R009_Deployment {
+  + id : R009
+  + P : 2
+  + I : 3
+  + exposure : 6
+  + magnitude : SIGNIFICANT
+  + strategy : Accept
+  + status : NEW — Transition risk
+  + owner : Software Architect
+  + mitigation : Deployment verification on internal Windows Server
+  + contingency : Rollback to last known good if deployment fails
+  + transition_action : Verify portal accessible from all 3 offices
+}
+
+class R010_User_Acceptance {
+  + id : R010
+  + P : 2
+  + I : 3
+  + exposure : 6
+  + magnitude : SIGNIFICANT
+  + strategy : Accept
+  + status : NEW — Transition risk
+  + owner : Project Manager
+  + mitigation : AC-001 through AC-005 verification
+  + contingency : Targeted rework if acceptance criteria not met
+  + transition_action : Stakeholder sign-off on acceptance criteria
+}
+
+R001_AD_LDAP --> R009_Deployment : "verified in deployment"
+R003_OIDC --> R009_Deployment : "OIDC client must exist"
+R004_NFR_Performance --> R010_User_Acceptance : "performance affects adoption"
+R002_Adoption --> R010_User_Acceptance : "adoption is acceptance criterion"
 
 @enduml
 ```
-## Risk Register
-| ID | Category | Description | P | I | Exposure | Magnitude | Strategy | Status | Owner | Mitigation | Contingency |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| R001 | Technical | AD LDAP attribute inconsistency across 3 offices — job title, extension may not be filled consistently | 3 | 3 | 9 | HIGH | Accept | **MITIGATED** | Software Architect | PoC decision recorded (CR-001). LdapGateway delivered in C2. NovellLdapConnectionAdapter methods throw NotImplementedException — deferred to integration testing with real AD server. Missing attributes default to "N/A". | If >30% of AD records show missing attributes during integration testing, escalate to STK-003 for AD data cleanup before directory goes live. |
-| R002 | Business | Digital clocking adoption — employees may keep using Excel out of habit | 3 | 2 | 6 | SIGNIFICANT | Accept | ACTIVE | Project Manager | Plan Transition communication strategy: announce portal launch, provide quick-start guide, HR director endorsement (STK-001). | If adoption <50% after 1 month post-launch, schedule mandatory clocking training session and disable Excel template sharing. |
-| R003 | External | OIDC client registration with Keycloak — STK-003 must provide registration before login testing. **STAKEHOLDER DECISION: mock-auth contingency ACTIVATED. R003 ACCEPTED.** | 3 | 3 | 9 | HIGH | Accept | **ACCEPTED** | Software Architect | **STK-001 approved mock-auth contingency activation (2026-08-29).** R003 transitions from ESCALATED to ACCEPTED. 8 tests marked covered-by-mock, NOT passing. Real OIDC integration is a named work item in Transition with an owner. Mock-auth has an expiry date documented in the Transition Iteration Plan. Five escalations to STK-003 across 4 iterations — this is the process working: it detected the dependency, chased it, and prepared the alternative. STK-003 owes this iteration nothing; OIDC registration is Infrastructure's, and this project's scope explicitly excludes all Keycloak work. | Real OIDC integration is a Transition work item. 8 tests stay covered-by-mock until they run against the real client. Mock-auth has an expiry date — if real OIDC is not integrated by that date, escalate to STK-001 for a binding decision on whether to extend mock-auth or delay deployment. |
-| R004 | Technical | Page load performance (NFR-001: <3s) and clocking response time (NFR-002: <1s) | 2 | 2 | 4 | MODERATE | Accept | **ACTIVE — deferred to Transition Iter 1** | Software Architect | SAD specifies connection pooling, indexed queries (8 indexes justified by UC/NFR). **IP-F5 RESOLVED:** Load testing decoupled from merge dependency. **Stakeholder condition:** NFR-001/NFR-002 load testing is Transition Iter 1 exit criterion. Measured values required — not "tested", the numbers. Page load under 3 seconds and clock response under 1 second are acceptance criteria that depend on nobody outside the team. | If load test exceeds thresholds, optimize queries first, then consider caching layer. Report measured values against thresholds. |
-| R005 | Technical | UI conformance with mandatory design (CON-011: employee-portal-design.html) | 2 | 2 | 4 | MODERATE | Accept | **MITIGATED** | UI Designer | Design Model V001–V010 aligned with CON-011. PR #32 approved and merged to main — presentation layer conformance verified by Code Reviewer. | If Reviewer flags visual divergence, UI Designer updates Razor Pages to match design source. |
-| R006 | Technical | Offline clocking retry — AC-005 requires 5-minute network drop tolerance with data sync on recovery | 2 | 3 | 6 | SIGNIFICANT | Accept | **MITIGATED** | Software Architect | PoC decision recorded (CR-002). ClockingService implements localStorage retry with idempotency key. C2-MAJ-2 (antiforgery) fix RESOLVED. C4-2 (transaction wrapping) RESOLVED in PR #32 (MERGED to main) — all write operations wrapped in `ExecuteInTransactionAsync`, ensuring atomic retry. Offline retry mechanism functional. | If localStorage retry fails to recover clocking data after 5-min drop in >10% of test cases, narrow AC-005 scope with stakeholder. |
-| R007 | Schedule | PR review findings blocking merge — **ALL C2 + C4 findings RESOLVED in PR #32. PR #32 + #33 MERGED to main.** PR #29, PR #19, and PR #8 superseded and closed. | 1 | 3 | 3 | MINOR | Avoid | **RESOLVED** | Implementer | All C2 findings (1 Critical, 2 Major, 4 Minor) and C4 findings (2 Major: isFeatured, transaction wrapping) resolved in PR #32. Code Reviewer approved. PR #32 + #33 MERGED to main. 0 open PRs. CI GREEN on main (run 33256627567). | N/A — risk retired. If new findings emerge on merged main, re-open as new risk. |
-| R008 | Schedule | **Rework cycle COMPLETE.** C2 Cycle 3 succeeded — PR #28 approved with all findings resolved. C3 Cycle 1 is the integration/IOC iteration. C4 is the final consolidation iteration. | 1 | 2 | 2 | LOW | Accept | **COMPLETE** | Project Manager | Rework succeeded. C4 Cycle 1 complete — PRs merged, R003 ACCEPTED, stakeholder sanction GRANTED. IOC CONDITIONAL GO. | N/A — rework cycle closed. |
+
 ## Risk Mitigation and Contingency
-### R001 — AD LDAP Attribute Consistency (HIGH, MITIGATED)
 
-**Mitigation status:** PoC decision recorded in Architectural Proof-of-Concept artifact. CR-001 concurred. LdapGateway delivered in C2. NovellLdapConnectionAdapter methods throw NotImplementedException — documented as `[DEFERRED — requires integration testing with real AD server (R001)]` (C2-MIN-1). Missing AD attributes default to "N/A" per PoC decision.
+| Risk | P | I | Exposure | Magnitude | Strategy | Status | Owner | Mitigation | Contingency | Transition Action |
+|---|---|---|---|---|---|---|---|---|---|---|
+| R001 | 3 | 3 | 9 | HIGH | Accept | MONITORING | Software Architect | LDAP attribute mapping verified in Elaboration PoC | Manual AD attribute fix via Infra team (CON-010) | Verify directory display in deployment env across 3 offices |
+| R002 | 3 | 2 | 6 | SIGNIFICANT | Accept | ACTIVE | Project Manager | User documentation + stakeholder communication | Targeted training session for low-adoption offices | User docs finalized; adoption tracking plan for BG-003 (80% in 3 months) |
+| R003 | 3 | 3 | 9 | HIGH | Accept | ACCEPTED — mock-auth active | Software Architect | Mock-auth activated per STK-001 | Real OIDC is Transition work item (binding condition #2) | Real OIDC client registration and login flow verification; mock-auth expiry date documented |
+| R004 | 2 | 3 | 6 | SIGNIFICANT | Accept | ACTIVE — Transition exit criterion | Test Manager | Load testing in Transition Iter 1 | Performance optimization sprint if thresholds not met | Measured values for NFR-001 (< 3s) and NFR-002 (< 1s) — binding condition #1 |
+| R005 | 1 | 2 | 2 | LOW | Accept | RESOLVED | UI Designer | Design Model V010 matches CON-011 | N/A | Verify visual conformance in deployment |
+| R006 | 2 | 3 | 6 | SIGNIFICANT | Accept | RESOLVED — PoC verified | Software Architect | ClockingService transaction wrapping verified | N/A | Verify offline sync (AC-005) in deployment env |
+| R007 | 1 | 3 | 3 | MINOR | Accept | RESOLVED | Implementer | All PRs merged, CI green (run 33256627567) | N/A | Monitor CI in deployment |
+| R008 | 1 | 3 | 3 | MINOR | Accept | COMPLETE | Project Manager | Sanction GRANTED with 3 binding conditions | N/A | Fulfill 3 binding conditions for PR milestone |
+| R009 | 2 | 3 | 6 | SIGNIFICANT | Accept | NEW | Software Architect | Deployment verification on internal Windows Server (CON-006) | Rollback to last known good if deployment fails | Verify portal accessible from all 3 offices on corporate network (CON-007) |
+| R010 | 2 | 3 | 6 | SIGNIFICANT | Accept | NEW | Project Manager | AC-001 through AC-005 verification | Targeted rework if acceptance criteria not met | Stakeholder sign-off on all 5 acceptance criteria for PR milestone |
 
-**Contingency trigger:** >30% of AD records show missing attributes during integration testing.
-**Contingency action:** Escalate to STK-003 (Infrastructure team) for AD data cleanup. Portal directory launch may be delayed until AD data quality is acceptable.
+### Risk Summary by Magnitude
 
-### R002 — Digital Clocking Adoption (SIGNIFICANT, ACTIVE)
+| Magnitude | Count | Risks |
+|---|---|---|
+| HIGH | 2 | R001, R003 |
+| SIGNIFICANT | 5 | R002, R004, R006, R009, R010 |
+| MINOR | 2 | R007, R008 |
+| LOW | 1 | R005 |
+| **Total** | **10** | |
 
-**Mitigation status:** Transition phase planning. Not actionable in Construction — adoption tracking begins post-launch.
-**Contingency trigger:** Adoption <50% after 1 month.
-**Contingency action:** Mandatory training + disable Excel template sharing.
+### Transition Risk Focus
 
-### R003 — OIDC Registration (HIGH, ACCEPTED) — STAKEHOLDER DECISION: MOCK-AUTH ACTIVATED
+The two HIGH risks (R001, R003) and the Transition-specific SIGNIFICANT risks (R004, R009, R010) dominate this iteration's risk landscape. R003 and R004 are directly tied to stakeholder binding conditions — failure to address them blocks the PR milestone. R009 and R010 are new risks introduced by the Transition phase itself: deployment to the production environment and user acceptance verification.
 
-**Mitigation status:** STK-001 approved mock-auth contingency activation (2026-08-29). R003 transitions from ESCALATED to ACCEPTED. This is not a process failure — five escalations to an external party detected the dependency, chased it, and prepared the alternative. STK-003 owes this iteration nothing; OIDC registration is Infrastructure's, and this project's scope explicitly excludes all Keycloak work (CON-004).
-
-**Stakeholder decision (binding):**
-- Mock-auth contingency is ACTIVATED. Portal proceeds to Transition with mock auth.
-- Real OIDC integration is a named work item in Transition with an owner.
-- 8 tests stay marked as covered-by-mock — NOT passing — until they run against the real client.
-- Mock-auth has an expiry date documented in the Transition Iteration Plan.
-
-**Escalation history:** 5 cycles of escalation to STK-003 with no confirmation. 8 tests covered-by-mock. This is the critical path for IOC — now retired by stakeholder decision.
-
-**Contingency action:** Real OIDC integration is a Transition work item. If real OIDC is not integrated by the mock-auth expiry date, escalate to STK-001 for a binding decision on whether to extend mock-auth or delay deployment.
-
-### R004 — Performance (MODERATE, ACTIVE — DEFERRED TO TRANSITION ITER 1)
-
-**Mitigation status:** SAD specifies 8 indexed queries, connection pooling. **IP-F5 RESOLVED:** Load testing decoupled from merge dependency. **Stakeholder condition:** NFR-001/NFR-002 load testing is Transition Iter 1 exit criterion. Measured values required — not "tested", the numbers. Page load under 3 seconds and clock response under 1 second are acceptance criteria that depend on nobody outside the team. Sanctioning operational capability without measuring them is sanctioning on faith.
-**Contingency trigger:** Load test exceeds NFR-001 (3s page load) or NFR-002 (1s clocking response).
-**Contingency action:** Query optimization → caching layer → stakeholder consultation on threshold adjustment. Report measured values against thresholds.
-
-### R005 — UI Conformance (MODERATE, MITIGATED)
-
-**Mitigation status:** Design Model V001–V010 aligned with CON-011. PR #32 approved and merged to main — presentation layer conformance verified by Code Reviewer.
-**Contingency trigger:** Reviewer flags visual divergence from employee-portal-design.html.
-**Contingency action:** UI Designer updates Razor Pages to match design source exactly.
-
-### R006 — Offline Retry (SIGNIFICANT, MITIGATED)
-
-**Mitigation status:** PoC decision recorded (CR-002 concurred). ClockingService implements localStorage retry with idempotency key. C2-MAJ-2 (antiforgery token) fix RESOLVED. C4-2 (transaction wrapping) RESOLVED in PR #32 (MERGED to main) — all write operations wrapped in `ExecuteInTransactionAsync`, ensuring atomic retry. Offline retry mechanism functional.
-
-**Contingency trigger:** localStorage retry fails in >10% of 5-minute network drop test cases.
-**Contingency action:** Narrow AC-005 scope with stakeholder — reduce retry window or accept manual re-clocking after extended outages.
-
-### R007 — PR Review Findings (MINOR, RESOLVED)
-
-**Mitigation status:** All C2 findings (C2-CRIT-1, C2-MAJ-1, C2-MAJ-2, C2-MIN-1..4) and C4 findings (C4-1 isFeatured, C4-2 transaction wrapping) RESOLVED in PR #32. Code Reviewer approved. PR #32 + #33 MERGED to main. 0 open PRs. CI GREEN on main (run 33256627567).
-
-**Contingency trigger:** N/A — risk retired.
-**Contingency action:** If new Critical/Major findings emerge on merged main, register as a new risk.
-
-### R008 — Rework Cycle Schedule Risk (LOW, COMPLETE)
-
-**Mitigation status:** Rework cycle COMPLETE. C2 Cycle 3 succeeded — PR #28 approved with all 7 findings resolved. C3 Cycle 1 is the integration/IOC iteration. C4 is the final consolidation iteration. The rework cycle spanned C2 Cycles 2-3 (2 cycles) due to a process failure (zero-execution in C2 Cycle 2), which was corrected by adding the Integrator role and mid-iteration checkpoints (IP-F4). C4 Cycle 1 complete — stakeholder sanction GRANTED, IOC CONDITIONAL GO.
-
-**Contingency trigger:** N/A — rework cycle closed.
-**Contingency action:** If C4 re-review produces new Critical/Major findings, a new rework risk would be registered with a focused mitigation plan.
 ## Traceability
+
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| R001 | Work Order R001 | Refines | SAD COMP-005, ADR-003, Architectural PoC (PoC-R001), LdapGateway (C2 delivered), NovellLdapConnectionAdapter (DEFERRED) |
-| R002 | Work Order R002 | Refines | User Documentation (Transition), Iteration Plan |
-| R003 | CON-004 (Keycloak OIDC) | Derives | SAD COMP-007, ADR-005, Architectural PoC (PoC-R003), 8 covered-by-mock tests, STK-001 decision (mock-auth ACTIVATED), real OIDC = Transition work item, mock-auth expiry date in Transition Plan |
-| R004 | NFR-001, NFR-002 | Derives | SAD COMP-006, ADR-002, Transition Iter 1 exit criterion (measured values required per stakeholder condition) |
-| R005 | CON-011, CON-002 | Derives | Design Model V001–V010, PR #32 (MERGED to main) |
-| R006 | AC-005 | Derives | SAD Process View, COMP-002, Architectural PoC (PoC-R006), ClockingService, PR #32 (C4-2 transaction wrapping RESOLVED, MERGED to main) |
-| R007 | Review Record C2 + C4 findings (ALL RESOLVED) | Derives | PR #32 + #33 (MERGED to main), 0 open PRs, CI GREEN |
-| R008 | Stakeholder sanction refusal (C2), rework cycles | Derives | C3 Cycle 1 Iteration Plan; C4 complete — sanction GRANTED, IOC CONDITIONAL GO |
-| RL-F5 (RESOLVED) | Review Record RL-F5, R003, STK-003, CON-004 | Resolved by | R003 ACCEPTED — STK-001 approved mock-auth contingency activation |
-| IP-F5 (RESOLVED) | Review Record IP-F5, NFR-001, NFR-002 | Resolved by | Load testing decoupled from merge dependency; deferred to Transition Iter 1 per stakeholder condition |
+| R001 | Declared Risk R001, CON-005, CON-009 | Derives | T4 (deployment verification), SAD COMP-004 (LDAP) |
+| R002 | Declared Risk R002, BG-003, AC-004 | Derives | T5 (user docs), T6 (assessment) |
+| R003 | CON-004, STK-003, STK-001 binding condition #2 | Derives | T2 (OIDC verification), SAD COMP-001 (OIDC) |
+| R004 | NFR-001, NFR-002, STK-001 binding condition #1 | Derives | T1 (load testing), SAD COMP-006 |
+| R005 | CON-011, CON-002 | Derives | Design Model V010, T4 (deployment) |
+| R006 | AC-005, SAD Process View | Derives | T4 (deployment), Architectural PoC |
+| R007 | Review Record C2 + C4 findings | Derives | CI build (run 33256627567) |
+| R008 | Stakeholder sanction (IOC) | Derives | T6 (assessment), PR milestone |
+| R009 | CON-006, CON-007 | Derives | T4 (deployment verification) |
+| R010 | AC-001–AC-005, BG-003 | Derives | T6 (assessment), PR milestone review |
