@@ -64,3 +64,6 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 app.Run();
+
+// Required for WebApplicationFactory<Program> integration tests
+public partial class Program { }
