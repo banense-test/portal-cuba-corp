@@ -1,9 +1,8 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Construction |
-| Status | **ACTIVE — Management Reviewer C4 Cycle 1, Iteration 4** |
+| Status | **CONSOLIDATED — Review Coordinator C4 Cycle 1, Iteration 4** |
 | Milestone Target | End-of-Construction (IOC) — **CONDITIONAL GO — stakeholder sanction GRANTED** |
 | Iteration | 4 (Cycle 1) |
 | Date | 2026-08-29 |
@@ -11,7 +10,7 @@
 | Technical Lens (Code Reviewer) | EXECUTED — Construction C4 Cycle 1, Iteration 4. 0 Critical, 0 Major, 1 Minor (DM-F2: Design Model stale traceability for C4-1/C4-2). Source code verified: C4-1 (isFeatured) and C4-2 (transaction wrapping) CONFIRMED in code. All PRs merged. CI green on main. |
 | Business Lens (Business Reviewer) | **PRESERVED** — BM INACTIVE per DC §4 (isBusinessProcessLed=false). No BM deltas in C4 Cycle 1. Elaboration baseline stands. 0 findings, 0 open actions. |
 | Management Lens (Management Reviewer) | **EXECUTED** — Construction C4 Cycle 1, Iteration 4. 0 Critical, 1 Major (IA-F2/RR-F2: incorrect open issue count — "0 open" stated but 7 open issues exist per Change Request artifact). Prior MR findings IP-F5, RL-F5, IA-F1 all RESOLVED via resolve_artifact_finding. IOC verdict: CONDITIONAL GO. Stakeholder sanction: GRANTED. |
-| Review Coordinator | PENDING — Code Reviewer lens complete; Business Reviewer lens complete (PRESERVED); Management Reviewer lens COMPLETE — awaiting Review Coordinator consolidation |
+| Review Coordinator | **CONSOLIDATED** — All three lenses evaluated. Technical: EXECUTED. Business: PRESERVED (INACTIVE). Management: EXECUTED. Open findings: 0 Critical, 2 Major (RR-F2 content corrected — awaiting formal closure by Management Reviewer; IA-F2 on PM artifact), 1 Minor (DM-F2 on Designer artifact). Stakeholder sanction: GRANTED with 3 binding conditions. IOC milestone: CONDITIONAL GO. |
 | Review Type | Construction C4 Cycle 1 — Code Review + Management Review (IOC milestone) |
 | PRs Reviewed | #32 (feature/C4-rework → iteration/C4, APPROVED & MERGED), #33 (iteration/C4 → main, APPROVED & MERGED), #19 (stale, superseded), #8 (stale, superseded) |
 | CI Build Status | main: GREEN (run 33256627567, 2026-08-29 14:05:31Z) |
@@ -26,7 +25,6 @@
 | Stakeholder Sanction | **GRANTED** (2026-08-29) — stakeholder accepts delivered capability and sanctions advancing past IOC. Conditions: (1) NFR-001/NFR-002 load testing is Transition Iter 1 exit criterion with measured values; (2) Real OIDC integration is named Transition work item with owner; 8 tests stay covered-by-mock until real client; (3) Mock-auth has expiry date. |
 | R003 Decision | **ACCEPTED** — stakeholder approved mock-auth contingency activation. R003 transitions from ESCALATED to ACCEPTED. Real OIDC integration is Transition work item. 8 tests marked covered-by-mock, NOT passing. Mock has expiry date. |
 | IOC Verdict | **CONDITIONAL GO** — 3 conditions attached (NFR load testing, OIDC Transition work item, mock-auth expiry) |
-
 ## Review Scope and Criteria
 
 This review evaluates Construction C4 Cycle 1, Iteration 4 against the Code Reviewer lens AND the Management Reviewer lens (IOC milestone assessment).
