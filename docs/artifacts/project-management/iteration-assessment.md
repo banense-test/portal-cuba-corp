@@ -5,346 +5,306 @@
 | Phase | Construction |
 | Status | Active |
 | Milestone Target | End-of-Construction (IOC) — NOT ACHIEVED |
-| Iteration | 2 (Cycle 1) |
-| Date | 2026-08-28 |
+| Iteration | 2 (Cycle 3) |
+| Date | 2026-08-29 |
 | Author | Project Manager (Project Management Discipline) |
-| Prior Iteration | Construction C1 — IOC NOT ACHIEVED (0 Critical, 2 Major, stakeholder sanction REFUSED) |
-| Evolution | C1 Assessment evolved for C2 Cycle 1: C1 deferred objectives now assessed against C2 delivery; C2 Review Record findings recorded (1 Critical, 2 Major, 4 Minor); PR #20 APPROVED, PR #19 REQUEST_CHANGES; R003 ESCALATED (OIDC deadline passed); stakeholder sanction still REFUSED |
-| Stakeholder Sanction | REFUSED — STK-001: "We cannot advance to Transition because there are still things to finish to have the system with the use cases correctly implemented in construction, which is where we are now. We cannot move forward without the software." |
-| Review Coordinator Verdict | IOC: iteration REQUIRED (scope incomplete) — 1 open Critical, 2 open Major, stakeholder sanction REFUSED |
-| Technical Lens | REQUEST_CHANGES — PR #19: 1 Critical (C2-CRIT-1), 2 Major (C2-MAJ-1, C2-MAJ-2), 4 Minor (C2-MIN-1..4); PR #20: APPROVED |
-| Management Lens | CONDITIONAL — C1 findings resolved; C2 new findings open; R003 escalation triggered |
+| Prior Iteration | Construction C2 Cycle 2 — IOC NOT ACHIEVED (0 of 7 C2 findings resolved; stakeholder sanction REFUSED 2nd time) |
+| Evolution | C2 Cycle 2 Assessment evolved for C2 Cycle 3: all 7 C2 code findings persisting (0 resolved across Cycles 1→2→3); 4 artifact-level findings open (2 against PM artifacts — IP-F4 and RL-F2 — now RESOLVED this cycle); stakeholder sanction REFUSED (3rd time) with explicit directive on PR synchronization; R003 OIDC blocker persists (3rd cycle); root cause analysis identifies absent Integrator role and missing mid-iteration checkpoints |
+| Stakeholder Sanction | REFUSED — STK-001: "It's mind-blowing that you've spent an iteration and haven't noticed that everything is in the PRs, everything that's missing, and nobody has bothered to merge anything when everything is there and many things could be closed... How is it possible that we run an iteration and the errors that are already uploaded aren't fixed, and all that's needed is to synchronize the PRs, main, and issues... Terrible." |
+| Review Coordinator Verdict | IOC: iteration REQUIRED (scope incomplete) — 1 open Critical, 2 open Major (code-level, persisting from C2 Cycle 1); stakeholder sanction REFUSED (3rd consolidation) |
+| Technical Lens | REQUEST_CHANGES — PR #19: 1 Critical (C2-CRIT-1), 2 Major (C2-MAJ-1, C2-MAJ-2), 4 Minor (C2-MIN-1..4) — ALL persisting from Cycle 1; 0 of 7 resolved across 2 cycles |
+| Management Lens | CONDITIONAL → NO-GO — IP-F4 (no mid-iteration checkpoint) and RL-F2 (R008 contingency not activated) opened against PM artifacts; both RESOLVED this cycle |
 | Business Lens | INACTIVE — BM discipline INACTIVE per DC §4 |
-| Consolidated Verdict | AUTO-ITERATE to Construction C2 Cycle 2 (rework) |
+| Consolidated Verdict | AUTO-ITERATE to Construction C2 Cycle 4 (rework) — IOC NOT ACHIEVED |
 
 ## Iteration Objectives Reached
 
-The C1 Iteration Plan defined 7 objectives, 5 of which were deferred to C2. C2 Cycle 1 delivered the deferred work but introduced 7 new findings. The table below records the assessment of each objective, given the C2 Review Record.
+The C2 Cycle 2 Iteration Plan defined 10 work items targeting 7 persisting C2 findings. **Zero of 10 work items were executed during C2 Cycle 2.** The C2 Cycle 3 assessment records the status of each planned objective given the Review Record's consolidated findings.
 
 ```plantuml
 @startuml
-title Construction C2 Cycle 1 — Objective Assessment (IOC NOT ACHIEVED)
+title Construction C2 Cycle 3 — Objective Assessment (IOC NOT ACHIEVED)
 
+skinparam classBorderColor #2C3E50
+skinparam classBackgroundColor #ECF0F1
 skinparam classAttributeIconSize 0
-skinparam monochrome false
 
-class C2_Verdict {
-  + phase : Construction
-  + iteration : 2 (Cycle 1)
-  + milestone : IOC — NOT ACHIEVED
-  + stakeholderSanction : REFUSED
-  + pr20 : APPROVED (C1 findings resolved)
-  + pr19 : REQUEST_CHANGES
-  + openCritical : 1 (C2-CRIT-1)
-  + openMajor : 2 (C2-MAJ-1, C2-MAJ-2)
-  + openMinor : 4 (C2-MIN-1..4)
-  + c1FindingsResolved : 4 of 4 (MAJOR-1, MINOR-1, MINOR-3, MINOR-4)
-  + testsBlocked : 8 of 30
+class OBJ1 {
+  + id : OBJ-1
+  + name : Complete Component Development
+  + status : NOT MET
+  + evidence : C2-CRIT-1 OPEN (UC-001 404);
+    C2-MAJ-1 OPEN (UC-006 binding);
+    C2-MAJ-2 OPEN (UC-001 antiforgery);
+    7 of 7 C2 findings persisting
+  + impact : UC-001, UC-006 non-functional
 }
 
-class OBJ1_C1_Findings {
-  + id : OBJ-1 (C1 carryover)
-  + objective : Resolve C1 findings
-  + assessment : MET
-  + evidence : MAJOR-1 RESOLVED (PR #20)
-  + evidence : MINOR-1 RESOLVED (PR #20)
-  + evidence : MINOR-3 RESOLVED (PR #20)
-  + evidence : MINOR-4 RESOLVED (PR #20)
+class OBJ2 {
+  + id : OBJ-2
+  + name : Perform Testing
+  + status : NOT MET
+  + evidence : 8 of 30 tests BLOCKED
+    (OIDC R003);
+    C2-MIN-3 placeholder test persists;
+    zero rework pushed in Cycle 2
+  + impact : No regression evidence
 }
 
-class OBJ2_App_Services {
-  + id : OBJ-2 (C1 carryover)
-  + objective : Implement application services
-  + assessment : MET
-  + evidence : NewsService, ClockingService,
-    DirectoryService, WorkerCategoryService
-    all delivered in C2
+class OBJ3 {
+  + id : OBJ-3
+  + name : Prepare Documentation
+  + status : PARTIAL
+  + evidence : User Documentation delivered;
+    Design Model F1 OPEN (INT-003 mismatch)
+  + impact : Minor doc gap
 }
 
-class OBJ3_Persistence {
-  + id : OBJ-3 (C1 carryover)
-  + objective : Implement persistence layer
-  + assessment : MET
-  + evidence : PostgreSQL repositories
-    delivered via EF Core
+class OBJ4 {
+  + id : OBJ-4
+  + name : Ready for Deployment
+  + status : NOT MET
+  + evidence : IOC NOT ACHIEVED;
+    stakeholder sanction REFUSED (3rd);
+    PR #19 unmerged; main lacks C2 fixes
+  + impact : Cannot deploy
 }
 
-class OBJ4_LDAP {
-  + id : OBJ-4 (C1 carryover)
-  + objective : Implement LDAP gateway
-  + assessment : PARTIALLY MET
-  + evidence : LdapGateway delivered;
-    NovellLdapConnectionAdapter stub
-    (NotImplementedException)
-  + note : C2-MIN-1: DEFERRED to
-    integration testing (R001)
-}
+OBJ1 --> OBJ2 : blocks test execution
+OBJ2 --> OBJ3 : incomplete coverage
+OBJ3 --> OBJ4 : doc gaps compound
+OBJ1 --> OBJ4 : non-functional UCs block deploy
 
-class OBJ5_Audit {
-  + id : OBJ-5 (C1 carryover)
-  + objective : Implement audit logging
-  + assessment : MET
-  + evidence : AuditLogger delivered
-    (INT-005 conformance)
-}
-
-class OBJ6_Tests {
-  + id : OBJ-6 (C1 carryover)
-  + objective : Expand test coverage
-  + assessment : PARTIALLY MET
-  + evidence : 30 TCs; 8 BLOCKED
-    by OIDC + deployment infra
-  + note : C2-MIN-3: placeholder test
-    still present (Assert.True(true))
-}
-
-class OBJ7_ReReview {
-  + id : OBJ-7 (C1 carryover)
-  + objective : Re-review and merge
-  + assessment : NOT MET
-  + evidence : PR #20 APPROVED;
-    PR #19 REQUEST_CHANGES
-  + evidence : 1 Critical + 2 Major
-    block merge
-}
-
-C2_Verdict --> OBJ1_C1_Findings
-C2_Verdict --> OBJ2_App_Services
-C2_Verdict --> OBJ3_Persistence
-C2_Verdict --> OBJ4_LDAP
-C2_Verdict --> OBJ5_Audit
-C2_Verdict --> OBJ6_Tests
-C2_Verdict --> OBJ7_ReReview
-
-note right of C2_Verdict
-  C2 Cycle 1 delivered the deferred
-  C1 work (app services, persistence,
-  LDAP, audit) — but introduced
-  7 new findings (1 Critical, 2 Major).
-  PR #20 approved; PR #19 blocked.
-  R003 ESCALATED: OIDC deadline passed.
+note bottom of OBJ4
+  ReviewCoordinator verdict:
+  IOC: iteration REQUIRED (scope incomplete)
+  Stakeholder sanction: REFUSED (3rd time)
+  Root cause: zero rework pushed in Cycle 2;
+  PRs exist but were never merged/synchronized
 end note
 
 @enduml
 ```
 
-**Summary:** 4 of 7 objectives MET (OBJ-1, OBJ-2, OBJ-3, OBJ-5). 2 partially met (OBJ-4: LDAP gateway delivered but adapter stub deferred; OBJ-6: tests expanded but 8 blocked + placeholder test remains). 1 not met (OBJ-7: PR #19 requires rework — 1 Critical + 2 Major block merge). Significant progress from C1 (0 of 7 met) to C2 (4 of 7 met), but the 3 blocking findings on PR #19 prevent merge and IOC achievement.
+### Objective Detail
+
+| Objective | Status | Evidence | Next-Cycle Action |
+|---|---|---|---|
+| OBJ-1: Complete Component Development | **NOT MET** | C2-CRIT-1 (clocking API 404) OPEN — UC-001 non-functional. C2-MAJ-1 (news edit binding) OPEN — UC-006 non-functional. C2-MAJ-2 (antiforgery) OPEN — UC-001 POST rejected. 7 of 7 C2 findings persisting across 2 cycles. | Implementer must execute all 7 fixes. Integrator must merge PR #19 to main. |
+| OBJ-2: Perform Testing | **NOT MET** | 8 of 30 tests BLOCKED by OIDC (R003 — STK-003 has not confirmed registration across 3 cycles). C2-MIN-3 placeholder test persists. Zero rework pushed means no regression evidence. | Escalate R003 to STK-001 again. Activate mock-auth contingency if STK-003 remains unresponsive. Test Designer updates tests after fixes. |
+| OBJ-3: Prepare Documentation | **PARTIAL** | User Documentation delivered. Design Model F1 OPEN (INT-003 contract mismatch between main and iteration/C2). | Designer verifies INT-003 contract matches iteration/C2 branch. |
+| OBJ-4: Ready for Deployment | **NOT MET** | IOC NOT ACHIEVED. Stakeholder sanction REFUSED (3rd time). PR #19 unmerged — main branch lacks C2 fixes. Cannot deploy. | All blocking findings must be resolved AND PR #19 merged to main before deployment is possible. |
 
 ## Adherence to Plan
 
-```plantuml
-@startuml
-title Construction C2 Cycle 1 — Critical Chain (Actual vs Planned)
-
-start
-partition "Planned (C1 carryover: 7 objectives)" {
-  :Resolve C1 findings\n(MAJOR-1 + MINOR-1..4);
-  :Implement application services\n(News, Clocking, Directory, WorkerCategory);
-  :Implement persistence layer\n(PostgreSQL repositories);
-  :Implement LDAP gateway\n(LdapGateway + ILdapConnection);
-  :Implement audit logging\n(AuditLogger INT-005);
-  :Expand test coverage\n(unit + integration);
-  :Re-review + merge;
-}
-
-partition "Actual (C2 Cycle 1 delivered)" {
-  :C1 findings RESOLVED\n(PR #20 APPROVED);
-  :Application services delivered\n(4 services);
-  :Persistence layer delivered\n(EF Core + PostgreSQL);
-  :LDAP gateway delivered\n(adapter stub deferred);
-  :Audit logging delivered\n(INT-005);
-  :30 test cases\n(8 BLOCKED by infra);
-  :Re-review conducted\n(PR #19 REQUEST_CHANGES);
-}
-
-stop
-
-note
-  4 of 7 objectives MET
-  2 PARTIALLY MET (LDAP adapter, tests)
-  1 NOT MET (re-review/merge)
-  
-  NEW findings: 1 Critical + 2 Major
-  block PR #19 merge
-  
-  Token spend: [ASSUMPTION — ~9.85M;
-    basis: C1 measured actual]
-  Agent time: [ASSUMPTION — ~1h 43m;
-    basis: C1 measured actual]
-  Stakeholder queue: 0s
-end note
-
-@enduml
-```
-
-| Dimension | Planned (C1 Plan) | Actual (C2 Cycle 1) | Variance |
+| Plan Element | Planned | Actual | Variance |
 |---|---|---|---|
-| Token spend | ~10.4M (Elaboration per-iteration average) | [ASSUMPTION — ~9.85M; basis: C1 measured actual] | Within budget box |
-| Agent time | [ASSUMPTION — ~30 min] | [ASSUMPTION — ~1h 43m; basis: C1 measured actual] | Construction work heavier per iteration (confirmed by C1) |
-| Stakeholder queue | 0s | 0s | On target |
-| Objectives completed | 7 | 4 MET, 2 PARTIAL, 1 NOT MET | 57% objective completion (up from 0% in C1) |
-| C1 findings resolved | 5 target | 4 of 4 resolved (MAJOR-1, MINOR-1, MINOR-3, MINOR-4) | 100% C1 finding closure |
-| New findings opened | 0 target | 7 (1 Critical, 2 Major, 4 Minor) | 7 new findings — regression |
-| Tests blocked | 0 target | 8 of 30 (OIDC + deployment) | R003 ESCALATED |
-| Rework closure rate | 100% target | 44% (4 of 9 C1 findings closed; 7 new opened) | Net worsening |
+| Work items executed | 10 | 0 | **-100%** — zero rework pushed |
+| C2 findings resolved | 7 | 0 | **0%** — all persisting from Cycle 1 |
+| PR merges | 1 (PR #19 → main) | 0 | **-100%** — stakeholder's core complaint |
+| Token budget | ~9.85M (C1-based assumption) | 18.84M (measured) | **+191%** — accumulated artifact surface (53 artifacts) drives reasoning cost |
+| Agent runs | ~15 (assumption) | 15 | On target |
+| Artifact quality (avg) | — | 9.9 | High — but quality ≠ delivery |
+| Stakeholder queue | 0s | 0s | No gate delay — stakeholder responded immediately |
+| PM findings resolved | 2 (IP-F4, RL-F2) | 2 | **100%** — both resolved this cycle |
 
-**Root cause of variance:** C2 Cycle 1 successfully delivered the 5 deferred C1 objectives (application services, persistence, LDAP gateway, audit logging, C1 finding fixes). However, the new code introduced 7 new findings — 3 of which are blocking (1 Critical: clocking API route 404, 2 Major: news edit form mismatch + missing antiforgery). These are integration-level defects that could only surface once the full stack was assembled and reviewed. The C1 assessment's prediction that "Construction work is heavier per iteration" was confirmed. The DRE (Defect Removal Efficiency) regression — from 40.9% in C1 to a net worsening (4 closed, 7 new) — indicates that the code review process needs a mid-iteration PRA (Partial Review Assessment) to catch integration defects before they accumulate.
+> **The +191% token variance is not from scope expansion.** The C2 Cycle 2 budget box was sized from C1's measured actual (9.85M), but the accumulated artifact surface grew from 23 to 53 artifacts. Reasoning over this larger surface — reading, cross-referencing, and evolving 53 artifacts — costs more than the C1 baseline predicted. The C2 Cycle 3 budget box is re-sized from C2 Cycle 2's measured actual (18.84M), not from C1.
 
-**Governance:** MR-F1 (C1: deferring objectives without stakeholder approval) was addressed — C2 Cycle 1 delivered the deferred work. However, the stakeholder's refusal to sanction confirms that the system must be fully functional before IOC can be considered. The 3 blocking findings mean the system is NOT functional end-to-end.
+> **The -100% work item execution variance is the critical failure.** The Iteration Plan specified 10 work items. Zero were executed. The stakeholder identified the root cause: fixes exist on feature branches but were never merged. The IP-F4 finding (no mid-iteration checkpoint) explains why this went undetected until end-of-iteration review. Both are now resolved: the Iteration Plan adds checkpoint protocol CP-1 through CP-4, and the Integrator role (Item 8) is mandated for C2 Cycle 3.
 
 ## Use Cases and Scenarios Implemented
 
-| UC ID | Use Case | C1 Status | C2 Cycle 1 Status | Evidence |
+| UC ID | Use Case | Implementation Status | Blocking Finding | Test Status |
 |---|---|---|---|---|
-| UC-001 | Clock In and Clock Out | Presentation only | **BLOCKED** — C2-CRIT-1 (404 route) + C2-MAJ-2 (antiforgery 400) + C2-MIN-2 (employeeId spoof) | ClockingService + persistence delivered; but API route mismatch makes POST return 404; antiforgery missing makes POST return 400 |
-| UC-002 | View Own Clocking History | Presentation only | Service + persistence delivered | No findings — functional at code level |
-| UC-003 | View All Employee Clockings | Presentation only | Service + persistence delivered | No findings — functional at code level |
-| UC-004 | Export Monthly Clocking Report | Presentation only | Service delivered; **C2-MIN-4** (CSV header misleading) | CSV export works but header says TimeIn,TimeOut instead of Employee,Date,Time,Direction |
-| UC-005 | Publish News | Presentation only (MAJOR-1) | **MAJOR-1 RESOLVED** — service + audit delivered | PR #20 approved; IsFeatured flag functional |
-| UC-006 | Edit Published News | Presentation only | **BLOCKED** — C2-MAJ-1 (form field name mismatch) | NewsService delivered; but Edit form posts `title` while BindProperty is `EditTitle` — POST fails |
-| UC-007 | Unpublish News | Presentation only | Service + audit delivered | No findings — functional at code level |
-| UC-008 | Read and Filter News | Presentation only (MAJOR-1) | **MAJOR-1 RESOLVED** — service delivered | PR #20 approved; featured banner functional |
-| UC-009 | Search Employee Directory | Presentation only (MINOR-1) | **MINOR-1 RESOLVED** — DirectoryService delivered; **C2-MIN-1** (LDAP adapter stub) | LdapGateway delivered but NovellLdapConnectionAdapter throws NotImplementedException — deferred to integration testing |
-| UC-010 | Manage Worker Category | Presentation only | Service + audit delivered | No findings — functional at code level |
+| UC-001 | Clock In and Clock Out | **NON-FUNCTIONAL** | C2-CRIT-1 (404 route mismatch), C2-MAJ-2 (antiforgery 400) | BLOCKED (OIDC) |
+| UC-002 | View Own Clocking History | Implemented (C1) | — | BLOCKED (OIDC) |
+| UC-003 | View All Employee Clockings | Implemented (C1) | — | BLOCKED (OIDC) |
+| UC-004 | Export Monthly Clocking Report | Implemented (C1) | C2-MIN-4 (CSV header) | BLOCKED (OIDC) |
+| UC-005 | Publish News | Implemented (C2) | — | BLOCKED (OIDC) |
+| UC-006 | Edit Published News | **NON-FUNCTIONAL** | C2-MAJ-1 (form binding mismatch) | BLOCKED (OIDC) |
+| UC-007 | Unpublish News | Implemented (C2) | — | BLOCKED (OIDC) |
+| UC-008 | Read and Filter News | Implemented (C2) | — | BLOCKED (OIDC) |
+| UC-009 | Search Employee Directory | Implemented (C2) | C2-MIN-1 (LDAP stub deferred) | BLOCKED (OIDC) |
+| UC-010 | Manage Worker Category | Implemented (C2) | — | BLOCKED (OIDC) |
 
-**Assessment:** 4 of 10 UCs have no open findings (UC-002, UC-003, UC-007, UC-010). 2 UCs are BLOCKED by Critical/Major findings (UC-001, UC-006). 4 UCs have minor or deferred issues (UC-004, UC-005, UC-008, UC-009). The system has progressed from "0 of 10 functional" (C1) to "4 of 10 potentially functional, 2 blocked, 4 with minor issues" (C2 Cycle 1). The 2 blocked UCs are the highest-priority rework targets for C2 Cycle 2.
+> **2 of 10 UCs are non-functional** (UC-001, UC-006) due to blocking code findings. **8 of 30 tests are BLOCKED** by the OIDC infrastructure dependency (R003). No use case can be verified end-to-end until both the code findings are resolved AND the OIDC registration is confirmed.
 
 ## Results Relative to Evaluation Criteria
 
-The C1 Iteration Plan defined 12 exit criteria. C2 Cycle 1 was assessed against these criteria (carried forward from C1) plus the C2 Review Record findings.
-
-| # | Exit Criterion | C1 Assessment | C2 Cycle 1 Assessment | Evidence |
-|---|---|---|---|---|
-| 1 | MAJOR-1 resolved — IsFeatured flag set | NOT MET | **MET** | PR #20 approved; IsFeatured persisted |
-| 2 | MINOR-1 resolved — DirectoryModel renamed | NOT MET | **MET** | PR #20 approved; V007 conformance |
-| 3 | MINOR-2 resolved — EmployeeId removed | NOT MET | **MET** | PR #20 approved; no dead code |
-| 4 | MINOR-3 resolved — Idempotency key scoped | NOT MET | **MET** | PR #20 approved; FindByIdempotencyKey(employeeId, key) |
-| 5 | MINOR-4 resolved — OfflineRetryTests updated | NOT MET | **MET** | PR #20 approved; test asserts both employees succeed |
-| 6 | Application services implemented | NOT MET | **MET** | All 4 services delivered |
-| 7 | Persistence layer implemented | NOT MET | **MET** | EF Core + PostgreSQL repositories delivered |
-| 8 | LDAP gateway implemented | NOT MET | **PARTIALLY MET** | LdapGateway delivered; adapter stub (C2-MIN-1) |
-| 9 | Audit logging implemented | NOT MET | **MET** | AuditLogger delivered (INT-005) |
-| 10 | CI build passes green | MET | **MET** | CI GREEN on both PR #19 and PR #20 branches |
-| 11 | Re-review: 0 Critical, 0 Major | NOT MET | **NOT MET** | 1 Critical (C2-CRIT-1) + 2 Major (C2-MAJ-1, C2-MAJ-2) open on PR #19 |
-| 12 | Iteration Assessment produced | MET | **MET** | This artifact |
-
-**Score: 10 of 12 exit criteria MET.** Up from 2 of 12 in C1. The 2 unmet criteria are: (8) LDAP adapter stub (partially met — deferred to integration testing) and (11) re-review with 0 Critical/Major (3 blocking findings on PR #19). The iteration made substantial progress but cannot close until PR #19 blocking findings are resolved.
+| Criterion | Source | Status | Evidence |
+|---|---|---|---|
+| Zero open Critical findings | C2 Cycle 2 Plan | **NOT MET** | C2-CRIT-1 (clocking API 404) persists — UC-001 non-functional |
+| Zero open Major findings | C2 Cycle 2 Plan | **NOT MET** | C2-MAJ-1 (news edit binding), C2-MAJ-2 (antiforgery) persist |
+| All 7 C2 findings resolved | C2 Cycle 2 Plan | **NOT MET** | 0 of 7 resolved across Cycles 1→2→3 |
+| PR #19 merged to main | C2 Cycle 2 Plan | **NOT MET** | PR #19 remains unmerged — stakeholder's core complaint |
+| R003 OIDC unblocked | C2 Cycle 2 Plan | **NOT MET** | STK-003 has not confirmed registration across 3 cycles; 8 tests blocked |
+| IP-F4 resolved (mid-iteration checkpoint) | Review Record C2 Cycle 2 | **MET** | Checkpoint protocol CP-1 through CP-4 added to Iteration Plan |
+| RL-F2 resolved (R008 contingency activated) | Review Record C2 Cycle 2 | **MET** | R008 contingency activated from conditional to active ("C3 required") |
+| Budget box compliance | C2 Cycle 2 Plan | **NOT MET** | 18.84M actual vs 9.85M planned = 191% overshoot (artifact surface growth) |
 
 ## Test Results
 
+| Test Category | Total | Pass | Fail | Blocked | Not Run |
+|---|---|---|---|---|---|
+| Unit Tests | 22 | 14 | 0 | 8 (OIDC) | 0 |
+| Integration Tests | 8 | 0 | 0 | 8 (OIDC) | 0 |
+| **Total** | **30** | **14** | **0** | **8** | **0** |
+
+> 14 of 30 tests pass (47%). 8 of 30 are blocked by R003 (OIDC registration not confirmed by STK-003). The remaining 8 tests that could run pass — but they cannot verify the 2 non-functional UCs (UC-001, UC-006) because the code findings have not been fixed. **No regression evidence exists for this iteration** because zero rework was pushed.
+
+## External Changes
+
+| Change | Source | Impact | Status |
+|---|---|---|---|
+| Stakeholder PR synchronization directive | STK-001 (C2 Cycle 2 review) | Integrator role must be added; PR #19 must be merged to main | **INCORPORATED** — Iteration Plan Item 8, CP-2 checkpoint |
+| R003 OIDC registration (3rd cycle) | STK-003 non-response | 8 tests remain blocked; mock-auth contingency may be required | **ESCALATED** — R003 escalated again in Risk List |
+| Stakeholder sanction refusal (3rd) | STK-001 (C2 Cycle 3 review) | IOC cannot be declared; auto-iterate to C2 Cycle 4 | **RECORDED** — this assessment |
+
+## Rework Required
+
 ```plantuml
 @startuml
-title Construction C2 Cycle 1 — Test Execution Results (30 TCs)
+title Construction C2 Cycle 3 — Root Cause Analysis
 
+skinparam stateBorderColor #2C3E50
+skinparam stateBackgroundColor #FDEDEC
+
+[*] --> ReworkIdentified : C2 Cycle 1 review (7 findings)
+
+ReworkIdentified --> PlanWritten : C2 Cycle 2 Iteration Plan (10 work items)
+
+PlanWritten --> NoExecution : Cycle 2 ran but zero work items executed
+
+NoExecution --> ReviewCycle2 : End-of-iteration review finds 0 of 7 resolved
+
+ReviewCycle2 --> StakeholderFury : Stakeholder sees unmerged PRs with fixes
+
+StakeholderFury --> RootCause : Everything is in the PRs, nobody merged
+
+RootCause --> Factor1 : F1: No mid-iteration checkpoint (IP-F4)
+RootCause --> Factor2 : F2: Integrator role absent (PR #19 unmerged)
+RootCause --> Factor3 : F3: R003 OIDC blocker (8 tests blocked)
+
+Factor1 --> Corrective1 : C1: Add mid-iteration checkpoint to Plan
+Factor2 --> Corrective2 : C2: Integrator must merge PR #19 to main
+Factor3 --> Corrective3 : C3: Escalate R003, unblock with mock OIDC
+
+Corrective1 --> NextIteration : C2 Cycle 3 plan
+Corrective2 --> NextIteration
+Corrective3 --> NextIteration
+
+NextIteration --> [*] : IOC achievable only if all 7 findings resolved
+
+@enduml
+```
+
+### Rework Items for C2 Cycle 3
+
+| # | Finding | Severity | Owner | Action | Status |
+|---|---|---|---|---|---|
+| 1 | C2-CRIT-1: Clocking API 404 | Critical | Implementer | Add `@page "/api/clocking"` to ClockingApi.cshtml | **PENDING** — persisting since Cycle 1 |
+| 2 | C2-MAJ-1: News edit form binding | Major | Implementer | Add `[BindProperty(Name="title")]` etc. | **PENDING** — persisting since Cycle 1 |
+| 3 | C2-MAJ-2: Missing antiforgery token | Major | Implementer | Add antiforgery header to fetch() | **PENDING** — persisting since Cycle 1 |
+| 4 | C2-MIN-1: LDAP stub not documented | Minor | Implementer | Add XML comment noting DEFERRED status | **PENDING** |
+| 5 | C2-MIN-2: EmployeeId spoofable | Minor | Implementer | Use `User.FindFirst("sub")?.Value` | **PENDING** |
+| 6 | C2-MIN-3: Placeholder test | Minor | Implementer | Delete UnitTest1.cs | **PENDING** |
+| 7 | C2-MIN-4: CSV header mismatch | Minor | Implementer | Correct CSV header to match FR-004 | **PENDING** |
+| 8 | PR #19 merge to main | — | Integrator | Merge PR #19 → iteration/C2 → main; close SCM issues | **PENDING** — new this cycle |
+| 9 | IP-F4: Mid-iteration checkpoint | Minor | Project Manager | Checkpoint protocol CP-1 through CP-4 | **RESOLVED** |
+| 10 | RL-F2: R008 contingency activation | Minor | Project Manager | R008 contingency activated | **RESOLVED** |
+
+### Metrics Dashboard
+
+```plantuml
+@startuml
+title Construction C2 Cycle 3 — Metrics Dashboard
+
+skinparam classBorderColor #2C3E50
+skinparam classBackgroundColor #FDEBD0
 skinparam classAttributeIconSize 0
 
-class TestExecution {
-  + totalTestCases : 30
-  + pass : 22 (up from 20 in C1)
-  + fail : 0 (C1 failures resolved)
-  + blocked : 8 (unchanged from C1)
-  + newDefects : 7 (C2 findings)
-  + blockedBy : STK-003 OIDC + deployment infra
+class Metrics_C2C3 {
+  + artifacts : 15
+  + agent_invocations : 15
+  + user_interactions : 19
+  + token_spend : 18,839,560
+  + avg_quality : 9.9
+  + agent_time : 19h 15m 47s
+  + stakeholder_queue : 0s
+  + findings_resolved : 0 of 7 (C2 code)
+  + findings_resolved : 2 of 2 (PM artifacts)
+  + tests_blocked : 8 of 30 (OIDC)
+  + pr_merged : 0 (PR #19 still open)
 }
 
-class PassBreakdown {
-  + presentation_layer : 20 PASS (carried)
-  + service_layer : 2 PASS (new)
-  + coverage : UC-001..UC-010 basic flows
-  + evidence : CI GREEN on PR #19 + PR #20
-}
-
-class BlockedBreakdown {
-  + INFRA-BLOCK-1 : 5 tests blocked by OIDC
-  + INFRA-BLOCK-2 : 3 tests blocked by deployment
-  + rootCause : STK-003 OIDC registration unconfirmed
-  + rootCause : Deployment environment not provisioned
-  + status : UNCHANGED from C1
-}
-
-class NewFindings {
-  + C2-CRIT-1 : Clocking API 404 (UC-001)
-  + C2-MAJ-1 : News Edit form mismatch (UC-006)
-  + C2-MAJ-2 : Antiforgery token missing (UC-001)
-  + C2-MIN-1 : LDAP adapter NotImplementedException
-  + C2-MIN-2 : EmployeeId spoofable
-  + C2-MIN-3 : Placeholder test Assert.True(true)
-  + C2-MIN-4 : CSV header misleading
-}
-
-TestExecution --> PassBreakdown
-TestExecution --> BlockedBreakdown
-TestExecution --> NewFindings
-
-note bottom of TestExecution
-  Goal: determine whether C2 code
-  meets quality bar for merge.
-  Decision enabled: PR #20 can merge
-  (0 findings); PR #19 requires rework
-  (1 Critical + 2 Major block merge).
-  8 blocked tests require R003 escalation.
+note right of Metrics_C2C3
+  Measurement Goals:
+  1. token_spend: budget box compliance
+     (planned 9.85M, actual 18.84M = 191%)
+  2. findings_resolved: rework effectiveness
+     (0% code, 100% PM artifacts)
+  3. tests_blocked: R003 OIDC dependency
+     (8 tests cannot run without STK-003)
+  4. pr_merged: integration progress
+     (0 merges = stakeholder core complaint)
+  5. avg_quality: artifact review scores
+     (9.9 = high quality, but quality != delivery)
 end note
 
 @enduml
 ```
 
-| Metric | Value | Decision Enabled |
+| Metric | Value | Measurement Goal | Decision Enabled |
+|---|---|---|---|
+| Token spend | 18,839,560 | Budget box compliance | C2 Cycle 3 budget box re-sized from this actual (not from C1) |
+| Agent time | 19h 15m 47s | Elapsed time tracking | Forecast C2 Cycle 3 elapsed time from this baseline |
+| Stakeholder queue | 0s | Gate delay measurement | No gate delay — stakeholder responded immediately (frustration, not availability) |
+| Findings resolved (code) | 0 of 7 | Rework effectiveness | Zero — iteration produced no code fixes; root cause is absent Integrator role |
+| Findings resolved (PM) | 2 of 2 | PM artifact quality | IP-F4 and RL-F2 both resolved this cycle |
+| Tests blocked | 8 of 30 | R003 OIDC dependency | STK-003 has not confirmed registration across 3 cycles; mock-auth contingency may be required |
+| PRs merged | 0 | Integration progress | Stakeholder's core complaint — fixes exist on branches but were never merged |
+| Avg artifact quality | 9.9 | Review score tracking | High quality, but quality ≠ delivery — artifacts are well-written but the system is non-functional |
+| Agent runs | 15 | Execution volume | On target with assumption — but runs produced analysis, not code fixes |
+
+## Lessons Learned
+
+| # | Lesson | Root Cause | Corrective Action |
+|---|---|---|---|
+| L-1 | **An iteration that produces zero rework is worse than no iteration** — it burns 18.84M tokens and 19h of agent time without resolving a single finding | No mid-iteration checkpoint (IP-F4); no Integrator role to merge PRs | CP-1 through CP-4 checkpoints added; Integrator role mandated for C2 Cycle 3 |
+| L-2 | **Fixes on a feature branch are invisible to the system until merged** — the stakeholder correctly identified that "everything is in the PRs" but nobody merged them | Integrator role was not assigned in C2 Cycle 2 plan | Item 8 (Integrator: merge PR #19 to main) added to C2 Cycle 3 plan |
+| L-3 | **Budget boxes sized from earlier phases underestimate later phases** — the artifact surface grows each cycle, and reasoning-over-surface cost dominates | C2 Cycle 2 budget was sized from C1 (9.85M) but actual was 18.84M (191%) | C2 Cycle 3 budget re-sized from C2 Cycle 2 measured actual; future cycles use last-cycle actual |
+| L-4 | **High artifact quality scores (9.9) do not compensate for non-functional code** — the system can have excellent documentation and still be undeliverable | Quality metrics measure artifact review scores, not system functionality | Add "functional UCs" as a tracked metric in future assessments |
+| L-5 | **Stakeholder frustration compounds with each refused sanction** — the 3rd refusal included explicit process criticism ("terrible") | Zero rework across 2 cycles with no escalation within the iteration | Mid-iteration checkpoints ensure the PM detects and escalates zero-execution WITHIN the iteration |
+
+## Next-Cycle Adjustments for C2 Cycle 3
+
+| Adjustment | Rationale | Impact |
 |---|---|---|
-| Total TCs | 30 (unchanged from C1) | Whether test coverage is growing — NO, same 30 TCs; C2 focused on implementation, not test expansion |
-| Pass rate | 22/30 = 73.3% (up from 66.7% in C1) | Whether the service layer is stable — YES, 2 new passes from service-layer tests |
-| Fail count | 0 (down from 5 in C1) | Whether C1 failures were resolved — YES, all 5 C1 failures fixed (MAJOR-1, MINOR-1..4) |
-| Blocked count | 8 (unchanged from C1) | Whether STK-003 OIDC is still blocking — YES, R003 ESCALATED to STK-001 |
-| New findings | 7 (1 Critical, 2 Major, 4 Minor) | Whether C2 introduced regressions — YES, integration-level defects in route binding + form binding + antiforgery |
-| C1 finding closure | 4 of 4 (100%) | Whether C1 rework was effective — YES, PR #20 approved |
-| Net finding balance | +3 (4 closed, 7 opened) | Whether the project is converging — NO, more findings opened than closed; rework cycle required |
-
-**Test quality assessment:** The 5 C1 test failures were all resolved (MAJOR-1, MINOR-1..4). However, 7 new findings emerged from the C2 review — these are integration defects that could only surface once the full stack was assembled. The 8 blocked tests remain unchanged — R003 (OIDC registration) is the critical path for unblocking them. The placeholder test (C2-MIN-3: `Assert.True(true)`) is a test-quality issue that must be resolved.
-
-## External Changes
-
-| Change | Source | Impact |
-|---|---|---|
-| STK-003 OIDC client registration STILL unconfirmed | R003 escalation deadline PASSED | 8 tests remain blocked; R003 ESCALATED to STK-001 (sponsor); IOC cannot be achieved without real authentication |
-| Deployment environment STILL not provisioned | Management Reviewer MR-F3 (C1 carryover) | 3 tests remain blocked; deployment validation deferred |
-| Stakeholder sanction REFUSED (second time) | STK-001 | IOC milestone NOT achieved; auto-iterate to C2 Cycle 2; stakeholder requires fully functional software before sanction |
-| CR-010 (IsFeatured) approved and implemented | CCM process | FR-008 featured banner now functional (PR #20) |
-| CR-011 (idempotency key scoping) approved and implemented | CCM process | AC-005 offline retry now correctly scoped per employee |
-| 7 deferred CRs from C1 (CR-003, CR-012..015, CR-017, CR-018) | CCM process | CR-012 (CSV format) partially addressed (C2-MIN-4); CR-014 (placeholder test) still open (C2-MIN-3); others carried forward |
-
-## Rework Required
-
-All 7 C2 findings from the Review Record carry forward to C2 Cycle 2:
-
-| Finding ID | Severity | Artifact | Rework Action | Owner | Target Cycle |
-|---|---|---|---|---|---|
-| C2-CRIT-1 | Critical | ClockingApi.cshtml, clocking-retry.js, Index.cshtml | Fix route: add `@page "/api/clocking"` or rename folder to `Pages/api/clocking` | Implementer | C2 Cycle 2 (Item 1) |
-| C2-MAJ-1 | Major | News/Edit.cshtml, News/Edit.cshtml.cs | Fix form binding: `[BindProperty(Name="title")]` etc. or rename properties | Implementer | C2 Cycle 2 (Item 2) |
-| C2-MAJ-2 | Major | clocking-retry.js, Index.cshtml | Add antiforgery token to fetch headers or `[IgnoreAntiforgeryToken]` with justification | Implementer | C2 Cycle 2 (Item 3) |
-| C2-MIN-1 | Minor | NovellLdapConnectionAdapter.cs | Document as `[DEFERRED — requires integration testing with real AD server (R001)]` | Implementer | C2 Cycle 2 (Item 7) |
-| C2-MIN-2 | Minor | ClockingApi.cshtml.cs | Use `User.FindFirst("sub")?.Value` instead of `request.EmployeeId` | Implementer | C2 Cycle 2 (Item 4) |
-| C2-MIN-3 | Minor | UnitTest1.cs | Delete placeholder test (`Assert.True(true)`) | Implementer | C2 Cycle 2 (Item 6) |
-| C2-MIN-4 | Minor | ClockingService.cs (ExportCsv) | Change CSV header to `Employee,Date,Time,Direction` | Implementer | C2 Cycle 2 (Item 5) |
-
-**Priority for C2 Cycle 2:** C2-CRIT-1 (Critical) is the highest-priority rework item — it blocks UC-001 (clocking) entirely. C2-MAJ-1 and C2-MAJ-2 are the next priority — they block UC-006 (news edit) and UC-001 (clocking POST) respectively. All 3 blocking findings must be resolved before PR #19 can merge. The 4 Minor findings should be resolved in the same cycle (stakeholder requires all findings resolved before sanction).
-
-**R003 escalation:** The OIDC registration deadline has passed. The Project Manager must escalate to STK-001 (Laura Gómez, sponsor) to pressure STK-003 (Infrastructure team) for OIDC client registration. Without it, 8 tests remain blocked and IOC cannot be achieved.
+| Add Integrator role (Item 8) | Stakeholder directive: PRs exist but were never merged | PR #19 merged to main; SCM issues closed |
+| Add mid-iteration checkpoints CP-1 through CP-4 | IP-F4: zero-execution went undetected until end-of-iteration review | Progress verified DURING iteration; zero-execution halted and escalated immediately |
+| Re-size budget box from C2 Cycle 2 actual (18.84M) | C1-based assumption (9.85M) was 191% under actual | More realistic budget; less variance |
+| Escalate R003 to STK-001 (3rd time) | STK-003 has not confirmed OIDC registration across 3 cycles | If unresponsive, activate mock-auth contingency with stakeholder approval |
+| Activate R008 contingency | RL-F2: contingency was conditional, now active | "C3 required" is the active plan, not a consideration |
+| Raise R007 probability to 3 (HIGH) | 0 of 7 findings resolved across 2 cycles | R007 now HIGH magnitude (9) — reflects persistent rework failure |
 
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| C2-CRIT-1 | Review Record C2, UC-001, FR-001, AC-001 | Derives | C2 Cycle 2 Work Item 1, ClockingApi.cshtml |
-| C2-MAJ-1 | Review Record C2, UC-006, FR-006 | Derives | C2 Cycle 2 Work Item 2, News/Edit.cshtml |
-| C2-MAJ-2 | Review Record C2, UC-001, FR-001, AC-001 | Derives | C2 Cycle 2 Work Item 3, clocking-retry.js |
-| C2-MIN-1 | Review Record C2, R001, CON-005 | DependsOn | C2 Cycle 2 Work Item 7, NovellLdapConnectionAdapter.cs |
-| C2-MIN-2 | Review Record C2, SEC-001, CON-004 | Derives | C2 Cycle 2 Work Item 4, ClockingApi.cshtml.cs |
-| C2-MIN-3 | Review Record C2, CR-014 | Derives | C2 Cycle 2 Work Item 6, UnitTest1.cs |
-| C2-MIN-4 | Review Record C2, FR-004, CR-012 | Derives | C2 Cycle 2 Work Item 5, ClockingService.cs |
-| MAJOR-1 (C1, RESOLVED) | Review Record C1, FR-008, CR-010 | Resolved by | PR #19, PR #20 |
-| MINOR-1 (C1, RESOLVED) | Review Record C1, FR-009, CR-015 | Resolved by | PR #19, PR #20 |
-| MINOR-3 (C1, RESOLVED) | Review Record C1, AC-005, CR-011 | Resolved by | PR #19, PR #20 |
-| MINOR-4 (C1, RESOLVED) | Review Record C1, CR-011, CR-018 | Resolved by | PR #19, PR #20 |
+| OBJ-1 (Component Development) | C2 Cycle 2 Iteration Plan | Derives | C2-CRIT-1, C2-MAJ-1, C2-MAJ-2 (all OPEN) |
+| OBJ-2 (Testing) | C2 Cycle 2 Iteration Plan | Derives | Test Evaluation Summary, R003 (8 blocked tests) |
+| OBJ-3 (Documentation) | C2 Cycle 2 Iteration Plan | Derives | User Documentation, Design Model F1 (OPEN) |
+| OBJ-4 (Deployment Readiness) | C2 Cycle 2 Iteration Plan | Derives | IOC milestone (NOT ACHIEVED), PR #19 (unmerged) |
+| IP-F4 (RESOLVED) | Review Record C2 Cycle 2 | Derives | Iteration Plan CP-1 through CP-4 |
+| RL-F2 (RESOLVED) | Review Record C2 Cycle 2 | Derives | Risk List R008 (contingency ACTIVATED) |
+| C2-CRIT-1 | Review Record C2 Cycle 1 | Derives | C2 Cycle 3 Work Item 1, ClockingApi.cshtml |
+| C2-MAJ-1 | Review Record C2 Cycle 1 | Derives | C2 Cycle 3 Work Item 2, News/Edit.cshtml |
+| C2-MAJ-2 | Review Record C2 Cycle 1 | Derives | C2 Cycle 3 Work Item 3, clocking-retry.js |
+| C2-MIN-1..4 | Review Record C2 Cycle 1 | Derives | C2 Cycle 3 Work Items 4-7 |
 | R003 ESCALATION | R003, CON-004, STK-003, STK-001 | DependsOn | 8 blocked tests, IOC achievement |
-| Stakeholder sanction (REFUSED) | STK-001 answer (IOC consultation C2) | Refines | IOC milestone decision (NOT ACHIEVED — auto-iterate to C2 Cycle 2) |
-| Measured actuals (C1) | Construction C1 execution facts | Derives | C2 Cycle 2 budget box (9.85M tokens measured) |
-| OBJ-1..7 (C1 carryover) | C1 Iteration Plan objectives | Derives | C2 Cycle 1 assessment (4 MET, 2 PARTIAL, 1 NOT MET) |
+| R007 ESCALATION | Review Record C2 findings (0 of 7 resolved) | Derives | C2 Cycle 3 Work Items 1-8, PR #19 merge |
+| R008 ACTIVATED | Stakeholder sanction refusal (3rd), C2 findings persisting | Derives | C2 Cycle 3 plan, potential C2 Cycle 4 |
+| Stakeholder sanction (REFUSED 3rd) | STK-001 answer (IOC C2 Cycle 3) | Refines | IOC milestone decision (NOT ACHIEVED — auto-iterate to C2 Cycle 4) |
+| Stakeholder PR directive | STK-001 feedback (C2 Cycle 2 review) | Derives | Integrator work item (Item 8), CP-2 checkpoint |
+| Measured actuals (C2 Cycle 2) | Construction C2 Cycle 2 execution facts | Derives | C2 Cycle 3 budget box (18.84M tokens measured) |
+| Metrics dashboard | Iteration facts (injected) | Derives | Budget variance analysis, rework effectiveness assessment |
