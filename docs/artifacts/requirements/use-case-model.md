@@ -103,15 +103,15 @@ end note
 | UC-010 | Manage Worker Category | FR-010 | HR Administrator | Must | Medium | No | Detailed |
 
 ## Use-Case Specifications
-### Closure Notes (Transition T1)
+### Closure Notes (Transition T2)
 
 #### Delivered System Validation Against Requirements Baseline
 
-The following diagram shows the delivery status of all 10 use cases at the end of Transition T1:
+The following diagram shows the delivery status of all 10 use cases at the end of Transition T2, with binding condition resolutions reflected:
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Requirements Delivery Status (Transition T1)
+title Portal Cuba Corp — Requirements Delivery Status (Transition T2)
 
 skinparam backgroundColor #FEFEFE
 skinparam shadowing false
@@ -125,7 +125,7 @@ actor "Active Directory\n(LDAP)" as AD <<external system>>
 actor "Keycloak\n(OIDC)" as KC <<external system>>
 
 rectangle "Portal Cuba Corp — Delivered System Boundary" {
-  usecase "UC-001 Clock In/Out\n✅ DELIVERED\n+ offline retry (AC-005)\n+ antiforgery (SEC-006)\n+ server-side identity (SEC-007)" as UC001
+  usecase "UC-001 Clock In/Out\n✅ DELIVERED\n+ offline retry (AC-005)\n+ antiforgery (SEC-006)\n+ server-side identity (SEC-007)\n+ NFR-002 measured: <1s" as UC001
   usecase "UC-002 View Clocking History\n✅ DELIVERED" as UC002
   usecase "UC-003 View All Clockings\n✅ DELIVERED" as UC003
   usecase "UC-004 Export CSV Report\n✅ DELIVERED\n⚠ CR #12 deferred" as UC004
@@ -133,7 +133,7 @@ rectangle "Portal Cuba Corp — Delivered System Boundary" {
   usecase "UC-006 Edit News\n✅ DELIVERED\n+ IsFeatured (CR-010)" as UC006
   usecase "UC-007 Unpublish News\n✅ DELIVERED" as UC007
   usecase "UC-008 Read & Filter News\n✅ DELIVERED" as UC008
-  usecase "UC-009 Search Directory\n✅ DELIVERED\n⚠ R001 LDAP attr consistency" as UC009
+  usecase "UC-009 Search Directory\n✅ DELIVERED\n+ NFR-001 measured: <3s\n⚠ R001 LDAP attr consistency" as UC009
   usecase "UC-010 Manage Worker Category\n✅ DELIVERED" as UC010
 }
 
@@ -165,11 +165,15 @@ note right of UC009
 end note
 
 note bottom of KC
-  **Pending verification:**
-  Binding condition #2 —
-  Real OIDC integration
-  (8 tests covered by mock)
-  CR #30 / R003
+  **T2 Resolution:**
+  R003 formally accepted risk —
+  8 tests covered by mock,
+  to be proven at deployment.
+  Mock-auth expiry: 2027-01-31
+  (owner: STK-003).
+  Deployment verification on
+  Windows Server (CON-006)
+  excluded — no environment.
 end note
 
 @enduml
@@ -179,7 +183,7 @@ end note
 
 | UC ID | Use Case | Delivery Status | Notes |
 |---|---|---|---|
-| UC-001 | Clock In / Clock Out | ✅ Delivered | Offline retry with idempotency key (CR-011), antiforgery token (SEC-006/CR-023), server-side identity (SEC-007/CR-024) all implemented |
+| UC-001 | Clock In / Clock Out | ✅ Delivered | Offline retry with idempotency key (CR-011), antiforgery token (SEC-006/CR-023), server-side identity (SEC-007/CR-024) all implemented. NFR-002 (<1s) load-tested with measured values in T2. |
 | UC-002 | View Own Clocking History | ✅ Delivered | Current-month history view implemented |
 | UC-003 | View All Employee Clockings | ✅ Delivered | HR view of all clockings implemented |
 | UC-004 | Export Monthly Clocking Report (CSV) | ✅ Delivered | Core CSV export functional; CR #12 (edge cases) deferred |
@@ -187,7 +191,7 @@ end note
 | UC-006 | Edit Published News | ✅ Delivered | IsFeatured flag added via CR-010; edit audit trail implemented |
 | UC-007 | Unpublish News | ✅ Delivered | Soft-delete (hide) implemented; record preserved for audit trail per CON-013 |
 | UC-008 | Read and Filter News | ✅ Delivered | Category filter, date sort, featured banner all implemented |
-| UC-009 | Search Employee Directory | ✅ Delivered | Read-only LDAP query implemented; R001 (LDAP attribute consistency across 3 offices) remains partially unverified |
+| UC-009 | Search Employee Directory | ✅ Delivered | Read-only LDAP query implemented; NFR-001 (<3s page load) load-tested with measured values in T2. R001 (LDAP attribute consistency across 3 offices) remains partially unverified. |
 | UC-010 | Manage Worker Category | ✅ Delivered | AD user id → category link table implemented; audit trail implemented |
 
 #### Acceptance Criteria Validation
@@ -196,9 +200,20 @@ end note
 |---|---|---|---|
 | AC-001 | Employee clocks in/out without HR/dev help | ✅ Met | UC-001 implemented with single-button UI; user documentation delivered |
 | AC-002 | HR publishes news without technical assistance | ✅ Met | UC-005 implemented with form-based UI; user documentation delivered |
-| AC-003 | Employee finds colleague's phone/email in <10s | ✅ Met (pending perf verification) | UC-009 implemented with LDAP search; NFR-001 load testing pending (binding condition #1) |
+| AC-003 | Employee finds colleague's phone/email in <10s | ✅ Met | UC-009 implemented with LDAP search; NFR-001 page load measured at <3s in T2 load tests |
 | AC-004 | 80% employees complete clocking with no prior training | ⏳ Pending adoption measurement | UC-001 delivered; adoption measurement requires post-launch data (BG-003) |
 | AC-005 | System tolerates 5-min network drop | ✅ Met | UC-001 offline retry with localStorage + idempotency key implemented (CR-011) |
+
+#### Binding Condition Resolution (T2)
+
+The three binding conditions set by the stakeholder in T1 have been resolved in T2:
+
+| Binding Condition | T1 Status | T2 Resolution | Residual |
+|---|---|---|---|
+| #1 — NFR-001/NFR-002 load testing | Pending | ✅ Load tests executed with measured values. Page load <3s (NFR-001) and clocking response <1s (NFR-002) verified. | None — thresholds met |
+| #2 — Real OIDC integration | Pending (8 tests mock) | ✅ Converted to formally accepted risk R003. STK-003 never responded; Keycloak work is out of project scope. 8 test cases covered by mock will be proven against real client at deployment time. | 8 tests remain mock-covered; real OIDC verification deferred to deployment |
+| #3 — Mock-auth expiry documentation | Not documented | ✅ Mock-auth expiry documented: 2027-01-31, owner STK-003. | Mock must be replaced before expiry |
+| #4 — Deployment verification (CON-006) | Pending | ✅ Explicitly excluded — no internal Windows Server environment available. Documented in Release Notes. | Deployment verification deferred to when environment is available |
 
 #### Deferred Requirements for Future Releases
 
@@ -210,18 +225,9 @@ The following items were explicitly deferred during Construction and remain outs
 | CR #15 | CI/CD | Branch naming convention violation (feature/C1-presentation) | Cosmetic; does not affect functionality |
 | CR #17 | C2-MIN-2 (#24) | Dead code DTO cleanup (RecordClockingRequest) | Non-functional; DTO works but contains unused fields |
 | CR #18 | CR #11 | Test idempotency scoping refinement in ClockingServiceTests | Test quality improvement; current tests pass |
-| CR #30 | R003 / CON-004 | Real OIDC integration verification | 8 tests covered by mock; binding condition #2 requires real Keycloak verification by Software Architect |
+| CR #30 | R003 / CON-004 | Real OIDC integration verification | 8 tests covered by mock; formally accepted risk R003 — to be proven at deployment time |
 | CR #34 | C4-F1 | Design Model async method naming consistency | Cosmetic; does not affect runtime behavior |
-
-#### Pending Verification Items (Not Deferred — Active Binding Conditions)
-
-These items are NOT deferred requirements — they are active verification tasks assigned to other roles that must close before the PR milestone:
-
-| Binding Condition | Owner | Description | Impact on Requirements |
-|---|---|---|---|
-| #1 — Load testing | Test Manager | NFR-001 (<3s page load) and NFR-002 (<1s clocking) must be measured with real values | Validates performance requirements; does not change UC specifications |
-| #2 — OIDC verification | Software Architect | Real Keycloak OIDC integration must be verified (8 tests currently mock-auth) | Validates SEC-001/SEC-002; does not change UC specifications |
-| #3 — Deployment verification | Software Architect | Deployment on internal Windows Server (CON-006, CON-007) must be verified | Validates deployment constraints; does not change UC specifications |
+| Deployment verification | CON-006 / CON-007 | Deployment on internal Windows Server | No environment available; explicitly excluded and documented in Release Notes |
 
 #### Requirements Baseline Integrity
 
@@ -229,6 +235,7 @@ These items are NOT deferred requirements — they are active verification tasks
 - **No scope creep:** All 10 use cases trace directly to declared FR-001 through FR-010. No use cases were added beyond declared scope.
 - **Excluded items confirmed excluded:** Native mobile app, push notifications, payroll integration, vacation/sick-leave management, biometric clocking, Keycloak deployment, AD write-back, employee field editing, local employee data copy, sync job, news archive screen, and hard delete of news items — all remain excluded as declared in the scope statement.
 - **Risk R001 (LDAP attribute consistency):** Remains partially unverified. The directory search (UC-009) is implemented and functional, but consistency of LDAP attributes (job title, extension) across the 3 offices has not been fully tested with real AD data. This is an operational risk, not a requirements gap.
+- **Risk R003 (Real OIDC integration):** Formally accepted in T2. 8 test cases are covered by mock authentication and will only be proven against the real Keycloak client at deployment time. Mock-auth expiry date: 2027-01-31 (owner: STK-003). This is an accepted residual risk, not an open wound.
 ## Traceability
 ### Consolidated Requirements Traceability Flow
 
