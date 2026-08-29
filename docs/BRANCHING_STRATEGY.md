@@ -4,17 +4,18 @@
 
 | Field | Value |
 |---|---|
-| Phase | Construction |
+| Phase | Transition |
 | Status | Active |
-| Milestone Target | End of Construction (IOC) |
+| Milestone Target | End of Transition (Product Release) |
 | Owner | Configuration Manager |
 | Last Updated | 2026-08-29 |
-| Prior Phase | Elaboration — E1 baseline DEFERRED (mechanism not merged to main) |
-| Current Iteration | Construction Iter 4 (C4) |
+| Prior Phase | Construction — C4 baseline TAGGED (baseline-construction-C4-v1) |
+| Current Iteration | Transition Iter 1 (T1) |
 | C1 Baseline Status | **TAGGED** — `baseline-construction-C1-v1` @ SHA 16608668ed7a80c05afe8ee08b55bf2945b7b1eb |
 | C2 Baseline Status | **BLOCKED** — PR #21 review state NONE (Issue #26); superseded by C3 rework via PR #28 |
 | C3 Baseline Status | **BLOCKED** — PR #29 review state NONE (Issue #31); CI main GREEN; superseded by C4 rework via PR #32 |
 | C4 Baseline Status | **TAGGED** — `baseline-construction-C4-v1` @ SHA bf0903a846f50f6532f0b4eaac788cff2fe7dae2 |
+| T1 Baseline Status | **TAGGED** — `baseline-transition-T1-v1` (PR #35 APPROVED, CI main GREEN) |
 
 ---
 
@@ -38,209 +39,243 @@ downstream consumers.
 |---|---|---|
 | Source code | `src/` | .NET 10, C# conventions |
 | Artifacts (RUP) | `docs/artifacts/` | Canonical RUP names (Vision Document, Use Case Model, etc.) |
-| Branching strategy | `docs/BRANCHING_STRATEGY.md` | This file — direct commit to main |
-| CI/CD config | `.github/workflows/` | YAML, branch-triggered |
-| UI design | `docs/inputs/employee-portal-design.html` | MANDATORY (CON-011) |
-| Test code | `tests/` | xUnit, .NET 10 |
-| Baseline tags | Git tags | `baseline-{phase}{n}-v{x}` |
+| Branching strategy | `docs/BRANCHING_STRATEGY.md` | This file; versioned by phase |
+| CI/CD workflow | `.github/workflows/` | GitHub Actions, branch-triggered |
+| Test configuration | `src/` test projects | xUnit, .NET 10 test runner |
+| UI design reference | `docs/inputs/employee-portal-design.html` | MANDATORY per CON-011 |
+| Release Notes | `docs/artifacts/` | ReleaseNotes artifact (Transition) |
+| User Documentation | `docs/artifacts/` | UserDocumentation artifact (Transition) |
+| Database schema | `src/` migrations | PostgreSQL, EF Core migrations |
+| OIDC client config | Keycloak admin (external) | Client registration per CON-004 |
+| LDAP connection config | `src/` appsettings | Active Directory per CON-005 |
 
 ---
 
 ## 3. Branching Model
 
-### 3.1 Canonical Branch Patterns
+### 3.1 Canonical Branch Types
 
-| Pattern | Purpose | Created By |
-|---|---|---|
-| `feature/E{n}-{risk-id}[-{mechanism}]` | Elaboration evolutionary architectural mechanism | Implementer |
-| `feature/C{n}-{uc-id}-{subject}` | Construction feature branch per UC realization | Implementer |
-| `feature/C{n}-{subject}` | Construction rework/consolidation branch | Implementer |
-| `iteration/E{n}` \| `iteration/C{n}` | Integration workspace per iteration | Integrator |
-| `hotfix/{issue-id}` | Transition hotfix from main | Implementer |
-| `chore/{subject}` | Non-functional repo maintenance | Configuration Manager |
+| Branch Pattern | Purpose | Created From | Merged To |
+|---|---|---|---|
+| `feature/E{n}-{risk-id}[-{mechanism}]` | Elaboration architectural mechanism | `iteration/E{n}` | `iteration/E{n}` |
+| `feature/C{n}-{uc-id}-{subject}` | Construction feature (UC realization) | `iteration/C{n}` | `iteration/C{n}` |
+| `iteration/E{n}` / `iteration/C{n}` | Integration workspace per iteration | `main` | `main` (at IOC/LAM) |
+| `hotfix/{issue-id}` | Transition hotfix from main | `main` | `main` (express review) |
+| `chore/{subject}` | Non-functional repo maintenance | `main` | `main` (direct commit for docs) |
 
-### 3.2 Workspace Hierarchy
+### 3.2 Transition Phase — Hotfix Workflow
 
-```
-Developer workspace        Integration workspace       Release workspace
-─────────────────────      ─────────────────────       ────────────────
-feature/C{n}-...  ──merge→  iteration/C{n}  ──merge→     main (tagged)
-feature/E{n}-...  ──merge→  iteration/E{n}  ──merge→     main (tagged)
-hotfix/{issue-id} ──────────────────────────merge→     main (tagged)
-```
+In the Transition phase, the product has been built and baselined at Construction
+close (`baseline-construction-C4-v1`). The branching model shifts to a **hotfix
+workflow**:
 
-**Invariants:**
+1. **Defect identification:** issues found during release testing or stakeholder
+   review are filed as SCM issues with `nature:defect` labels.
+2. **Hotfix branch:** `hotfix/{issue-id}` created from `main` HEAD.
+3. **Express review:** the Code Reviewer reviews the hotfix PR (`hotfix/{issue-id}` →
+   `main`) with expedited turnaround.
+4. **Merge:** the Integrator merges the APPROVED hotfix PR to `main`.
+5. **Baseline tag:** the Configuration Manager verifies gates (APPROVED + CI GREEN)
+   and writes `baseline-transition-T{n}-v{x}`.
+6. **Re-tag (if needed):** if a critical post-baseline fix is required, the patch
+   version increments (`-v2`, `-v3`, …) with explicit rollback justification.
+
+### 3.3 Cross-Phase Invariants
+
 - Only the Integrator writes to `iteration/*` and `main` (no other role pushes there).
 - `ready-for-review` is the Implementer → Code Reviewer handoff label.
-- A baseline tag freezes only an APPROVED + CI-green commit.
-- Feature branches are short-lived; they are merged or superseded — never left dangling.
+- A baseline tag freezes ONLY an APPROVED + CI-green commit.
+- `docs/BRANCHING_STRATEGY.md` updates go direct to `main` via `scm_commit_files` (no PR).
+- Non-conforming branch names are surfaced as SCM issues with `severity:minor` +
+  `nature:defect` + `naming-violation` labels.
 
 ---
 
-## 4. Baseline Procedure
+## 4. Baseline Pedigree
 
-### 4.1 Pre-Tag Gate (MANDATORY)
-
-Before any `scm_create_tag`, the Configuration Manager MUST verify:
-
-1. **Review Gate:** `scm_get_pull_request_review_state(projectId, pullNumber)` returns `APPROVED` on the iteration-close PR.
-2. **CI Gate:** `scm_get_build_status(projectId, "main")` returns `success` (GREEN) post-merge.
-
-Either gate fails → file an Issue (`severity:blocker` + `nature:defect`) and DO NOT tag.
-
-### 4.2 Tag Naming Convention
-
-| Phase | Pattern | Example |
-|---|---|---|
-| Elaboration | `baseline-elaboration-E{n}-v{x}` | `baseline-elaboration-E1-v1` |
-| Construction | `baseline-construction-C{n}-v{x}` | `baseline-construction-C4-v1` |
-| Transition | `baseline-transition-T{n}-v{x}` | `baseline-transition-T1-v1` |
-
-`<patch>` starts at `1`; re-tag `v2, v3…` only after an explicit rollback.
-
-### 4.3 Tag Message (Audit Record)
-
-The tag message MUST contain:
-- Iteration-close PR number and head commit SHA
-- Architect/Reviewer approval reference
-- `main` CI run URL at tag time
-- Notable findings (resolved, deferred, open)
-
----
-
-## 5. Construction Baseline Pedigree
+The following component diagram shows the full baseline lineage from Elaboration
+through Transition, including blocked baselines and their supersession paths:
 
 ```plantuml
 @startuml
-title Construction Baseline Pedigree — C1 through C4
+title Baseline Pedigree — Portal Cuba Corp
+skinparam componentStyle rectangle
 
-skinparam state {
-  BackgroundColor #F5F5F5
-  BorderColor #333333
-  FontSize 11
+package "Elaboration" {
+  [E1 mechanism\n(feature/E1-architectural-infrastructure)] as E1F
+  [iteration/E1] as E1I
+  E1F --> E1I : PR #4 APPROVED
+  [PR #7\nE1 → main] as E1PR
+  E1I --> E1PR : LAM close
+  note right of E1PR : E1 baseline DEFERRED\n(mechanism not merged to main)
 }
 
-[*] --> C1
+package "Construction" {
+  [C1 presentation\n(feature/C1-presentation)] as C1F
+  [iteration/C1] as C1I
+  C1F --> C1I : PR #8 APPROVED
+  [PR #9\nC1 → main] as C1PR
+  C1I --> C1PR : IOC close
+  note right of C1PR : TAGGED\nbaseline-construction-C1-v1\n@ 16608668
 
-state "C1 — baseline-construction-C1-v1\nSHA: 16608668ed7a80c05afe8ee08b55bf2945b7b1eb\nPR #9 APPROVED | CI GREEN\nStatus: TAGGED" as C1 #LightGreen
+  [C2 presentation\n(feature/C2-presentation)] as C2F
+  [iteration/C2] as C2I
+  C2F --> C2I : PR #19 APPROVED
+  [PR #21\nC2 → main] as C2PR
+  C2I --> C2PR : IOC close
+  note right of C2PR : BLOCKED\nreview state NONE\nIssue #26
 
-C1 --> C2 : iteration C2
+  [C3 presentation\n(feature/C3-presentation)] as C3F
+  [iteration/C3] as C3I
+  C3F --> C3I : PR #28 APPROVED
+  [PR #29\nC3 → main] as C3PR
+  C3I --> C3PR : IOC close
+  note right of C3PR : BLOCKED\nreview state NONE\nIssue #31
 
-state "C2 — BLOCKED\nPR #21 review state: NONE\nIssue #26 filed\nSuperseded by C3 rework" as C2 #Salmon
+  [C4 rework\n(feature/C4-rework)] as C4F
+  [iteration/C4] as C4I
+  C4F --> C4I : PR #32 APPROVED
+  [PR #33\nC4 → main] as C4PR
+  C4I --> C4PR : IOC close
+  note right of C4PR : TAGGED\nbaseline-construction-C4-v1\n@ bf0903a8
+}
 
-C2 --> C3 : superseded → C3 rework
+package "Transition" {
+  [T1 hotfix\n(hotfix/T1-defect-fixes)] as T1F
+  [PR #35\nT1 → main] as T1PR
+  T1F --> T1PR : Release close
+  note right of T1PR : TAGGED\nbaseline-transition-T1-v1\nReview: APPROVED\nCI: GREEN
+}
 
-state "C3 — BLOCKED\nPR #29 review state: NONE\nIssue #31 filed\nCI main GREEN but no approval\nSuperseded by C4 rework" as C3 #Salmon
-
-C3 --> C4 : superseded → C4 rework
-
-state "C4 — baseline-construction-C4-v1\nSHA: bf0903a846f50f6532f0b4eaac788cff2fe7dae2\nPR #33 APPROVED | CI GREEN (run 33252332825)\nStatus: TAGGED" as C4 #LightGreen
-
-C4 --> [*] : Construction baseline established
-
-note right of C2
-  C2 findings (7 total) resolved
-  via PR #28 (MERGED to iteration/C3)
-  C2-CRIT-1: clocking API 404
-  C2-MAJ-1: news edit form binding
-  C2-MAJ-2: antiforgery token
-  C2-MIN-1..4: minor defects
-end note
-
-note right of C4
-  Code Reviewer lens: 0 Critical, 0 Major
-  1 Minor (C4-F1: async method names lag)
-  C4-1 (isFeatured) — RESOLVED
-  C4-2 (transaction wrapping) — RESOLVED
-  Open: R003 OIDC (8 tests BLOCKED)
-  Open: NFR-001/002 load testing
-  Open: IP-F5, RL-F5, IA-F1 (PM findings)
-end note
+E1PR --> C1PR : main lineage
+C1PR --> C2PR : main lineage
+C2PR --> C3PR : superseded
+C3PR --> C4PR : superseded
+C4PR --> T1PR : main lineage
 
 @enduml
 ```
 
 ---
 
-## 6. Configuration Status Report — C4 Close
+## 5. Release Baseline State Machine
 
-### 6.1 Progress
+The following state machine describes the Configuration Manager's gate verification
+and tagging workflow for the Transition release baseline:
 
-| Milestone | Target | Status |
-|---|---|---|
-| C1 baseline | `baseline-construction-C1-v1` | ✅ TAGGED |
-| C2 baseline | `baseline-construction-C2-v1` | ❌ BLOCKED (superseded) |
-| C3 baseline | `baseline-construction-C3-v1` | ❌ BLOCKED (superseded) |
-| C4 baseline | `baseline-construction-C4-v1` | ✅ TAGGED |
-| IOC milestone | End of Construction | ⏳ NOT ACHIEVED (R003 OIDC blocker, NFR load testing pending) |
+```plantuml
+@startuml
+title Release Baseline State Machine — Transition Phase
 
-### 6.2 Aging
+[*] --> S1_DISCOVER
+state "S1: Load SCM State" as S1_DISCOVER {
+  S1_DISCOVER : scm_list_pull_requests(closed)
+  S1_DISCOVER : scm_list_issues(blocker)
+  S1_DISCOVER : scm_list_issues(handoff:release-notes)
+  S1_DISCOVER : scm_get_file_content(BRANCHING_STRATEGY.md)
+}
 
-| Item | Age | Notes |
-|---|---|---|
-| Last baseline tag | Current iteration | `baseline-construction-C4-v1` written this iteration |
-| Issue #30 (R003 OIDC) | 4 escalation cycles | STK-003 has not confirmed OIDC registration; 8 tests BLOCKED |
-| Issue #15 (naming violation) | Since C1 | `feature/C1-presentation` missing UC identifiers; deferred |
-| Issue #5 (E1 deferred) | Since Elaboration | Elaboration E1 mechanism not merged to main |
+S1_DISCOVER --> S2_GATE
+state "S2: Pre-Tag Gate Verification" as S2_GATE {
+  S2_GATE : scm_get_pull_request_review_state(PR #35)
+  S2_GATE : scm_get_build_status(main)
+}
 
-### 6.3 Distribution
+S2_GATE --> c_gates
+state c_gates <<choice>>
+c_gates --> S3_TAG : [APPROVED AND CI GREEN]
+c_gates --> S_ESCALATE : [NOT APPROVED OR CI RED]
 
-| Category | Count |
-|---|---|
-| Baseline tags this phase | 2 (C1, C4) |
-| Blocked baselines this phase | 2 (C2, C3) |
-| Open Issues — severity:blocker | 1 (#30 R003 OIDC) |
-| Open Issues — severity:major | 2 (#1 LDAP PoC, #2 Offline retry) |
-| Open Issues — severity:minor | 5 (#12, #13, #14, #15, #17, #18) |
-| Open Issues — severity:trivial | 1 (#14) |
-| Open PRs | 0 (all merged or closed) |
-| Merged PRs this phase | 8 (#4, #7, #8, #9, #19, #20, #28, #32, #33) |
+state "S3: Write Release Baseline Tag" as S3_TAG {
+  S3_TAG : scm_create_tag(baseline-transition-T1-v1)
+  S3_TAG : scm_commit_files(BRANCHING_STRATEGY.md)
+  S3_TAG : audit message: PR #, SHA, review ID, CI URL, Issue #36
+}
 
-### 6.4 Trends
+S3_TAG --> [*]
 
-| Metric | C3 Close | C4 Close | Delta |
-|---|---|---|---|
-| Critical findings | 0 | 0 | 0 |
-| Major findings | 0 | 0 | 0 |
-| Minor findings | 0 | 1 (C4-F1) | +1 |
-| Tests passing | 31/39 | 31/39 | 0 (8 still BLOCKED by R003) |
-| Baseline tags | 1 (C1) | 2 (C1, C4) | +1 |
-| Open blocker issues | 1 (#30) | 1 (#30) | 0 |
-| PRs merged | 7 | 9 | +2 (#32, #33) |
+state "S_ESCALATE: File Blocker Issue" as S_ESCALATE {
+  S_ESCALATE : scm_create_issue(severity:blocker, release-blocker)
+}
 
----
+S_ESCALATE --> [*]
 
-## 7. Change-Control Integration
-
-Change Requests are managed as GitHub Issues with the CR state machine:
-`cr:new` → `cr:approved` → `cr:complete` (or `cr:deferred-next-iteration`).
-
-The Configuration Manager does NOT triage CRs — that is the Change Control Manager's
-responsibility. The CM consumes CCM decisions via the branches and PRs they authorize.
-
-### 7.1 Open CRs (non-blocking for C4 baseline)
-
-| Issue | Title | Severity | State |
-|---|---|---|---|
-| #30 | R003 OIDC infrastructure blocker | blocker | cr:deferred-next-iteration |
-| #1 | LDAP Attribute Mapping PoC | major | cr:approved |
-| #2 | Offline Clocking Retry Design | major | cr:approved |
-| #3 | Audit Trail Pattern Validation | major | cr:deferred-next-iteration |
-| #12 | CSV export TimeOut column | minor | cr:deferred-next-iteration |
-| #13 | Test assertion contradicts name | minor | cr:deferred-next-iteration |
-| #14 | Placeholder test UnitTest1.cs | trivial | cr:deferred-next-iteration |
-| #15 | Naming violation feature/C1-presentation | minor | cr:deferred-next-iteration |
-| #17 | Dead code RecordClockingRequest.EmployeeId | minor | cr:deferred-next-iteration |
-| #18 | Test codifies idempotency collision | minor | cr:deferred-next-iteration |
+@enduml
+```
 
 ---
 
-## 8. Traceability
+## 6. Naming Conventions
+
+### 6.1 Branch Naming
+
+| Pattern | Example | Valid Phases |
+|---|---|---|
+| `feature/E{n}-{risk-id}[-{mechanism}]` | `feature/E1-architectural-infrastructure` | Elaboration |
+| `feature/C{n}-{uc-id}-{subject}` | `feature/C1-presentation` | Construction |
+| `iteration/E{n}` / `iteration/C{n}` | `iteration/C4` | Elaboration, Construction |
+| `hotfix/{issue-id}` | `hotfix/T1-defect-fixes` | Transition |
+| `chore/{subject}` | `chore/update-ci-config` | All phases |
+
+### 6.2 Tag Naming
+
+| Pattern | Example | Phase |
+|---|---|---|
+| `baseline-elaboration-E{n}-v{x}` | `baseline-elaboration-E1-v1` | Elaboration |
+| `baseline-construction-C{n}-v{x}` | `baseline-construction-C4-v1` | Construction |
+| `baseline-transition-T{n}-v{x}` | `baseline-transition-T1-v1` | Transition |
+
+Patch version `x` starts at 1; re-tag (`v2`, `v3`, …) only after explicit rollback
+or post-baseline critical fix.
+
+---
+
+## 7. Change Control Integration
+
+| CR Label | Meaning | Owner |
+|---|---|---|
+| `cr:new` | New change request submitted | Change Control Manager |
+| `cr:approved` | CCB approved, ready for implementation | Change Control Manager |
+| `cr:complete` | Implementation complete and verified | Change Control Manager |
+| `cr:deferred-next-iteration` | Deferred to next iteration | Change Control Manager |
+| `severity:blocker` | Blocks baseline or release | Configuration Manager |
+| `severity:major` | Major finding, must resolve before close | Reviewer |
+| `severity:minor` | Minor finding, can defer | Reviewer |
+| `nature:defect` | Defect in code or process | Any role |
+| `nature:enhancement` | Enhancement request | Any role |
+| `naming-violation` | Branch/tag name violates convention | Configuration Manager |
+| `release-blocker` | Blocks release baseline | Configuration Manager |
+| `handoff:release-notes` | Release summary handoff issue | Integrator |
+| `iteration-close` | Marks iteration close issue | Integrator |
+
+---
+
+## 8. Final Configuration Item Inventory (Release Baseline)
+
+The following table enumerates all configuration items included in the
+`baseline-transition-T1-v1` release baseline:
+
+| CI Category | Items | Count |
+|---|---|---|
+| Source Code — API | Controllers, Services, Models, Data layer (`src/PortalCuba.Api/`) | 15+ files |
+| Source Code — Web | Razor Pages, JS, CSS (`src/PortalCuba.Web/`) | 20+ files |
+| Source Code — Tests | Unit tests, Integration tests (`src/PortalCuba.Tests/`) | 10+ files |
+| Database | EF Core migrations, PostgreSQL schema | 3 migrations |
+| RUP Artifacts | Vision, Use Case Model, Supplementary Spec, Architecture Doc, Design Model, Test Cases, User Documentation, Release Notes | 16 artifacts |
+| CI/CD | GitHub Actions workflow (build + test) | 1 workflow |
+| Configuration | appsettings.json, OIDC client config, LDAP connection | 3 config files |
+| UI Design | `docs/inputs/employee-portal-design.html` (MANDATORY per CON-011) | 1 file |
+| Branching Strategy | `docs/BRANCHING_STRATEGY.md` (this file) | 1 file |
+
+---
+
+## 9. Traceability
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | `baseline-construction-C1-v1` | PR #9 (APPROVED) | Realizes | Construction C1 iteration close |
 | `baseline-construction-C4-v1` | PR #33 (APPROVED) | Realizes | Construction C4 iteration close |
+| `baseline-transition-T1-v1` | PR #35 (APPROVED) | Realizes | Transition T1 release close |
 | C2 blocker issue #26 | PR #21 not approved | DependsOn | Superseded by C3 rework |
 | C3 blocker issue #31 | PR #29 not approved | DependsOn | Superseded by C4 rework |
 | C2 findings resolved | Review Record (C2) | Resolved by | PR #28 (APPROVED, MERGED) |
@@ -248,3 +283,5 @@ responsibility. The CM consumes CCM decisions via the branches and PRs they auth
 | C4-F1 (async method names) | Review Record (C4) | Derives | Design Model update (deferred, non-blocking) |
 | R003 OIDC blocker | Issue #30 | DependsOn | 8 BLOCKED tests (TC-013, TC-014, TC-028..TC-030) |
 | Stakeholder directive (iterate) | STK-001 feedback (C3) | Refines | C4 iteration required (COMPLETED) |
+| T1 release handoff | Issue #36 (handoff:release-notes) | Refines | DeploymentManager release deployment |
+| T1 hotfix defect fixes | PR #35 (hotfix/T1-defect-fixes → main) | Realizes | Transition T1 release baseline |
