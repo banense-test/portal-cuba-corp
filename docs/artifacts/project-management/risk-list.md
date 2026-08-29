@@ -1,14 +1,16 @@
 ## Document Control
+
 | Field | Value |
 |---|---|
 | Phase | Construction |
 | Status | Active |
-| Milestone Target | End-of-Construction (IOC) |
-| Iteration | 2 (Cycle 3) |
+| Milestone Target | End-of-Construction (IOC) — NOT YET ACHIEVED |
+| Iteration | 3 (Cycle 1) |
 | Date | 2026-08-29 |
-| Prior Phase | Construction C2 Cycle 2 (REQUEST_CHANGES — 0 of 7 C2 findings resolved; stakeholder sanction REFUSED 2nd time; IP-F4 + RL-F2 findings opened against PM artifacts) |
-| Evolution | C2 Cycle 2 Risk List evolved for Cycle 3: R007 ESCALATED (0 of 7 findings resolved across 2 cycles, probability raised to 3); R008 contingency ACTIVATED — "C3 required" replaces conditional "consider splitting" (RL-F2 resolved); R003 escalation renewed (3rd cycle, STK-003 still unconfirmed); R001/R005/R006 status unchanged |
-| Finding RL-F2 | RESOLVED — R008 contingency activated from conditional to active status |
+| Prior Phase | Construction C2 Cycle 3 — PR #28 APPROVED (all 7 C2 code-level findings RESOLVED); stakeholder sanction REFUSED 2nd time |
+| Evolution | C2 Cycle 3 Risk List evolved for C3 Cycle 1: R007 RESOLVED (all 7 C2 findings resolved in PR #28); R008 rework cycle COMPLETE (C3 is now the integration/IOC iteration, not a rework cycle); R003 ESCALATED (4th cycle — STK-003 still unconfirmed); R001/R005/R006 status updated with PR #28 resolution; R004 load testing scheduled this iteration |
+| Finding RL-F2 | RESOLVED — R008 contingency activated and now COMPLETE (rework succeeded) |
+
 ## Risk Classification
 
 Risks are classified by **Probability (P) × Impact (I) = Exposure**, yielding a **Magnitude** rating. The scale is 1–3 for both probability and impact, producing exposure values from 1 to 9.
@@ -25,7 +27,7 @@ Risks are classified by **Probability (P) × Impact (I) = Exposure**, yielding a
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Construction Risk Register (C2 Cycle 2)
+title Portal Cuba Corp — Construction Risk Register (C3 Cycle 1)
 
 skinparam classAttributeIconSize 0
 
@@ -65,11 +67,11 @@ class R003_OIDC {
   + exposure : 9
   + magnitude : HIGH
   + strategy : ACCEPT
-  + status : ESCALATED
+  + status : ESCALATED (4th cycle)
   + owner : Software Architect
-  + action : Escalation deadline PASSED;
-    escalate to STK-001 sponsor;
-    8 tests still BLOCKED
+  + action : Mock auth active;
+    STK-003 unconfirmed 4 cycles;
+    8 of 30 tests BLOCKED
 }
 
 class R004_Performance {
@@ -82,7 +84,8 @@ class R004_Performance {
   + strategy : ACCEPT
   + status : MITIGATING
   + owner : Software Architect
-  + action : Load testing deferred to C3
+  + action : Load testing scheduled
+    C3 Cycle 1
 }
 
 class R005_UI_Conformance {
@@ -95,8 +98,8 @@ class R005_UI_Conformance {
   + strategy : ACCEPT
   + status : MITIGATED
   + owner : UI Designer
-  + action : Design Model V001-V010;
-    PR #20 approved
+  + action : PR #28 approved;
+    design conformance verified
 }
 
 class R006_Offline_Retry {
@@ -109,57 +112,63 @@ class R006_Offline_Retry {
   + strategy : ACCEPT
   + status : MITIGATED
   + owner : Software Architect
-  + action : CR-011 implemented;
-    idempotency key scoped by employee
+  + action : Antiforgery fix RESOLVED
+    in PR #28; retry functional
 }
 
 class R007_PR_Findings {
   + id : R007
   + category : SCHEDULE
-  + P : 2
+  + P : 1
   + I : 3
-  + exposure : 6
-  + magnitude : SIGNIFICANT
+  + exposure : 3
+  + magnitude : MINOR
   + strategy : AVOID
-  + status : ACTIVE
+  + status : RESOLVED
   + owner : Implementer
-  + action : C1 findings RESOLVED (PR #20);
-    C2 new findings OPEN (PR #19);
-    1 Critical + 2 Major block merge
+  + action : All 7 C2 findings
+    RESOLVED in PR #28
 }
 
 class R008_Rework_Cycle {
   + id : R008
   + category : SCHEDULE
-  + P : 3
+  + P : 1
   + I : 2
-  + exposure : 6
-  + magnitude : SIGNIFICANT
+  + exposure : 2
+  + magnitude : LOW
   + strategy : ACCEPT
-  + status : ACTIVE
+  + status : COMPLETE
   + owner : Project Manager
-  + action : NEW — C2 rework cycle required;
-    stakeholder sanction refused;
-    iteration count may extend
+  + action : Rework succeeded;
+    C3 is integration/IOC iteration
 }
 
-R001 ..> R003 : "LDAP + OIDC both\ndepend on STK-003"
-R007 ..> R008 : "Open findings\ntrigger rework cycle"
+R001_AD_LDAP --|> "HIGH"
+R002_Adoption --|> "SIGNIFICANT"
+R003_OIDC --|> "HIGH"
+R004_Performance --|> "MODERATE"
+R005_UI_Conformance --|> "MODERATE"
+R006_Offline_Retry --|> "SIGNIFICANT"
+R007_PR_Findings --|> "RESOLVED"
+R008_Rework_Cycle --|> "COMPLETE"
 
 @enduml
 ```
 
 ## Risk Register
+
 | ID | Category | Description | P | I | Exposure | Magnitude | Strategy | Status | Owner | Mitigation | Contingency |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | R001 | Technical | AD LDAP attribute inconsistency across 3 offices — job title, extension may not be filled consistently | 3 | 3 | 9 | HIGH | Accept | **MITIGATED** | Software Architect | PoC decision recorded (CR-001). LdapGateway delivered in C2. NovellLdapConnectionAdapter methods throw NotImplementedException — deferred to integration testing with real AD server. Missing attributes default to "N/A". | If >30% of AD records show missing attributes during integration testing, escalate to STK-003 for AD data cleanup before directory goes live. |
 | R002 | Business | Digital clocking adoption — employees may keep using Excel out of habit | 3 | 2 | 6 | SIGNIFICANT | Accept | ACTIVE | Project Manager | Plan Transition communication strategy: announce portal launch, provide quick-start guide, HR director endorsement (STK-001). | If adoption <50% after 1 month post-launch, schedule mandatory clocking training session and disable Excel template sharing. |
-| R003 | External | OIDC client registration with Keycloak — STK-003 must provide registration before login testing. **Escalation deadline PASSED — 2nd cycle.** | 3 | 3 | 9 | HIGH | Accept | **ESCALATED** | Software Architect | Mock auth contingency active for development. **Escalate to STK-001 (sponsor) again this cycle** — STK-003 has not confirmed OIDC registration across 3 cycles. 8 of 30 tests remain BLOCKED. | If STK-003 cannot provide OIDC registration by end of C2 Cycle 3, portal launches with mock auth and manual user-mapping — a scope reduction requiring stakeholder approval. This would block IOC achievement. |
-| R004 | Technical | Page load performance (NFR-001: <3s) and clocking response time (NFR-002: <1s) | 2 | 2 | 4 | MODERATE | Accept | MITIGATING | Software Architect | SAD specifies connection pooling, indexed queries (8 indexes justified by UC/NFR). Load testing deferred to post-rework cycle. | If load test exceeds thresholds, optimize queries first, then consider caching layer. |
-| R005 | Technical | UI conformance with mandatory design (CON-011: employee-portal-design.html) | 2 | 2 | 4 | MODERATE | Accept | **MITIGATED** | UI Designer | Design Model V001–V010 aligned with CON-011. PR #20 approved — presentation layer conformance verified. | If Reviewer flags visual divergence, UI Designer updates Razor Pages to match design source. |
-| R006 | Technical | Offline clocking retry — AC-005 requires 5-minute network drop tolerance with data sync on recovery | 2 | 3 | 6 | SIGNIFICANT | Accept | **MITIGATED** | Software Architect | PoC decision recorded (CR-002). ClockingService implements localStorage retry with idempotency key. CR-011 implemented — idempotency key scoped by employee. C2-MAJ-2 (antiforgery) fix this cycle enables POST to succeed. | If localStorage retry fails to recover clocking data after 5-min drop in >10% of test cases, narrow AC-005 scope with stakeholder. |
-| R007 | Schedule | PR review findings blocking merge — C1 findings RESOLVED (PR #20 approved); C2 findings OPEN (PR #19: 1 Critical + 2 Major + 4 Minor) — **0 of 7 resolved across 2 cycles** | 3 | 3 | 9 | HIGH | Avoid | **ESCALATED** | Implementer | C2 Cycle 3 work items 1-7 target all 7 C2 findings. **Integrator role added (Item 8) to merge PR #19 to main** — stakeholder directive. CI must pass green. Reviewer re-reviews after merge. | If re-review fails again (3rd cycle), escalate to stakeholder for scope reduction discussion. Non-critical findings may be deferred to post-IOC. |
-| R008 | Schedule | **Rework cycle required — C3 ACTIVE.** Stakeholder sanction REFUSED (3rd time); C2 review produced 1 Critical + 2 Major blocking findings; 0 of 7 findings resolved across Cycles 1→2→3; iteration count extends to 8+ | 3 | 3 | 9 | HIGH | Accept | **ACTIVE — CONTINGENCY ACTIVATED** | Project Manager | C2 Cycle 3 rework plan is scoped to 7 findings only — narrow focus, fixed budget box. No scope expansion. Integrator role added to address PR merge failure. Mid-iteration checkpoints added (IP-F4) to prevent another zero-execution cycle. | **C3 IS REQUIRED.** Construction C2 Cycle 3 is the current rework cycle. If C2 Cycle 3 re-review still produces Critical/Major findings, Construction extends to a fourth cycle (C2 Cycle 4) or a formal C3 iteration with stakeholder agreement. The "6 ± 3" rule allows up to 9 iterations; current count is 8+. **This is no longer conditional — it is the active plan.** |
+| R003 | External | OIDC client registration with Keycloak — STK-003 must provide registration before login testing. **Escalation deadline PASSED — 4th cycle.** | 3 | 3 | 9 | HIGH | Accept | **ESCALATED (4th cycle)** | Software Architect | Mock auth contingency active for development. **Escalate to STK-001 (sponsor) again this cycle** — STK-003 has not confirmed OIDC registration across 4 cycles. 8 of 30 tests remain BLOCKED. This is the critical path for IOC achievement. | If STK-003 cannot provide OIDC registration by end of C3 Cycle 1, portal launches with mock auth and manual user-mapping — a scope reduction requiring stakeholder approval. This would block IOC achievement. |
+| R004 | Technical | Page load performance (NFR-001: <3s) and clocking response time (NFR-002: <1s) | 2 | 2 | 4 | MODERATE | Accept | MITIGATING | Software Architect | SAD specifies connection pooling, indexed queries (8 indexes justified by UC/NFR). **Load testing scheduled for C3 Cycle 1** (Item 3 in Iteration Plan). | If load test exceeds thresholds, optimize queries first, then consider caching layer. |
+| R005 | Technical | UI conformance with mandatory design (CON-011: employee-portal-design.html) | 2 | 2 | 4 | MODERATE | Accept | **MITIGATED** | UI Designer | Design Model V001–V010 aligned with CON-011. PR #28 approved — presentation layer conformance verified by Code Reviewer. | If Reviewer flags visual divergence, UI Designer updates Razor Pages to match design source. |
+| R006 | Technical | Offline clocking retry — AC-005 requires 5-minute network drop tolerance with data sync on recovery | 2 | 3 | 6 | SIGNIFICANT | Accept | **MITIGATED** | Software Architect | PoC decision recorded (CR-002). ClockingService implements localStorage retry with idempotency key. C2-MAJ-2 (antiforgery) fix RESOLVED in PR #28 — POST now succeeds, retry mechanism functional. | If localStorage retry fails to recover clocking data after 5-min drop in >10% of test cases, narrow AC-005 scope with stakeholder. |
+| R007 | Schedule | PR review findings blocking merge — **ALL 7 C2 findings RESOLVED in PR #28 (APPROVED).** PR #19 and PR #8 superseded. | 1 | 3 | 3 | MINOR | Avoid | **RESOLVED** | Implementer | All 7 C2 findings (1 Critical, 2 Major, 4 Minor) resolved in PR #28. Code Reviewer approved. Integrator to merge to main in C3 Cycle 1. | N/A — risk retired. If new findings emerge on merged main, re-open as new risk. |
+| R008 | Schedule | **Rework cycle COMPLETE.** C2 Cycle 3 succeeded — PR #28 approved with all findings resolved. C3 Cycle 1 is the integration/IOC iteration, not a rework cycle. | 1 | 2 | 2 | LOW | Accept | **COMPLETE** | Project Manager | Rework succeeded. C3 Cycle 1 focuses on merge, integration testing, load testing, and IOC achievement. No rework scope. | N/A — rework cycle closed. If C3 re-review produces new Critical/Major, a new rework risk would be registered. |
+
 ## Risk Mitigation and Contingency
 
 ### R001 — AD LDAP Attribute Consistency (HIGH, MITIGATED)
@@ -175,46 +184,46 @@ R007 ..> R008 : "Open findings\ntrigger rework cycle"
 **Contingency trigger:** Adoption <50% after 1 month.
 **Contingency action:** Mandatory training + disable Excel template sharing.
 
-### R003 — OIDC Registration (HIGH, ESCALATED) — ESCALATION TRIGGERED
+### R003 — OIDC Registration (HIGH, ESCALATED) — 4TH CYCLE ESCALATION
 
-**Mitigation status:** Mock auth active for development. STK-003 has NOT confirmed OIDC client registration. **Escalation deadline (C2 start) has PASSED.** 8 of 30 tests remain BLOCKED by infrastructure dependencies. Probability increased from 2→3 (deadline passed, no confirmation received). Impact remains 3 (portal cannot go to IOC without real authentication). Exposure raised from 6→9, magnitude raised from SIGNIFICANT→HIGH.
+**Mitigation status:** Mock auth active for development. STK-003 has NOT confirmed OIDC client registration. **Escalation deadline has PASSED across 4 cycles.** 8 of 30 tests remain BLOCKED by infrastructure dependencies. Probability remains 3 (deadline passed, no confirmation received). Impact remains 3 (portal cannot go to IOC without real authentication). Exposure 9, magnitude HIGH.
 
-**Escalation action this cycle:** Project Manager escalates to STK-001 (Laura Gómez, HR Director — project sponsor) to pressure STK-003 (Infrastructure team) for OIDC client registration. This is the critical path for 8 blocked tests and for IOC achievement.
+**Escalation action this cycle:** Project Manager escalates to STK-001 (Laura Gómez, HR Director — project sponsor) to pressure STK-003 (Infrastructure team) for OIDC client registration. This is the critical path for 8 blocked tests and for IOC achievement. **This is the 4th escalation — if unconfirmed by end of C3 Cycle 1, the contingency plan (mock auth + manual user-mapping) must be presented to the stakeholder for a scope reduction decision.**
 
 **Contingency action:** If STK-003 cannot provide OIDC registration, portal launches with mock auth and a manual user-mapping table — a scope reduction requiring stakeholder approval. This would block IOC achievement and extend Construction.
 
 ### R004 — Performance (MODERATE, MITIGATING)
 
-**Mitigation status:** SAD specifies 8 indexed queries, connection pooling. Load testing deferred to post-rework cycle.
+**Mitigation status:** SAD specifies 8 indexed queries, connection pooling. **Load testing scheduled for C3 Cycle 1** (Item 3 in Iteration Plan). First opportunity to test on merged main with all fixes applied.
 **Contingency trigger:** Load test exceeds NFR-001 (3s page load) or NFR-002 (1s clocking response).
 **Contingency action:** Query optimization → caching layer → stakeholder consultation on threshold adjustment.
 
 ### R005 — UI Conformance (MODERATE, MITIGATED)
 
-**Mitigation status:** Design Model V001–V010 aligned with CON-011. PR #20 approved — presentation layer conformance verified by Reviewer.
+**Mitigation status:** Design Model V001–V010 aligned with CON-011. PR #28 approved — presentation layer conformance verified by Code Reviewer.
 **Contingency trigger:** Reviewer flags visual divergence from employee-portal-design.html.
 **Contingency action:** UI Designer updates Razor Pages to match design source exactly.
 
 ### R006 — Offline Retry (SIGNIFICANT, MITIGATED)
 
-**Mitigation status:** PoC decision recorded (CR-002 concurred). ClockingService implements localStorage retry with idempotency key. CR-011 implemented — idempotency key scoped by employee. C2-MAJ-2 (antiforgery token) fix this cycle is required for the POST to succeed — without it, the retry mechanism cannot complete the sync.
+**Mitigation status:** PoC decision recorded (CR-002 concurred). ClockingService implements localStorage retry with idempotency key. C2-MAJ-2 (antiforgery token) fix RESOLVED in PR #28 — POST now succeeds, completing the retry mechanism. Integration testing on merged main will verify end-to-end offline retry behavior.
 
 **Contingency trigger:** localStorage retry fails in >10% of 5-minute network drop test cases.
 **Contingency action:** Narrow AC-005 scope with stakeholder — reduce retry window or accept manual re-clocking after extended outages.
 
-### R007 — PR Review Findings (SIGNIFICANT, ACTIVE)
+### R007 — PR Review Findings (MINOR, RESOLVED)
 
-**Mitigation status:** C1 findings (MAJOR-1, MINOR-1, MINOR-3, MINOR-4) all RESOLVED — PR #20 approved. C2 new findings OPEN on PR #19: C2-CRIT-1 (clocking 404), C2-MAJ-1 (news edit form mismatch), C2-MAJ-2 (antiforgery), C2-MIN-1..4. C2 Cycle 2 work items 1-7 target all 7 findings. CI must pass green before re-review.
+**Mitigation status:** All 7 C2 findings (C2-CRIT-1, C2-MAJ-1, C2-MAJ-2, C2-MIN-1..4) RESOLVED in PR #28. Code Reviewer approved PR #28. PR #19 and PR #8 superseded (REQUEST_CHANGES). Integrator to merge PR #28 to main in C3 Cycle 1.
 
-**Contingency trigger:** Re-review of PR #19 fails (new Critical/Major findings on fix code).
-**Contingency action:** Escalate to stakeholder for scope reduction discussion. Non-critical findings (MINORs) may be deferred to post-IOC with stakeholder agreement. Critical and Major findings must be resolved — they block UC functionality.
+**Contingency trigger:** N/A — risk retired.
+**Contingency action:** If new Critical/Major findings emerge on merged main during C3 Cycle 1 re-review, register as a new risk.
 
-### R008 — Rework Cycle Schedule Risk (SIGNIFICANT, ACTIVE) — NEW THIS ITERATION
+### R008 — Rework Cycle Schedule Risk (LOW, COMPLETE)
 
-**Mitigation status:** C2 Cycle 2 is a focused rework cycle with a narrow scope (7 findings) and a fixed budget box (~9.85M tokens, based on C1 measured actual). No scope expansion. Parallelism unchanged (4 active roles). The rework cycle is a cycle within C2, not a full new iteration.
+**Mitigation status:** Rework cycle COMPLETE. C2 Cycle 3 succeeded — PR #28 approved with all 7 findings resolved. C3 Cycle 1 is the integration/IOC iteration, not a rework cycle. The rework cycle spanned C2 Cycles 2-3 (2 cycles) due to a process failure (zero-execution in C2 Cycle 2), which was corrected by adding the Integrator role and mid-iteration checkpoints (IP-F4).
 
-**Contingency trigger:** C2 Cycle 2 re-review still produces Critical or Major findings.
-**Contingency action:** Split Construction into a third iteration (C3) with stakeholder agreement. The "6 ± 3" iteration rule allows up to 9 total iterations; the project is currently at 7+ (2 Inception + 2 Elaboration + 1 C1 + 1 C2 with cycles). A C3 would bring the total to 8, still within bounds. Scope reduction (deferring non-critical work to Transition) would be the primary lever, not parallelism increase.
+**Contingency trigger:** N/A — rework cycle closed.
+**Contingency action:** If C3 Cycle 1 re-review produces new Critical/Major findings, a new rework risk would be registered with a focused mitigation plan.
 
 ## Traceability
 
@@ -222,9 +231,9 @@ R007 ..> R008 : "Open findings\ntrigger rework cycle"
 |---|---|---|---|
 | R001 | Work Order R001 | Refines | SAD COMP-005, ADR-003, Architectural PoC (PoC-R001), LdapGateway (C2 delivered), NovellLdapConnectionAdapter (DEFERRED) |
 | R002 | Work Order R002 | Refines | User Documentation (Transition), Iteration Plan |
-| R003 | CON-004 (Keycloak OIDC) | Derives | SAD COMP-007, ADR-005, Architectural PoC (PoC-R003), 8 BLOCKED tests, STK-001 escalation (C2 Cycle 2) |
-| R004 | NFR-001, NFR-002 | Derives | SAD COMP-006, ADR-002, post-rework load test |
-| R005 | CON-011, CON-002 | Derives | Design Model V001–V010, PR #20 (APPROVED) |
-| R006 | AC-005 | Derives | SAD Process View, COMP-002, Architectural PoC (PoC-R006), ClockingService, CR-011, C2-MAJ-2 fix |
-| R007 | Review Record PR #19 findings (C2-CRIT-1, C2-MAJ-1..2, C2-MIN-1..4) | Derives | Iteration Plan C2 Cycle 2 Work Items 1-7, PR #19 re-review |
-| R008 | Stakeholder sanction refusal, C2 Review Record blocking findings | Derives | Iteration Plan C2 Cycle 2, potential C3 iteration |
+| R003 | CON-004 (Keycloak OIDC) | Derives | SAD COMP-007, ADR-005, Architectural PoC (PoC-R003), 8 BLOCKED tests, STK-001 escalation (C3 Cycle 1 — 4th cycle) |
+| R004 | NFR-001, NFR-002 | Derives | SAD COMP-006, ADR-002, C3 Cycle 1 load test (Item 3) |
+| R005 | CON-011, CON-002 | Derives | Design Model V001–V010, PR #28 (APPROVED) |
+| R006 | AC-005 | Derives | SAD Process View, COMP-002, Architectural PoC (PoC-R006), ClockingService, PR #28 (antiforgery RESOLVED) |
+| R007 | Review Record C2 findings (ALL 7 RESOLVED) | Derives | PR #28 (APPROVED), Iteration Plan C3 Cycle 1 Item 1 (merge) |
+| R008 | Stakeholder sanction refusal (C2), rework cycles | Derives | C3 Cycle 1 Iteration Plan (integration/IOC focus) |
