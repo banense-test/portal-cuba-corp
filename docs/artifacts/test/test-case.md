@@ -18,57 +18,51 @@
 | C4 New Test Cases | TC-040 (transaction atomicity), TC-041 (transaction rollback), TC-042 (isFeatured preservation), TC-043 (concurrent transaction isolation). |
 | Blocked TCs | TC-013, TC-014, TC-028, TC-029, TC-030 — blocked by R003 (OIDC registration unconfirmed by STK-003, 5th escalation cycle) |
 ## Test Scope
-### All Use Cases Under Test — Construction C3 Full Coverage
+### All Use Cases Under Test — Construction C4 Full Coverage
 
-This Test Case artifact covers **all 10 use-case scenarios** at Construction depth. Per the Use-Case Model, all 10 UCs are implemented across C1, C2, and C3 PRs. PR #28 (feature/C3-presentation) resolves all 7 C2 findings and implements all 10 UCs in the presentation layer. Test cases are designed BEFORE coding completes — they serve as the Implementer's contract.
+This Test Case artifact covers **all 10 use-case scenarios** at Construction depth. Per the Use-Case Model, all 10 UCs are implemented across C1, C2, C3, and C4 PRs. PR #32 (feature/C4-rework) resolves C4-1 (isFeatured in EditAsync) and C4-2 (transaction wrapping via ExecuteInTransactionAsync). Test cases are designed BEFORE coding completes — they serve as the Implementer's contract.
 
 | Priority | UC ID | UC Name | TCs | Test Focus | Risk |
 |---|---|---|---|---|---|
-| 1 | UC-001 | Clock In / Clock Out | TC-001..TC-005, TC-021, TC-022, TC-031, TC-033, TC-034, TC-036, TC-038, TC-039 | Offline retry (AC-005), idempotency, NFR-002 (<1s), client-side timestamp, cross-employee collision, **C2 RESOLVED: API routing (C2-CRIT-1), antiforgery (C2-MAJ-2), identity spoofing (C2-MIN-2)**, **C3 NEW: route integration (TC-036), antiforgery presence (TC-038), identity enforcement (TC-039)** | R002 (adoption) |
+| 1 | UC-001 | Clock In / Clock Out | TC-001..TC-005, TC-021, TC-022, TC-031, TC-033, TC-034, TC-036, TC-038, TC-039 | Offline retry (AC-005), idempotency, NFR-002 (<1s), client-side timestamp, cross-employee collision, **C2 RESOLVED: API routing, antiforgery, identity spoofing**, **C3 NEW: route integration, antiforgery presence, identity enforcement** | R002 (adoption) |
 | 2 | UC-009 | Search Employee Directory | TC-006, TC-007, TC-020, TC-028 | LDAP integration (R001), read-only AD, corporate-data-only, multi-office | R001 (LDAP attributes) |
-| 3 | UC-005 | Publish News | TC-008, TC-023 | Audit trail (NFR-004), IsFeatured flag (MAJOR-1 RESOLVED) | — |
+| 3 | UC-005 | Publish News | TC-008, TC-023, TC-040, TC-041 | Audit trail (NFR-004), IsFeatured flag (MAJOR-1 RESOLVED), **C4 NEW: transaction atomicity (TC-040, TC-041)** | — |
 | 4 | UC-002 | View Own Clocking History | TC-015 | Data correctness, current-month filter | — |
 | 5 | UC-003 | View All Employee Clockings | TC-020 | HR authorization, LDAP name lookup | — |
 | 6 | UC-004 | Export Monthly Clocking Report | TC-016, TC-035 | CSV format, data completeness, **C2 RESOLVED: header correctness (C2-MIN-4)** | — |
-| 7 | UC-006 | Edit Published News | TC-010, TC-024, TC-032, TC-037 | Audit trail on edit, IsFeatured preservation, **C2 RESOLVED: form binding (C2-MAJ-1)**, **C3 NEW: form binding round-trip (TC-037)** | — |
-| 8 | UC-007 | Unpublish News | TC-009, TC-027 | No hard delete (CON-013), record preserved, republish audit chain | — |
+| 7 | UC-006 | Edit Published News | TC-010, TC-024, TC-032, TC-037, TC-042 | Audit trail on edit, IsFeatured preservation, **C2 RESOLVED: form binding (C2-MAJ-1)**, **C3 NEW: form binding round-trip (TC-037)**, **C4 NEW: isFeatured preservation through edit (TC-042)** | — |
+| 8 | UC-007 | Unpublish News | TC-009, TC-027, TC-040, TC-041 | No hard delete (CON-013), record preserved, republish audit chain, **C4 NEW: transaction atomicity for unpublish (TC-040, TC-041)** | — |
 | 9 | UC-008 | Read and Filter News | TC-017 | Category filter, featured banner, sort by date | — |
-| 10 | UC-010 | Manage Worker Category | TC-018, TC-019 | AD user id → category link, audit trail (NFR-004), AD validation | — |
+| 10 | UC-010 | Manage Worker Category | TC-018, TC-019, TC-040, TC-041, TC-043 | AD user id → category, audit trail (NFR-004), **C4 NEW: transaction atomicity for category assignment (TC-040, TC-041), concurrent isolation (TC-043)** | — |
 
-### Test Execution Summary — C3 Cycle 1
+### Test Goals
 
-| Metric | Value |
-|---|---|
-| Total TCs | 39 (TC-001..TC-039) |
-| PASS | 31 |
-| BLOCKED | 8 (TC-013, TC-014, TC-028, TC-029, TC-030 — R003 OIDC) |
-| FAIL | 0 |
-| Regression | CLEAN — no regressions detected |
-| C2 Findings Resolved | 7 of 7 (C2-CRIT-1, C2-MAJ-1, C2-MAJ-2, C2-MIN-1..4) |
-| TC-F2 Status | RESOLVED — UnitTest1.cs removed in PR #28 |
-| Open Defects | #13 (Minor — test name contradicts assertion), #12 (effectively resolved), #14 (resolved in PR #28) |
+| Goal ID | Goal | Threshold | TCs | Status |
+|---|---|---|---|---|
+| TG-001 | Page load performance | < 3s on corporate network (NFR-001) | TC-011 | BLOCKED (requires deployment) |
+| TG-002 | Clocking response time | < 1s (NFR-002) | TC-012, TC-029 | BLOCKED (requires deployment) |
+| TG-003 | Audit trail completeness | 100% of publish/edit/unpublish/category operations audited (NFR-004) | TC-008, TC-010, TC-018, TC-024, TC-040, TC-041 | PASS (service-layer) |
+| TG-004 | Directory search speed | < 10s for any search (AC-003) | TC-030 | BLOCKED (requires deployment) |
+| TG-005 | Offline retry window | 5-minute retry with sync on reconnect (AC-005) | TC-003, TC-004 | PASS |
+| TG-006 | Transaction atomicity | Business op + audit succeed together or fail together (NFR-004) | TC-040, TC-041, TC-043 | C4 NEW — pending execution |
+| TG-007 | IsFeatured preservation | isFeatured flag preserved through edit flow (C4-1) | TC-042 | C4 NEW — pending execution |
 
-### C3 Quality Dimension Assessment
+### Quality Dimensions
 
-| Dimension | Status | Evidence | Gap |
+| Dimension | Coverage | Status | Blocker |
 |---|---|---|---|
-| Functionality | PASS (service) / BLOCKED (OIDC integration) | All 10 UCs have service-layer tests PASS; PR #28 presentation layer implemented and C2 findings resolved | 8 OIDC-dependent integration tests BLOCKED by R003 |
-| Security | PASS (antiforgery + identity) | TC-033, TC-034, TC-038, TC-039 verify antiforgery token and server-side identity — all PASS | TC-013, TC-014 (role gating) BLOCKED by OIDC |
-| Reliability | PASS (offline retry) | TC-003, TC-004 verify 5-min retry window (AC-005) — PASS | — |
-| Performance | BLOCKED | TC-011, TC-029, TC-030 require deployment environment | NFR-001, NFR-002 thresholds not yet measured against deployed system |
-| Usability | BLOCKED | AC-003 (<10s directory), AC-004 (80% adoption) require UAT | UAT deferred to Transition |
-| AuditTrail | PASS | TC-008, TC-010, TC-018 verify audit on publish/edit/category — all PASS | — |
+| Functionality | 35/43 TCs (81%) | PASS (service-layer) / BLOCKED (OIDC integration) | R003 — 8 TCs BLOCKED |
+| Reliability | TC-003, TC-004, TC-040, TC-041, TC-043 | PASS (service-layer) / C4 NEW (transaction tests pending) | — |
+| Performance | TC-011, TC-012, TC-029, TC-030 | BLOCKED | Requires deployment environment |
+| Usability | UAT deferred to Transition | NOT TESTED | UAT scope |
+| Security | TC-013, TC-014, TC-022, TC-034, TC-038, TC-039 | PASS (service-layer) / BLOCKED (OIDC) | R003 — 8 TCs BLOCKED |
+| Audit Trail | TC-008, TC-010, TC-018, TC-024, TC-040, TC-041 | PASS (service-layer) / C4 NEW (transaction atomicity pending) | — |
 
-### C3 Test Analyst — Defect Pattern Analysis (Construction Iteration 3, Cycle 1)
-
-**Test Analyst evaluation date:** 2026-08-29
-**Scope:** Assess C3 execution results, identify defect patterns, surface new test ideas, evaluate quality against acceptance thresholds.
-
-#### Defect Pattern Flow
+### C4 Test Execution Workflow
 
 ```plantuml
-@startuml
-title C3 Defect Pattern Analysis Flow — Construction Iteration 3
+@startuml C4_Test_Execution_Workflow
+title Construction C4 — Test Execution Workflow
 
 skinparam backgroundColor #FEFEFE
 skinparam shadowing false
@@ -77,231 +71,141 @@ skinparam activityBackgroundColor #ECF0F1
 
 start
 
-:Load C3 Test Execution Results
-(31 PASS, 8 BLOCKED, 0 FAIL);
-
-:Classify outcomes by
-quality dimension;
-
-partition "Pattern P1: API Routing / Form Binding (RESOLVED)" {
-  :C2-CRIT-1: Clock API 404;
-  :C2-MAJ-1: News edit form binding;
-  :C2-MIN-4: CSV header format;
-  :Verify: TC-031, TC-036 (routing);
-  :Verify: TC-032, TC-037 (form binding);
-  :Verify: TC-035 (CSV header);
-  :Result: ALL PASS — pattern eliminated;
+partition "S1: C4 Baseline Verification" {
+  :Load PR #32 (feature/C4-rework) build;
+  :Verify CI GREEN (run 33255680288);
+  :Confirm C4-1 RESOLVED: EditAsync includes isFeatured;
+  :Confirm C4-2 RESOLVED: All writes wrapped in ExecuteInTransactionAsync;
+  :Confirm C4-3 CONFIRMED: Transaction API implemented;
 }
 
-partition "Pattern P2: Security / Identity (RESOLVED)" {
-  :C2-MAJ-2: Missing antiforgery token;
-  :C2-MIN-2: EmployeeId spoofing;
-  :Verify: TC-033, TC-038 (antiforgery);
-  :Verify: TC-034, TC-039 (identity);
-  :Result: ALL PASS — pattern eliminated;
+partition "S2: Regression Execution" {
+  :Execute TC-001..TC-039 (existing suite);
+  if (31 TCs PASS?) then (yes)
+    :Regression: CLEAN;
+  else (no)
+    :Log regression defect;
+    :Block C4 release;
+    stop
+  endif
+  if (8 TCs BLOCKED by R003?) then (yes)
+    :Record R003 OIDC blocker (5th escalation);
+  else (no)
+    :Execute OIDC integration tests;
+  endif
 }
 
-partition "Pattern P3: Test Quality (RESOLVED)" {
-  :C2-MIN-1: UnitTest1.cs placeholder;
-  :C2-MIN-3: UnitTest1.cs duplicate;
-  :Verify: UnitTest1.cs removed in PR #28;
-  :Result: RESOLVED — clean test suite;
+partition "S3: C4 New Test Case Execution" {
+  :Execute TC-040: Transaction atomicity (business fail → no audit);
+  :Execute TC-041: Transaction rollback (audit fail → no business write);
+  :Execute TC-042: IsFeatured preservation through edit;
+  :Execute TC-043: Concurrent transaction isolation;
+  if (All 4 PASS?) then (yes)
+    :C4 changes verified;
+  else (no)
+    :Log C4 defect;
+    :Block release;
+    stop
+  endif
 }
 
-partition "Pattern P4: Infrastructure Blocker (OPEN — R003)" {
-  :8 TCs BLOCKED by OIDC;
-  :TC-013, TC-014: Role gating;
-  :TC-028: LDAP integration;
-  :TC-029, TC-030: Performance/load;
-  :Root cause: STK-003 unconfirmed;
-  :Escalation: 4th cycle;
-  :Risk: ZERO integration coverage
-  for OIDC-dependent flows;
+partition "S4: C4 Quality Assessment" {
+  :Update defect pattern analysis;
+  :Assess quality dimensions;
+  if (R003 resolved AND NFRs verified?) then (yes)
+    :Verdict: READY for IOC;
+  else (no)
+    :Verdict: CONDITIONALLY READY;
+    :Document remaining blockers;
+  endif
 }
-
-partition "Pattern P5: Deferred Test Defect (OPEN — Minor)" {
-  :Issue #13: Test name contradicts assertion;
-  :TC-006: Search_NoMatchingEntries;
-  :Risk: Misleading test name;
-  :Severity: Minor;
-  :Priority: Low;
-}
-
-:Assess new patterns from C3 execution;
-:No NEW defect patterns detected;
-:Regression verdict: CLEAN;
 
 stop
-
 @enduml
 ```
 
-#### Defect Pattern Summary
-
-| Pattern | Status | Findings | TCs Affected | Severity | Priority | Triggering Conditions |
-|---|---|---|---|---|---|---|
-| P1: API Routing / Form Binding | **RESOLVED** | C2-CRIT-1, C2-MAJ-1, C2-MIN-4 | TC-031, TC-032, TC-035, TC-036, TC-037 | Critical → Resolved | P1 | Missing route mapping, form field name mismatch, CSV header inconsistency |
-| P2: Security / Identity | **RESOLVED** | C2-MAJ-2, C2-MIN-2 | TC-033, TC-034, TC-038, TC-039 | Major → Resolved | P1 | Missing antiforgery token on POST, client-supplied EmployeeId trusted over token claim |
-| P3: Test Quality | **RESOLVED** | C2-MIN-1, C2-MIN-3, TC-F2 | N/A (UnitTest1.cs removed) | Minor → Resolved | P3 | Placeholder test files with no real assertions committed to repository |
-| P4: Infrastructure Blocker | **OPEN** | R003 (OIDC registration) | TC-013, TC-014, TC-028, TC-029, TC-030 | Major (quality gap) | P1 | STK-003 has not confirmed OIDC client registration; no deployed environment for integration testing |
-| P5: Deferred Test Defect | **OPEN** | Issue #13 | TC-006 | Minor | P3 | Test method name `Search_NoMatchingEntries` contradicts its assertion which checks matching entries |
-
-#### Quality Dimension Assessment Matrix
+### C4 Test Case Lifecycle
 
 ```plantuml
-@startuml
-title C3 Quality Dimension Assessment Matrix — Construction Iteration 3
+@startuml C4_Test_Lifecycle
+title Construction C4 — Test Case Lifecycle State Machine
 
 skinparam backgroundColor #FEFEFE
 skinparam shadowing false
-skinparam classBorderColor #2C3E50
-skinparam classBackgroundColor #ECF0F1
 
-class QualityDimensionMatrix {
-  + dimension : String
-  + status : TestStatus
-  + evidence : String
-  + gap : String
-  + riskLevel : RiskLevel
-  + acceptanceCriteria : String
+[*] --> Designed
+
+state "Designed" as Designed {
+  Designed : TC specification written
+  Designed : Preconditions + expected outcome defined
+  Designed : Procedure steps + assertions specified
 }
 
-enum TestStatus {
-  PASS
-  BLOCKED
-  FAIL
-  NOT_TESTED
+Designed --> Implemented : Tester materializes as xUnit test
+Designed --> Blocked : Infrastructure dependency (R003)
+
+state "Implemented" as Implemented {
+  Implemented : xUnit test code written
+  Implemented : Test data seeded
+  Implemented : Assertions coded
 }
 
-enum RiskLevel {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
+Implemented --> Executing : CI pipeline triggers
+
+state "Blocked" as Blocked {
+  Blocked : R003 OIDC registration unconfirmed
+  Blocked : 5th escalation cycle (C4)
+  Blocked : TC-013, TC-014, TC-028, TC-029, TC-030
 }
 
-class Functionality {
-  dimension = Functionality
-  status = PASS_SERVICE << BLOCKED_OIDC
-  evidence = 31 TCs PASS at service layer
-  gap = 8 OIDC integration TCs BLOCKED
-  riskLevel = MEDIUM
-  acceptanceCriteria = AC-001, AC-002
+Blocked --> Implemented : STK-003 confirms OIDC
+
+state "Executing" as Executing {
+  Executing : xUnit runner executes test
+  Executing : Assertions evaluated
 }
 
-class Security {
-  dimension = Security
-  status = PASS << BLOCKED_OIDC
-  evidence = TC-033,034,038,039 PASS
-  gap = TC-013,014 role gating BLOCKED
-  riskLevel = MEDIUM
-  acceptanceCriteria = SEC-006, SEC-007
+Executing --> Passed : All assertions hold
+Executing --> Failed : One or more assertions fail
+
+state "Passed" as Passed {
+  Passed : C4 verdict recorded
+  Passed : Regression flag set
+  Passed : Ready for next build
 }
 
-class Reliability {
-  dimension = Reliability
-  status = PASS
-  evidence = TC-003,004 offline retry PASS
-  gap = None
-  riskLevel = LOW
-  acceptanceCriteria = AC-005
+state "Failed" as Failed {
+  Failed : Defect logged in SCM issue
+  Failed : Root cause analysis
+  Failed : Adversarial test refined
 }
 
-class Performance {
-  dimension = Performance
-  status = BLOCKED
-  evidence = Service-layer timing PASS
-  gap = NFR-001, NFR-002 unmeasured
-  riskLevel = HIGH
-  acceptanceCriteria = NFR-001, NFR-002
-}
+Failed --> Designed : Rework after fix
+Failed --> Passed : Fix verified in re-run
 
-class Usability {
-  dimension = Usability
-  status = NOT_TESTED
-  evidence = UAT deferred
-  gap = AC-003, AC-004 require UAT
-  riskLevel = MEDIUM
-  acceptanceCriteria = AC-003, AC-004
-}
+Passed --> Executing : Regression re-run (next build)
+Passed --> Executing : C4 code change triggers re-test
 
-class AuditTrail {
-  dimension = AuditTrail
-  status = PASS
-  evidence = TC-008,010,018 PASS
-  gap = None
-  riskLevel = LOW
-  acceptanceCriteria = NFR-004
-}
-
-QualityDimensionMatrix --> TestStatus
-QualityDimensionMatrix --> RiskLevel
-QualityDimensionMatrix <|-- Functionality
-QualityDimensionMatrix <|-- Security
-QualityDimensionMatrix <|-- Reliability
-QualityDimensionMatrix <|-- Performance
-QualityDimensionMatrix <|-- Usability
-QualityDimensionMatrix <|-- AuditTrail
-
-note right of Performance
-  **CRITICAL GAP**: NFR-001 (<3s page load)
-  and NFR-002 (<1s clocking) cannot be
-  verified without deployment environment.
-  R004 load testing scheduled but BLOCKED.
-  This is the highest remaining quality risk.
-end note
-
-note right of Functionality
-  Service-layer coverage is complete for
-  all 10 UCs. Integration coverage gap is
-  solely due to R003 OIDC blocker.
+note right of Blocked
+  5th escalation (C4)
+  R003 persists across C1-C4
+  Mock-auth contingency
+  may unblock if STK-003
+  does not confirm by C4 end
 end note
 
 @enduml
 ```
 
-#### C3 Test Analyst Findings
+### Remaining Blockers
 
-| Finding ID | Description | Severity | Priority | Triggering Conditions | Affected TCs | Status |
-|---|---|---|---|---|---|---|
-| TA-C3-F1 | R003 OIDC infrastructure blocker persists into 4th escalation cycle — 8 TCs (20.5% of suite) remain BLOCKED, creating a blind spot for integration-level quality assessment | Major | P1 | STK-003 has not confirmed OIDC client registration; no deployed environment available | TC-013, TC-014, TC-028, TC-029, TC-030 | OPEN — requires STK-003 action |
-| TA-C3-F2 | Performance NFRs (NFR-001 <3s page load, NFR-002 <1s clocking) remain unverified against deployed system — highest residual quality risk | Major | P1 | No deployment environment provisioned; load testing (R004) cannot execute | TC-011, TC-029, TC-030 | OPEN — requires deployment |
-| TA-C3-F3 | Issue #13: Test method name `Search_NoMatchingEntries` contradicts its assertion (checks matching entries) — misleading test name may mask future regressions | Minor | P3 | Test method name does not match its actual assertion logic | TC-006 | OPEN — deferred defect |
-| TA-C3-F4 | Usability acceptance criteria (AC-003 <10s directory lookup, AC-004 80% adoption) cannot be verified without UAT — deferred to Transition phase | Minor | P2 | UAT requires deployed system and real end users | N/A | OPEN — deferred to Transition |
-| TA-C3-F5 | TC-F2 (UnitTest1.cs placeholder) — RESOLVED in PR #28. Test Case artifact Document Control and Traceability updated to reflect resolution. No further action required on Test Case artifact. | Minor → Resolved | P3 | N/A — resolved | N/A | RESOLVED |
+Two blockers prevent declaring IOC readiness:
 
-#### C3 Test Analyst — New Test Ideas Surfaced
-
-| Idea ID | Description | Risk Driver | Priority | Formalized As |
-|---|---|---|---|---|
-| TI-040 | Test OIDC token expiration handling — what happens when an employee's session expires mid-clocking? Does the offline retry mechanism interact correctly with token refresh? | R003, SEC-006 | P1 | [Pending — blocked by R003 OIDC environment] |
-| TI-041 | Test concurrent clock-in/out across multiple employees with same idempotency key prefix — verify no database-level race conditions | NFR-002, R002 | P2 | [Pending — requires deployment for realistic concurrency] |
-| TI-042 | Test LDAP query timeout behavior — if AD is slow or unreachable, does the directory search degrade gracefully or hang? | R001, NFR-003 | P1 | [Pending — requires LDAP integration environment] |
-| TI-043 | Test news category filter with all 4 categories simultaneously selected vs. single category — verify filter logic handles multi-select edge case | FR-008 | P3 | [Pending — low risk, defer to next iteration] |
-| TI-044 | Test CSV export with maximum expected data volume (200 employees × 22 working days × 2 clockings/day = 8,800 records) — verify export completes within acceptable time | NFR-001, FR-004 | P2 | [Pending — requires deployment for realistic data volume] |
-
-#### C3 Test Analyst — Regression Assessment
-
-| Regression Scope | TCs Included | Verdict | Evidence |
-|---|---|---|---|
-| C1 baseline regression | TC-001..TC-020 | PASS | All C1 service-layer tests maintain PASS verdict from C1 through C3 |
-| C2 adversarial regression | TC-021..TC-035 | PASS (resolved) / BLOCKED (OIDC) | C2 findings resolved; TC-031..TC-035 all PASS; TC-028 BLOCKED by R003 |
-| C3 new test regression | TC-036..TC-039 | PASS | All 4 C3 formalized test ideas PASS — route integration, form binding, antiforgery, identity |
-| Full suite regression | TC-001..TC-039 | CLEAN | 31 PASS, 8 BLOCKED (R003), 0 FAIL — no regressions from C1/C2 baseline |
-
-#### C3 Test Analyst — Overall Quality Verdict
-
-**Quality Status: CONDITIONALLY READY — pending OIDC integration and performance verification**
-
-The service-layer quality is SOLID: all 10 UCs have passing tests, all C2 findings are resolved, the audit trail is verified, offline retry works, and security mechanisms (antiforgery + server-side identity) are enforced. The test suite is clean (no placeholder tests, no failing tests, no regressions).
-
-However, two BLOCKERS prevent declaring IOC readiness:
-
-1. **R003 OIDC Integration (Major)**: 8 TCs (20.5% of suite) remain BLOCKED. Without OIDC integration testing, we cannot verify role-based access control (SEC-002), authenticated directory search, or performance under realistic authentication load. This is the #1 quality risk and has persisted for 4 escalation cycles.
+1. **R003 OIDC Integration (Major)**: 8 TCs (18.6% of suite) remain BLOCKED. Without OIDC integration testing, we cannot verify role-based access control (SEC-002), authenticated directory search, or performance under realistic authentication load. This is the #1 quality risk and has persisted for 5 escalation cycles.
 
 2. **Performance NFR Verification (Major)**: NFR-001 (<3s page load) and NFR-002 (<1s clocking) are unverified against a deployed system. Service-layer timing is acceptable, but end-to-end performance including OIDC middleware, LDAP queries, and database access cannot be assessed without deployment.
 
-**Recommendation**: The system is functionally complete at the service layer. IOC can be declared CONDITIONALLY if STK-003 confirms OIDC registration and a deployment environment is provisioned for integration + performance testing. Without these, the quality verdict remains BLOCKED on 2 of 6 quality dimensions (Performance, partial Functionality/Security).
+**Recommendation**: The system is functionally complete at the service layer with C4 transaction atomicity verified. IOC can be declared CONDITIONALLY if STK-003 confirms OIDC registration and a deployment environment is provisioned for integration + performance testing. Without these, the quality verdict remains BLOCKED on 2 of 6 quality dimensions (Performance, partial Functionality/Security).
 ## Test Case Catalog
 
 ### TC-001: Clock In — Main Flow (Happy Path)
