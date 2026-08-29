@@ -952,3 +952,7 @@ Per the Development Case, the Architectural Proof-of-Concept artifact is trigger
 | Construction C2 Governance — CR-011 idempotency key scoping | CR-011 (#11), AC-005, COMP-002 | Refines | Data View (UNIQUE(employee_id, idempotency_key)), Implementation View |
 | Construction C2 Governance — Design Model contract alignment | Design Model (C2), INT-001..INT-007 | Refines | Implementation View, Quality (no boundary violations) |
 | Construction C2 Governance — PR #9 architectural review | PR #9, Issue #16 | Realizes | Iteration C1 baseline merge (architectural sign-off) |
+| Construction C3 Governance — INT-003 office parameter | Design Model C3 (DM-F1), INT-003, COMP-001 | Refines | Logical View (component diagram), Implementation View |
+| Construction C3 Governance — Implementation View C2 delivery status | ADR-001, CON-001, PR #19 | Refines | Implementation View (7 Razor Pages delivered, 3 code-level defects open) |
+| Construction C3 Governance — PR #21 architectural review | PR #21, Issue #26 | Realizes | Iteration C2 baseline merge (architectural sign-off — PR closed, Integrator to re-open) |
+| Construction C3 Governance — Stakeholder PR synchronization directive | STK-001 feedback (C2 Cycle 2) | Derives | Integrator work item (merge PR #19 + re-open PR #21) |
