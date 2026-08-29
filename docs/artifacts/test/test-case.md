@@ -1114,7 +1114,6 @@ stop
 | #1 | Execute LDAP Attribute Mapping PoC | **OPEN — approved** | Major. LDAP mapping implemented and tested (TC-006, TC-007). R001 fallback (N/A) verified. Full PoC requires LDAP environment. |
 
 ## Test Data
-
 ### Test Data Catalog
 
 | Data Set ID | Description | UCs | Seed Method |
@@ -1154,6 +1153,10 @@ stop
 | TD-033 | C4: Transaction rollback — audit failure | UC-005, UC-006, UC-007, UC-010, TC-041 | Mock IPersistence: `InsertAuditRecord` throws after `UpdateNewsItem` succeeds |
 | TD-034 | C4: IsFeatured preservation through edit | UC-006, TC-042 | Seed: 1 published news item (isFeatured=true); edit with true; then edit with false |
 | TD-035 | C4: Concurrent transaction isolation | UC-005, UC-010, TC-043 | Two concurrent tasks: (A) PublishAsync + (B) AssignCategoryAsync |
+| TD-036 | C4 Analyst: Transaction timeout boundary | UC-005, UC-006, UC-007, UC-010, TI-045 | Mock IPersistence with configurable delay exceeding PostgreSQL statement timeout — [Pending: requires deployment with real PostgreSQL] |
+| TD-037 | C4 Analyst: Audit trail rollback verification | UC-005, UC-006, UC-007, UC-010, TI-048 | Mock IPersistence: force rollback after audit insert; verify audit table is empty post-rollback — [Pending: extend TC-040/TC-041 with explicit audit-table assertion] |
+| TD-038 | C4 Analyst: Concurrent edit + unpublish same item | UC-006, UC-007, TI-049 | Two concurrent HR tasks: (A) EditAsync on news-001 + (B) UnpublishAsync on news-001 — [Pending: requires concurrency test harness] |
+| TD-039 | C4 Analyst: IsFeatured rapid toggle | UC-006, TI-047 | 3 rapid sequential edits: edit(isFeatured=true) → edit(isFeatured=false) → edit(isFeatured=true) — [Pending: requires concurrency test harness] |
 
 ### Boundary Value Analysis
 
@@ -1176,7 +1179,11 @@ stop
 | TI-042 | LDAP query timeout boundary | 0ms, 4999ms, 5001ms, unreachable | Graceful error, not hang — [Pending: LDAP env] |
 | TI-044 | CSV export volume boundary | 0 records, 8,800 records | Both complete within NFR-001 threshold — [Pending: deployment] |
 | TI-041 | Concurrent clocking boundary | 10 threads, same key prefix, different suffix | All 10 accepted — [Pending: deployment] |
-
+| TI-045 | Transaction timeout boundary | Statement timeout T-1s, T+0s, T+1s | Graceful rollback, not hang — [Pending: deployment with real PostgreSQL] |
+| TI-047 | IsFeatured rapid toggle | 3 sequential edits: true→false→true | Final state = true; no stale state — [Pending: concurrency harness] |
+| TI-048 | Audit trail rollback boundary | Rollback after audit insert | 0 audit records persist — [Pending: extend TC-040/TC-041] |
+| TI-049 | Concurrent edit + unpublish | 2 concurrent ops on same news item | No corruption; one op wins, other gets stale-state error — [Pending: concurrency harness] |
+| TI-050 | CSV export during transaction | Export while write in progress | Export sees pre-transaction state (read committed) — [Pending: deployment] |
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
