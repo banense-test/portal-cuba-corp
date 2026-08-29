@@ -1599,7 +1599,6 @@ However, two BLOCKERS prevent declaring IOC readiness:
 ---
 
 ## Test Data
-
 ### Test Data Catalog
 
 | Data Set ID | Description | UCs | Seed Method |
@@ -1631,6 +1630,10 @@ However, two BLOCKERS prevent declaring IOC readiness:
 | TD-025 | C3: Form binding round-trip data | UC-006, TC-037 | Form fields: title=Round-Trip Test, body, category=IT, isFeatured=true |
 | TD-026 | C3: Antiforgery token variations | UC-001, TC-038 | 4 token variants: valid, expired, missing, tampered |
 | TD-027 | C3: Multi-vector identity spoof data | UC-001, TC-039 | Token sub=emp-001 + body emp-999 + query emp-888 + header emp-777 |
+| TD-028 | C3 Analyst: OIDC token expiration boundary | UC-001, TI-040 | OIDC mock token with configurable expiry: T-1s (just expired), T+1s (just valid), T+0s (exact expiry) — [Pending: requires OIDC environment] |
+| TD-029 | C3 Analyst: LDAP query timeout boundary | UC-009, TI-042 | MockLdapGateway with configurable delay: 0ms (normal), 4999ms (just under timeout), 5001ms (just over timeout), unreachable (connection refused) — [Pending: requires LDAP environment] |
+| TD-030 | C3 Analyst: CSV export maximum volume | UC-004, TI-044 | Seed: 8,800 clocking records (200 employees × 22 days × 2 clockings) — [Pending: requires deployment for realistic volume test] |
+| TD-031 | C3 Analyst: Concurrent clocking race condition | UC-001, TI-041 | 10 concurrent threads, each with same idempotency key prefix but different suffix — [Pending: requires deployment] |
 
 ### Boundary Value Analysis
 
@@ -1642,7 +1645,13 @@ However, two BLOCKERS prevent declaring IOC readiness:
 | TC-021 | Idempotency scope | Same key, different employee | Accepted (per-employee scope) |
 | TC-016 | CSV empty month | 0 records | Headers only, no data rows |
 | TC-038 | Antiforgery token | Valid vs expired vs missing vs tampered | Only valid accepted |
-
+| TC-036 | Route resolution boundary | Service-layer call vs HTTP endpoint | Both resolve to same ClockingService method; HTTP 200 with correct payload |
+| TC-037 | Form binding round-trip | Form submission → model binding → service → response | All form fields (title, body, category, isFeatured) preserved through full round-trip |
+| TC-039 | Identity source boundary | Token sub claim vs body vs query vs header | Only token sub claim used; all other vectors ignored |
+| TI-040 | OIDC token expiry boundary | T-1s (expired), T+0s (exact), T+1s (valid) | Expired token rejected; exact-expiry behavior defined by OIDC middleware; valid token accepted — [Pending: R003] |
+| TI-042 | LDAP query timeout boundary | 0ms, 4999ms, 5001ms, unreachable | Normal and near-timeout return results; over-timeout and unreachable return graceful error, not hang — [Pending: LDAP env] |
+| TI-044 | CSV export volume boundary | 0 records (TD-014), 8,800 records (TD-030) | Both complete successfully; 8,800-record export completes within NFR-001 page-load threshold — [Pending: deployment] |
+| TI-041 | Concurrent clocking boundary | 10 threads, same key prefix, different suffix | All 10 accepted (unique keys); no database-level race condition or deadlock — [Pending: deployment] |
 ## Traceability
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
