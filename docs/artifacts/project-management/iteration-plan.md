@@ -1,18 +1,16 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Construction |
 | Status | Active |
-| Milestone Target | End-of-Construction (IOC) — NOT YET ACHIEVED |
+| Milestone Target | End-of-Construction (IOC) — **CONDITIONAL GO — stakeholder sanction GRANTED** |
 | Iteration | 4 (Cycle 1) |
 | Date | 2026-08-29 |
 | Prior Phase | Construction C3 Cycle 1 — PR #29 APPROVED, 0 Critical/0 Major code; 31/39 tests pass, 8 BLOCKED (R003); load test NOT EXECUTED; stakeholder sanction REFUSED 3rd time; IOC NOT ACHIEVED |
-| Evolution | C4 Cycle 1 Plan evolved: PR #32 APPROVED (C4-1 isFeatured RESOLVED, C4-2 transaction wrapping RESOLVED); 0 Critical, 0 Major, 1 Minor (C4-F1 Design Model — not PM artifact); CI green on feature/C4-rework (run 33255680288) and main (run 33252332825); Management Reviewer lens PENDING; IP-F5 RESOLVED: load testing work item carried forward with decoupled execution path; RL-F5 RESOLVED: R003 hard deadline enforced (5th cycle — final escalation); stakeholder directive: close all PRs, issues, findings |
+| Evolution | C4 Cycle 1 Plan evolved (post-review): PR #32 + #33 MERGED to main; 0 open PRs; CI GREEN on main (run 33256627567); 35/43 tests pass, 0 fail, 8 covered-by-mock; R003 ACCEPTED — mock-auth activated per STK-001; NFR-001/NFR-002 deferred to Transition Iter 1 per stakeholder condition; stakeholder sanction GRANTED with 3 binding conditions; IOC CONDITIONAL GO; IA-F2 (Major) on Iteration Assessment corrected; 7 open issues (1 blocker ACCEPTED, 6 deferred-next-iteration) |
 | Finding IP-F4 | RESOLVED — mid-iteration checkpoint present since C2 Cycle 3 |
-| Finding IP-F5 | RESOLVED — load testing decoupled from merge dependency; C4 work item 3 executes independently against any CI-green branch |
-| Measured Baseline | Inception: 2 iters, 4.38M tokens, 22 min, 11 runs, 10 artifacts. Elaboration: 2 iters, 20.87M tokens, 1.0h, 21 runs, 13 artifacts. Construction C1: 9.85M tokens, 1h 42m 55s, 15 runs. C2 Cycle 2: 18.84M tokens, 19h 15m 47s, 15 runs. C3 Cycle 1: 12,752,568 tokens, 1h 18m 10s, 15 runs, 15 artifacts. Cumulative Construction: ~66.8M tokens, ~22.7h, 77 runs, 68 artifacts. |
-
+| Finding IP-F5 | RESOLVED — load testing decoupled from merge dependency; deferred to Transition Iter 1 per stakeholder condition |
+| Measured Baseline | Inception: 2 iters, 4.38M tokens, 22 min, 11 runs, 10 artifacts. Elaboration: 2 iters, 20.87M tokens, 1.0h, 21 runs, 13 artifacts. Construction C1: 9.85M tokens, 1h 42m 55s, 15 runs. C2 Cycle 2: 18.84M tokens, 19h 15m 47s, 15 runs. C3 Cycle 1: 12,752,568 tokens, 1h 18m 10s, 15 runs, 15 artifacts. C4 Cycle 1: 10,954,157 tokens, 1h 10m 23s, 16 runs, 15 artifacts. Cumulative Construction: ~77.8M tokens, ~24.5h, 91 runs, 83 artifacts. |
 ## Iteration Objectives
 
 1. **Merge all approved PRs to main and close stale PRs.** PR #32 (feature/C4-rework → iteration/C4) is APPROVED by Code Reviewer with C4-1 (isFeatured) and C4-2 (transaction wrapping) RESOLVED. PR #29 (iteration/C3 → main) is APPROVED. PR #19 and PR #8 are superseded. The Integrator merges PR #32 to iteration/C4, then iteration/C4 to main, and closes all stale PRs. This directly addresses the stakeholder directive: "close all PRs, Github Issues, and findings if any remain."
