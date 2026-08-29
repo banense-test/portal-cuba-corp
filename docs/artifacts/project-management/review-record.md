@@ -435,7 +435,6 @@ N1 -[hidden]- N2
 **BR Lens Verdict: PRESERVED** — Business Modeling is INACTIVE per DC §4. No BM deltas in Construction C4 Cycle 1. The Elaboration baseline is preserved. Zero findings, zero open actions from the Business Reviewer lens.
 
 ## Findings
-
 ### Prior Findings Reconciled (S_RECONCILE_PRIOR_FINDINGS)
 
 | Finding Key | Artifact | Severity | Lens | Status | Resolution |
@@ -461,7 +460,71 @@ N1 -[hidden]- N2
 | Finding Key | Artifact | Severity | Description | Location | Remediation | Verdict |
 |---|---|---|---|---|---|---|
 | IA-F2 | Iteration Assessment | Major | The Iteration Assessment states "0 open defect issues" but the Change Request artifact shows 7 open issues: 1 blocker (CR #30 / R003 OIDC, severity:blocker, priority:critical) and 6 deferred-next-iteration (#12, #15, #17, #18, #30, #34). The "0 open defect issues" claim is factually incorrect and was used in the stakeholder consultation, undermining the integrity of the sanction. The stakeholder explicitly corrected this: "Your statement 'all defect issues closed (0 open)' is wrong: there are 7 open issues, and one of them — CR R003, the OIDC blocker — carries severity:blocker + priority:critical, which also contradicts your own '0 Critical' line." | Document Control — "Open Defect Issues" field | Correct the Iteration Assessment to state "7 open issues: 1 blocker (R003 OIDC — ACCEPTED risk per stakeholder decision, mock-auth contingency activated), 6 deferred-next-iteration (#12, #15, #17, #18, #30, #34)" instead of "0 open defect issues." | NeedsRework |
-| RR-F2 | Review Record | Major | The Review Record's Document Control section stated "Open Defect Issues: 0" and "0 Critical" but the Change Request artifact shows 7 open issues: 1 blocker (CR #30 / R003 OIDC, severity:blocker, priority:critical) and 6 deferred-next-iteration. The stakeholder explicitly corrected this in the sanction response. A milestone verdict issued on incorrect figures is worthless. | Document Control — "Open Defect Issues" field | Correct the Review Record Document Control to state "7 open issues: 1 blocker (R003 OIDC — ACCEPTED risk per stakeholder decision, mock-auth contingency activated), 6 deferred-next-iteration (#12, #15, #17, #18, #30, #34)." | NeedsRework |
+| RR-F2 | Review Record | Major | The Review Record's Document Control section stated "Open Defect Issues: 0" and "0 Critical" but the Change Request artifact shows 7 open issues: 1 blocker (CR #30 / R003 OIDC, severity:blocker, priority:critical) and 6 deferred-next-iteration. The stakeholder explicitly corrected this in the sanction response. A milestone verdict issued on incorrect figures is worthless. | Document Control — "Open Defect Issues" field | Correct the Review Record Document Control to state "7 open issues: 1 blocker (R003 OIDC — ACCEPTED risk per stakeholder decision, mock-auth contingency activated), 6 deferred-next-iteration (#12, #15, #17, #18, #30, #34)." | NeedsRework — **CONTENT CORRECTED in Review Coordinator consolidation; formal closure pending Management Reviewer `resolve_artifact_finding` call** |
+
+### Review Coordinator Consolidation Summary
+
+**Lens Participation (authoritative — per Work Order):**
+
+| Lens | Status | Critical | Major | Minor | Verdict |
+|---|---|---|---|---|---|
+| Technical (Code Reviewer) | EXECUTED | 0 | 0 | 1 (DM-F2) | Approved (non-blocking) |
+| Business (Business Reviewer) | PRESERVED (INACTIVE per DC §4) | 0 | 0 | 0 | N/A — BM inactive |
+| Management (Management Reviewer) | EXECUTED | 0 | 1 (RR-F2/IA-F2) | 0 | Conditional Go |
+
+**Open Findings After Consolidation:**
+
+| Finding Key | Artifact | Severity | Owner (Lens) | Status | Review Coordinator Action |
+|---|---|---|---|---|---|
+| RR-F2 | Review Record | Major | Management Reviewer | **CONTENT CORRECTED** — Document Control now shows "7 open issues" | Awaiting formal `resolve_artifact_finding` by Management Reviewer |
+| IA-F2 | Iteration Assessment | Major | Management Reviewer | OPEN — PM artifact, not Review Coordinator's to fix | Escalated to Project Manager for correction |
+| DM-F2 | Design Model | Minor | Code Reviewer | OPEN — Designer artifact, not Review Coordinator's to fix | Escalated to Designer for traceability table update |
+
+**Finding Lifecycle:**
+
+```plantuml
+@startuml
+title Finding Lifecycle — Construction C4 Consolidation
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+
+state "Open" as Open
+state "Assigned" as Assigned
+state "In-Progress" as InProgress
+state "Resolved" as Resolved
+state "Verified" as Verified
+state "Closed" as Closed
+state "Accepted Risk" as Accepted
+
+[*] --> Open : Finding recorded
+Open --> Assigned : Owner assigned
+Assigned --> InProgress : Rework begins
+InProgress --> Resolved : Owner confirms fix
+Resolved --> Verified : Reviewer verifies
+Verified --> Closed : resolve_artifact_finding called
+
+Open --> Accepted : Stakeholder decision\n(R003 mock-auth)
+Accepted --> Closed : Accepted by stakeholder
+
+note right of Closed
+  C4 Closed Findings:
+  DM-F1, TC-F1, TC-F2 (Reviewer)
+  C4-1, C4-2, C4-3 (Code Reviewer)
+  IP-F5, RL-F5, IA-F1 (Mgmt Reviewer)
+end note
+
+note right of Open
+  C4 Open Findings:
+  RR-F2 (Major) — content corrected,
+    awaiting formal closure
+  IA-F2 (Major) — PM artifact
+  DM-F2 (Minor) — Designer artifact
+end note
+
+Closed --> [*]
+Accepted --> [*]
+@enduml
+```
 
 ### Code-Level Findings (Code Reviewer)
 
@@ -496,7 +559,6 @@ All tests exercise real assertions on the code changes — no decoy `Assert.NotN
 | #32 | feature/C4-rework → iteration/C4 | **APPROVED & MERGED** | All checklist items pass. CI green. C4-1 (isFeatured) and C4-2 (transaction wrapping) RESOLVED. 1 Minor finding (DM-F2) deferred to Design Model update. Merged to main. |
 | #19 | feature/C2-presentation → iteration/C2 | Superseded | Stale from C2. Superseded by PR #28/#29/#32. |
 | #8 | feature/C1-presentation → iteration/C1 | Superseded | Stale from C1. Superseded by PR #28/#29/#32. |
-
 ## Resolutions and Actions
 
 ### Resolved This Cycle (Iteration 4)
