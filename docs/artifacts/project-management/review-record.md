@@ -894,7 +894,6 @@ PR #38 (hotfix/T2-defect-fixes → main) is **APPROVED** based on:
 - **Non-blocking but required:** Change Request artifact must be updated to Transition phase; Development Case should be updated to reflect final state
 - Stakeholder re-review required to sanction Product Release
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | PR #38 | hotfix/T2-defect-fixes, BR-T1-002, RL-F6, IA-F3, RN-F1 | Realizes | main branch (MERGED) |
@@ -906,15 +905,17 @@ PR #38 (hotfix/T2-defect-fixes → main) is **APPROVED** based on:
 | VIS-F2 (T2 Minor — Reviewer) | Vision, mock-auth expiry | Derives | System Analyst — correct date to canonical |
 | SS-F1 (T2 Minor — Reviewer) | Supplementary Specification, mock-auth expiry | Derives | System Analyst — correct date to canonical |
 | DC-F1 (T2 Minor — Reviewer) | Development Case, PoC results | Derives | Process Engineer — update to Transition |
+| BR-T2-001 (T2 Minor — Business Reviewer) | Vision, mock-auth expiry, BC-3, RR-F1 | Derives | System Analyst — correct Vision date to canonical 2026-12-31/Software Architect |
 | BR-T1-002 (RESOLVED T2) | IOC binding conditions, NFR-001, NFR-002, CON-004 | Resolved by | PerformanceTests.cs, MockAuthHandler.cs, Risk List, Release Notes, Iteration Assessment |
 | RL-F6 (RESOLVED T2) | Risk List, R003, R004, STK-001 directives | Resolved by | Risk List T2 evolution — R003 accepted, R004 measured, R008 closed |
 | IA-F3 (RESOLVED T2) | Iteration Assessment, iteration objectives, STK-001 directives | Resolved by | Iteration Assessment T2 evolution — all objectives MET/NOT MET |
 | RN-F1 (RESOLVED T2) | Release Notes, CON-006, STK-001 directives | Resolved by | Release Notes T2 evolution — deployment status explicit |
 | DM-F2 (OPEN) | Design Model, C4-1, C4-2, PR #32 | Derives | Designer — traceability update needed |
-| BR-T1-001 (ADDRESSED T2) | Vision, BG-001, BG-002, BG-003 | Resolved by | Iteration Assessment — goal measurement plan documented |
+| BR-T1-001 (RESOLVED T2) | Vision, BG-001, BG-002, BG-003 | Resolved by | Iteration Assessment T2 — goal measurement plan documented (HR time audit, Excel usage audit, monthly adoption tracking) |
 | BG-001 (goal achievement) | UC-001..UC-004, UC-009 | Derives | Post-deployment HR time audit (PENDING) |
 | BG-002 (goal achievement) | UC-001..UC-004, UC-009 | Derives | Post-deployment Excel usage audit (PENDING) |
-| BG-003 (goal achievement) | UC-001..UC-010, User Documentation | Derives | Post-deployment adoption tracking (PENDING) |
+| BG-003 (goal achievement) | UC-001..UC-010, User Documentation, NFR-001, NFR-002 | Derives | Post-deployment adoption tracking (PENDING) — performance PASS supports adoption |
 | CI Build (main) | scm_get_build_status | Tests | All source files on main — GREEN (run 33262804733) |
 | CI Build (hotfix/T2) | scm_get_build_status | Tests | PR #38 source — GREEN (merged) |
 | Stakeholder PR sanction | STK-001, AC-001..AC-005 | Refines | PENDING — re-review with T2 evidence |
+| Business Lens Verdict (T2) | BG-001..BG-003, BC-1..BC-4, Release Notes, User Documentation | Refines | APPROVED — conditional on mock-auth date standardization (RR-F1) |
