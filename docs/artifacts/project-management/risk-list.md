@@ -230,16 +230,15 @@ R008_Rework_Cycle --|> "COMPLETE"
 **Contingency trigger:** N/A — rework cycle closed.
 **Contingency action:** If C4 re-review produces new Critical/Major findings, a new rework risk would be registered with a focused mitigation plan.
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | R001 | Work Order R001 | Refines | SAD COMP-005, ADR-003, Architectural PoC (PoC-R001), LdapGateway (C2 delivered), NovellLdapConnectionAdapter (DEFERRED) |
 | R002 | Work Order R002 | Refines | User Documentation (Transition), Iteration Plan |
-| R003 | CON-004 (Keycloak OIDC) | Derives | SAD COMP-007, ADR-005, Architectural PoC (PoC-R003), 8 BLOCKED tests, STK-001 escalation (C4 Cycle 1 — 5th and FINAL cycle), RL-F5 hard deadline (end of C4), mock-auth contingency to stakeholder for binding decision |
-| R004 | NFR-001, NFR-002 | Derives | SAD COMP-006, ADR-002, C4 load test (IP-F5 RESOLVED — decoupled from merge, executes against feature/C4-rework) |
-| R005 | CON-011, CON-002 | Derives | Design Model V001–V010, PR #32 (APPROVED) |
-| R006 | AC-005 | Derives | SAD Process View, COMP-002, Architectural PoC (PoC-R006), ClockingService, PR #32 (C4-2 transaction wrapping RESOLVED) |
-| R007 | Review Record C2 + C4 findings (ALL RESOLVED) | Derives | PR #32 (APPROVED), Iteration Plan C4 Item 1 (merge) |
-| R008 | Stakeholder sanction refusal (C2), rework cycles | Derives | C3 Cycle 1 Iteration Plan; C4 is consolidation, not rework |
-| RL-F5 (RESOLVED) | Review Record RL-F5, R003, STK-003, CON-004 | Resolved by | Hard deadline enforced (5th and FINAL cycle); mock-auth contingency formally presented to STK-001 for binding decision |
-| IP-F5 (RESOLVED) | Review Record IP-F5, NFR-001, NFR-002 | Resolved by | Load testing decoupled from merge dependency; executes against any CI-green branch |
+| R003 | CON-004 (Keycloak OIDC) | Derives | SAD COMP-007, ADR-005, Architectural PoC (PoC-R003), 8 covered-by-mock tests, STK-001 decision (mock-auth ACTIVATED), real OIDC = Transition work item, mock-auth expiry date in Transition Plan |
+| R004 | NFR-001, NFR-002 | Derives | SAD COMP-006, ADR-002, Transition Iter 1 exit criterion (measured values required per stakeholder condition) |
+| R005 | CON-011, CON-002 | Derives | Design Model V001–V010, PR #32 (MERGED to main) |
+| R006 | AC-005 | Derives | SAD Process View, COMP-002, Architectural PoC (PoC-R006), ClockingService, PR #32 (C4-2 transaction wrapping RESOLVED, MERGED to main) |
+| R007 | Review Record C2 + C4 findings (ALL RESOLVED) | Derives | PR #32 + #33 (MERGED to main), 0 open PRs, CI GREEN |
+| R008 | Stakeholder sanction refusal (C2), rework cycles | Derives | C3 Cycle 1 Iteration Plan; C4 complete — sanction GRANTED, IOC CONDITIONAL GO |
+| RL-F5 (RESOLVED) | Review Record RL-F5, R003, STK-003, CON-004 | Resolved by | R003 ACCEPTED — STK-001 approved mock-auth contingency activation |
+| IP-F5 (RESOLVED) | Review Record IP-F5, NFR-001, NFR-002 | Resolved by | Load testing decoupled from merge dependency; deferred to Transition Iter 1 per stakeholder condition |
