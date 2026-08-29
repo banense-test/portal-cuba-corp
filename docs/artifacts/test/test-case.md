@@ -1755,6 +1755,10 @@ Two blockers prevent declaring IOC readiness:
 | TD-029 | C3 Analyst: LDAP query timeout boundary | UC-009, TI-042 | MockLdapGateway with configurable delay: 0ms (normal), 4999ms (just under timeout), 5001ms (just over timeout), unreachable (connection refused) — [Pending: requires LDAP environment] |
 | TD-030 | C3 Analyst: CSV export maximum volume | UC-004, TI-044 | Seed: 8,800 clocking records (200 employees × 22 days × 2 clockings) — [Pending: requires deployment for realistic volume test] |
 | TD-031 | C3 Analyst: Concurrent clocking race condition | UC-001, TI-041 | 10 concurrent threads, each with same idempotency key prefix but different suffix — [Pending: requires deployment] |
+| TD-032 | C4: Transaction atomicity — business op failure | UC-005, UC-006, UC-007, UC-010, TC-040 | Mock IPersistence: `UpdateNewsItem` throws after `InsertAuditRecord` succeeds within `ExecuteInTransactionAsync`; verify rollback |
+| TD-033 | C4: Transaction rollback — audit failure | UC-005, UC-006, UC-007, UC-010, TC-041 | Mock IPersistence: `InsertAuditRecord` throws after `UpdateNewsItem` succeeds within `ExecuteInTransactionAsync`; verify rollback |
+| TD-034 | C4: IsFeatured preservation through edit | UC-006, TC-042 | Seed: 1 published news item (isFeatured=true); edit with isFeatured=true; verify preserved; then edit with isFeatured=false; verify unset |
+| TD-035 | C4: Concurrent transaction isolation | UC-005, UC-010, TC-043 | Two concurrent tasks: (A) PublishAsync + (B) AssignCategoryAsync; verify no cross-contamination of audit records |
 
 ### Boundary Value Analysis
 
@@ -1769,6 +1773,10 @@ Two blockers prevent declaring IOC readiness:
 | TC-036 | Route resolution boundary | Service-layer call vs HTTP endpoint | Both resolve to same ClockingService method; HTTP 200 with correct payload |
 | TC-037 | Form binding round-trip | Form submission → model binding → service → response | All form fields (title, body, category, isFeatured) preserved through full round-trip |
 | TC-039 | Identity source boundary | Token sub claim vs body vs query vs header | Only token sub claim used; all other vectors ignored |
+| TC-040 | Transaction atomicity boundary | Business op succeeds + audit fails vs business op fails + audit succeeds | Both roll back; neither record persists in either case |
+| TC-041 | Transaction rollback boundary | Audit insert fails after business op succeeds | Business op rolled back; 0 records in both tables |
+| TC-042 | IsFeatured flag boundary | isFeatured=true → edit with true vs isFeatured=true → edit with false | Flag preserved when set to true; flag correctly unset when set to false |
+| TC-043 | Concurrency boundary | 2 concurrent transactions (different tables) | Both complete; no cross-contamination; 2 audit records with correct associations |
 | TI-040 | OIDC token expiry boundary | T-1s (expired), T+0s (exact), T+1s (valid) | Expired token rejected; exact-expiry behavior defined by OIDC middleware; valid token accepted — [Pending: R003] |
 | TI-042 | LDAP query timeout boundary | 0ms, 4999ms, 5001ms, unreachable | Normal and near-timeout return results; over-timeout and unreachable return graceful error, not hang — [Pending: LDAP env] |
 | TI-044 | CSV export volume boundary | 0 records (TD-014), 8,800 records (TD-030) | Both complete successfully; 8,800-record export completes within NFR-001 page-load threshold — [Pending: deployment] |
