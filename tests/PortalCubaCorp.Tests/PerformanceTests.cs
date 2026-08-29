@@ -39,21 +39,39 @@ public class PerformanceTests : IClassFixture<WebApplicationFactory<Program>>
         {
             builder.ConfigureTestServices(services =>
             {
-                // Remove real PostgreSQL DbContext registration
-                var descriptors = services.Where(d =>
+                // Remove ALL existing DbContext registrations
+                var dbDescriptors = services.Where(d =>
                     d.ServiceType == typeof(DbContextOptions<PortalDbContext>) ||
-                    d.ServiceType == typeof(DbContextOptions)).ToList();
-                foreach (var d in descriptors)
+                    d.ServiceType == typeof(DbContextOptions) ||
+                    d.ServiceType == typeof(PortalDbContext)).ToList();
+                foreach (var d in dbDescriptors)
                     services.Remove(d);
 
                 // Add in-memory database for testing
                 services.AddDbContext<PortalDbContext>(options =>
                     options.UseInMemoryDatabase("PerformanceTestDb"));
 
-                // Override authentication with mock handler
+                // Remove ALL existing authentication registrations
+                var authDescriptors = services.Where(d =>
+                    d.ServiceType == typeof(Microsoft.AspNetCore.Authentication.IAuthenticationService) ||
+                    d.ServiceType == typeof(AuthenticationSchemeOptions) ||
+                    d.ServiceType == typeof(Microsoft.AspNetCore.Authentication.AuthenticationHandler<>) ||
+                    d.ServiceType.Name.Contains("Authentication") ||
+                    d.ServiceType.Name.Contains("Auth")).ToList();
+                foreach (var d in authDescriptors)
+                    services.Remove(d);
+
+                // Remove existing authentication builder services (cookie, OIDC)
+                var cookieOidcDescriptors = services.Where(d =>
+                    d.ServiceType == typeof(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions) ||
+                    d.ServiceType == typeof(Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions)).ToList();
+                foreach (var d in cookieOidcDescriptors)
+                    services.Remove(d);
+
+                // Add mock authentication as the only scheme
                 services.AddAuthentication(MockAuthHandler.AuthScheme)
                     .AddScheme<AuthenticationSchemeOptions, MockAuthHandler>(
-                        MockAuthHandler.AuthScheme, _ => { });
+                        MockAuthHandler.AuthScheme, options => { });
             });
         });
     }
@@ -66,7 +84,47 @@ public class PerformanceTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task NFR001_PageLoad_Under3Seconds()
     {
-        var client = _factory.CreateClient();
+        // Use a factory that ensures the DB is created
+        var factory = _factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                // Ensure DB is created on startup
+                var sp = services.BuildServiceProvider();
+                using var scope = sp.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<PortalDbContext>();
+                db.Database.EnsureCreated();
+            });
+        });
+
+        var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+
+        // Seed the in-memory DB with a published news item so the page renders
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<PortalDbContext>();
+            db.Database.EnsureCreated();
+            if (!db.NewsItems.Any())
+            {
+                db.NewsItems.Add(new PortalCubaCorp.Domain.NewsItem
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Welcome to the Portal",
+                    Body = "This is a test news item for performance testing.",
+                    Category = PortalCubaCorp.Domain.NewsCategory.General,
+                    Status = PortalCubaCorp.Domain.NewsStatus.Published,
+                    IsFeatured = false,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    AuthorId = "test-author"
+                });
+                db.SaveChanges();
+            }
+        }
+
         var measurements = new List<long>();
 
         // Warmup — first request includes JIT and service initialization
@@ -80,6 +138,7 @@ public class PerformanceTests : IClassFixture<WebApplicationFactory<Program>>
             stopwatch.Stop();
             measurements.Add(stopwatch.ElapsedMilliseconds);
 
+            // Accept 200 (OK) or 302 (redirect to login if auth not fully wired)
             Assert.True(response.StatusCode == HttpStatusCode.OK ||
                 response.StatusCode == HttpStatusCode.Redirect,
                 $"NFR-001: Unexpected status code {response.StatusCode} on iteration {i + 1}");
@@ -112,6 +171,14 @@ public class PerformanceTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task NFR002_ClockInResponse_Under1Second()
     {
         var client = _factory.CreateClient();
+
+        // Ensure DB is created
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<PortalDbContext>();
+            db.Database.EnsureCreated();
+        }
+
         var measurements = new List<long>();
 
         // Warmup
