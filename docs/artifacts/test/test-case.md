@@ -58,6 +58,126 @@ This Test Case artifact covers **all 10 use-case scenarios** at Construction dep
 | Security | TC-013, TC-014, TC-022, TC-034, TC-038, TC-039 | PASS (service-layer) / BLOCKED (OIDC) | R003 — 8 TCs BLOCKED |
 | Audit Trail | TC-008, TC-010, TC-018, TC-024, TC-040, TC-041 | PASS (service-layer) / C4 NEW (transaction atomicity pending) | — |
 
+### C4 New Test Case Specifications
+
+#### TC-040: Transaction Atomicity — Business Operation Fails, Audit Must Not Persist (C4-2)
+
+| Field | Value |
+|---|---|
+| **UC Trace** | UC-005, UC-006, UC-007, UC-010 (C4-2 transaction wrapping) |
+| **Test Level** | Integration |
+| **Quality Dimension** | Reliability, Audit Trail |
+| **Goal** | TG-006 (transaction atomicity) |
+| **Regression** | Yes — every build |
+| **Suite** | TransactionTests |
+| **Adversarial Intent** | Verify that if the business operation (publish/edit/unpublish/assign category) throws an exception AFTER the audit record is written inside `ExecuteInTransactionAsync`, the transaction rolls back and NEITHER the business change NOR the audit record persists — a partial commit indicates an atomicity violation that would corrupt the audit trail (NFR-004) |
+| **Preconditions** | InMemoryDb initialized empty (TD-001); mock IPersistence where `UpdateNewsItem` throws after `InsertAuditRecord` is called; `ExecuteInTransactionAsync` wraps both calls |
+| **Input Data** | News item: title="Test", body="Test", category=General, isFeatured=false; HR user `hr-001`; mock throws on `UpdateNewsItem` |
+| **Expected Outcome** | Exception propagates to caller; 0 news items in database; 0 audit records in database; transaction rolled back |
+| **Pass/Fail Criteria** | PASS: 0 news items, 0 audit records, exception thrown. FAIL: any audit record persisted without corresponding business record, or business record persisted without audit |
+| **Interface Points** | INT-002 (INewsService), INT-004 (IWorkerCategoryService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
+| **Automation** | xUnit + Moq; InMemoryDb; mock IPersistence to throw on business op after audit insert |
+| **Environment** | .NET 10 test project; no external dependencies |
+
+**Procedure:**
+1. Arrange: Initialize InMemoryDb (TD-001 — empty). Configure mock so `UpdateNewsItem` throws `InvalidOperationException` after `InsertAuditRecord` succeeds within `ExecuteInTransactionAsync`.
+2. Act: Call `INewsService.PublishAsync("hr-001", "Test", "Test", "General", false)`.
+3. Assert: `InvalidOperationException` is thrown.
+4. Assert: Query news table — 0 records.
+5. Assert: Query audit_records table — 0 records.
+6. Repeat steps 1-5 for `EditAsync`, `UnpublishAsync`, and `IWorkerCategoryService.AssignCategoryAsync`.
+
+**C4 Execution Verdict: PENDING** — Awaiting Tester execution against PR #32 build.
+
+#### TC-041: Transaction Rollback — Audit Fails, Business Operation Must Not Persist (C4-2)
+
+| Field | Value |
+|---|---|
+| **UC Trace** | UC-005, UC-006, UC-007, UC-010 (C4-2 transaction wrapping) |
+| **Test Level** | Integration |
+| **Quality Dimension** | Reliability, Audit Trail |
+| **Goal** | TG-006 (transaction atomicity) |
+| **Regression** | Yes — every build |
+| **Suite** | TransactionTests |
+| **Adversarial Intent** | Verify that if the audit logging call (`InsertAuditRecord`) throws an exception AFTER the business operation succeeds inside `ExecuteInTransactionAsync`, the transaction rolls back and the business change does NOT persist without an audit record — an unaudited business change is an NFR-004 violation |
+| **Preconditions** | InMemoryDb initialized empty (TD-001); mock IPersistence where `InsertAuditRecord` throws after `UpdateNewsItem` succeeds; `ExecuteInTransactionAsync` wraps both calls |
+| **Input Data** | News item: title="Test", body="Test", category=General, isFeatured=true; HR user `hr-001`; mock throws on `InsertAuditRecord` |
+| **Expected Outcome** | Exception propagates to caller; 0 news items in database; 0 audit records in database; transaction rolled back |
+| **Pass/Fail Criteria** | PASS: 0 news items, 0 audit records, exception thrown. FAIL: business record persisted without audit record (NFR-004 violation) |
+| **Interface Points** | INT-002 (INewsService), INT-004 (IWorkerCategoryService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
+| **Automation** | xUnit + Moq; InMemoryDb; mock IPersistence to throw on audit insert after business op succeeds |
+| **Environment** | .NET 10 test project; no external dependencies |
+
+**Procedure:**
+1. Arrange: Initialize InMemoryDb (TD-001 — empty). Configure mock so `InsertAuditRecord` throws `InvalidOperationException` after `UpdateNewsItem` succeeds within `ExecuteInTransactionAsync`.
+2. Act: Call `INewsService.PublishAsync("hr-001", "Test", "Test", "General", true)`.
+3. Assert: `InvalidOperationException` is thrown.
+4. Assert: Query news table — 0 records (business op rolled back).
+5. Assert: Query audit_records table — 0 records (audit insert failed).
+6. Repeat steps 1-5 for `EditAsync`, `UnpublishAsync`, and `IWorkerCategoryService.AssignCategoryAsync`.
+
+**C4 Execution Verdict: PENDING** — Awaiting Tester execution against PR #32 build.
+
+#### TC-042: IsFeatured Preservation Through Edit Flow (C4-1)
+
+| Field | Value |
+|---|---|
+| **UC Trace** | UC-006 (edit published news), C4-1 (isFeatured in EditAsync) |
+| **Test Level** | Integration |
+| **Quality Dimension** | Functionality |
+| **Goal** | TG-007 (isFeatured preservation) |
+| **Regression** | Yes — every build |
+| **Suite** | NewsIntegrationTests |
+| **Adversarial Intent** | Verify that the `isFeatured` flag is correctly passed through `EditAsync` and persisted — a regression where isFeatured is lost during edit would cause featured news to disappear from the banner (FR-008), which was the original MAJOR-1 defect |
+| **Preconditions** | InMemoryDb seeded with 1 published news item (TD-015 — isFeatured=true); HR user `hr-001` authenticated |
+| **Input Data** | Edit: title="Updated Title", body="Updated Body", category=IT, isFeatured=true; newsId from seeded item |
+| **Expected Outcome** | News item updated with new title/body/category; isFeatured=true preserved; new audit record created with action=Edit; old isFeatured value not lost |
+| **Pass/Fail Criteria** | PASS: news item has isFeatured=true after edit, audit record exists. FAIL: isFeatured=false after edit (flag lost), or isFeatured not passed to EditAsync |
+| **Interface Points** | INT-002 (INewsService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
+| **Automation** | xUnit + Moq; InMemoryDb |
+| **Environment** | .NET 10 test project; no external dependencies |
+
+**Procedure:**
+1. Arrange: Initialize InMemoryDb with TD-015 (1 published news item, isFeatured=true).
+2. Act: Call `INewsService.EditAsync(newsId, "hr-001", "Updated Title", "Updated Body", "IT", true)`.
+3. Assert: Return value indicates success.
+4. Assert: Query news table — 1 record with title="Updated Title", body="Updated Body", category=IT, isFeatured=true.
+5. Assert: Query audit_records table — 1 new record with action=Edit, userId=hr-001.
+6. Act: Repeat with isFeatured=false to verify flag can be explicitly unset.
+7. Assert: News item has isFeatured=false after second edit.
+
+**C4 Execution Verdict: PENDING** — Awaiting Tester execution against PR #32 build.
+
+#### TC-043: Concurrent Transaction Isolation — Two Concurrent Writes Don't Corrupt Audit Trail (C4-2)
+
+| Field | Value |
+|---|---|
+| **UC Trace** | UC-005, UC-010 (C4-2 concurrent transaction isolation) |
+| **Test Level** | Integration |
+| **Quality Dimension** | Reliability |
+| **Goal** | TG-006 (transaction atomicity) |
+| **Regression** | Yes — every build |
+| **Suite** | TransactionTests |
+| **Adversarial Intent** | Verify that two concurrent `ExecuteInTransactionAsync` calls (one publishing news, one assigning a worker category) do not interleave or corrupt each other's audit records — a race condition could cause cross-contamination of audit trails or partial commits |
+| **Preconditions** | InMemoryDb initialized empty (TD-001); two concurrent tasks prepared |
+| **Input Data** | Task A: `PublishAsync("hr-001", "News A", "Body A", "General", true)`; Task B: `AssignCategoryAsync("hr-001", "ad-user-042", "IT")` |
+| **Expected Outcome** | Both operations complete successfully; 1 news item with correct fields; 1 worker category with correct fields; 2 audit records (1 per operation); no cross-contamination |
+| **Pass/Fail Criteria** | PASS: 1 news item, 1 worker category, 2 audit records with correct associations. FAIL: missing records, duplicate records, or cross-contaminated audit entries |
+| **Interface Points** | INT-002 (INewsService), INT-004 (IWorkerCategoryService), INT-005 (IAuditLogger), INT-007 (IPersistence) |
+| **Automation** | xUnit + Moq; InMemoryDb; `Task.WhenAll` for concurrent execution |
+| **Environment** | .NET 10 test project; no external dependencies |
+
+**Procedure:**
+1. Arrange: Initialize InMemoryDb (TD-001 — empty).
+2. Act: Execute `Task.WhenAll(PublishAsync(...), AssignCategoryAsync(...))` concurrently.
+3. Assert: Both tasks complete without exception.
+4. Assert: Query news table — 1 record with title="News A", body="Body A", category=General, isFeatured=true.
+5. Assert: Query worker_categories table — 1 record with adUserId="ad-user-042", category=IT.
+6. Assert: Query audit_records table — 2 records, 1 with action=Publish, 1 with action=AssignCategory.
+7. Assert: Each audit record's entityId matches the correct business record.
+
+**C4 Execution Verdict: PENDING** — Awaiting Tester execution against PR #32 build.
+
 ### C4 Test Execution Workflow
 
 ```plantuml
@@ -192,6 +312,102 @@ note right of Blocked
   Mock-auth contingency
   may unblock if STK-003
   does not confirm by C4 end
+end note
+
+@enduml
+```
+
+### C4 Test Suite Structure
+
+```plantuml
+@startuml C4_Test_Suite_Structure
+title Construction C4 — Test Suite Structure (43 TCs)
+
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam componentStyle rectangle
+
+package "Test Suite Structure" {
+
+  package "Unit Tests (DomainTests)" {
+    [TC-025: Clocking Domain] as TC025
+    [TC-026: News Domain] as TC026
+    [TC-027: Unpublish Domain] as TC027
+  }
+
+  package "Integration Tests" {
+    package "ClockingIntegrationTests" {
+      [TC-001: Clock In Happy Path] as TC001
+      [TC-002: Clock Out Happy Path] as TC002
+      [TC-003: Offline Retry <5min] as TC003
+      [TC-004: Offline Retry >5min] as TC004
+      [TC-005: Idempotency Same Key] as TC005
+      [TC-021: Cross-Employee Idempotency] as TC021
+      [TC-022: EmployeeId from Token] as TC022
+      [TC-031: API Route Resolution] as TC031
+      [TC-033: Antiforgery Token] as TC033
+      [TC-034: Identity Spoofing] as TC034
+      [TC-036: Route Integration] as TC036
+      [TC-038: Antiforgery Variations] as TC038
+      [TC-039: Multi-Vector Identity] as TC039
+    }
+
+    package "NewsIntegrationTests" {
+      [TC-008: Publish with Audit] as TC008
+      [TC-009: Unpublish No Delete] as TC009
+      [TC-010: Edit with Audit] as TC010
+      [TC-017: Read and Filter] as TC017
+      [TC-023: IsFeatured Flag] as TC023
+      [TC-024: Edit Audit Trail] as TC024
+      [TC-027: Unpublish Domain] as TC027
+      [TC-032: Edit Form Binding] as TC032
+      [TC-037: Form Binding Round-Trip] as TC037
+      [TC-042: IsFeatured Preservation] as TC042
+    }
+
+    package "WorkerCategoryIntegrationTests" {
+      [TC-018: Assign Category Audit] as TC018
+      [TC-019: Invalid AD User] as TC019
+      [TC-020: HR View Clockings] as TC020
+    }
+
+    package "DirectoryIntegrationTests" {
+      [TC-006: LDAP Search Valid] as TC006
+      [TC-007: Private Data Filter] as TC007
+      [TC-028: LDAP Multi-Office] as TC028
+    }
+  }
+
+  package "C4 Transaction Tests" {
+    [TC-040: Transaction Atomicity] as TC040
+    [TC-041: Transaction Rollback] as TC041
+    [TC-043: Concurrent Isolation] as TC043
+  }
+
+  package "Performance/Stress Tests" {
+    [TC-011: Page Load <3s] as TC011
+    [TC-012: Clocking <1s] as TC012
+    [TC-029: 50 Concurrent Clockings] as TC029
+    [TC-030: Directory Search <10s] as TC030
+  }
+
+  package "System Tests (OIDC)" {
+    [TC-013: HR Role Access] as TC013
+    [TC-014: Employee Role Access] as TC014
+    [TC-015: View History] as TC015
+    [TC-016: CSV Export] as TC016
+    [TC-035: CSV Header] as TC035
+  }
+}
+
+note bottom of TC040
+  C4-2: Verify ExecuteInTransactionAsync
+  wraps business op + audit atomically
+end note
+
+note bottom of TC042
+  C4-1: Verify isFeatured parameter
+  preserved through EditAsync flow
 end note
 
 @enduml
