@@ -21,8 +21,114 @@
 | Stakeholder Sanction | PENDING — awaiting Management Reviewer lens and stakeholder decision |
 | Code Reviewer Verdict | **APPROVED** — PR #32 passes all checklist items. 1 Minor finding (C4-F1) is non-blocking, deferred to Design Model update. |
 ## Review Scope and Criteria
+This review evaluates Construction C4 Cycle 1 against the Code Reviewer lens. The Management Reviewer lens has not yet executed this cycle.
 
-This review evaluates Construction C3 Cycle 1 against two lenses:
+**Code Reviewer Checklist (C4 Cycle 1):**
+1. CI Build Status (hard gate) — **PASS** (green on feature/C4-rework, run 33255680288, 2026-08-29 13:43:12Z)
+2. Programming Guidelines Conformance — **PASS** (no CONTRIBUTING.md found; C# conventions consistent: `_` prefix for private fields, XML doc comments, proper async/await)
+3. Dual Coverage (black-box + white-box tests) — **PASS** (6 test files, 70+ test methods; black-box contract verification + white-box branch/path coverage for all service classes)
+4. Design Model Conformance (class names, signatures, interfaces) — **PASS with Minor** (C4-1 isFeatured RESOLVED, C4-2 transaction wrapping RESOLVED; C4-F1: async method names not yet reflected in Design Model — DEFERRED)
+5. SAD Implementation View Conformance (subsystem boundaries, layer placement) — **PASS** (Application/Infrastructure/Pages layers correct, no boundary violations)
+6. Build-Tree Coverage — **PASS** (all 16 changed files under src/ or tests/ within build tree; no parallel solution)
+7. Traceability (code → Design Model, tests → UCs) — **PASS** (UC-001..UC-010 referenced in PR body and XML doc comments; source files mapped to CLS/INT IDs)
+8. C4 Finding Resolution — **PASS** (C4-1 isFeatured RESOLVED, C4-2 transaction wrapping RESOLVED, C4-3 ExecuteInTransactionAsync CONFIRMED)
+
+### Compliance Matrix — PR #32
+
+```plantuml
+@startuml
+title PR #32 Compliance Matrix — C4 Rework
+skinparam style strictuml
+
+object "CI Build Status" as C1 {
+  PASS — Green (run 33255680288)
+}
+object "Traceability Trailer" as C2 {
+  PASS — UC-001..UC-010 in PR body + XML docs
+}
+object "Design Model Conformance" as C3 {
+  PASS (with Minor) — C4-1 isFeatured RESOLVED
+  C4-2 Transaction wrapping RESOLVED
+  Minor: async suffix not in Design Model yet
+}
+object "Programming Guidelines" as C4 {
+  PASS — No CONTRIBUTING.md found
+  C# conventions consistent
+}
+object "Dual Coverage (BB+WB)" as C5 {
+  PASS — 6 test files, 70+ test methods
+  Black-box + White-box paths covered
+}
+object "Build-Tree Coverage" as C6 {
+  PASS — All files under src/ or tests/
+  No parallel solution
+}
+object "SAD Layer Conformance" as C7 {
+  PASS — Application/Infrastructure/Pages
+  No layer boundary violations
+}
+
+C1 --> C2
+C2 --> C3
+C3 --> C4
+C4 --> C5
+C5 --> C6
+C6 --> C7
+
+note right of C3
+  C4-F1 (Minor): Design Model
+  Interface Contracts section
+  still shows synchronous
+  method names. Async suffix
+  is correct .NET idiom for
+  Task-returning methods.
+  DEFERRED to next iteration.
+end note
+
+@enduml
+```
+
+### Defect Distribution — PR #32
+
+```plantuml
+@startuml
+title PR #32 Defect Distribution — Severity x Section
+skinparam style strictuml
+
+object "Application Layer" as S1 {
+  Findings: 0 Critical, 0 Major, 1 Minor
+  C4-F1: async method names not in Design Model
+}
+object "Infrastructure Layer" as S2 {
+  Findings: 0 Critical, 0 Major, 0 Minor
+  ExecuteInTransactionAsync: IMPLEMENTED
+  UpdateNewsItem isFeatured: RESOLVED
+}
+object "Presentation Layer" as S3 {
+  Findings: 0 Critical, 0 Major, 0 Minor
+  Edit.cshtml.cs: isFeatured binding added
+  Publish/Management/Manage: async calls
+}
+object "Test Suite" as S4 {
+  Findings: 0 Critical, 0 Major, 0 Minor
+  6 test files, 70+ methods
+  Black-box + White-box covered
+}
+object "Prior Findings Resolved" as S5 {
+  C4-1 (isFeatured in Edit): RESOLVED
+  C4-2 (Transaction wrapping): RESOLVED
+  C4-3 (ExecuteInTransactionAsync): CONFIRMED
+}
+
+S1 --> S2
+S2 --> S3
+S3 --> S4
+S4 --> S5
+
+@enduml
+```
+
+### Prior Cycle Checklists (Preserved)
 
 **Code Reviewer Checklist (C3 Cycle 1):**
 1. CI Build Status (hard gate) — **PASS** (green on iteration/C3, run 33250807692; green on main, run 33251398612)
@@ -34,7 +140,7 @@ This review evaluates Construction C3 Cycle 1 against two lenses:
 7. Traceability (code → Design Model, tests → UCs) — **PASS** (39 TCs mapped to 10 UCs; source files mapped to CLS/INT IDs)
 8. C2 Finding Resolution — **PASS** (all 7 C2 findings resolved: C2-CRIT-1, C2-MAJ-1, C2-MAJ-2, C2-MIN-1..4)
 
-**Management Reviewer Checklist (IOC Milestone):**
+**Management Reviewer Checklist (IOC Milestone — C3 Cycle 1):**
 1. Functional Completeness — **PARTIALLY MET** (31/39 TCs PASS, 8 BLOCKED by R003 OIDC)
 2. Quality Threshold — **PARTIALLY MET** (0 FAIL, regression CLEAN, but 21% coverage unverified)
 3. Environment Readiness — **NOT MET** (R003 OIDC unconfirmed, 4th escalation cycle)
@@ -55,7 +161,6 @@ This review evaluates Construction C3 Cycle 1 against two lenses:
 | SAD | Architecture stability, implementation view conformance | PASS — baseline maintained, no architectural findings |
 | Change Request | CR state machine compliance, CCB decisions | PASS — 67% closure rate, 6 completed this iteration |
 | User Documentation | UC coverage, accuracy, terminological contract | PASS — all 10 UCs documented, C2 fixes reflected |
-
 ## Findings
 ### Prior Findings Reconciled (S_RECONCILE_PRIOR_FINDINGS)
 
