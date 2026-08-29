@@ -5,6 +5,10 @@ using PortalCubaCorp.Domain;
 
 namespace PortalCubaCorp.Pages;
 
+/// <summary>
+/// Main page (UC-001: Clock In/Out status, UC-008: Read and Filter News).
+/// Shows clocking button and news feed on the home page.
+/// </summary>
 [Authorize]
 public class IndexModel : PageModel
 {

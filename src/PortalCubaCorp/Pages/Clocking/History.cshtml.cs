@@ -5,6 +5,10 @@ using PortalCubaCorp.Domain;
 
 namespace PortalCubaCorp.Pages.Clocking;
 
+/// <summary>
+/// Clocking history page (UC-002: View Own Clocking History).
+/// Employee views their clocking history for the current month.
+/// </summary>
 [Authorize]
 public class HistoryModel : PageModel
 {
