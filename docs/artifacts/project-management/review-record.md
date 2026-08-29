@@ -301,10 +301,63 @@ end note
 | 4 | Mock-auth expiry date documentation (binding condition #3) | Software Architect | — | Yes (binding condition) |
 
 ## Disposition
-
 ### Product Acceptance: ACCEPTED WITH CONDITIONS
 
-The product is assessed as **release-ready** based on the following evidence:
+```plantuml
+@startuml
+title Product Release Disposition — Reviewer Lens (Transition T1 Cycle 1)
+
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F0F4FF
+skinparam classBorderColor #336699
+skinparam shadowing false
+
+object "Disposition" as DISP {
+  Verdict = "ACCEPTED WITH CONDITIONS"
+  ─────────────────────
+  Critical = 0
+  Major = 0
+  Minor = 1 (persisting)
+  Info = 0
+  ─────────────────────
+  Artifacts_Passed = 15/16
+  Artifacts_Failed = 1 (DM-F2, Minor)
+}
+
+object "SCM Evidence" as SCM {
+  CI_Build = "GREEN"
+  Open_PRs = 0
+  Open_Issues = 7 (all minor)
+  Critical_Defects = 0
+}
+
+object "Binding Conditions" as BC {
+  Condition_1 = "NFR-001/002 load testing — PENDING"
+  Condition_2 = "OIDC integration — PENDING"
+  Condition_3 = "Mock-auth expiry — PENDING"
+}
+
+object "Release Blockers" as RB {
+  Count = 0
+  Note = "No Critical or Major findings"
+}
+
+DISP --> SCM : based on
+DISP --> BC : gated by
+DISP --> RB : checked
+
+note bottom of DISP
+  Product is release-ready.
+  Conditions are binding conditions
+  from IOC stakeholder sanction,
+  not Reviewer findings.
+  DM-F2 is documentation-only (Minor).
+end note
+
+@enduml
+```
+
+The product is assessed as **ACCEPTED WITH CONDITIONS** — release-ready based on SCM evidence and artifact quality, with 4 conditions that must be satisfied before the PR milestone can close:
 
 **SCM Release Evidence:**
 - CI build GREEN on main (run 33259634182, 2026-08-29 15:14:05Z)
@@ -330,7 +383,6 @@ The product is assessed as **release-ready** based on the following evidence:
 4. Binding condition #3: Mock-auth expiry date documentation
 
 **Stakeholder Directive Compliance:** "Let's iterate again and close all PRs, Github Issues, and findings if any remain." — All PRs closed (0 open), 7 open issues are all minor/deferred with explicit labels, 1 persisting finding (DM-F2) documented with remediation.
-
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
