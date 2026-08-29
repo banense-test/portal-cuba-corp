@@ -781,8 +781,11 @@ stop
 | Search Directory task (UC-009) | FR-009, CON-005, CON-012, AC-003, R001, CR-015, DM-F1 (RESOLVED) | Refines | Activity diagram: UC-009 workflow |
 | Manage Worker Category task (UC-010) | FR-010, CON-009, NFR-004 | Refines | Activity diagram: UC-010 workflow |
 | Installation Guide | SAD Deployment View, CON-001..CON-008 | Derives | Infrastructure team (STK-003) |
+| Deployment Readiness Status | R003, NFR-001, NFR-002, CON-006, STK-001 binding conditions | Derives | Operations Guide — deployment readiness state machine |
+| Mock-auth expiry documentation | R003, STK-001 binding condition #3 | Derives | Operations Guide — installation prerequisites, troubleshooting |
+| NFR measured values | NFR-001 (0.14s), NFR-002 (0.003s), CI run 33259873386 | Tests | Operations Guide — operational parameters table |
 | Configuration Reference | SAD Logical View, SAD Implementation View | Derives | Operations procedures |
-| Troubleshooting | R001, AC-005, NFR-001..NFR-003 | Derives | Support procedures |
+| Troubleshooting | R001, AC-005, NFR-001..NFR-003, R003 (mock-auth expiry) | Derives | Support procedures |
 | FAQ | AC-001..AC-005, CON-007, CON-008, CON-013 | Derives | End-user support |
 | Documentation Feedback | Transition state machine S4 requirement | Derives | Post-release maintenance process |
 | Terminology (Styleguide) | All FRs, all UCs | Refines | All documentation sections |
@@ -798,3 +801,4 @@ stop
 | C4-2 Transaction wrapping (RESOLVED) | C4 Review Record, PR #32, NFR-004 | Derives | Operations Guide — audit trail integrity ensured via transaction wrapping |
 | C4-3 ExecuteInTransactionAsync (CONFIRMED) | C4 Review Record, PR #32, INT-007 | Derives | Operations Guide — persistence gateway transaction pattern confirmed |
 | Transition Final Quality Pass | SAD Deployment View, Design Model C4 baseline, Review Record (0 findings on User Documentation) | Refines | Publication-Ready status |
+| Transition Iter 2 Deployment Readiness | R003, NFR-001, NFR-002, CON-006, STK-001 binding conditions, Release Notes (RN-F1 RESOLVED) | Refines | Operations Guide — deployment readiness state machine, critical deployment notice |
