@@ -630,7 +630,6 @@ All TC-015 through TC-043 retain their prior verdicts (PASS or BLOCKED-by-R003).
 - TD-009 (private attributes) verifies CON-012 (corporate data only) — MockLdapGateway returns all fields, DirectoryService filters to corporate only.
 - TD-011/TD-012 (OIDC mock tokens) simulate authentication but do not test real OIDC integration (R003 — FORMALLY ACCEPTED RISK). Mock-auth expiry: 2026-11-29, owner STK-003.
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | TC-001 | UC-001 (main flow) | Tests | ClockingService.cs, ClockingServiceTests.cs |
@@ -643,10 +642,10 @@ All TC-015 through TC-043 retain their prior verdicts (PASS or BLOCKED-by-R003).
 | TC-008 | UC-005, NFR-004, AUD-001 | Tests | NewsService.cs, NewsServiceTests.cs, AuditInterceptor.cs |
 | TC-009 | UC-007, CON-013, AUD-003 | Tests | NewsService.cs, NewsServiceTests.cs |
 | TC-010 | UC-006, NFR-004, AUD-001, C4-1 | Tests | NewsService.cs, NewsServiceTests.cs, Edit.cshtml.cs |
-| TC-011 | NFR-001, PERF-001, All UCs | Tests | Main page endpoint, OIDC middleware |
-| TC-012 | UC-001, NFR-002, PERF-002 | Tests | ClockingService.cs, clock-in endpoint |
-| TC-013 | UC-003..UC-007, UC-010, SEC-002 | Tests | OIDC middleware, all HR service interfaces |
-| TC-014 | UC-003..UC-007, UC-010, SEC-002 | Tests | OIDC middleware, all HR service interfaces |
+| TC-011 | NFR-001, PERF-001, All UCs | Tests | PerformanceTests.cs (CR #37 — pending), ClockingService.cs, NewsService.cs |
+| TC-012 | UC-001, NFR-002, PERF-002 | Tests | PerformanceTests.cs (CR #37 — pending), ClockingService.cs |
+| TC-013 | UC-003..UC-007, UC-010, SEC-002 | Tests | OIDC middleware, all HR service interfaces — R003 FORMALLY ACCEPTED RISK |
+| TC-014 | UC-003..UC-007, UC-010, SEC-002 | Tests | OIDC middleware, all HR service interfaces — R003 FORMALLY ACCEPTED RISK |
 | TC-015 | UC-002 | Tests | ClockingService.cs, ClockingServiceTests.cs |
 | TC-016 | UC-004, FR-004 | Tests | ClockingService.cs, ClockingServiceTests.cs |
 | TC-017 | UC-008, FR-008 | Tests | NewsService.cs, NewsServiceTests.cs |
@@ -661,8 +660,8 @@ All TC-015 through TC-043 retain their prior verdicts (PASS or BLOCKED-by-R003).
 | TC-026 | UC-010 | Tests | WorkerCategoryService.cs, WorkerCategoryServiceTests.cs |
 | TC-027 | UC-007, CON-013 | Tests | NewsService.cs, NewsServiceTests.cs |
 | TC-028 | UC-009 | Tests | DirectoryService.cs, DirectoryServiceTests.cs |
-| TC-029 | UC-009, SEC-002 | Tests | OIDC middleware, DirectoryService.cs |
-| TC-030 | UC-005..UC-007, UC-010, SEC-002 | Tests | OIDC middleware, NewsService.cs, WorkerCategoryService.cs |
+| TC-029 | UC-009, SEC-002 | Tests | OIDC middleware, DirectoryService.cs — R003 FORMALLY ACCEPTED RISK |
+| TC-030 | UC-005..UC-007, UC-010, SEC-002 | Tests | OIDC middleware, NewsService.cs, WorkerCategoryService.cs — R003 FORMALLY ACCEPTED RISK |
 | TC-031 | UC-001, C2-CRIT-1 | Tests | ClockingService.cs, ClockingServiceTests.cs |
 | TC-032 | UC-006, C2-MAJ-1 | Tests | NewsService.cs, NewsServiceTests.cs, Edit.cshtml.cs |
 | TC-033 | UC-001, C2-MAJ-2 | Tests | ClockingService.cs, ClockingServiceTests.cs |
@@ -676,33 +675,28 @@ All TC-015 through TC-043 retain their prior verdicts (PASS or BLOCKED-by-R003).
 | TC-041 | UC-005, UC-006, UC-007, UC-010, C4-2, NFR-004 | Tests | PersistenceGateway.cs, OfflineRetryTests.cs |
 | TC-042 | UC-006, C4-1 | Tests | NewsService.cs, NewsServiceTests.cs, Edit.cshtml.cs |
 | TC-043 | UC-005, UC-010, C4-2 | Tests | NewsService.cs, WorkerCategoryService.cs, OfflineRetryTests.cs |
+| TD-017 | NFR-002, TC-012 | Derives | PerformanceTests.cs (CR #37 — pending) |
 | TI-045 | UC-005, UC-006, UC-007, UC-010, C4-2 | Tests | PersistenceGateway.cs — [Pending: deployment] |
 | TI-046 | UC-005, UC-006, UC-007, UC-010, C4-3 | Tests | PersistenceGateway.cs — [Pending: EF Core investigation] |
 | TI-047 | UC-006, C4-1 | Tests | NewsService.cs — [Pending: concurrency harness] |
 | TI-048 | UC-005, UC-006, UC-007, UC-010, NFR-004, C4-2 | Tests | PersistenceGateway.cs, AuditInterceptor.cs — [Pending: extend TC-040/TC-041] |
 | TI-049 | UC-006, UC-007, C4-2 | Tests | NewsService.cs — [Pending: concurrency harness] |
 | TI-050 | UC-004, NFR-001 | Tests | ClockingService.cs — [Pending: deployment] |
-| TA-C4-F1 | C4-1, C4-2 | Derives | PR #32 (RESOLVED) |
-| TA-C4-F2 | R003, STK-003, CON-004 | Derives | TC-013, TC-014, TC-029, TC-030 (BLOCKED — 5th escalation) |
-| TA-C4-F3 | NFR-001, NFR-002 | Derives | TC-011, TC-012 (BLOCKED — no deployment) |
-| TA-C4-F4 | AC-003, AC-004, CON-011 | Derives | (Manual UAT required) |
-| TA-C4-F5 | All prior PASS TCs | Derives | Regression CLEAN (C4) |
-| TA-C4-F6 | Issue #12, #13, #14 | Derives | RESOLVED in code (C4) |
-| TA-T1-F1 | AC-001, AC-002, AC-005 | Derives | TC-001, TC-002, TC-003, TC-004, TC-008, TC-009, TC-010, TC-021 (PASS) |
-| TA-T1-F2 | AC-003, AC-004 | Derives | TC-006, TC-007 (PASS functional); performance + manual UAT PENDING |
-| TA-T1-F3 | NFR-001, NFR-002 | Derives | TC-011, TC-012 (BLOCKED — no deployment — Transition exit criterion) |
-| TA-T1-F4 | R003, STK-003, CON-004 | Derives | TC-013, TC-014, TC-029, TC-030 (BLOCKED — stakeholder ACCEPTED) |
-| TA-T1-F5 | All 35 PASS TCs | Derives | Regression CLEAN (Transition I1) — build 33256627567 |
-| TA-T1-F6 | 6 open defect issues | Derives | 1 blocker ACCEPTED, 5 minor/deferred — no Critical/High unresolved |
-| R003 | STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-029, TC-030 (BLOCKED — stakeholder ACCEPTED) |
-| Issue #30 | R003, STK-003, CON-004 | Derives | TC-013, TC-014, TC-029, TC-030 (BLOCKED — ACCEPTED risk) |
-| Issue #12 | TC-016 (ClockingServiceTests) | Derives | CSV format — RESOLVED in code (C4) |
-| Issue #13 | TC-006 (DirectoryServiceTests) | Derives | Search_NoMatchingEntries — RESOLVED in code (C4) |
-| Issue #14 | TC-F2 | Derives | UnitTest1.cs placeholder — RESOLVED in code (C4) |
-| PR #32 | C4-1, C4-2, C4-3 | Realizes | feature/C4-rework branch (APPROVED) |
-| CI Build (main) | CON-001, CON-003 | DependsOn | GitHub Actions run 33256627567 |
-| AC-001 | FR-001, FR-002 | Derives | TC-001, TC-002, TC-003 (PASS) |
-| AC-002 | FR-005, FR-006, FR-007 | Derives | TC-008, TC-009, TC-010 (PASS) |
-| AC-003 | FR-009 | Derives | TC-006, TC-007 (PASS functional — perf UNVERIFIED) |
-| AC-004 | FR-001 | Derives | TC-001, TC-002 (PASS automated — manual UAT needed) |
-| AC-005 | CON-002, CR-011 | Derives | TC-003, TC-004, TC-021 (PASS — service + JS verified) |
+| TA-T2-F1 | NFR-001, NFR-002, CR #37 | Derives | TC-011, TC-012 (PENDING CI EXECUTION — performance test code specified) |
+| TA-T2-F2 | R003, STK-003, CON-004 | Derives | TC-013, TC-014, TC-029, TC-030 (BLOCKED — FORMALLY ACCEPTED RISK) |
+| TA-T2-F3 | Mock-auth expiry | Derives | TD-011, TD-012 (Expiry: 2026-11-29, Owner: STK-003) |
+| TA-T2-F4 | All 35 PASS TCs | Derives | Regression CLEAN (Transition I2) — build 33259873386 |
+| TA-T2-F5 | 5 open defect issues | Derives | All minor/deferred — 0 Critical/High unresolved |
+| R003 | STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-029, TC-030 (FORMALLY ACCEPTED RISK — proven at deployment) |
+| Issue #37 | NFR-001, NFR-002, TC-011, TC-012 | Derives | PerformanceTests.cs (pending Implementer materialization) |
+| Issue #34 | C4-F1, Design Model | Derives | TC-032 (deferred — documentation only) |
+| Issue #18 | TC-021, idempotency | Derives | DefectRegressionTests.cs (deferred — test-only) |
+| Issue #17 | TC-001, DTO | Derives | ClockingService.cs (deferred — dead code) |
+| Issue #15 | Naming convention | Derives | feature/C1-presentation (deferred — naming only) |
+| Issue #12 | TC-016, CSV export | Derives | ClockingService.cs (deferred — edge case) |
+| CI Build (main) | CON-001, CON-003 | DependsOn | GitHub Actions run 33259873386 |
+| AC-001 | FR-001, FR-002 | Derives | TC-001, TC-002, TC-003 (PASS — T2 regression verified) |
+| AC-002 | FR-005, FR-006, FR-007 | Derives | TC-008, TC-009, TC-010 (PASS — T2 regression verified) |
+| AC-003 | FR-009 | Derives | TC-006, TC-007 (PASS functional — service-layer latency at deployment) |
+| AC-004 | FR-001 | Derives | TC-001, TC-002 (PASS automated — manual UAT for adoption metric) |
+| AC-005 | CON-002, CR-011 | Derives | TC-003, TC-004, TC-021 (PASS — service + JS verified, T2 regression verified) |
