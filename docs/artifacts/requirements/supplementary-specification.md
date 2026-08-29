@@ -4,10 +4,10 @@
 | Phase | Construction |
 | Status | Draft |
 | Milestone Target | End of Construction |
-| Iteration | 2 (Cycle 1) |
-| Date | 2026-08-28 |
+| Iteration | 3 (Cycle 1) |
+| Date | 2026-08-29 |
 | Prior Phase | Elaboration (LCA achieved — 0 Critical, 0 Major open; stakeholder sanction GRANTED) |
-| Evolution | Construction Iter 1: NFR baseline preserved — no approved CR introduces new quality attributes. All FURPS+ categories addressed in Elaboration baseline. Document Control updated to Construction phase. Construction Iter 2: NFR baseline preserved — CR-010 (IsFeatured flag) is an approved functional extension within UC-005/UC-006 (CCB-approved Construction C1), not a new quality attribute. [DERIVED] marker on IsFeatured retired — CCB approval constitutes stakeholder confirmation. No FURPS+ category changes required. CR-011 (idempotency key) already reflected in REL-003/REL-004 from Elaboration baseline — no changes needed. |
+| Evolution | Construction Iter 1: NFR baseline preserved — no approved CR introduces new quality attributes. All FURPS+ categories addressed in Elaboration baseline. Document Control updated to Construction phase. Construction Iter 2: NFR baseline preserved — CR-010 (IsFeatured flag) is an approved functional extension within UC-005/UC-006 (CCB-approved Construction C1), not a new quality attribute. [DERIVED] marker on IsFeatured retired — CCB approval constitutes stakeholder confirmation. No FURPS+ category changes required. CR-011 (idempotency key) already reflected in REL-003/REL-004 from Elaboration baseline — no changes needed. Construction Iter 3: SEC-006 (CSRF antiforgery) and SEC-007 (server-side identity from OIDC token) added to Security section, derived from approved CR-023 (C2-MAJ-2: missing antiforgery token) and CR-024 (C2-MIN-2: EmployeeId spoof). Cross-cutting mechanisms diagram updated to show CSRF and server-side identity mechanisms. Traceability table updated with SEC-006, SEC-007, CR-023, CR-024 entries. |
 ## Functionality
 ### Security
 
