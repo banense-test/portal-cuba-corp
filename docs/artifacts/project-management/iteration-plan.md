@@ -172,28 +172,26 @@ title Construction Iteration Sequence — C4 Post-Review (UNANCHORED)
 > **All 10 UCs have code complete.** All C2 and C4 code-level findings resolved in PR #32. Remaining blockers: (1) PR #32 pending Integrator merge to main, (2) 8 tests blocked by R003 OIDC, (3) NFR-001/NFR-002 load testing not yet executed. All three are C4 work items.
 
 ## Evaluation Criteria
-
 ### Layer (a): Declared Acceptance Criteria Addressed This Iteration
 
 | AC ID | Description | Addressed This Iteration? | Evidence / Reason |
 |---|---|---|---|
-| AC-001 | Employee can clock in/out without help | Yes — C2-CRIT-1 + C2-MAJ-2 + C2-MIN-2 + C4-2 all RESOLVED in PR #32; 8 OIDC-dependent tests BLOCKED | PR #32 APPROVED; Items 1, 2 |
-| AC-002 | HR can publish a news item without technical assistance | Yes — already addressed in C2; C4-2 transaction wrapping ensures atomicity | PR #32 APPROVED; Item 2 |
-| AC-003 | Employee finds colleague's phone/email in under 10 seconds | Partially — LDAP adapter deferred to integration testing with real AD (R001) | Item 2; R001 mitigation |
+| AC-001 | Employee can clock in/out without help | Yes — C2-CRIT-1 + C2-MAJ-2 + C2-MIN-2 + C4-2 all RESOLVED in PR #32 (MERGED to main); 8 OIDC-dependent tests covered-by-mock | PR #32 + #33 MERGED; 35/43 tests pass |
+| AC-002 | HR can publish a news item without technical assistance | Yes — already addressed in C2; C4-2 transaction wrapping ensures atomicity | PR #32 MERGED to main |
+| AC-003 | Employee finds colleague's phone/email in under 10 seconds | Partially — LDAP adapter deferred to integration testing with real AD (R001) | R001 mitigation; NFR-001 load test deferred to Transition |
 | AC-004 | 80% of employees complete at least one clocking with no prior training | Not addressed — Transition phase (adoption tracking) | Deferred to Transition |
-| AC-005 | System works temporarily offline (5-min network drop, data syncs on recovery) | Yes — antiforgery fix (C2-MAJ-2) RESOLVED; C4-2 transaction wrapping ensures atomic retry; offline retry mechanism functional | PR #32 APPROVED; Item 2 |
+| AC-005 | System works temporarily offline (5-min network drop, data syncs on recovery) | Yes — antiforgery fix (C2-MAJ-2) RESOLVED; C4-2 transaction wrapping ensures atomic retry; offline retry mechanism functional | PR #32 MERGED; OfflineRetryTests 10/10 pass |
 
-### Layer (b): Construction C4 Cycle 1 Exit Criteria
+### Layer (b): Construction C4 Cycle 1 Exit Criteria (Post-Review)
 
 | # | Exit Criterion | Assessment Target | Status |
 |---|---|---|---|
-| 1 | PR #32 merged to main; stale PRs #8, #19 closed; GitHub Issues closed | MET (target) | **PENDING** — PR #32 APPROVED, pending Integrator merge |
-| 2 | Integration tests run on merged main: 31 of 39 pass, 8 BLOCKED documented (R003) | MET (target) | **PENDING** — depends on Item 1 |
-| 3 | Load testing: NFR-001 (<3s) and NFR-002 (<1s) met or mitigation documented | MET (target) | **PENDING** — IP-F5 RESOLVED: decoupled from merge, executes independently |
-| 4 | R003 OIDC: STK-003 confirms OR mock-auth contingency presented to STK-001 for decision | MET (target) | **PENDING** — 5th and final escalation cycle |
-| 5 | Management Reviewer lens executed; stakeholder sanction decision recorded | MET (target) | **PENDING** — Code Reviewer lens COMPLETE; Management Reviewer PENDING |
-| 6 | Iteration Assessment produced with variance analysis; IA-F1 resolved | MET (target) | **IN PROGRESS** — this artifact + Iteration Assessment update |
-
+| 1 | PR #32 merged to main; stale PRs #8, #19 closed; GitHub Issues closed | MET (target) | **MET** — PR #32 + #33 MERGED to main; PRs #8, #19 closed; 0 open PRs; 7 open issues (1 ACCEPTED, 6 deferred) |
+| 2 | Integration tests run on merged main: 35 of 43 pass, 8 covered-by-mock documented (R003) | MET (target) | **MET** — 35/43 pass, 0 fail, 8 covered-by-mock (R003 ACCEPTED) |
+| 3 | Load testing: NFR-001 (<3s) and NFR-002 (<1s) met or mitigation documented | MET (target) | **NOT MET** — NOT EXECUTED; deferred to Transition Iter 1 per stakeholder condition (measured values required) |
+| 4 | R003 OIDC: STK-003 confirms OR mock-auth contingency presented to STK-001 for decision | MET (target) | **MET** — R003 ACCEPTED; STK-001 approved mock-auth; 8 tests covered-by-mock; real OIDC is Transition work item |
+| 5 | Management Reviewer lens executed; stakeholder sanction decision recorded | MET (target) | **MET** — sanction GRANTED; IOC CONDITIONAL GO; 3 binding conditions |
+| 6 | Iteration Assessment produced with variance analysis; IA-F1 resolved; IA-F2 corrected | MET (target) | **MET** — Iteration Assessment produced; IA-F1 RESOLVED; IA-F2 corrected this iteration |
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
