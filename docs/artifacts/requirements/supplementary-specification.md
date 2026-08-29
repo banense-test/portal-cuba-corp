@@ -9,7 +9,6 @@
 | Prior Phase | Elaboration (LCA achieved — 0 Critical, 0 Major open; stakeholder sanction GRANTED) |
 | Evolution | Construction Iter 1: NFR baseline preserved — no approved CR introduces new quality attributes. All FURPS+ categories addressed in Elaboration baseline. Document Control updated to Construction phase. Construction Iter 2: NFR baseline preserved — CR-010 (IsFeatured flag) is an approved functional extension within UC-005/UC-006 (CCB-approved Construction C1), not a new quality attribute. [DERIVED] marker on IsFeatured retired — CCB approval constitutes stakeholder confirmation. No FURPS+ category changes required. CR-011 (idempotency key) already reflected in REL-003/REL-004 from Elaboration baseline — no changes needed. |
 ## Functionality
-
 ### Security
 
 | ID | Requirement | Source | Volatility |
@@ -19,6 +18,8 @@
 | SEC-003 | No access from outside the corporate network | CON-007 | Low |
 | SEC-004 | Employee directory displays corporate data only (name, job title, department, office, email, extension) — no private personal information | CON-012 | Low |
 | SEC-005 | Portal does not write to Active Directory — read-only LDAP access | CON-010 | Low |
+| SEC-006 | All state-changing POST requests SHALL include an ASP.NET Core antiforgery token; the server SHALL validate the token before processing any POST. This prevents cross-site request forgery (CSRF) on clocking, news publish/edit/unpublish, and worker category management operations. | CON-002, CON-004, CR-023 | Low |
+| SEC-007 | Employee identity for all server-side operations SHALL be derived from the authenticated OIDC token claims server-side — never from client-supplied form fields, query parameters, or request body values. The employee id used for clocking (UC-001), directory lookup (UC-009), and worker category management (UC-010) is extracted from the token, not from user input. | CON-004, CR-024 | Low |
 
 ### Licensing
 
@@ -39,29 +40,50 @@
 
 ```plantuml
 @startuml
-title Cross-Cutting Mechanisms — Supplementary Specification
+title Cross-Cutting Mechanisms — Supplementary Specification (Construction C3)
 
 left to right direction
 skinparam packageStyle rectangle
 
 rectangle "Portal Cuba Corp" {
   usecase "UC-001..UC-010\n(All Use Cases)" as ALLUC
+  usecase "UC-001\n(Clocking POST)" as CLOCK_POST
   usecase "UC-005, UC-006,\nUC-007, UC-010" as AUDIT_UC
+  usecase "UC-003, UC-009,\nUC-010" as LDAP_UC
 }
 
 package "Supplementary Specification" {
   rectangle "OIDC Authentication\n<<include>> from all UCs" as AUTH
+  rectangle "Server-Side Identity\n<<include>> from all UCs" as IDENTITY
+  rectangle "CSRF Antiforgery\n<<include>> from POST UCs" as CSRF
   rectangle "Audit Trail Mechanism\n<<include>> from audited UCs" as AUDIT
   rectangle "LDAP Directory Access\n<<include>> from UC-003, UC-009, UC-010" as LDAP
 }
 
 ALLUC ..> AUTH : <<include>>
+ALLUC ..> IDENTITY : <<include>>
+CLOCK_POST ..> CSRF : <<include>>
 AUDIT_UC ..> AUDIT : <<include>>
+LDAP_UC ..> LDAP : <<include>>
 
 note right of AUTH
   CON-004: Keycloak OIDC
   Portal is a client only
   Roles from token claims
+end note
+
+note right of IDENTITY
+  SEC-007: Employee identity
+  comes from OIDC token
+  server-side, never from
+  client-supplied input
+  (CR-024)
+end note
+
+note right of CSRF
+  SEC-006: Antiforgery token
+  on all state-changing POSTs
+  (CR-023)
 end note
 
 note right of AUDIT
@@ -78,7 +100,6 @@ end note
 
 @enduml
 ```
-
 ## Usability
 
 | ID | Requirement | Source | Volatility |
