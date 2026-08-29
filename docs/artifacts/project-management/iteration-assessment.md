@@ -311,22 +311,23 @@ F_IA2 --> R_IP5 : prior findings all closed
 @enduml
 ```
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| C4-OBJ-1 (merge PRs + close issues) | Review Record C4 Cycle 1 (PR #32 APPROVED), UC-001..UC-010 | Derives | PR #32 (APPROVED), main branch (pending merge) |
-| C4-OBJ-2 (NFR load testing) | Iteration Plan C4 work item 3, NFR-001, NFR-002 | Derives | IP-F5 RESOLVED: decoupled from merge; executes against any CI-green branch |
-| C4-OBJ-3 (R003 hard deadline) | R003, CON-004, STK-003, STK-001, RL-F5 | DependsOn | OIDC registration, 8 blocked tests, mock-auth contingency to stakeholder |
-| C4-OBJ-4 (Management Review + sanction) | Review Record C4 Cycle 1, all C4 findings | Derives | IOC gate decision |
-| C3-OBJ-1 (component dev) | Review Record C3 findings, PR #29 | Derives | PR #29 (APPROVED), all 10 UCs code-complete |
-| C3-OBJ-2 (testing) | Iteration Plan C3 work items, NFR-001, NFR-002 | Derives | 31/39 tests pass, 8 BLOCKED, load test NOT EXECUTED |
+| C4-OBJ-1 (merge PRs + close issues) | Review Record C4 Cycle 1 (PR #32 + #33 MERGED), UC-001..UC-010 | Derives | PR #32 + #33 (MERGED to main), 0 open PRs |
+| C4-OBJ-2 (NFR load testing) | Iteration Plan C4 work item 3, NFR-001, NFR-002 | Derives | NOT EXECUTED — deferred to Transition Iter 1 per stakeholder condition |
+| C4-OBJ-3 (R003 OIDC resolution) | R003, CON-004, STK-003, STK-001, RL-F5 | Resolved by | STK-001 approved mock-auth; R003 ACCEPTED; 8 tests covered-by-mock |
+| C4-OBJ-4 (Management Review + sanction) | Review Record C4 Cycle 1, all C4 findings | Derives | IOC CONDITIONAL GO — stakeholder sanction GRANTED with 3 binding conditions |
+| C3-OBJ-1 (component dev) | Review Record C3 findings, PR #29 | Derives | PR #29 (APPROVED), all 10 UCs code-complete, merged to main |
+| C3-OBJ-2 (testing) | Iteration Plan C3 work items, NFR-001, NFR-002 | Derives | 35/43 tests pass, 8 covered-by-mock, load test deferred to Transition |
 | C3-OBJ-3 (documentation) | Iteration Plan C3 work items | Derives | User Documentation delivered |
-| C3-OBJ-4 (deployment readiness) | All C3 objectives, IOC criteria | Derives | IOC NOT ACHIEVED — C4 required |
+| C3-OBJ-4 (deployment readiness) | All C3 objectives, IOC criteria | Derives | IOC CONDITIONAL GO — 3 binding conditions |
+| IA-F2 (RESOLVED) | Review Record IA-F2, Change Request artifact | Resolved by | All sections corrected: 7 open issues (1 blocker ACCEPTED, 6 deferred) |
 | IP-F5 (RESOLVED) | Review Record IP-F5, NFR-001, NFR-002 | Resolved by | Load testing decoupled from merge dependency (C4 work item 3) |
-| RL-F5 (RESOLVED) | Review Record RL-F5, R003, STK-003, CON-004 | Resolved by | R003 hard deadline enforced (5th and final cycle); mock-auth contingency to stakeholder |
-| IA-F1 (RESOLVED) | Review Record IA-F1 | Resolved by | Document Control fields updated (this update) |
-| R007 RESOLVED | Review Record C2 + C4 findings (all resolved) | Resolved by | PR #32 (APPROVED) |
+| RL-F5 (RESOLVED) | Review Record RL-F5, R003, STK-003, CON-004 | Resolved by | R003 ACCEPTED — mock-auth activated per STK-001 |
+| IA-F1 (RESOLVED) | Review Record IA-F1 | Resolved by | Document Control fields updated |
+| R007 RESOLVED | Review Record C2 + C4 findings (all resolved) | Resolved by | PR #32 + #33 (MERGED to main) |
 | R008 COMPLETE | Stakeholder sanction refusal, rework cycles | Derives | C3 Cycle 1 (integration/IOC iteration); C4 is consolidation |
-| R003 ESCALATION (5th) | R003, CON-004, STK-003, STK-001 | DependsOn | 8 blocked tests, IOC achievement |
-| Stakeholder iteration directive | STK-001 feedback (C3 Cycle 1 review) | Refines | C4 iteration required (IOC not achieved) |
-| Stakeholder PR/issue directive | STK-001 feedback (C4 Cycle 1) | Refines | Close all PRs, GitHub Issues, and findings |
+| R003 ACCEPTED | R003, CON-004, STK-003, STK-001 | Resolved by | Mock-auth contingency activated; real OIDC is Transition work item |
+| Stakeholder sanction (GRANTED) | STK-001, Review Record C4 Cycle 1 | Refines | IOC CONDITIONAL GO — 3 binding conditions (NFR load testing, OIDC Transition work item, mock-auth expiry) |
+| Stakeholder iteration directive | STK-001 feedback (C3 Cycle 1 review) | Refines | C4 iteration complete — sanction GRANTED |
+| Stakeholder PR/issue directive | STK-001 feedback (C4 Cycle 1) | Refines | All PRs merged/closed; 7 open issues (1 ACCEPTED, 6 deferred) |
