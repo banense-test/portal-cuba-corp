@@ -11,7 +11,6 @@
 | Finding RL-F2 | RESOLVED — R008 contingency activated and COMPLETE (rework succeeded) |
 | Finding RL-F5 | RESOLVED — R003 ACCEPTED per STK-001 decision. Mock-auth contingency activated. Real OIDC is Transition work item. 8 tests covered-by-mock. Mock-auth has expiry date. |
 ## Risk Classification
-
 Risks are classified by **Probability (P) × Impact (I) = Exposure**, yielding a **Magnitude** rating. The scale is 1–3 for both probability and impact, producing exposure values from 1 to 9.
 
 | Exposure | Magnitude | Action |
@@ -26,7 +25,7 @@ Risks are classified by **Probability (P) × Impact (I) = Exposure**, yielding a
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Construction Risk Register (C4 Cycle 1)
+title Portal Cuba Corp — Construction Risk Register (C4 Cycle 1 — Post-Review)
 
 skinparam classAttributeIconSize 0
 
@@ -66,12 +65,12 @@ class R003_OIDC {
   + exposure : 9
   + magnitude : HIGH
   + strategy : ACCEPT
-  + status : ESCALATED (5th cycle - FINAL)
+  + status : ACCEPTED
   + owner : Software Architect
-  + action : HARD DEADLINE enforced (RL-F5);
-    mock-auth contingency to
-    stakeholder for binding decision;
-    8 of 39 tests BLOCKED
+  + action : STK-001 approved mock-auth;
+    8 tests covered-by-mock;
+    real OIDC = Transition work item;
+    mock-auth has expiry date
 }
 
 class R004_Performance {
@@ -82,11 +81,11 @@ class R004_Performance {
   + exposure : 4
   + magnitude : MODERATE
   + strategy : ACCEPT
-  + status : ACTIVE (C4 execution)
+  + status : ACTIVE — Transition Iter 1
   + owner : Software Architect
-  + action : Load testing DECOUPLED
-    from merge (IP-F5 RESOLVED);
-    executes against any CI-green branch
+  + action : NFR-001 NFR-002 load testing
+    deferred to Transition Iter 1;
+    measured values required
 }
 
 class R005_UI_Conformance {
@@ -99,7 +98,7 @@ class R005_UI_Conformance {
   + strategy : ACCEPT
   + status : MITIGATED
   + owner : UI Designer
-  + action : PR #32 approved;
+  + action : PR #32 MERGED to main;
     design conformance verified
 }
 
@@ -114,7 +113,7 @@ class R006_Offline_Retry {
   + status : MITIGATED
   + owner : Software Architect
   + action : C4-2 transaction wrapping
-    RESOLVED in PR #32;
+    RESOLVED in PR #32 MERGED;
     retry mechanism functional
 }
 
@@ -129,7 +128,7 @@ class R007_PR_Findings {
   + status : RESOLVED
   + owner : Implementer
   + action : All C2 + C4 findings
-    RESOLVED in PR #32
+    RESOLVED; PR #32 + #33 MERGED
 }
 
 class R008_Rework_Cycle {
@@ -143,12 +142,12 @@ class R008_Rework_Cycle {
   + status : COMPLETE
   + owner : Project Manager
   + action : Rework succeeded;
-    C4 is consolidation iteration
+    sanction GRANTED; IOC CONDITIONAL GO
 }
 
 R001_AD_LDAP --|> "HIGH"
 R002_Adoption --|> "SIGNIFICANT"
-R003_OIDC --|> "HIGH"
+R003_OIDC --|> "HIGH (ACCEPTED)"
 R004_Performance --|> "MODERATE"
 R005_UI_Conformance --|> "MODERATE"
 R006_Offline_Retry --|> "SIGNIFICANT"
@@ -157,7 +156,6 @@ R008_Rework_Cycle --|> "COMPLETE"
 
 @enduml
 ```
-
 ## Risk Register
 | ID | Category | Description | P | I | Exposure | Magnitude | Strategy | Status | Owner | Mitigation | Contingency |
 |---|---|---|---|---|---|---|---|---|---|---|---|
