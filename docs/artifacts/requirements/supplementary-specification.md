@@ -236,7 +236,6 @@ end note
 ```
 
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | SEC-001 | CON-004 | Refines | INT-001, All UCs |
@@ -244,6 +243,8 @@ end note
 | SEC-003 | CON-007 | Refines | All UCs |
 | SEC-004 | CON-012 | Refines | UC-009 |
 | SEC-005 | CON-010 | Refines | INT-002, UC-009, UC-010 |
+| SEC-006 | CON-002, CON-004, CR-023 | Refines | UC-001, UC-005, UC-006, UC-007, UC-010 |
+| SEC-007 | CON-004, CR-024 | Refines | UC-001, UC-009, UC-010 |
 | AUD-001 | NFR-004, FR-005, FR-006, FR-007 | Refines | UC-005, UC-006, UC-007 |
 | AUD-002 | NFR-004, FR-010 | Refines | UC-010 |
 | AUD-003 | CON-013, FR-007 | Refines | UC-007 |
@@ -281,3 +282,5 @@ end note
 | INT-001 | CON-004 | Derives | SEC-001, SEC-002 |
 | INT-002 | CON-005, CON-009 | Derives | SEC-004, SEC-005 |
 | INT-004 | CON-003 | Derives | UC-001..UC-004, UC-005..UC-007, UC-010 |
+| CR-023 | CON-002, CON-004 | Derives | SEC-006 (CSRF antiforgery) |
+| CR-024 | CON-004 | Derives | SEC-007 (server-side identity) |
