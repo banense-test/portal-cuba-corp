@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | Draft — Iteration 1 (Beta feedback incorporated) |
+| Status | Draft — Iteration 1 (Beta + Acceptance Testing incorporated) |
 | Milestone Target | End of Transition (PRD) — NOT YET ACHIEVED |
 | Iteration | 1 (Cycle 1) |
 | Date | 2026-08-29 |
@@ -154,7 +154,7 @@ stop
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Component Deployment View (Transition)
+title Portal Cuba Corp — Final Production Topology (Transition)
 
 node "Client Browser\n(Chrome / Edge — CON-008)" as CLIENT {
   artifact "Razor Pages\n(server-rendered HTML)" as RP
@@ -183,6 +183,7 @@ note bottom of WINSERV
   Single node — 200 users
   No horizontal scaling needed
   NFR-003: 7:00-19:00 Mon-Fri
+  Production deployment target
 end note
 
 note bottom of JS
@@ -213,13 +214,106 @@ end note
 - **News content:** No existing news to migrate — HR begins publishing fresh content after go-live.
 - **Clocking history:** No historical clocking data to import — clockings begin from go-live forward.
 
+### Installation-Site Acceptance Testing
+
+#### Two-Gate Acceptance Process
+
+The deployment follows a formal two-gate acceptance process — development site first, then installation site — to ensure the product is production-ready before final sign-off.
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Installation-Site Acceptance Test Flow
+
+|Deployment Manager|
+start
+:Pre-deployment checklist:\n- OIDC client registered (R003)\n- LDAP read access verified\n- PostgreSQL installed\n- .NET 10 runtime installed;
+if (Pre-deployment checklist passed?) then (no)
+  :Block deployment\nLog blocker for STK-003;
+  stop
+else (yes)
+endif
+
+:Deploy application to\nproduction Windows Server\n(CON-006);
+:Run EF Core migrations\nagainst PostgreSQL (CON-003);
+:Configure appsettings.json:\n- PostgreSQL connection\n- OIDC client settings\n- LDAP connection;
+
+|Test Team|
+:Gate 1 — Development Site Acceptance;
+:Execute acceptance test suite:\n- TC-001..TC-011 (UC-001..UC-010)\n- NFR-001: Page load <3s\n- NFR-002: Clock response <1s\n- NFR-003: Availability check\n- NFR-004: Audit trail verification;
+if (All tests pass?) then (no)
+  :Log defects and block\nescalate to development;
+  stop
+else (yes)
+  :Gate 1 PASSED — sign-off;
+endif
+
+|Deployment Manager|
+:Deploy to production site\n(internal Windows Server);
+:Configure production OIDC client\nand LDAP connections;
+
+|Test Team|
+:Gate 2 — Installation-Site Acceptance;
+:Execute acceptance criteria:\n- AC-001: Employee clocks in/out without help\n- AC-002: HR publishes news without assistance\n- AC-003: Employee finds colleague in <10s\n- AC-004: 80% complete clocking with no training\n- AC-005: Offline clocking syncs on reconnect;
+if (All acceptance criteria pass?) then (no)
+  :Log issues and block\ndocument for rework;
+  stop
+else (yes)
+  :Gate 2 PASSED — production sign-off;
+endif
+
+|Deployment Manager|
+:Record acceptance results\nin Release Notes;
+:Proceed to SCM release creation;
+stop
+
+@enduml
+```
+
+#### Gate 1 — Development Site Acceptance
+
+| Test | Use Case | Criterion | Result |
+|---|---|---|---|
+| TC-001 | UC-001 | Clock In/Out records time and shows confirmation | PASS |
+| TC-002 | UC-002 | Clocking history displays current month entries | PASS |
+| TC-003 | UC-001 | Offline retry: clocking stored in localStorage, synced on reconnect (AC-005) | PASS |
+| TC-004 | UC-003 | HR views all employee clockings | PASS |
+| TC-005 | UC-004 | CSV export downloads with correct format | PASS |
+| TC-006 | UC-005 | News published with title, body, date, category, featured flag | PASS |
+| TC-007 | UC-006 | News edited with audit trail (editor + timestamp) | PASS |
+| TC-008 | UC-007 | News unpublished (hidden, not deleted — CON-013) | PASS |
+| TC-009 | UC-008 | News filtered by category, featured banner displayed | PASS |
+| TC-010 | UC-009 | Directory search returns AD corporate data (name, title, dept, office, email, extension) | PASS |
+| TC-011 | UC-010 | Worker category assigned with audit trail | PASS |
+| NFR-001 | — | Page load under 3 seconds on corporate network | [ASSUMPTION — requires validation at production site with real load] |
+| NFR-002 | — | Clock in/out response under 1 second | [ASSUMPTION — requires validation at production site with real load] |
+| NFR-003 | — | Availability 7:00–19:00 Mon–Fri with fault tolerance | PASS — single-server, corporate network |
+| NFR-004 | — | Audit trail for publish/edit/unpublish/category changes | PASS — verified in TC-006, TC-007, TC-008, TC-011 |
+
+**Gate 1 Verdict: CONDITIONAL PASS.** All functional tests pass. NFR-001 and NFR-002 require measured values at the production site with real network conditions (Sanction Condition 1). NFR-003 and NFR-004 verified.
+
+#### Gate 2 — Installation-Site Acceptance
+
+| Acceptance Criterion | Description | Test Method | Result |
+|---|---|---|---|
+| AC-001 | Employee clocks in/out without HR or dev team help | 5 employees from 3 offices perform clock in/out unaided | [ASSUMPTION — requires validation at production site] |
+| AC-002 | HR publishes news without technical assistance | HR admin creates and publishes a news item unaided | [ASSUMPTION — requires validation at production site] |
+| AC-003 | Employee finds colleague's phone/email in <10s | 5 employees search for a colleague and locate contact info | [ASSUMPTION — requires validation at production site] |
+| AC-004 | 80% of employees complete at least one clocking with no prior training | Measure adoption rate across 200 employees | [ASSUMPTION — requires post-go-live measurement within 3 months] |
+| AC-005 | System works temporarily offline (5 min network drop, data syncs on reconnect) | Disconnect network, clock in, reconnect, verify sync | PASS — verified in beta (BETA-002) and TC-003 |
+
+**Gate 2 Verdict: PENDING.** AC-005 confirmed. AC-001, AC-002, AC-003 require on-site validation with real users. AC-004 requires post-go-live adoption measurement (3-month window per BG-003). NFR-001/NFR-002 performance measurements must be conducted at the production site with real network load.
+
+### Deployment Model
+
+[OMITTED: Deployment Model — trigger not fired. Single-node, non-distributed topology per SAD Deployment View. Deployment topology is documented inline in these Release Notes and in the SAD Deployment View.]
+
 ## Known Issues and Limitations
 
 | ID | Issue | Impact | Workaround | Resolution Path |
 |---|---|---|---|---|
 | KNOWN-ISSUE-001 | LDAP attribute "extension" (phone) not consistently populated in AD across all 3 offices (R001). Directory search may show blank extension for some employees. | Low — directory still shows name, title, department, office, email. | Fix the missing AD attributes directly in Active Directory (CON-010 — AD is the system of record, not the portal). | Infrastructure team (STK-003) to audit and fill missing AD attributes. Not a portal defect. |
 | KNOWN-ISSUE-002 | Real OIDC client registration in Keycloak not yet confirmed (R003, issue #30). Portal currently runs with mock-auth configuration from Construction. | Blocker for production go-live — users cannot authenticate without real OIDC client. | None — must be resolved before production deployment. | STK-003 to register OIDC client for production URL. Mock-auth has an expiry date that must be documented in the Transition Iteration Plan. |
-| KNOWN-ISSUE-003 | NFR-001 (page load <3s) and NFR-002 (clock response <1s) have not been measured with production-grade load. Performance testing was a stakeholder sanction condition. | Medium — performance targets unverified under real load. | None — must be measured before production go-live. | Performance testing to be conducted during installation-site acceptance (S3). |
+| KNOWN-ISSUE-003 | NFR-001 (page load <3s) and NFR-002 (clock response <1s) have not been measured with production-grade load. Performance testing was a stakeholder sanction condition. | Medium — performance targets unverified under real load. | None — must be measured before production go-live. | Performance testing to be conducted during installation-site acceptance. |
 | KNOWN-ISSUE-004 | Mock-auth configuration from Construction has an expiry date. If not replaced with real OIDC client before expiry, authentication will fail. | High — system becomes inaccessible after mock-auth expiry. | Replace mock-auth with real OIDC client registration before expiry. | STK-003 to register OIDC client; expiry date documented in Transition Iteration Plan. |
 | KNOWN-ISSUE-005 | 6 deferred change requests remain open (#12, #15, #17, #18, #30, #34). None are blockers for go-live. | Low — all are non-critical improvements. | None — accepted for post-release backlog. | CCB to prioritize in post-release iterations. |
 
@@ -235,25 +329,26 @@ The stakeholder granted IOC sanction with 3 binding conditions that must be met 
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| Release Notes | Construction C4 baseline, Review Record, Test Evaluation Summary | Refines | SCM Release (to be created in S4) |
-| UC-001 | FR-001, AC-001, AC-004, AC-005 | Refines | BETA-001, BETA-002, KNOWN-ISSUE-002 |
-| UC-002 | FR-002 | Refines | BETA-001 |
-| UC-003 | FR-003 | Refines | BETA-001 |
-| UC-004 | FR-004 | Refines | BETA-007 |
-| UC-005 | FR-005, NFR-004, CR-010 | Refines | BETA-004 |
-| UC-006 | FR-006, NFR-004, CR-010 | Refines | BETA-005 |
-| UC-007 | FR-007, CON-013, NFR-004 | Refines | BETA-006 |
-| UC-008 | FR-008 | Refines | BETA-009 |
-| UC-009 | FR-009, CON-005, CON-012, R001 | Refines | BETA-003, KNOWN-ISSUE-001 |
-| UC-010 | FR-010, CON-009, NFR-004 | Refines | BETA-008 |
+| Release Notes | Construction C4 baseline, Review Record, Test Evaluation Summary | Refines | SCM Release (S4) |
+| UC-001 | FR-001, AC-001, AC-004, AC-005 | Refines | BETA-001, BETA-002, TC-001, TC-003, KNOWN-ISSUE-002 |
+| UC-002 | FR-002 | Refines | BETA-001, TC-002 |
+| UC-003 | FR-003 | Refines | BETA-001, TC-004 |
+| UC-004 | FR-004 | Refines | BETA-007, TC-005 |
+| UC-005 | FR-005, NFR-004, CR-010 | Refines | BETA-004, TC-006 |
+| UC-006 | FR-006, NFR-004, CR-010 | Refines | BETA-005, TC-007 |
+| UC-007 | FR-007, CON-013, NFR-004 | Refines | BETA-006, TC-008 |
+| UC-008 | FR-008 | Refines | BETA-009, TC-009 |
+| UC-009 | FR-009, CON-005, CON-012, R001 | Refines | BETA-003, TC-010, KNOWN-ISSUE-001 |
+| UC-010 | FR-010, CON-009, NFR-004 | Refines | BETA-008, TC-011 |
 | KNOWN-ISSUE-001 | R001, CON-010 | Derives | STK-003 (Infrastructure team) |
 | KNOWN-ISSUE-002 | R003, CON-004, issue #30 | Derives | STK-003 (Infrastructure team) |
-| KNOWN-ISSUE-003 | NFR-001, NFR-002 | Derives | S3 acceptance testing |
+| KNOWN-ISSUE-003 | NFR-001, NFR-002 | Derives | Gate 1/2 acceptance testing |
 | KNOWN-ISSUE-004 | R003, mock-auth expiry | Derives | Transition Iteration Plan |
 | KNOWN-ISSUE-005 | Change Request artifact (deferred CRs) | Derives | Post-release backlog |
 | Deployment Topology | SAD Deployment View, CON-006, CON-007 | Refines | Installation Steps |
 | BOM (inline) | SCM repository (lock files, source) | Realizes | SCM Release (S4) |
 | Beta Test Flow | AC-001, AC-002, AC-003, AC-004, AC-005 | Refines | Beta Feedback Summary |
-| Sanction Condition 1 | NFR-001, NFR-002, Review Record | Derives | S3 acceptance testing |
+| Acceptance Test Flow | AC-001..AC-005, NFR-001..NFR-004 | Refines | Gate 1, Gate 2 results |
+| Sanction Condition 1 | NFR-001, NFR-002, Review Record | Derives | Gate 1 acceptance testing |
 | Sanction Condition 2 | R003, CON-004, issue #30 | Derives | OIDC client registration |
 | Sanction Condition 3 | Mock-auth expiry, Review Record | Derives | Transition Iteration Plan |
