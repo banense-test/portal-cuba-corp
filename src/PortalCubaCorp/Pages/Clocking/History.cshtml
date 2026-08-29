@@ -1,0 +1,40 @@
+@page
+@model PortalCubaCorp.Pages.Clocking.HistoryModel
+@{
+    ViewData["Title"] = "My Clockings";
+}
+
+<div class="card">
+    <h2 class="card-title">My Clocking History</h2>
+    <p style="color:var(--muted);margin-bottom:16px;">@Model.MonthDisplay</p>
+
+    @if (Model.Clockings.Any())
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Direction</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Clockings)
+                {
+                    <tr>
+                        <td>@c.Timestamp.ToString("yyyy-MM-dd")</td>
+                        <td>@c.Timestamp.ToString("HH:mm:ss")</td>
+                        <td>@(c.Type == ClockType.In ? "IN" : "OUT")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="empty-state">
+            <h3>No clockings recorded</h3>
+            <p>Your clocking history for this month is empty.</p>
+        </div>
+    }
+</div>

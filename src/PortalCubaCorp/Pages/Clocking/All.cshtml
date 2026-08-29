@@ -1,0 +1,55 @@
+@page
+@model PortalCubaCorp.Pages.Clocking.AllModel
+@{
+    ViewData["Title"] = "All Clockings";
+}
+
+<div class="card">
+    <h2 class="card-title">All Employee Clockings</h2>
+    <div class="search-box">
+        <form method="get" style="display:flex;gap:8px;align-items:end;">
+            <div class="form-group" style="margin:0;">
+                <label>Year</label>
+                <input class="form-control" name="year" value="@Model.Year" style="width:100px;" />
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label>Month</label>
+                <input class="form-control" name="month" value="@Model.Month" style="width:100px;" />
+            </div>
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a href="/Clocking/All?year=@Model.Year&month=@Model.Month&export=true" class="btn btn-secondary">Export CSV</a>
+        </form>
+    </div>
+
+    @if (Model.Clockings.Any())
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Direction</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Clockings)
+                {
+                    <tr>
+                        <td>@c.EmployeeId</td>
+                        <td>@c.Timestamp.ToString("yyyy-MM-dd")</td>
+                        <td>@c.Timestamp.ToString("HH:mm:ss")</td>
+                        <td>@(c.Type == ClockType.In ? "IN" : "OUT")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="empty-state">
+            <h3>No clockings found</h3>
+            <p>No clockings recorded for this period.</p>
+        </div>
+    }
+</div>

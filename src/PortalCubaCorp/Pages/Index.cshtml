@@ -1,8 +1,122 @@
 @page
+@model PortalCubaCorp.Pages.IndexModel
 @{
     ViewData["Title"] = "Home";
 }
-<div class="text-center">
-    <h1>Portal Cuba Corp</h1>
-    <p>Employee Portal</p>
+
+<div class="grid-2">
+    <!-- Clock In/Out Section (FR-001) -->
+    <div class="card">
+        <h2 class="card-title">Clock In / Out</h2>
+        <div class="clocking-status">
+            @if (Model.CurrentStatus == PortalCubaCorp.Domain.ClockStatus.ClockedIn)
+            {
+                <span class="status-in">● Clocked In</span>
+            }
+            else
+            {
+                <span class="status-out">○ Clocked Out</span>
+            }
+        </div>
+        @if (Model.CurrentStatus == PortalCubaCorp.Domain.ClockStatus.ClockedIn)
+        {
+            <button id="clockBtn" class="clocking-btn clock-out" onclick="submitClocking('Out')">Clock Out</button>
+        }
+        else
+        {
+            <button id="clockBtn" class="clocking-btn clock-in" onclick="submitClocking('In')">Clock In</button>
+        }
+        <div id="clockResult"></div>
+        <p style="margin-top:12px;font-size:12px;color:var(--muted);">
+            <a href="/Clocking/History">View my clocking history</a>
+        </p>
+    </div>
+
+    <!-- News Feed Section (FR-008) -->
+    <div class="card">
+        <h2 class="card-title">News & Announcements</h2>
+
+        <!-- Featured news banners (FR-008) -->
+        @if (Model.FeaturedNews.Any())
+        {
+            @foreach (var featured in Model.FeaturedNews)
+            {
+                <div class="featured-banner">
+                    <div class="featured-label">★ Featured</div>
+                    <h3>@featured.Title</h3>
+                    <p style="margin:4px 0 0 0;font-size:13px;opacity:0.9;">@(featured.Body.Length > 100 ? featured.Body.Substring(0, 100) + "..." : featured.Body)</p>
+                </div>
+            }
+        }
+
+        <!-- Category filter (FR-008) -->
+        <div class="filter-chips">
+            <a href="/?category=" class="chip @(Model.SelectedCategory == null ? "active" : "")">All</a>
+            <a href="/?category=General" class="chip @(Model.SelectedCategory == PortalCubaCorp.Domain.NewsCategory.General ? "active" : "")">General</a>
+            <a href="/?category=HR" class="chip @(Model.SelectedCategory == PortalCubaCorp.Domain.NewsCategory.HR ? "active" : "")">HR</a>
+            <a href="/?category=IT" class="chip @(Model.SelectedCategory == PortalCubaCorp.Domain.NewsCategory.IT ? "active" : "")">IT</a>
+            <a href="/?category=Events" class="chip @(Model.SelectedCategory == PortalCubaCorp.Domain.NewsCategory.Events ? "active" : "")">Events</a>
+        </div>
+
+        @if (Model.News.Any())
+        {
+            @foreach (var item in Model.News)
+            {
+                <div class="news-item">
+                    <h3>@item.Title</h3>
+                    <div class="news-meta">
+                        <span class="news-category">@item.Category</span>
+                        @item.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                    </div>
+                    <p>@item.Body</p>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <h3>No news available</h3>
+                <p>Check back later for updates.</p>
+            </div>
+        }
+    </div>
 </div>
+
+@section Scripts {
+<script>
+    function submitClocking(clockType) {
+        var btn = document.getElementById('clockBtn');
+        var result = document.getElementById('clockResult');
+        btn.disabled = true;
+        var employeeId = '@Model.EmployeeId';
+        var timestamp = new Date().toISOString();
+
+        if (window.ClockingRetry) {
+            window.ClockingRetry.submit(employeeId, timestamp, clockType)
+                .then(function(res) {
+                    if (res.success) {
+                        result.innerHTML = '<div class="clock-confirmation">Clock ' + clockType + ' recorded successfully.</div>';
+                        setTimeout(function() { location.reload(); }, 1500);
+                    } else {
+                        result.innerHTML = '<div class="clock-error">Clocking stored offline — will retry automatically.</div>';
+                    }
+                    btn.disabled = false;
+                });
+        } else {
+            fetch('/api/clocking', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ employeeId: employeeId, timestamp: timestamp, clockType: clockType, idempotencyKey: employeeId + '-' + Date.now() })
+            }).then(function(r) { return r.json(); }).then(function(data) {
+                if (data.success) {
+                    result.innerHTML = '<div class="clock-confirmation">Clock ' + clockType + ' recorded successfully.</div>';
+                    setTimeout(function() { location.reload(); }, 1500);
+                } else {
+                    result.innerHTML = '<div class="clock-error">' + (data.error || 'Clocking failed') + '</div>';
+                }
+                btn.disabled = false;
+            });
+        }
+    }
+</script>
+}
