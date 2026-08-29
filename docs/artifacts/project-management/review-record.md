@@ -277,10 +277,9 @@ C6 --> C7
 ```
 
 ## Findings
-
 ### Consolidated Finding Tracker — Transition T2 Cycle 1
 
-The T1 finding tracker is preserved below with T2 verification status appended. T2 new findings from both Code Reviewer and Reviewer (Product Acceptance) lenses are included.
+The T1 finding tracker is preserved below with T2 verification status appended. T2 new findings from Code Reviewer, Reviewer (Product Acceptance), and Business Reviewer lenses are included.
 
 | # | Finding Key | Artifact | Lens | Severity | T1 Status | T2 Status | Owner | Description |
 |---|---|---|---|---|---|---|---|---|
@@ -289,17 +288,252 @@ The T1 finding tracker is preserved below with T2 verification status appended. 
 | 3 | IA-F3 / F3 | Iteration Assessment | Management Reviewer | Major | OPEN | **RESOLVED** (all objectives MET/NOT MET) | Project Manager | All objectives carry verdicts with evidence |
 | 4 | RN-F1 / F1 | Release Notes | Management Reviewer | Major | OPEN | **RESOLVED** (deployment status explicit) | Deployment Manager | All 4 stakeholder directives addressed |
 | 5 | DM-F2 / F2 | Design Model | Reviewer | Minor | OPEN | **OPEN** (Designer owns) | Designer | C4-1/C4-2 traceability stale |
-| 6 | BR-T1-001 / F1 | Vision | Business Reviewer | Minor | OPEN | **ADDRESSED** (goal measurement plan) | System Analyst + STK-001 | Goal measurement plan documented |
+| 6 | BR-T1-001 / F1 | Vision | Business Reviewer | Minor | OPEN | **RESOLVED** (goal measurement plan documented in IA T2) | System Analyst + STK-001 | Goal measurement plan documented |
 | 7 | CR-T2-001 | MockAuthHandler.cs | Code Reviewer | Minor | (new T2) | **OPEN** | Code owner | MockAuthHandler.cs 2027-01-31 vs artifacts 2026-12-31 |
-| 8 | RR-F1 (Reviewer) | Review Record | Reviewer | Major | (new T2) | **OPEN** | Project Manager | Mock-auth expiry date inconsistency: 3 distinct dates (2026-11-29, 2026-12-31, 2027-01-31) and 2 owners (Software Architect, STK-003) across 7 artifacts. Binding condition BC-3 artifact must have ONE canonical date and owner. |
+| 8 | RR-F1 (Reviewer) | Review Record | Reviewer | Major | (new T2) | **OPEN** | Project Manager | Mock-auth expiry date inconsistency: 3 distinct dates and 2 owners across 7 artifacts. Binding condition BC-3 artifact must have ONE canonical date and owner. |
 | 9 | CR-F1 (Reviewer) | Change Request | Reviewer | Major | (new T2) | **OPEN** | Change Control Manager | Change Request frozen at Construction C4 — no Transition update. Issue #37 (NFR CR) cr:logged but never CCB-approved, yet work executed. Issue #39 (T2 close) not documented. 9 open issues not reflected. |
-| 10 | TC-F3 (Reviewer) | Test Case | Reviewer | Major | (new T2) | **OPEN** | Test Manager | Test Case Document Control contains TWO different mock-auth expiry dates internally: T2 Tester says 2026-11-29/STK-003, T2 Test Analyst says 2026-12-31/Software Architect. Internal inconsistency in a single artifact. |
+| 10 | TC-F3 (Reviewer) | Test Case | Reviewer | Major | (new T2) | **OPEN** | Test Manager | Test Case Document Control contains TWO different mock-auth expiry dates internally. Internal inconsistency in a single artifact. |
 | 11 | RR-F2 (Reviewer) | Review Record | Reviewer | Minor | (new T2) | **OPEN** | Reviewer | Review Record T1 section states 7 open issues but SCM shows 9. Stale issue count at PR milestone. |
 | 12 | VIS-F2 (Reviewer) | Vision | Reviewer | Minor | (new T2) | **OPEN** | System Analyst | Vision Document Control states mock-auth expiry 2027-01-31/STK-003, inconsistent with canonical 2026-12-31/Software Architect. |
 | 13 | SS-F1 (Reviewer) | Supplementary Specification | Reviewer | Minor | (new T2) | **OPEN** | System Analyst | SuppSpec Document Control states mock-auth expiry 2027-01-31/STK-003, inconsistent with canonical 2026-12-31/Software Architect. |
 | 14 | DC-F1 (Reviewer) | Development Case | Reviewer | Minor | (new T2) | **OPEN** | Process Engineer | Development Case frozen at Elaboration, Status: Draft. Optional triggers section says "PoC PENDING" — stale, PoC was executed. DC should reflect final project state at PR. |
+| 15 | BR-T2-001 | Vision | Business Reviewer | Minor | (new T2) | **OPEN** | System Analyst | Vision mock-auth expiry 2027-01-31/STK-003 inconsistent with canonical 2026-12-31/Software Architect. Business impact: expiry date drives OIDC cutover planning; inconsistent date creates planning ambiguity for HR and Infrastructure. Concurs with RR-F1/VIS-F2 from business-planning perspective. |
 
-### Defect Distribution — T2 Cycle 1 (Reviewer + Code Reviewer)
+### Business Lens — T2 Cycle 1 Findings
+
+#### Business Goal Achievement Matrix
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Business Goal Achievement Matrix (PR Milestone, T2)
+
+skinparam classBackgroundColor White
+skinparam classBorderColor Black
+skinparam noteBackgroundColor #FFFACD
+skinparam noteBorderColor #DAA520
+
+class "BG-001\nReduce HR mgmt time 50%" as BG1 {
+  **Status: PENDING**
+  System: DELIVERED (UC-001..004, UC-009)
+  Measurement: Post-deploy HR time audit
+  Baseline: NOT MEASURED
+  Target: 50% reduction
+  Evidence: Feature-complete
+  Verdict: CANNOT CONFIRM
+}
+
+class "BG-002\nEliminate 100% Excel usage" as BG2 {
+  **Status: PENDING**
+  System: DELIVERED (UC-001..004, UC-009)
+  Measurement: Excel usage audit
+  Baseline: NOT MEASURED
+  Target: 0% Excel usage
+  Evidence: Feature-complete
+  Verdict: CANNOT CONFIRM
+}
+
+class "BG-003\n80% adoption in 3 months" as BG3 {
+  **Status: PENDING**
+  System: DELIVERED (UC-001..010)
+  Measurement: Monthly adoption tracking
+  Baseline: NOT MEASURED
+  Target: 160/200 employees
+  Evidence: Feature-complete
+  Verdict: CANNOT CONFIRM
+}
+
+note right of BG1
+  <b>PENDING</b> — requires post-deployment
+  measurement. System is feature-complete;
+  measurement plan is defined (IA T2).
+  Not a defect: goals are post-launch
+  by definition.
+end note
+
+note right of BG2
+  <b>PENDING</b> — requires post-deployment
+  survey/log analysis. Excel replacement
+  functionality is delivered.
+end note
+
+note right of BG3
+  <b>PENDING</b> — requires 3-month
+  adoption window post-launch.
+  NFR-001 (0.14s) and NFR-002 (0.003s)
+  PASS — performance supports adoption.
+end note
+
+BG1 --> BG2 : correlated
+BG2 --> BG3 : correlated
+
+@enduml
+```
+
+#### Binding Conditions & Handover Audit (Business Lens)
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Binding Conditions & Handover Audit (Business Lens, T2)
+
+skinparam classBackgroundColor White
+skinparam classBorderColor Black
+skinparam noteBackgroundColor #90EE90
+skinparam noteBorderColor #006400
+
+class "BC-1: NFR Load Testing" as BC1 {
+  **Status: MET**
+  NFR-001: 0.14s (threshold 3s) — PASS
+  NFR-002: 0.003s (threshold 1s) — PASS
+  CI Build: 33259873386
+  Business impact: Performance supports
+  adoption (BG-003)
+}
+
+class "BC-2: R003 OIDC Risk" as BC2 {
+  **Status: MET**
+  Formally ACCEPTED RISK per STK-001
+  Residual: 8 TCs covered by mock
+  Proven at deployment time only
+  Business impact: Auth dependency
+  acknowledged, not hidden
+}
+
+class "BC-3: Mock-Auth Expiry" as BC3 {
+  **Status: MET (with inconsistency)**
+  Canonical: 2026-12-31 / SW Architect
+  Vision says: 2027-01-31 / STK-003
+  Cross-artifact mismatch (RR-F1)
+  Business impact: Expiry date drives
+  auth cutover planning
+}
+
+class "BC-4: Deployment Exclusion" as BC4 {
+  **Status: MET**
+  Windows Server deploy NOT PERFORMED
+  Explicitly stated in Release Notes
+  Stakeholder acknowledged
+  Business impact: Production deploy
+  requires separate verification
+}
+
+class "Handover: Release Notes" as H1 {
+  **Status: COMPLETE**
+  All 10 FRs in scope
+  NFR values reported
+  R003 risk documented
+  Deployment status explicit
+  Lessons learned: 7 captured
+}
+
+class "Handover: User Documentation" as H2 {
+  **Status: COMPLETE**
+  Publication-Ready
+  Covers: Employee, HR Admin, Infra
+  All 10 UCs documented
+  Business rules reflected
+  Terminology consistent
+}
+
+BC1 --> BG3 : supports
+BC2 --> BG3 : gates
+BC3 --> BG3 : gates
+H1 --> H2 : cross-references
+
+note bottom of BC3
+  <b>Minor (business lens)</b>
+  Mock-auth date inconsistency
+  affects business planning.
+  Already flagged by Reviewer
+  (RR-F1, Major). Business lens
+  concurs: must be standardized
+  before PR sanction.
+end note
+
+@enduml
+```
+
+#### Business Lens Compliance Matrix
+
+```plantuml
+@startuml
+title Portal Cuba Corp — Business Lens Compliance Matrix (T2)
+
+skinparam classBackgroundColor White
+skinparam classBorderColor Black
+
+class "Goal Achievement" as GA {
+  BG-001: PENDING (post-deploy)
+  BG-002: PENDING (post-deploy)
+  BG-003: PENDING (post-deploy)
+  Measurement plan: DEFINED
+  Verdict: CANNOT CONFIRM (expected)
+}
+
+class "Binding Conditions" as BC {
+  BC-1 NFR: MET (measured)
+  BC-2 OIDC: MET (accepted risk)
+  BC-3 Mock-auth: MET (inconsistent)
+  BC-4 Deploy: MET (excluded)
+  Verdict: SUBSTANTIVELY MET
+}
+
+class "Release Scope" as RS {
+  FR-001..010: ALL DELIVERED
+  UC-001..010: ALL IMPLEMENTED
+  Release Notes: COMPLETE
+  Verdict: PASS
+}
+
+class "Worker Documentation" as WD {
+  Employee (STK-004): COVERED
+  HR Admin (STK-001): COVERED
+  Infra (STK-003): COVERED
+  All 10 UCs documented
+  Verdict: PASS
+}
+
+class "Business Rules Sync" as BR {
+  CON-012 (corp data only): SYNCED
+  CON-013 (no hard delete): SYNCED
+  NFR-004 (audit trail): SYNCED
+  Verdict: PASS
+}
+
+class "Stakeholder Coverage" as SC {
+  STK-001: REPRESENTED
+  STK-002: REPRESENTED
+  STK-003: REPRESENTED
+  STK-004: REPRESENTED
+  Verdict: PASS
+}
+
+GA --> BC : depends on
+BC --> RS : verified against
+RS --> WD : handover
+WD --> BR : rules reflected
+BR --> SC : stakeholders covered
+
+@enduml
+```
+
+#### Business Lens Assessment Summary
+
+| Criterion | Verdict | Evidence |
+|---|---|---|
+| BG-001 (50% HR time reduction) | PENDING | System delivered (UC-001..004, UC-009); measurement plan defined (IA T2); post-deployment HR time audit required |
+| BG-002 (100% Excel elimination) | PENDING | System delivered (UC-001..004, UC-009); measurement plan defined (IA T2); post-deployment Excel usage audit required |
+| BG-003 (80% adoption in 3 months) | PENDING | System delivered (UC-001..010); NFR-001 (0.14s) and NFR-002 (0.003s) PASS — performance supports adoption; 3-month adoption window required post-launch |
+| BC-1 NFR Load Testing | MET | NFR-001: 0.14s < 3s PASS; NFR-002: 0.003s < 1s PASS (CI build 33259873386) |
+| BC-2 R003 OIDC Risk | MET | Formally accepted risk per STK-001; residual stated (8 TCs mock-covered) |
+| BC-3 Mock-Auth Expiry | MET (with defect) | Documented (2026-12-31/Software Architect canonical); Vision inconsistent (2027-01-31/STK-003) — BR-T2-001 |
+| BC-4 Deployment Exclusion | MET | Explicitly stated in Release Notes; stakeholder acknowledged |
+| Release Notes scope | PASS | All 10 FRs in release scope; all 4 stakeholder directives addressed |
+| User Documentation coverage | PASS | Employee, HR Admin, Infrastructure all covered; all 10 UCs documented; publication-ready |
+| Business rules in user docs | PASS | CON-012, CON-013, NFR-004 reflected in user-facing material |
+| Stakeholder coverage | PASS | STK-001 through STK-004 all represented in documentation and artifacts |
+| Goal measurement plan | DEFINED | Post-deployment HR time audit (BG-001), Excel usage audit (BG-002), monthly adoption tracking (BG-003) — documented in Iteration Assessment T2 |
+
+### Defect Distribution — T2 Cycle 1 (All Lenses)
 
 ```plantuml
 @startuml
@@ -320,13 +554,14 @@ class "Major (3 — Reviewer Lens)" as MAJ_R {
   + TC-F3 : Test Case internal date inconsistency (2 dates in 1 artifact)
 }
 
-class "Minor (6)" as MIN {
+class "Minor (7)" as MIN {
   + CR-T2-001 (Code Reviewer) : MockAuthHandler vs artifacts date
   + RR-F2 (Reviewer) : Stale issue count 7 vs 9
   + VIS-F2 (Reviewer) : Vision date mismatch
   + SS-F1 (Reviewer) : SuppSpec date mismatch
   + DC-F1 (Reviewer) : Stale Development Case
   + DM-F2 (Reviewer, persisting) : Design Model traceability
+  + BR-T2-001 (Business Reviewer) : Vision mock-auth date — business planning impact
 }
 
 class "Clean Artifacts (9)" as CLEAN {
@@ -391,12 +626,12 @@ state "T2 Verification — Cross-Artifact Check" as T2_Verification {
   T2_Verification : Read Iteration Assessment -> IA-F3 RESOLVED
   T2_Verification : Read PR #38 diff -> BR-T1-002 addressed
   T2_Verification : DM-F2 -> not in this PR (Designer owns)
-  T2_Verification : BR-T1-001 -> addressed in Iteration Assessment
+  T2_Verification : BR-T1-001 -> RESOLVED (goal plan in IA T2)
 }
 
 T2_Verification --> T2_New_Findings
 
-state "T2 New Findings (Reviewer Lens)" as T2_New_Findings {
+state "T2 New Findings (All Lenses)" as T2_New_Findings {
   T2_New_Findings : RR-F1 (Major) — mock-auth 3 dates across 7 artifacts
   T2_New_Findings : CR-F1 (Major) — stale Change Request
   T2_New_Findings : TC-F3 (Major) — Test Case internal date mismatch
@@ -404,16 +639,18 @@ state "T2 New Findings (Reviewer Lens)" as T2_New_Findings {
   T2_New_Findings : VIS-F2 (Minor) — Vision date mismatch
   T2_New_Findings : SS-F1 (Minor) — SuppSpec date mismatch
   T2_New_Findings : DC-F1 (Minor) — stale Development Case
+  T2_New_Findings : BR-T2-001 (Minor) — Vision mock-auth date (business lens)
 }
 
 T2_New_Findings --> T2_Disposition
 
 state "T2 Disposition" as T2_Disposition {
   T2_Disposition : PR #38 APPROVED (Code Reviewer)
-  T2_Disposition : 3 Major, 6 Minor open (Reviewer lens)
-  T2_Disposition : All T1 Major findings RESOLVED
+  T2_Disposition : 3 Major, 7 Minor open (all lenses)
+  T2_Disposition : All T1 findings RESOLVED (BR lens)
   T2_Disposition : Binding conditions substantively MET
   T2_Disposition : Mock-auth date MUST be standardized
+  T2_Disposition : Business verdict: CONDITIONAL
   T2_Disposition : Stakeholder re-review PENDING
 }
 
@@ -428,12 +665,11 @@ T2_Disposition --> [*]
 |---|---|---|---|---|
 | F2 (MR) | Review Record | Management Reviewer | Major | RESOLVED (T1) — "0 open defect issues" corrected |
 | F2 (MR) | Iteration Assessment | Management Reviewer | Major | RESOLVED (T1) — Issue count corrected |
-| BR-T1-002 / F1 | Review Record | Business Reviewer | Major | RESOLVED (T2) — All 3 binding conditions MET |
+| BR-T1-002 / F1 | Review Record | Business Reviewer | Major | RESOLVED (T2) — All 3 binding conditions MET with evidence |
 | RL-F6 / F2 | Risk List | Management Reviewer | Major | RESOLVED (T2) — R003 accepted, R004 measured, R008 closed |
 | IA-F3 / F3 | Iteration Assessment | Management Reviewer | Major | RESOLVED (T2) — All objectives MET/NOT MET |
 | RN-F1 / F1 | Release Notes | Management Reviewer | Major | RESOLVED (T2) — Deployment status explicit |
-| BR-T1-001 / F1 | Vision | Business Reviewer | Minor | ADDRESSED (T2) — Goal measurement plan documented |
-
+| BR-T1-001 / F1 | Vision | Business Reviewer | Minor | RESOLVED (T2) — Goal measurement plan documented in Iteration Assessment T2 |
 ## Resolutions and Actions
 
 ### Prior Findings Reconciliation (Reviewer Lens)
