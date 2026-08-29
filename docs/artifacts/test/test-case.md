@@ -1,21 +1,20 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Construction |
-| Status | Draft — C3 Cycle 1 Test Designer Evolution Complete |
+| Status | Draft — C3 Cycle 1 Tester Execution Complete |
 | Milestone Target | End-of-Construction (IOC) |
 | Iteration | 3 (Cycle 1) |
 | Date | 2026-08-29 |
 | Author | Test Designer (Test Discipline) — Test Cases designed in Elaboration/C1/C2/C3 |
-| Tester | Tester (Test Discipline) — Execution and evaluation in Construction C1 and C2 |
+| Tester | Tester (Test Discipline) — Execution and evaluation in Construction C1, C2, and C3 |
 | Test Analyst | Test Analyst (Test Discipline) — Quality evaluation, defect pattern analysis, Ideas evolution in Construction C1 and C2 |
-| Prior Phase | Construction C2 Cycle 1 (1 Critical + 2 Major open; stakeholder sanction REFUSED 2nd time) |
-| Evolution | **Elaboration:** 20 TCs (TC-001..TC-020) covering all 10 UCs at moderate depth. **Construction C1:** Extended from 20 to 30 test cases. Added adversarial tests for Review Record findings (MAJOR-1: IsFeatured, MINOR-2: EmployeeId DTO, MINOR-3/MINOR-4: idempotency scoping). Added performance/stress/load tests with thresholds. Added Procedure sections to all TCs. Added suite membership tags and regression flags. Extended UC→TC traceability to complete coverage. **Construction C2:** Extended from 30 to 35 test cases. Added 5 adversarial test cases (TC-031..TC-035) targeting C2 Review Record findings. Test Analyst C2: Defect pattern analysis identified 3 patterns. Surfaced 4 new test ideas (TI-036..TI-039). Overall verdict: NOT READY for IOC. **Construction C3 Cycle 1:** ALL 7 C2 findings RESOLVED in PR #28 (feature/C3-presentation, CI GREEN run 33250579948). TC-F2 RESOLVED — UnitTest1.cs removed. Formalized 4 test ideas (TI-036..TI-039) as full test cases TC-036..TC-039. Updated all C2 execution verdicts to RESOLVED. Updated C3 test execution workflow, test lifecycle state diagram, and test suite structure. Total: 39 test cases (TC-001..TC-039). 8 TCs remain BLOCKED by OIDC infrastructure (R003). |
+| Prior Phase | Construction C2 Cycle 3 — all 7 C2 findings RESOLVED in PR #28; stakeholder sanction REFUSED 2nd time with PR synchronization directive |
+| Evolution | **Elaboration:** 20 TCs (TC-001..TC-020) covering all 10 UCs at moderate depth. **Construction C1:** Extended from 20 to 30 test cases. Added adversarial tests for Review Record findings (MAJOR-1: IsFeatured, MINOR-2: EmployeeId DTO, MINOR-3/MINOR-4: idempotency scoping). Added performance/stress/load tests with thresholds. Added Procedure sections to all TCs. Added suite membership tags and regression flags. Extended UC→TC traceability to complete coverage. **Construction C2:** Extended from 30 to 35 test cases. Added 5 adversarial test cases (TC-031..TC-035) targeting C2 Review Record findings. Test Analyst C2: Defect pattern analysis identified 3 patterns. Surfaced 4 new test ideas (TI-036..TI-039). Overall verdict: NOT READY for IOC. **Construction C3 Cycle 1 (Test Designer):** ALL 7 C2 findings RESOLVED in PR #28 (feature/C3-presentation, CI GREEN run 33250579948). TC-F2 RESOLVED — UnitTest1.cs removed. Formalized 4 test ideas (TI-036..TI-039) as full test cases TC-036..TC-039. Updated all C2 execution verdicts to RESOLVED. Updated C3 test execution workflow, test lifecycle state diagram, and test suite structure. Total: 39 test cases (TC-001..TC-039). 8 TCs remain BLOCKED by OIDC infrastructure (R003). **Construction C3 Cycle 1 (Tester):** Executed all 39 TCs against iteration/C3 build (CI GREEN run 33250807692, completed 2026-08-29 11:45:21Z) and main build (CI GREEN run 33249082908, completed 2026-08-29 11:01:13Z). 31 TCs PASS, 8 TCs BLOCKED (R003 OIDC), 0 FAIL. All 7 C2 findings verified RESOLVED via source code inspection. Regression: CLEAN — no regressions detected. Pre-existing deferred defects #12, #13, #14 remain open; #12 and #14 effectively resolved by C2-MIN-4 and C2-MIN-3 fixes respectively but SCM issues not yet closed. |
 | TC-F2 Status | RESOLVED — UnitTest1.cs placeholder test removed in PR #28. Test Case artifact updated to remove references to placeholder test and reflect clean test suite. |
 | C2 Findings Status | ALL 7 RESOLVED in PR #28: C2-CRIT-1 (clock API route), C2-MAJ-1 (news edit binding), C2-MAJ-2 (antiforgery token), C2-MIN-1 (UnitTest1.cs), C2-MIN-2 (identity spoofing), C2-MIN-3 (UnitTest1.cs), C2-MIN-4 (CSV header) |
+| C3 Tester Execution | **Build:** iteration/C3 (CI GREEN run 33250807692) + main (CI GREEN run 33249082908). **Results:** 31 PASS, 8 BLOCKED, 0 FAIL. **Regression:** CLEAN. **C2 Finding Verification:** All 7 verified RESOLVED via source inspection. **Open Defects:** #13 (test name contradicts assertion — Minor), #12 (CSV format — effectively resolved by header change), #14 (UnitTest1.cs — resolved in PR #28). **Blocked TCs:** TC-013, TC-014, TC-028, TC-029, TC-030 — blocked by R003 (OIDC registration unconfirmed by STK-003, 4th escalation cycle). |
 | Blocked TCs | TC-013, TC-014, TC-028, TC-029, TC-030 — blocked by R003 (OIDC registration unconfirmed by STK-003) |
-
 ## Test Scope
 
 ### All Use Cases Under Test — Construction C3 Full Coverage
