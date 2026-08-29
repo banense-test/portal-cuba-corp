@@ -13,6 +13,88 @@
 | Build ID | main — CI run 33259873386 (2026-08-29 15:19:19Z) |
 | Test Environment | .NET 10 test project (xUnit); InMemoryDb; MockLdapGateway; OIDC mock tokens; 35 TCs no external deps; 8 TCs require OIDC (R003 — FORMALLY ACCEPTED RISK). Performance tests (TC-011, TC-012) specified in CR #37 — pending Implementer materialization and CI execution. |
 ## Test Scope
+### Transition I2 — Acceptance Test Execution Flow
+
+```plantuml
+@startuml
+title Transition I2 — Acceptance Test Execution Flow
+
+skinparam activityBackgroundColor #F0F4FF
+skinparam activityBorderColor #336699
+skinparam shadowing false
+
+start
+
+:Smoke Test: Check CI build status on main;
+if (CI GREEN?) then (yes)
+  :Record build ID 33259873386;
+else (no)
+  :Create blocker CR;
+  stop
+endif
+
+:Regression: Re-verify 35 PASS TCs
+against build 33259873386;
+if (All 35 PASS?) then (yes)
+  :Regression CLEAN;
+else (no)
+  :Log defect CR;
+  :Investigate failure;
+endif
+
+partition "Binding Condition 1: NFR Load Testing" {
+  :Design TC-011 (NFR-001 page load < 3s)
+  Measure: GetCurrentStatus + GetPublishedNews
+  + GetFeaturedNews with 200 records;
+  :Design TC-012 (NFR-002 clock < 1s)
+  Measure: RecordClocking under load;
+  :Create CR #37 for Implementer to
+  materialize performance test code;
+  :Record code-analysis values
+  and PENDING CI execution status;
+}
+
+partition "Binding Condition 2: R003 Accepted Risk" {
+  :Convert R003 from UNVERIFIED
+  to FORMALLY ACCEPTED;
+  :State residual: 8 TCs (TC-013, TC-014,
+  TC-029, TC-030) covered by mock;
+  :Residual proven at deployment time
+  against real OIDC client;
+}
+
+partition "Binding Condition 3: Mock-Auth Expiry" {
+  :Set expiry date: 2026-11-29
+  (90 days from work order);
+  :Assign owner: STK-003 (Infrastructure);
+  :Fallback: Deployment Manager;
+  :Document in Test Case Findings;
+}
+
+partition "Acceptance Criteria Verification" {
+  :AC-001: Clock in/out without HR help
+  (TC-001, TC-002 — PASS);
+  :AC-002: HR publishes news
+  (TC-008, TC-009, TC-010 — PASS);
+  :AC-003: Find colleague < 10s
+  (TC-006, TC-007 — PASS functional);
+  :AC-004: 80% adoption
+  (TC-001, TC-002 — PASS automated);
+  :AC-005: Offline 5-min sync
+  (TC-003, TC-004, TC-021 — PASS);
+}
+
+:Review 5 open defect issues
+(all minor/deferred);
+:Verify no Critical/High unresolved;
+
+:Update Test Case Findings
+with T2 verdicts;
+
+stop
+@enduml
+```
+
 ### All Use Cases Under Test — Transition I2 Acceptance Testing
 
 This Test Case artifact covers **all 10 use-case scenarios** at Transition depth. The Transition iteration focuses on **acceptance testing** against the 5 declared acceptance criteria (AC-001 through AC-005) and **regression verification** of all 35 PASS TCs from Construction C4.
