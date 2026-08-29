@@ -1,13 +1,13 @@
 ## Document Control
 | Field | Value |
 |---|---|
-| Phase | Construction |
-| Status | Draft |
-| Milestone Target | End of Construction |
-| Iteration | 3 (Cycle 1) |
+| Phase | Transition |
+| Status | Approved |
+| Milestone Target | Product Release (PR) — NOT YET ACHIEVED |
+| Iteration | 1 (Cycle 1) |
 | Date | 2026-08-29 |
-| Prior Phase | Elaboration (LCA achieved — 0 Critical, 0 Major open; stakeholder sanction GRANTED) |
-| Evolution | Construction Iter 1: Requirements baseline preserved — no approved CR affects scope or NFRs. All Elaboration implementation decisions (offline retry with idempotency key in UC-001, audit trail in UC-005/006/007/010, AD read-only in UC-009/010) already reflected in Elaboration baseline. Document Control updated to Construction phase. Construction Iter 2: CR-010 (IsFeatured flag) — [DERIVED] marker RETIRED. CR-010 was CCB-approved (Construction C1), which constitutes stakeholder confirmation. IsFeatured is now an approved extension of FR-008's featured banner requirement, no longer pending confirmation. UC-005 and UC-006 updated to reflect approved status. Use-Case Diagram and Traceability updated to remove [DERIVED] marker. CR-011 (idempotency key) remains reflected in UC-001 from Elaboration baseline — no changes needed. Construction Iter 3: UC-001 updated to reflect SEC-006 (antiforgery token on POST — CR-023) and SEC-007 (server-side employee identity from OIDC token — CR-024). Preconditions, postconditions, main flow steps 6-7, and new alternative flow A4 (antiforgery validation failure) added. Activity diagram updated to show antiforgery validation and server-side identity extraction. Traceability table updated with SEC-006, SEC-007, CR-023, CR-024 references. |
+| Prior Phase | Construction C4 — IOC CONDITIONAL GO; all 10 UCs implemented; 35/43 tests pass, 8 covered-by-mock; 7 open issues (1 ACCEPTED, 6 deferred) |
+| Evolution | Construction Iter 1: Requirements baseline preserved. Construction Iter 2: CR-010 (IsFeatured) [DERIVED] marker retired. Construction Iter 3: SEC-006/SEC-007 added via CR-023/CR-024. Transition Iter 1: Closure Notes appended — delivered system validated against requirements baseline; deferred requirements documented for future releases. All 10 use cases implemented and delivered. No changes to UC specifications — closure annotation only. |
 ## Use-Case Diagram
 ```plantuml
 @startuml
