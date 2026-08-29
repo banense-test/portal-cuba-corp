@@ -1,16 +1,15 @@
 ## Document Control
-
 | Field | Value |
 |---|---|
 | Phase | Construction |
 | Status | Active |
 | Milestone Target | End-of-Construction (IOC) |
-| Iteration | 2 (Cycle 2) |
-| Date | 2026-08-28 |
-| Prior Phase | Construction C1 (REQUEST_CHANGES — 1 Major, 4 Minor; IOC NOT achieved; stakeholder sanction REFUSED) |
-| Evolution | Construction C1 Plan evolved for C2 Cycle 2: coarse roadmap updated with C1 measured actuals (9.85M tokens, 1h 42m 55s); fine plan replaced with C2 rework scope (fix C2-CRIT-1 + C2-MAJ-1..2 + C2-MIN-1..4 from PR #19 Review Record); budget box sized from C1 measured actual; R003 escalation triggered (OIDC deadline passed) |
-| Measured Baseline | Inception: 2 iters, 4.38M tokens, 22 min, 11 runs, 10 artifacts. Elaboration: 2 iters, 20.87M tokens, 1.0h, 21 runs, 13 artifacts. Construction C1: 1 iter, 9.85M tokens, 1h 42m 55s, 15 runs, 15 artifacts. Cumulative: 35.10M tokens, 3.1h, 47 runs, 38 artifacts. |
-
+| Iteration | 2 (Cycle 3) |
+| Date | 2026-08-29 |
+| Prior Phase | Construction C2 Cycle 2 (REQUEST_CHANGES — 0 of 7 C2 findings resolved; stakeholder sanction REFUSED 2nd time; IP-F4 + RL-F2 findings opened) |
+| Evolution | C2 Cycle 2 Plan evolved for Cycle 3: mid-iteration checkpoint added (IP-F4 resolution); coarse roadmap updated with C2 Cycle 2 measured actuals (18.84M tokens, 19h 15m 47s); fine plan replaced with C2 Cycle 3 rework scope — same 7 C2 findings persisting + PR synchronization directive from stakeholder; R008 contingency ACTIVATED (C3 required, not conditional) |
+| Measured Baseline | Inception: 2 iters, 4.38M tokens, 22 min, 11 runs, 10 artifacts. Elaboration: 2 iters, 20.87M tokens, 1.0h, 21 runs, 13 artifacts. Construction C1: 1 iter, 9.85M tokens, 1h 42m 55s, 15 runs, 15 artifacts. Construction C2 Cycle 2: 18.84M tokens, 19h 15m 47s, 15 runs, 15 artifacts. Cumulative: 54.0M tokens, ~21.3h, 62 runs, 53 artifacts. |
+| Finding IP-F4 | RESOLVED — mid-iteration checkpoint added to Plan and Milestones section |
 ## Iteration Objectives
 
 1. **Fix C2-CRIT-1 (Critical): Clocking API route mismatch.** JS calls `fetch('/api/clocking')` but Razor Page routes to `/Api/ClockingApi`. UC-001 is non-functional (404). Fix: add `@page "/api/clocking"` to ClockingApi.cshtml, OR move to API controller, OR rename page folder to `Pages/api/clocking.cshtml`.
