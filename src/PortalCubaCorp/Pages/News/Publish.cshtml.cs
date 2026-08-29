@@ -6,6 +6,10 @@ using PortalCubaCorp.Domain;
 
 namespace PortalCubaCorp.Pages.News;
 
+/// <summary>
+/// Publish news page (UC-005: Publish News).
+/// C4-2: OnPostAsync calls PublishAsync (transaction-wrapped).
+/// </summary>
 [Authorize(Roles = "hr,HR")]
 public class PublishModel : PageModel
 {
@@ -28,7 +32,7 @@ public class PublishModel : PageModel
     [BindProperty]
     public bool IsFeatured { get; set; }
 
-    public IActionResult OnPost()
+    public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
         {
@@ -36,7 +40,7 @@ public class PublishModel : PageModel
         }
 
         var authorId = User.FindFirst("sub")?.Value ?? User.Identity?.Name ?? "unknown";
-        _newsService.Publish(Title, Body, Category, IsFeatured, authorId);
+        await _newsService.PublishAsync(Title, Body, Category, IsFeatured, authorId);
         TempData["SuccessMessage"] = "News item published successfully.";
         return RedirectToPage("/News/Management");
     }

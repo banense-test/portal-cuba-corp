@@ -6,6 +6,7 @@ namespace PortalCubaCorp.Tests;
 /// <summary>
 /// In-memory persistence implementation for unit testing.
 /// Simulates the PostgreSQL database without requiring a real DB instance.
+/// UC-001..UC-004: Clocking. UC-005..UC-008: News. UC-010: Worker category.
 /// </summary>
 public class InMemoryPersistence : IPersistence
 {
@@ -55,13 +56,15 @@ public class InMemoryPersistence : IPersistence
         return item;
     }
 
-    public NewsItem UpdateNewsItem(Guid id, string title, string body, NewsCategory category)
+    // C4-1: isFeatured parameter added (CR-010)
+    public NewsItem UpdateNewsItem(Guid id, string title, string body, NewsCategory category, bool isFeatured)
     {
         var item = _newsItems.FirstOrDefault(n => n.Id == id)
             ?? throw new InvalidOperationException(string.Format("NewsItem {0} not found", id));
         item.Title = title;
         item.Body = body;
         item.Category = category;
+        item.IsFeatured = isFeatured;
         item.UpdatedAt = DateTime.UtcNow;
         return item;
     }

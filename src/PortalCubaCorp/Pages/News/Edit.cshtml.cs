@@ -9,6 +9,7 @@ namespace PortalCubaCorp.Pages.News;
 /// <summary>
 /// Edit news page (UC-006: Edit Published News).
 /// C2-MAJ-1 fix: BindProperty names match form field names via [BindProperty(Name = ...)].
+/// C4-1: isFeatured checkbox added to edit form (CR-010).
 /// </summary>
 [Authorize(Roles = "hr,HR")]
 public class EditModel : PageModel
@@ -24,6 +25,7 @@ public class EditModel : PageModel
     public string Title { get; set; } = string.Empty;
     public string Body { get; set; } = string.Empty;
     public NewsCategory Category { get; set; }
+    public bool IsFeatured { get; set; }
 
     public IActionResult OnGet(Guid id)
     {
@@ -38,6 +40,7 @@ public class EditModel : PageModel
         Title = item.Title;
         Body = item.Body;
         Category = item.Category;
+        IsFeatured = item.IsFeatured;
         return Page();
     }
 
@@ -53,7 +56,11 @@ public class EditModel : PageModel
     [BindProperty(Name = "category")]
     public NewsCategory EditCategory { get; set; }
 
-    public IActionResult OnPost(Guid id)
+    // C4-1: isFeatured bindable from edit form (CR-010)
+    [BindProperty(Name = "isFeatured")]
+    public bool EditIsFeatured { get; set; }
+
+    public async Task<IActionResult> OnPostAsync(Guid id)
     {
         if (!ModelState.IsValid)
         {
@@ -61,7 +68,7 @@ public class EditModel : PageModel
         }
 
         var authorId = User.FindFirst("sub")?.Value ?? User.Identity?.Name ?? "unknown";
-        _newsService.Edit(id, EditTitle, EditBody, EditCategory, authorId);
+        await _newsService.EditAsync(id, EditTitle, EditBody, EditCategory, EditIsFeatured, authorId);
         TempData["SuccessMessage"] = "News item updated successfully.";
         return RedirectToPage("/News/Management");
     }
