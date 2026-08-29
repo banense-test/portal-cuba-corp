@@ -90,7 +90,7 @@ Analysis classes identify the boundary, control, and entity stereotypes for each
 | ACL-002 | ClockingController | <<control>> | UC-001, UC-002, UC-003, UC-004 | Record clocking with idempotency; get current status; get history; get all clockings; export CSV | COMP-002 |
 | ACL-003 | ClockingRecord | <<entity>> | UC-001 | Persist clocking entry: employeeId, timestamp, clockType, idempotencyKey | COMP-006 |
 | ACL-004 | DirectorySearchUI | <<boundary>> | UC-009 | Display search form; display results; warn about missing AD attributes | COMP-001 |
-| ACL-005 | DirectoryController | <<control>> | UC-009 | Search AD via LDAP; map LDAP attributes to DirectoryEntry; handle missing attributes (R001) | COMP-001, COMP-005 |
+| ACL-005 | DirectoryController | <<control>> | UC-009 | Search AD via LDAP with optional office filter; map LDAP attributes to DirectoryEntry; handle missing attributes (R001) | COMP-001, COMP-005 |
 | ACL-006 | DirectoryEntry | <<entity>> | UC-009 | Value object: name, jobTitle, department, office, email, extension — projected from AD at read time | COMP-005 |
 | ACL-007 | NewsUI | <<boundary>> | UC-005, UC-006, UC-007 | Display publish/edit forms; display news list; confirm unpublish | COMP-003 |
 | ACL-008 | NewsController | <<control>> | UC-005, UC-006, UC-007 | Publish, edit, unpublish news; integrate audit trail; list published and all | COMP-003, COMP-008 |
@@ -106,7 +106,7 @@ Analysis classes identify the boundary, control, and entity stereotypes for each
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Analysis Classes (Construction C2)
+title Portal Cuba Corp — Analysis Classes (Construction C3 — DM-F1 Resolved)
 
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
@@ -141,7 +141,7 @@ package "UC-009: Search Employee Directory" {
     + displayMissingAttrWarning()
   }
   class "DirectoryController" as ACL005 <<control>> {
-    + search(query) : List<DirectoryEntry>
+    + search(query, office?) : List<DirectoryEntry>
     + mapLdapAttributes(entry) : DirectoryEntry
   }
   class "DirectoryEntry" as ACL006 <<entity>> {
@@ -231,10 +231,11 @@ ACL014 --> ACL015
 ACL015 --> ACL009
 
 note right of ACL005
-  R001: LDAP attribute
-  consistency risk —
-  fallback to "N/A" for
-  missing fields
+  C3 UPDATE (DM-F1):
+  search() now includes optional
+  office parameter matching
+  iteration/C2 implementation.
+  R001: LDAP attribute fallback.
 end note
 
 note right of ACL002
@@ -262,7 +263,7 @@ Each analysis mechanism from Inception is resolved to a design mechanism (patter
 | Analysis Mechanism | Design Mechanism | Properties | Implementation (where declared) |
 |---|---|---|---|
 | Persistence | Repository + Unit of Work (EF Core DbContext) | Transactional; unique index on clockings.idempotency_key; append-only audit_records | EF Core 10 + Npgsql (CON-001, CON-003) |
-| LDAP Directory Access | Gateway (read-only) | Connection pooling; attribute mapping with fallback; no writes to AD | Novell.Directory.Ldap.NETStandard (CON-005) |
+| LDAP Directory Access | Gateway (read-only) | Connection pooling; attribute mapping with fallback; no writes to AD; optional office AND-filter | Novell.Directory.Ldap.NETStandard (CON-005) |
 | Authentication | OIDC Client | Token validation; role extraction from claims; no local user store | Keycloak existing (CON-004) |
 | Audit Trail | Interceptor (same transaction) | Append-only; author from OIDC token; timestamp from server; never hard-delete news | EF Core SaveInterceptor (CON-001) |
 | Offline Retry | localStorage + POST Retry | 5-min window; idempotency key prevents duplicates; server accepts client timestamp; clocking only | clocking-retry.js (CON-002) |
