@@ -467,7 +467,7 @@ end note
 | MR-T2-002 (T2 Major — OPEN) | Cross-artifact consistency, mock-auth expiry, 7 artifacts | Derives | Project Manager — establish canonical-value protocol; Process Engineer — evolution cycle |
 | DM-F2 (OPEN) | Design Model, C4-1, C4-2, PR #32 | Derives | Designer — traceability update needed |
 | BR-T1-002 (RESOLVED T2) | IOC binding conditions, NFR-001, NFR-002, CON-004 | Resolved by | PerformanceTests.cs, MockAuthHandler.cs, Risk List, Release Notes, Iteration Assessment |
-| RL-F6 (RESOLVED T2) | Risk List, R003, R004, STK-001 directives | Resolved by | Risk List T2 evolution — R003 accepted, R004 measured, R008 closed |
+| RL-F6 (RESOLVED T2 — closure gap) | Risk List, R003, R004, STK-001 directives | Resolved by | Risk List T2 evolution — R003 accepted, R004 measured, R008 closed. NOTE: API shows resolution=null — Management Reviewer must call resolve_artifact_finding to formally close. |
 | IA-F3 (RESOLVED T2) | Iteration Assessment, iteration objectives, STK-001 directives | Resolved by | Iteration Assessment T2 evolution — all objectives MET/NOT MET |
 | RN-F1 (RESOLVED T2) | Release Notes, CON-006, STK-001 directives | Resolved by | Release Notes T2 evolution — deployment status explicit |
 | BR-T1-001 (RESOLVED T2) | Vision, BG-001, BG-002, BG-003 | Resolved by | Iteration Assessment T2 — goal measurement plan documented |
@@ -477,6 +477,7 @@ end note
 | CI Build (main) | scm_get_build_status | Tests | All source files on main — GREEN (run 33262804733) |
 | CI Build (hotfix/T2) | scm_get_build_status | Tests | PR #38 source — GREEN (merged) |
 | Stakeholder PR sanction | STK-001, AC-001..AC-005 | Refines | REFUSED (T2) — T3 iteration required; re-review with T3 evidence |
+| Stakeholder Finding (T3) | STK-001, T3 consolidation | Refines | "Nothing else to add for this new iteration" — no additional directives; team must resolve 4 Major + 7 Minor open findings |
 | Business Lens Verdict (T2) | BG-001..BG-003, BC-1..BC-4, Release Notes, User Documentation | Refines | APPROVED — conditional on mock-auth date standardization (RR-F1) |
 | Management Lens Verdict (T2) | PR-01..PR-10, BC-1..BC-3, STK-001 directive | Refines | CONDITIONAL — T3 ITERATION REQUIRED; stakeholder sanction REFUSED |
 | T3 Consolidation Verdict | All 16 artifacts, all lens findings, STK-001 T3 directives | Refines | CONDITIONAL — 4 open Major findings block PR sanction; auto-iterate required |
