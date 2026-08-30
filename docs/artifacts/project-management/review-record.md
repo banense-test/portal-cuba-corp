@@ -688,27 +688,26 @@ end note
 @enduml
 ```
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | PR #38 | hotfix/T2-defect-fixes, BR-T1-002, RL-F6, IA-F3, RN-F1 | Realizes | main branch (MERGED) |
-| CR-T2-001 (T2 Minor) | MockAuthHandler.cs, Risk List, Release Notes | Derives | Code owner — reconcile expiry date |
-| RR-F1 (T2 Major — Reviewer) | Mock-auth expiry, BC-3, 7 artifacts | Derives | Project Manager — standardize date across all artifacts |
-| CR-F1 (T2 Major — Reviewer) | Change Request, Issue #37, #39, CON-006 | Derives | Change Control Manager — update to Transition |
-| TC-F3 (T2 Major — Reviewer) | Test Case, mock-auth expiry, BC-3 | Derives | Test Manager — correct internal date inconsistency |
-| RR-F2 (T2 Minor — Reviewer) | Review Record, SCM issues | Derives | Reviewer — update issue count to 9 |
-| VIS-F2 (T2 Minor — Reviewer) | Vision, mock-auth expiry | Derives | System Analyst — correct date to canonical |
-| SS-F1 (T2 Minor — Reviewer) | Supplementary Specification, mock-auth expiry | Derives | System Analyst — correct date to canonical |
-| DC-F1 (T2 Minor — Reviewer) | Development Case, PoC results | Derives | Process Engineer — update to Transition |
-| BR-T2-001 (T2 Minor — Business Reviewer) | Vision, mock-auth expiry, BC-3, RR-F1 | Derives | System Analyst — correct Vision date to canonical 2026-12-31/Software Architect |
-| MR-T2-001 (T2 Minor — Management Reviewer) | Vision, mock-auth expiry, BC-3 | Derives | System Analyst — correct Vision date to canonical value |
-| MR-T2-002 (T2 Major — Management Reviewer) | Cross-artifact consistency, mock-auth expiry, 7 artifacts | Derives | Project Manager — establish canonical-value protocol; Process Engineer — evolution cycle |
+| CR-T2-001 (T2 Minor — OPEN) | MockAuthHandler.cs, Risk List, Release Notes | Derives | Code owner — reconcile expiry date to canonical |
+| RR-F1 (T2 Major — OPEN) | Mock-auth expiry, BC-3, 7 artifacts | Derives | Project Manager — standardize date across all artifacts |
+| CR-F1 (T2 Major — OPEN) | Change Request, Issue #37, #39, CON-006 | Derives | Change Control Manager — update to Transition |
+| TC-F3 (T2 Major — OPEN) | Test Case, mock-auth expiry, BC-3 | Derives | Test Manager — correct internal date inconsistency |
+| RR-F2 (T2 Minor — OPEN) | Review Record, SCM issues | Derives | Reviewer — update issue count to 9 |
+| VIS-F2 (T2 Minor — OPEN) | Vision, mock-auth expiry | Derives | System Analyst — correct date to canonical |
+| SS-F1 (T2 Minor — OPEN) | Supplementary Specification, mock-auth expiry | Derives | System Analyst — correct date to canonical |
+| DC-F1 (T2 Minor — OPEN) | Development Case, PoC results | Derives | Process Engineer — update to Transition |
+| BR-T2-001 (T2 Minor — OPEN) | Vision, mock-auth expiry, BC-3, RR-F1 | Derives | System Analyst — correct Vision date to canonical |
+| MR-T2-001 (T2 Minor — OPEN) | Vision, mock-auth expiry, BC-3 | Derives | System Analyst — correct Vision date to canonical value |
+| MR-T2-002 (T2 Major — OPEN) | Cross-artifact consistency, mock-auth expiry, 7 artifacts | Derives | Project Manager — establish canonical-value protocol; Process Engineer — evolution cycle |
+| DM-F2 (OPEN) | Design Model, C4-1, C4-2, PR #32 | Derives | Designer — traceability update needed |
 | BR-T1-002 (RESOLVED T2) | IOC binding conditions, NFR-001, NFR-002, CON-004 | Resolved by | PerformanceTests.cs, MockAuthHandler.cs, Risk List, Release Notes, Iteration Assessment |
 | RL-F6 (RESOLVED T2) | Risk List, R003, R004, STK-001 directives | Resolved by | Risk List T2 evolution — R003 accepted, R004 measured, R008 closed |
 | IA-F3 (RESOLVED T2) | Iteration Assessment, iteration objectives, STK-001 directives | Resolved by | Iteration Assessment T2 evolution — all objectives MET/NOT MET |
 | RN-F1 (RESOLVED T2) | Release Notes, CON-006, STK-001 directives | Resolved by | Release Notes T2 evolution — deployment status explicit |
-| DM-F2 (OPEN) | Design Model, C4-1, C4-2, PR #32 | Derives | Designer — traceability update needed |
-| BR-T1-001 (RESOLVED T2) | Vision, BG-001, BG-002, BG-003 | Resolved by | Iteration Assessment T2 — goal measurement plan documented (HR time audit, Excel usage audit, monthly adoption tracking) |
+| BR-T1-001 (RESOLVED T2) | Vision, BG-001, BG-002, BG-003 | Resolved by | Iteration Assessment T2 — goal measurement plan documented |
 | BG-001 (goal achievement) | UC-001..UC-004, UC-009 | Derives | Post-deployment HR time audit (PENDING) |
 | BG-002 (goal achievement) | UC-001..UC-004, UC-009 | Derives | Post-deployment Excel usage audit (PENDING) |
 | BG-003 (goal achievement) | UC-001..UC-010, User Documentation, NFR-001, NFR-002 | Derives | Post-deployment adoption tracking (PENDING) — performance PASS supports adoption |
@@ -717,3 +716,4 @@ end note
 | Stakeholder PR sanction | STK-001, AC-001..AC-005 | Refines | REFUSED (T2) — T3 iteration required; re-review with T3 evidence |
 | Business Lens Verdict (T2) | BG-001..BG-003, BC-1..BC-4, Release Notes, User Documentation | Refines | APPROVED — conditional on mock-auth date standardization (RR-F1) |
 | Management Lens Verdict (T2) | PR-01..PR-10, BC-1..BC-3, STK-001 directive | Refines | CONDITIONAL — T3 ITERATION REQUIRED; stakeholder sanction REFUSED |
+| T3 Consolidation Verdict | All 16 artifacts, all lens findings, STK-001 T3 directives | Refines | CONDITIONAL — 4 open Major findings block PR sanction; auto-iterate required |
