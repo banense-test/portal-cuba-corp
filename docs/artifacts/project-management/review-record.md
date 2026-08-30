@@ -462,18 +462,17 @@ TRA2 --> TRA3
 
 **Recommendation for Evolution Cycle:** Implement a canonical-value registry — a single home artifact (e.g., Risk List or a dedicated configuration artifact) where any fact that appears in multiple artifacts is declared once. All other artifacts reference the canonical source by ID, never copy the value. This eliminates the class of defect that blocked PR sanction in T2 and T3.
 ## Disposition
+### T3 Cycle 1 — Review Coordinator Consolidation (Product Release Gate)
 
-### T2 Cycle 1 — Management Lens Disposition (Product Release Gate)
+**CONDITIONAL — STAKEHOLDER SANCTION PENDING — OPEN MAJOR FINDINGS BLOCK GATE**
 
-**CONDITIONAL — STAKEHOLDER SANCTION REFUSED — ITERATION REQUIRED (T3)**
+The Review Coordinator's consolidation of the T2 cross-lens findings yields the following verdict:
 
-The Management Reviewer's assessment at the PR milestone yields the following verdict:
-
-**PR Compliance Assessment:**
+**PR Compliance Assessment (T3 Consolidation):**
 
 ```plantuml
 @startuml
-title PR Compliance Table — Transition T2 Cycle 1
+title PR Compliance Assessment — Transition T3
 
 skinparam classAttributeIconSize 0
 skinparam classBackgroundColor #F0F4FF
@@ -481,80 +480,68 @@ skinparam classBorderColor #336699
 skinparam shadowing false
 
 object "PR-01: User Acceptance (AC-001..AC-005)" as PR01 {
-  AC-001 Clock in/out without help = PASS
+  AC-001 Clock in/out = PASS
   AC-002 HR publish news = PASS
   AC-003 Find colleague < 10s = PASS
-  AC-004 80% adoption no training = PENDING
+  AC-004 80% adoption = PENDING (post-deployment)
   AC-005 Offline 5-min sync = PASS
   Verdict = PARTIALLY MET
-  Evidence = FR-001..010 implemented; CI GREEN
 }
 
 object "PR-02: Deployment Success" as PR02 {
   Status = NOT PERFORMED
   Reason = No Windows Server env (CON-006)
-  StakeholderDirective = Explicitly stated
-  Verdict = DEFERRED (stakeholder-accepted)
-  Evidence = Release Notes T2
+  StakeholderAccepted = YES
+  Verdict = DEFERRED
 }
 
 object "PR-03: Training and Documentation" as PR03 {
   UserDocumentation = Publication-ready
-  BetaProgram = Completed
   Verdict = MET
-  Evidence = User Documentation artifact
 }
 
 object "PR-04: Support Transition" as PR04 {
   Status = NOT DOCUMENTED
   Verdict = NOT MET
-  Evidence = No support transition plan
 }
 
 object "PR-05: BC-1 NFR Load Testing" as PR05 {
   NFR-001 = 0.14s vs 3s = PASS
   NFR-002 = 0.003s vs 1s = PASS
   Verdict = MET
-  Evidence = CI build 33259873386
 }
 
 object "PR-06: BC-2 R003 OIDC Accepted Risk" as PR06 {
   Status = FORMALLY ACCEPTED
   Residual = 8 TCs covered by mock
   Verdict = MET
-  Evidence = Risk List T2
 }
 
 object "PR-07: BC-3 Mock-Auth Expiry" as PR07 {
-  Status = DOCUMENTED WITH DEFECT
-  Dates = 3 distinct values across 7 artifacts
-  Owners = 2 distinct owners
-  Verdict = MET-WITH-DEFECT
-  Evidence = RR-F1 (Major)
+  T2_Status = 3 dates across 7 artifacts
+  T3_Directive = ONE canonical date and owner
+  T3_Status = PENDING VERIFICATION
+  Verdict = PENDING T3
 }
 
 object "PR-08: CI Build Status" as PR08 {
   Status = GREEN on main
-  Run = 33262804733
   OpenPRs = 0
   Verdict = MET
-  Evidence = SCM
 }
 
 object "PR-09: Open Defects" as PR09 {
   Critical = 0
-  Major = 3 (RR-F1, CR-F1, TC-F3)
-  Minor = 6
-  Verdict = NOT MET
-  Evidence = Review Record T2
+  Major = 4 (MR-T2-002, CR-F1, TC-F3, RR-F1)
+  Minor = 7
+  Verdict = NOT MET (4 Major open)
 }
 
 object "PR-10: Stakeholder Sanction" as PR10 {
-  T1_Sanction = REFUSED
-  T2_Sanction = REFUSED
-  Reason = Mock-auth date inconsistency
-  Verdict = REFUSED
-  Evidence = STK-001 directive
+  T1 = REFUSED (binding conditions unmet)
+  T2 = REFUSED (date inconsistency)
+  T3 = PENDING
+  Verdict = PENDING
 }
 
 PR01 --> PR10
@@ -570,276 +557,136 @@ PR09 --> PR10
 @enduml
 ```
 
-**Project Health State:**
-
-```plantuml
-@startuml
-title Project Health State Machine — Transition T2
-
-skinparam state {
-  BackgroundColor #F0F4FF
-  BorderColor #336699
-}
-
-[*] --> Healthy : Inception LCO PASS
-
-Healthy --> AtRisk : Construction IOC Conditional
-AtRisk --> AtRisk : 3 binding conditions unmet (T1)
-
-AtRisk --> ConditionalGo : T2 — 3 BCs substantively met
-ConditionalGo --> AtRisk : Stakeholder REFUSED sanction
-AtRisk --> AtRisk : Mock-auth date inconsistency (3 values)
-
-AtRisk --> NeedsIteration : T3 required — 3 actions
-NeedsIteration : 1. Canonical mock-auth date
-NeedsIteration : 2. Change Request to Transition
-NeedsIteration : 3. Development Case unfrozen
-NeedsIteration : Process: cross-artifact consistency owner
-
-NeedsIteration --> Healthy : T3 actions completed + stakeholder sanction
-
-note right of AtRisk
-  Project is feature-complete
-  CI GREEN, 0 Critical defects
-  But governance defects block gate
-end note
-
-note right of NeedsIteration
-  Stakeholder: "one more iteration,
-  and it is a cheap one"
-  Cost: low (data alignment, not code)
-end note
-
-@enduml
-```
-
-**Risk Retirement Status:**
-
-```plantuml
-@startuml
-title Risk Retirement Trend — Inception to Transition T2
-
-skinparam classAttributeIconSize 0
-skinparam classBackgroundColor #F0F4FF
-skinparam classBorderColor #336699
-skinparam shadowing false
-
-object "R001 (AD LDAP, P=3 I=3, Exp=9)" as R001 {
-  Inception = HIGH (exposure 9)
-  Elaboration = MITIGATED (PoC CONFIRMED)
-  Construction = MITIGATED
-  Transition = RETIRED
-  Trend = DECREASING ✓
-}
-
-object "R002 (Adoption, P=3 I=2, Exp=6)" as R002 {
-  Inception = SIGNIFICANT (exposure 6)
-  Elaboration = MITIGATING
-  Construction = MITIGATING
-  Transition = MONITORING
-  Trend = DECREASING ✓
-}
-
-object "R003 (OIDC, P=2 I=3, Exp=6)" as R003 {
-  Inception = SIGNIFICANT (exposure 6)
-  Elaboration = MONITORING (mock auth)
-  Construction = MONITORING
-  Transition = FORMALLY ACCEPTED
-  Trend = CLOSED (accepted) ✓
-}
-
-object "R004 (NFR Perf, P=2 I=3, Exp=6)" as R004 {
-  Construction = SIGNIFICANT
-  Transition_T1 = OPEN (unmeasured)
-  Transition_T2 = CLOSED (0.14s / 0.003s PASS)
-  Trend = RETIRED ✓
-}
-
-object "R008 (PR Binding Conditions)" as R008 {
-  Transition_T1 = HIGH (3 BCs unmet)
-  Transition_T2 = CLOSED (3 BCs met)
-  Trend = RETIRED ✓
-}
-
-object "R009 (Deploy Env)" as R009 {
-  Transition_T1 = MODERATE
-  Transition_T2 = ACCEPTED (explicit deferral)
-  Trend = CLOSED (accepted) ✓
-}
-
-R001 --> R002
-R002 --> R003
-R003 --> R004
-R004 --> R008
-R008 --> R009
-
-@enduml
-```
-
-**Defect Distribution:**
-
-```plantuml
-@startuml
-title Defect Distribution — Transition T2 Cycle 1
-
-skinparam classAttributeIconSize 0
-skinparam classBackgroundColor #F0F4FF
-skinparam classBorderColor #336699
-skinparam shadowing false
-
-object "Critical (0)" as CR {
-  Count = 0
-}
-
-object "Major (3)" as MA {
-  RR-F1 = Mock-auth date inconsistency (7 artifacts)
-  CR-F1 = Change Request frozen at Construction C4
-  TC-F3 = Test Case internal date inconsistency
-}
-
-object "Minor (6)" as MI {
-  CR-T2-001 = MockAuthHandler.cs date mismatch
-  DM-F2 = Design Model traceability stale
-  VIS-F2 = Vision mock-auth date mismatch
-  SS-F1 = SuppSpec mock-auth date mismatch
-  DC-F1 = Development Case stale at Elaboration
-  RR-F2 = Review Record issue count stale
-}
-
-object "Resolved in T2 (4)" as RES {
-  RL-F6 = Risk List — R003 accepted, R004 measured
-  IA-F3 = Iteration Assessment — objectives MET
-  RN-F1 = Release Notes — deployment explicit
-  BR-T1-002 = Binding conditions substantively met
-}
-
-CR --> MA
-MA --> MI
-MI --> RES
-
-note right of MA
-  All 3 Major findings are
-  governance/data-integrity
-  defects, NOT code defects.
-  Product logic is sound.
-end note
-
-@enduml
-```
-
-**Management Lens Assessment:**
-
-The 3 binding conditions set by the stakeholder in T1 are **substantively MET** with evidence:
-- BC-1 (NFR load testing): MET — NFR-001: 0.14s (threshold 3s) PASS, NFR-002: 0.003s (threshold 1s) PASS. Measured values, not assertions.
-- BC-2 (R003 OIDC): MET — Formally accepted risk per stakeholder directive. Residual: 8 TCs covered by mock, proven at deployment time.
-- BC-3 (Mock-auth expiry): MET-WITH-DEFECT — Date and owner documented, but inconsistent across 7 artifacts (3 distinct dates, 2 owners).
-
-**Stakeholder Sanction: REFUSED (T2)**
-
-The stakeholder refused PR sanction, stating: "What I will not accept is the same fact having three values. The mock-auth expiry appears as 2026-11-29, 2026-12-31 and 2027-01-31 across seven artifacts, with two owners, and the code says something different again. That date exists precisely so the mock does not become permanent — an ambiguous safeguard is not a safeguard."
-
-The stakeholder directed three specific actions for T3:
-1. **One canonical expiry date and one owner** — "Pick it, put it in one place, and make every other artifact and MockAuthHandler.cs cite that value. Not 'align them' — one home, everyone references it."
-2. **Change Request artifact brought up to Transition** — Issue #37 taken through CCB triage instead of sitting cr:logged.
-3. **Development Case unfrozen** — stale at Elaboration with obsolete PoC status.
-
-**Process observation from stakeholder:** "Every artifact was internally consistent and the set was not. Nobody owns the consistency of a single fact across artifacts. A canonical value should have one home and be cited from everywhere else, never copied. Consider that for the evolution cycle."
-
-**Prior MR Findings Reconciled in T2:**
-- RL-F6 (Risk List, Major): RESOLVED — R003 formally accepted, R004 measured, R008 closed
-- IA-F3 (Iteration Assessment, Major): RESOLVED — All objectives MET with evidence
-- RN-F1 (Release Notes, Major): RESOLVED — Deployment status explicit, all directives addressed
-
-**New MR Findings in T2:**
-- MR-T2-001 (Vision, Minor): Mock-auth date 2027-01-31 inconsistent with canonical — must reference canonical value
-- MR-T2-002 (Review Record, Major): Cross-artifact data integrity governance gap — no role owns consistency of a single fact across artifacts
-
-**Management Lens Verdict: CONDITIONAL — ITERATION REQUIRED (T3)**
-
-The product is feature-complete, CI is GREEN, 0 Critical defects, and all 3 binding conditions are substantively met. However, the mock-auth expiry date inconsistency is a governance defect that the stakeholder has identified as a blocking issue. The cost of T3 is low — it is a data alignment exercise, not a code change. The stakeholder characterized it as "one more iteration, and it is a cheap one."
-
-### T2 Cycle 1 — Business Lens Disposition
-
-**CONDITIONAL — APPROVED FROM BUSINESS LENS**
-
-The business lens assessment at the PR milestone yields the following verdict:
-
-**Business Goal Achievement:** All 3 business goals (BG-001, BG-002, BG-003) are **PENDING** — this is the expected state at PR for a system not yet deployed to production. The system is feature-complete (all 10 FRs delivered), the measurement plan is defined (post-deployment HR time audit, Excel usage audit, monthly adoption tracking), and performance metrics support adoption (NFR-001: 0.14s, NFR-002: 0.003s — both PASS). Goal achievement cannot be confirmed until post-deployment measurement, which is by definition post-PR. This is NOT a defect.
-
-**Binding Conditions:** All 4 binding conditions are substantively MET:
-- BC-1 (NFR load testing): MET with measured values
-- BC-2 (R003 OIDC): MET as formally accepted risk
-- BC-3 (Mock-auth expiry): MET with documentation defect (date inconsistency — BR-T2-001, Minor)
-- BC-4 (Deployment exclusion): MET with explicit statement
-
-**Operational Handover:** PASS — Release Notes complete (all 10 FRs, all directives addressed, 7 lessons learned), User Documentation publication-ready (all worker roles covered, all 10 UCs documented, business rules synced).
-
-**Stakeholder Coverage:** PASS — All 4 stakeholders (STK-001 through STK-004) represented in documentation and artifacts.
-
-**Open Business Lens Finding:** 1 Minor (BR-T2-001: Vision mock-auth date inconsistency — concurs with Reviewer RR-F1 from business-planning perspective). This is non-blocking from the business lens but must be resolved before PR sanction per the Reviewer's Major finding.
-
-**Business Lens Verdict: CONDITIONAL → APPROVED**
-
-The business lens approves the product for release from a business-goal-readiness perspective. The single open Minor finding (BR-T2-001) is a documentation consistency issue already captured by the Reviewer's Major finding (RR-F1). The business goals are correctly structured, measurable, and have a defined post-deployment measurement plan. The system delivers all functionality required to achieve them. The binding conditions that gate business outcomes are met. The product is ready for stakeholder re-review and PR sanction, contingent on the mock-auth date standardization (owned by the Reviewer's finding RR-F1).
-
-### T2 Cycle 1 — Product Acceptance Disposition (Reviewer Lens)
-
-**ACCEPTED WITH CONDITIONS**
-
-The product is feature-complete (all 10 FRs implemented), CI is GREEN on main, 0 open PRs, 0 Critical/High defects, and all 3 stakeholder binding conditions are substantively MET. However, 3 Major findings require rework before the PR milestone can close:
-
-1. **Mock-auth expiry date inconsistency (RR-F1, TC-F3, VIS-F2, SS-F1):** Three distinct dates (2026-11-29, 2026-12-31, 2027-01-31) and two owners (Software Architect, STK-003) exist across 7 artifacts for the same binding condition (BC-3). The Project Manager must confirm ONE canonical date and owner, and ALL artifacts must be corrected. This is the single most critical documentation defect at the PR milestone — a binding condition with three different expiry dates is not "documented," it is "ambiguous."
-
-2. **Stale Change Request artifact (CR-F1):** The Change Request is frozen at Construction C4 and does not reflect the Transition phase. Issue #37 (NFR performance test CR) was cr:logged but never CCB-approved, yet the work was executed — a governance gap. The Change Control Manager must update this artifact to Transition with all 9 open issues documented.
-
-3. **Stale Development Case (DC-F1):** The DC is frozen at Elaboration with "PoC PENDING" — the PoC was executed and results recorded. The Process Engineer should update it to reflect the final project state.
-
-### T2 Cycle 1 — Code Reviewer Disposition: PR #38 APPROVED (preserved)
-
-PR #38 (hotfix/T2-defect-fixes → main) is **APPROVED** based on:
-
-1. **CI GREEN** — run 33262584358 passes the hard gate
-2. **Test-only changes** — no production logic modified; only test infrastructure
-3. **Binding conditions addressed in code:**
-   - BC-1: PerformanceTests.cs with NFR-001 and NFR-002 threshold assertions + 50-iteration stress test
-   - BC-3: MockAuthHandler.cs documents expiry (2027-01-31), owner (STK-003), formally accepted risk with residual
-   - BC-2: R003 accepted risk documented in MockAuthHandler comments
-4. **Design Model conformance** — no production class changes, no divergence
-5. **1 Minor finding** (CR-T2-001: date mismatch) — non-blocking, documentation-only
-
-### T1 Cycle 1 — Prior Dispositions (Preserved)
-
-| Lens | Disposition | Status |
-|---|---|---|
-| Product Acceptance | ACCEPTED WITH CONDITIONS | T1 baseline — conditions substantively MET in T2 but date consistency defect emerged |
-| Business Lens | CONDITIONAL | T1 baseline — binding conditions now MET; T2 verdict: APPROVED |
-| Management Lens | CONDITIONAL (No-Go) | T1 baseline — stakeholder sanction REFUSED; T2 remediation complete, re-review PENDING |
-
-### Combined PR Milestone Verdict (T2 Final)
-
-**CONDITIONAL — STAKEHOLDER SANCTION REFUSED — T3 ITERATION REQUIRED**
-
-| Dimension | Status | Evidence |
-|---|---|---|
-| Scope | GREEN — all 10 FRs implemented | SCM, CI GREEN |
-| Schedule | YELLOW — T3 required (low cost) | Stakeholder: "one more iteration, and it is a cheap one" |
-| Cost | GREEN — data alignment, not code | No production logic changes needed |
-| Quality | YELLOW — 0 Critical, 3 Major, 6 Minor | Governance defects, not code defects |
-
-- 0 Critical, 3 Major (RR-F1, CR-F1, TC-F3), 6 Minor open across all lenses
-- All 3 binding conditions substantively MET with evidence
-- PR #38 APPROVED, CI GREEN on main (run 33262804733)
-- 0 open PRs, 0 Critical/High defects
-- **Business Lens verdict: APPROVED** — business goals structured and measurable, measurement plan defined, handover materials complete, binding conditions met
-- **Management Lens verdict: CONDITIONAL — ITERATION REQUIRED** — stakeholder sanction REFUSED; mock-auth date inconsistency blocks gate
-- **Blocking condition:** Mock-auth expiry date must be standardized to ONE canonical value across ALL 7 artifacts and MockAuthHandler.cs before PR sanction
-- **T3 actions required by stakeholder:**
+### Cross-Lens Consolidation
+
+| Lens | T2 Verdict | T3 Status | Open Findings |
+|---|---|---|---|
+| Technical (Reviewer) | ACCEPTED WITH CONDITIONS | Conditions unresolved — 3 Major + 5 Minor open | RR-F1, CR-F1, TC-F3, RR-F2, VIS-F2, SS-F1, DC-F1, DM-F2 |
+| Business (Business Reviewer) | APPROVED | 1 Minor open (BR-T2-001 — concurs with RR-F1) | BR-T2-001 |
+| Management (Management Reviewer) | CONDITIONAL — T3 required | 1 Major + 1 Minor open | MR-T2-002, MR-T2-001 |
+| Code Reviewer | APPROVED (PR #38) | 1 Minor open (CR-T2-001) | CR-T2-001 |
+
+### Consolidated Disposition
+
+**CONDITIONAL — T3 ITERATION REQUIRED — PR SANCTION BLOCKED**
+
+- 0 open Critical findings across all 16 artifacts
+- 4 open Major findings (MR-T2-002, CR-F1, TC-F3, RR-F1) — these block PR sanction
+- 7 open Minor findings — stakeholder requires ALL findings resolved before sanction
+- CI GREEN on main (run 33262804733), 0 open PRs
+- All 10 FRs implemented, all binding conditions substantively met
+- **Blocking condition:** 4 open Major findings must be resolved:
+  1. **RR-F1 / MR-T2-002:** Establish ONE canonical mock-auth expiry date and owner — one home, all artifacts reference it
+  2. **CR-F1:** Change Request artifact updated to Transition; Issue #37 through CCB triage
+  3. **TC-F3:** Test Case internal mock-auth date inconsistency corrected
+  4. **RL-F6 (Risk List):** Potential closure gap — API shows resolution=null but Review Record marks RESOLVED
+- **T3 directives from stakeholder (binding):**
   1. One canonical mock-auth expiry date and owner — one home, all artifacts reference it
-  2. Change Request artifact updated to Transition; Issue #37 through CCB triage
+  2. Change Request artifact brought up to Transition; Issue #37 through CCB triage
   3. Development Case unfrozen from Elaboration
-- **Process observation:** Cross-artifact consistency of a single fact needs a canonical-value protocol — one home, referenced everywhere, never copied
-- Stakeholder re-review required in T3 to sanction Product Release
+- **Process observation (stakeholder):** Cross-artifact consistency of a single fact needs a canonical-value protocol — one home, referenced everywhere, never copied
+- Stakeholder re-review required after T3 directives are met
 
+### T3 Review Close-Out Sequence
+
+```plantuml
+@startuml
+title Transition T3 Review Close-Out — Final Review Sequence to PR Milestone
+
+skinparam activityBackgroundColor #F0F4FF
+skinparam activityBorderColor #336699
+skinparam shadowing false
+
+start
+
+:Verify T3 directives status:
+  1. Canonical mock-auth expiry date established
+  2. Change Request updated to Transition
+  3. Development Case unfrozen;
+
+if (All 3 T3 directives met?) then (YES)
+  :Schedule Product Release PR Milestone Review;
+  :Distribute agenda and evaluation criteria
+   to all lens participants 48h advance;
+  
+  :Execute PR Milestone Review
+   (Technical Reviewer + Business BR + Management MR);
+  
+  :Consolidate cross-lens findings;
+  :Verify finding closure across all 16 artifacts;
+  
+  if (0 open Critical and 0 open Major?) then (YES)
+    if (Stakeholder sanction GRANTED?) then (YES)
+      :Record PR milestone SANCTIONED;
+      :Archive all Review Records;
+      :Project close-out complete;
+      stop
+    else (NO)
+      :Record stakeholder refusal;
+      :Auto-iterate with stakeholder directives;
+      stop
+    endif
+  else (NO)
+    :Record open findings as blocking;
+    :Auto-iterate to resolve;
+    stop
+  endif
+else (NO)
+  :T3 directives not yet met;
+  :Track remaining directives as action items;
+  :Auto-iterate;
+  stop
+endif
+
+@enduml
+```
+
+### Finding Lifecycle — Cross-Artifact Consistency Protocol
+
+```plantuml
+@startuml
+title Finding Lifecycle — Cross-Artifact Consistency Protocol
+
+skinparam stateBackgroundColor #F0F4FF
+skinparam stateBorderColor #336699
+skinparam shadowing false
+
+[*] --> Open : Finding emitted by lens
+
+Open --> Assigned : Owner designated
+Assigned --> InProgress : Owner begins rework
+
+InProgress --> Resolved : Owner confirms fix
+Resolved --> Verified : Review Coordinator verifies
+Verified --> Closed : Resolution confirmed via API
+
+Resolved --> Reopened : Verification fails
+Reopened --> Assigned : New owner or same owner
+
+Open --> Deferred : Stakeholder defers with rationale
+Deferred --> Closed : Phase close-out with documented rationale
+
+note right of Verified
+  **Canonical-Value Protocol (T3)**
+  A fact appearing in multiple artifacts
+  is declared ONCE in a home artifact
+  and REFERENCED everywhere else.
+  Home: Risk List (mock-auth expiry)
+  References: all other artifacts cite
+  the home artifact, never copy the value.
+end note
+
+note right of Closed
+  Closure requires:
+  1. resolve_artifact_finding called
+  2. Resolution object populated
+  3. Review Record narrative updated
+end note
+
+[*] --> Closed : Finding resolved + verified
+
+@enduml
+```
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
