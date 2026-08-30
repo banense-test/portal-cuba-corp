@@ -300,17 +300,17 @@ TRA2 --> TRA3
 
 **Recommendation for Evolution Cycle:** Implement a canonical-value registry — a single home artifact (e.g., Risk List or a dedicated configuration artifact) where any fact that appears in multiple artifacts is declared once. All other artifacts reference the canonical source by ID, never copy the value. This eliminates the class of defect that blocked PR sanction in T2 and T3.
 ## Disposition
-### T3 Cycle 1 — Review Coordinator Consolidation (Product Release Gate)
+### T3 Cycle 1 — Code Reviewer Execution + Review Coordinator Consolidation (Product Release Gate)
 
 **CONDITIONAL — STAKEHOLDER SANCTION PENDING — OPEN MAJOR FINDINGS BLOCK GATE**
 
-The Review Coordinator's consolidation of the T2 cross-lens findings yields the following verdict:
+The Review Coordinator's consolidation of the T2 cross-lens findings, combined with the Code Reviewer's T3 execution, yields the following verdict:
 
-**PR Compliance Assessment (T3 Consolidation):**
+**PR Compliance Assessment (T3 Consolidation + Code Review):**
 
 ```plantuml
 @startuml
-title PR Compliance Assessment — Transition T3
+title PR Compliance Assessment — Transition T3 (Code Reviewer Executed)
 
 skinparam classAttributeIconSize 0
 skinparam classBackgroundColor #F0F4FF
@@ -357,21 +357,22 @@ object "PR-06: BC-2 R003 OIDC Accepted Risk" as PR06 {
 
 object "PR-07: BC-3 Mock-Auth Expiry" as PR07 {
   T2_Status = 3 dates across 7 artifacts
-  T3_Directive = ONE canonical date and owner
-  T3_Status = PENDING VERIFICATION
-  Verdict = PENDING T3
+  T3_Code = RESOLVED in code (PR #41 APPROVED)
+  T3_Artifacts = PENDING (other roles must align)
+  Verdict = PARTIALLY MET (code done, artifacts pending)
 }
 
 object "PR-08: CI Build Status" as PR08 {
-  Status = GREEN on main
-  OpenPRs = 0
+  Main = GREEN (run 33262804733)
+  Hotfix = GREEN (run 33309948614)
+  PR_41 = APPROVED
   Verdict = MET
 }
 
 object "PR-09: Open Defects" as PR09 {
   Critical = 0
   Major = 4 (MR-T2-002, CR-F1, TC-F3, RR-F1)
-  Minor = 7
+  Minor = 7 + 1 Suggestion (CR-T3-001)
   Verdict = NOT MET (4 Major open)
 }
 
@@ -395,29 +396,32 @@ PR09 --> PR10
 @enduml
 ```
 
-### Cross-Lens Consolidation
+### Cross-Lens Consolidation (T3 Updated)
 
 | Lens | T2 Verdict | T3 Status | Open Findings |
 |---|---|---|---|
 | Technical (Reviewer) | ACCEPTED WITH CONDITIONS | Conditions unresolved — 3 Major + 5 Minor open | RR-F1, CR-F1, TC-F3, RR-F2, VIS-F2, SS-F1, DC-F1, DM-F2 |
 | Business (Business Reviewer) | APPROVED | 1 Minor open (BR-T2-001 — concurs with RR-F1) | BR-T2-001 |
 | Management (Management Reviewer) | CONDITIONAL — T3 required | 1 Major + 1 Minor open | MR-T2-002, MR-T2-001 |
-| Code Reviewer | APPROVED (PR #38) | 1 Minor open (CR-T2-001) | CR-T2-001 |
+| Code Reviewer | APPROVED (PR #38, T2) | **T3 EXECUTED — PR #41 APPROVED. CR-T2-001 RESOLVED. 1 new Suggestion (CR-T3-001, non-blocking).** | CR-T3-001 (Suggestion) |
 
 ### Consolidated Disposition
 
-**CONDITIONAL — T3 ITERATION REQUIRED — PR SANCTION BLOCKED**
+**CONDITIONAL — T3 CODE REVIEW COMPLETE — REMAINING FINDINGS OWNED BY OTHER ROLES BLOCK PR SANCTION**
 
 - 0 open Critical findings across all 16 artifacts
 - 4 open Major findings (MR-T2-002, CR-F1, TC-F3, RR-F1) — these block PR sanction
 - 7 open Minor findings — stakeholder requires ALL findings resolved before sanction
-- CI GREEN on main (run 33262804733), 0 open PRs
+- 1 new Suggestion (CR-T3-001) — non-blocking, optional remediation
+- CI GREEN on main (run 33262804733) and hotfix/T3-defect-fixes (run 33309948614)
+- PR #41 APPROVED by Code Reviewer — hotfix correctly canonicalizes mock-auth expiry date in code
 - All 10 FRs implemented, all binding conditions substantively met
-- **Blocking condition:** 4 open Major findings must be resolved:
-  1. **RR-F1 / MR-T2-002:** Establish ONE canonical mock-auth expiry date and owner — one home, all artifacts reference it
-  2. **CR-F1:** Change Request artifact updated to Transition; Issue #37 through CCB triage
-  3. **TC-F3:** Test Case internal mock-auth date inconsistency corrected
-  4. **RL-F6 (Risk List):** Potential closure gap — API shows resolution=null but Review Record marks RESOLVED
+- **Code Reviewer T3 work complete:** PR #41 reviewed and APPROVED. CR-T2-001 (mock-auth date in code) RESOLVED. No further code review actions required this iteration.
+- **Blocking condition:** 4 open Major findings must be resolved by their owners:
+  1. **RR-F1 / MR-T2-002:** Establish ONE canonical mock-auth expiry date and owner — one home, all artifacts reference it — **owned by Project Manager**
+  2. **CR-F1:** Change Request artifact updated to Transition; Issue #37 through CCB triage — **owned by Change Control Manager**
+  3. **TC-F3:** Test Case internal mock-auth date inconsistency corrected — **owned by Test Manager**
+  4. **RL-F6 (Risk List):** Potential closure gap — API shows resolution=null but Review Record marks RESOLVED — **owned by Project Manager**
 - **T3 directives from stakeholder (binding):**
   1. One canonical mock-auth expiry date and owner — one home, all artifacts reference it
   2. Change Request artifact brought up to Transition; Issue #37 through CCB triage
@@ -509,7 +513,7 @@ note right of Verified
   A fact appearing in multiple artifacts
   is declared ONCE in a home artifact
   and REFERENCED everywhere else.
-  Home: Risk List (mock-auth expiry)
+  Home: MockAuthHandler.cs (mock-auth expiry)
   References: all other artifacts cite
   the home artifact, never copy the value.
 end note
