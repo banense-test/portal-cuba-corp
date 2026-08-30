@@ -60,7 +60,7 @@ public class PerformanceTests
     // --- NFR-001: Page Load Performance (< 3 seconds) ---
 
     [Fact]
-    public void NFR001_PageLoad_Under3Seconds()
+    public async Task NFR001_PageLoad_Under3Seconds()
     {
         // Simulate the page handler path: service-layer call + data projection.
         // This is the measurable work behind the HTTP response.
@@ -70,12 +70,12 @@ public class PerformanceTests
         // Seed 20 published news items (typical main page load)
         for (int i = 0; i < 20; i++)
         {
-            newsService.PublishNews(
+            await newsService.PublishAsync(
                 $"News Item {i}",
                 $"Body content {i}",
                 NewsCategory.General,
                 isFeatured: i == 0,
-                author: "hr-admin");
+                authorId: "hr-admin");
         }
 
         var sw = Stopwatch.StartNew();
@@ -124,19 +124,19 @@ public class PerformanceTests
     // --- NFR-001 Stress: 50 consecutive page loads ---
 
     [Fact]
-    public void NFR001_StressTest_50PageLoads()
+    public async Task NFR001_StressTest_50PageLoads()
     {
         var persistence = new InMemoryPersistence();
         var newsService = new NewsService(persistence, new InMemoryAuditLogger());
 
         for (int i = 0; i < 20; i++)
         {
-            newsService.PublishNews(
+            await newsService.PublishAsync(
                 $"News Item {i}",
                 $"Body content {i}",
                 NewsCategory.General,
                 isFeatured: i == 0,
-                author: "hr-admin");
+                authorId: "hr-admin");
         }
 
         var maxMs = 0L;
