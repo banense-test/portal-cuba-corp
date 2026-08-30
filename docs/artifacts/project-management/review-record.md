@@ -2,24 +2,22 @@
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | **EVOLVED — Transition Iteration 3 Cycle 1 (Technical Reviewer T3 + Business Reviewer T3 execution)** |
-| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED — stakeholder sanction REFUSED (T2); T3 technical + business review complete, 1 Major + 3 Minor persist** |
+| Status | **EVOLVED — Transition Iteration 3 Cycle 1 (Management Reviewer T3 execution)** |
+| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED — stakeholder sanction REFUSED (T3, 3rd refusal); 2 Major (UCM-F1 new + CR-F1 persisting) + 3 Minor open** |
 | Iteration | 3 (Cycle 1) |
 | Date | 2026-08-30 |
-| Prior Phase | Transition T2 Cycle 1 — PR sanction REFUSED; 3 binding conditions substantively met but mock-auth date inconsistent across 7 artifacts (3 dates, 2 owners); 3 open Major + 9 open Minor findings; stakeholder directed 3 T3 actions |
-| Technical Lens (Reviewer) T2 | **EXECUTED — T2 Cycle 1.** 0 Critical, 3 Major (RR-F1, CR-F1, TC-F3), 5 Minor. All 16 artifacts evaluated. CI GREEN on main (run 33262804733). 0 open PRs. 9 open issues. Disposition: ACCEPTED WITH CONDITIONS. |
-| Technical Lens (Reviewer) T3 | **EXECUTED — T3 Cycle 1.** 0 Critical, 1 Major persisting (CR-F1), 3 Minor persisting (DM-F2, DC-F1, RR-F2). 2 findings RESOLVED via resolve_artifact_finding (TC-F3 Major, SS-F1 Minor). RR-F1 verified RESOLVED across all artifacts. VIS-F2 verified RESOLVED. All 16 artifacts evaluated. CI GREEN on main (run 33310078920). 0 open PRs. 10 open issues. Disposition: ACCEPTED WITH CONDITIONS. |
-| Business Lens (Business Reviewer) T2 | **EXECUTED — T2 Cycle 1.** 0 Critical, 0 Major, 1 Minor (BR-T2-001). Prior findings RESOLVED. Disposition: APPROVED from business lens. |
-| Business Lens (Business Reviewer) T3 | **EXECUTED — T3 Cycle 1.** 0 Critical, 0 Major, 0 Minor. 3/3 prior BR findings verified RESOLVED (BR-T1-001, BR-T1-002, BR-T2-001). 3 business goals (BG-001..BG-003) assessed as PENDING — post-launch metrics. Release scope, handover materials, business rule documentation all PASS. Disposition: CONDITIONAL (goals pending post-launch, not a defect). |
-| Management Lens (Management Reviewer) T2 | **EXECUTED — T2 Cycle 1.** 0 Critical, 1 Major (MR-T2-002), 1 Minor (MR-T2-001). Prior MR findings RESOLVED. Disposition: CONDITIONAL — T3 required. |
-| Code Reviewer T2 | **EXECUTED — T2 Cycle 1.** 0 Critical, 0 Major, 1 Minor (CR-T2-001). PR #38 APPROVED. CI GREEN. |
-| Code Reviewer T3 | **EXECUTED — T3 Cycle 1.** PR #41 (hotfix/T3-defect-fixes → main) reviewed and APPROVED. CI GREEN (run 33309948614). 0 Critical, 0 Major, 1 Minor/Suggestion (CR-T3-001). Prior finding CR-T2-001 RESOLVED. |
-| T3 Consolidation | Review Coordinator consolidation of T2 cross-lens findings. Open findings verified via API across all 16 artifacts. T3 directives from stakeholder: (1) ONE canonical mock-auth expiry date and owner, (2) Change Request updated to Transition + Issue #40 CCB triage, (3) Development Case unfrozen. |
+| Prior Phase | Transition T2 Cycle 1 — PR sanction REFUSED; 3 binding conditions substantively met but mock-auth date inconsistent across 7 artifacts; 3 open Major + 9 open Minor findings; stakeholder directed 3 T3 actions |
+| Technical Lens (Reviewer) T2 | **EXECUTED — T2 Cycle 1.** 0 Critical, 3 Major (RR-F1, CR-F1, TC-F3), 5 Minor. CI GREEN. Disposition: ACCEPTED WITH CONDITIONS. |
+| Technical Lens (Reviewer) T3 | **EXECUTED — T3 Cycle 1.** 0 Critical, 1 Major persisting (CR-F1), 3 Minor persisting (DM-F2, DC-F1, RR-F2). 2 findings RESOLVED (TC-F3, SS-F1). RR-F1 verified RESOLVED but INCOMPLETE — UCM not checked. CI GREEN (run 33310078920). Disposition: ACCEPTED WITH CONDITIONS. |
+| Business Lens (Business Reviewer) T3 | **EXECUTED — T3 Cycle 1.** 0 Critical, 0 Major, 0 Minor. 3/3 prior BR findings RESOLVED. 3 goals PENDING post-launch. Disposition: CONDITIONAL (goals pending). |
+| Management Lens (Management Reviewer) T2 | **EXECUTED — T2 Cycle 1.** 0 Critical, 1 Major (MR-T2-002), 1 Minor (MR-T2-001). Disposition: CONDITIONAL — T3 required. |
+| Management Lens (Management Reviewer) T3 | **EXECUTED — T3 Cycle 1.** 0 Critical, 1 new Major (UCM-F1: Use-Case Model carries 2027-01-31 + STK-003), 1 persisting Major (CR-F1), 3 persisting Minor (DM-F2, DC-F1, RR-F2). Prior MR findings: 3 resolved via API (idempotent no-ops), 2 left open (server InvalidOperationException — artifact content shows corrections). Stakeholder PR sanction REFUSED (3rd). Disposition: CONDITIONAL — T4 required. |
+| Code Reviewer T3 | **EXECUTED — T3 Cycle 1.** PR #41 APPROVED. CI GREEN. 0 Critical, 0 Major, 1 Suggestion. |
 | Stakeholder PR Sanction (T1) | **REFUSED** — 3 binding conditions unmet |
-| Stakeholder PR Sanction (T2) | **REFUSED** — binding conditions met but mock-auth date inconsistent across 7 artifacts; 3 T3 directives issued |
-| Stakeholder PR Sanction (T3) | **PENDING** — T3 technical + business review complete; 1 Major (CR-F1) + 3 Minor persist; stakeholder gate at end of T3 |
-| Stakeholder Finding (T3) | **"Nothing else to add for this new iteration"** — no additional directives; team must resolve remaining findings |
-| Evolution | Transition T3 Review Record evolved from T2. Technical Reviewer T3: 2 findings RESOLVED (TC-F3, SS-F1), 3 persisting re-recorded (CR-F1, DC-F1, DM-F2). Business Reviewer T3: 0 new findings, 3/3 prior resolved, 3 goals PENDING (post-launch). Canonical mock-auth date verified consistent across all 16 artifacts. |
+| Stakeholder PR Sanction (T2) | **REFUSED** — binding conditions met but mock-auth date inconsistent across 7 artifacts |
+| Stakeholder PR Sanction (T3) | **REFUSED (3rd)** — Use-Case Model still carries 2027-01-31 and names STK-003; canonical value NOT propagated to all artifacts; stakeholder directs grep-verify |
+| Stakeholder Finding (T3) | **"The canonicalization is right and the root-cause analysis is exactly correct — one date, one owner, one home, cited never copied. It just did not reach everywhere. The Use-Case Model still carries 2027-01-31 and names a different owner (STK-003). Close it with a check, not a sweep: grep every artifact for a literal date and prove that only Risk List R003 holds one. Any other occurrence must be a reference. Report the count."** |
+| Evolution | Transition T3 Review Record evolved from T2. Management Reviewer T3: 1 new Major (UCM-F1) recorded on Use-Case Model. Prior MR findings reconciled — 3 confirmed resolved via API, 2 left open due to server error (content shows corrections). Stakeholder PR sanction REFUSED (3rd) — canonical mock-auth date not propagated to Use-Case Model. |
 ## Review Scope and Criteria
 
 ### T3 Technical Reviewer — Review Scope
