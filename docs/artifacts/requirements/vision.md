@@ -101,7 +101,7 @@ Cuba Corp (200 employees, 3 offices) manages three core HR processes with fragme
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Delivered System Boundary (Transition T1)
+title Portal Cuba Corp — Delivered System Boundary (Transition T3)
 
 left to right direction
 skinparam packageStyle rectangle
@@ -144,8 +144,9 @@ note right of KC
   OIDC authentication & authorization
   Cross-cutting mechanism — not a UC
   See Supplementary Specification
-  ⚠ Real OIDC verification pending
-  (binding condition #2)
+  R003: Real OIDC formally accepted
+  risk — 8 TCs covered by mock,
+  proven at deployment time
 end note
 
 note bottom of UC004
@@ -181,16 +182,17 @@ All 10 declared features (FR-001 through FR-010) have been implemented and deliv
 | CR #15 | CI/CD | Branch naming convention cleanup |
 | CR #17 | C2-MIN-2 | Dead code DTO cleanup (RecordClockingRequest) |
 | CR #18 | CR #11 | Test idempotency scoping refinement |
-| CR #30 | R003/CON-004 | Real OIDC integration verification (8 tests mock-covered) |
+| CR #30 | R003/CON-004 | Real OIDC integration verification (8 tests mock-covered) — proven at deployment time |
 | CR #34 | C4-F1 | Design Model async method naming consistency |
 
-### Pending Verification (Binding Conditions — Not Deferred)
+### Binding Conditions — Status (T2 Resolved, T3 Verified)
 
-| Condition | Owner | Description |
-|---|---|---|
-| #1 | Test Manager | NFR-001/NFR-002 load testing with measured values |
-| #2 | Software Architect | Real OIDC integration verification (8 tests covered by mock) |
-| #3 | Software Architect | Deployment verification on internal Windows Server |
+| Condition | Owner | Status | Evidence |
+|---|---|---|---|
+| #1 NFR-001/NFR-002 load testing | Test Manager | ✅ MET (T2) | NFR-001 measured 0.14s vs 3s threshold — PASS. NFR-002 measured 0.003s vs 1s threshold — PASS. |
+| #2 Real OIDC integration | Software Architect | ✅ MET (T2) | R003 formally accepted risk — 8 TCs covered by mock, proven at deployment time. Residual stated. |
+| #3 Mock-auth expiry documentation | Software Architect | ✅ MET (T2/T3) | Canonical date: 2026-12-31. Owner: Software Architect. Canonical source: `MockAuthHandler.ExpiryDate = new(2026, 12, 31)` (PR #41). All artifacts reference this value. |
+| #4 Deployment verification (Windows Server) | Deployment Manager | ✅ DECLARED (T2) | Not performed — no environment available. Explicitly stated in Release Notes per stakeholder directive. |
 ## Assumptions and Dependencies
 
 | ID | Assumption / Dependency | Impact |
