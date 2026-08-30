@@ -502,7 +502,7 @@ node "Windows Server\n(Internal — Corporate Network)\nDEPLOYMENT NOT YET PERFO
 }
 
 node "Keycloak Server\n(External — already running)" as KCSERV {
-  artifact "Keycloak\nOIDC Provider\n(R003: mock-auth in use\nexpiry: 2026-12-31)" as KC
+  artifact "Keycloak\nOIDC Provider\n(R003: mock-auth in use\nexpiry: per Release Notes\nKNOWN-ISSUE-004)" as KC
 }
 
 node "Active Directory\n(External — already running)" as ADSERV {
@@ -527,23 +527,30 @@ note bottom of WINSERV
   environment available to project
 end note
 
+note right of KC
+  Mock-auth expiry date:
+  See Release Notes KNOWN-ISSUE-004
+  (canonical home — do not copy)
+  Owner: Software Architect
+end note
+
 @enduml
 ```
 
 ### Deployment Readiness Status
 
-The following diagram shows the current deployment readiness state as of Transition Iteration 2:
+The following diagram shows the current deployment readiness state as of Transition Iteration 3:
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Deployment Readiness Status (Transition Iteration 2)
+title Portal Cuba Corp — Deployment Readiness Status (Transition Iteration 3)
 
 skinparam stateBackgroundColor #F0F4FF
 skinparam stateBorderColor #336699
 
 [*] --> BuildVerified
 
-state "Build Verified\nCI GREEN (run 33259873386)\nAll 10 FRs delivered" as BuildVerified
+state "Build Verified\nCI GREEN (run 33263001739)\nAll 10 FRs delivered" as BuildVerified
 
 BuildVerified --> NFRMeasured
 
@@ -551,142 +558,87 @@ state "NFR-001 / NFR-002\nMEASURED in CI\nPage load: 0.14s (threshold 3s) PASS\n
 
 NFRMeasured --> OIDCRiskAccepted
 
-state "R003: OIDC Integration\nFORMALLY ACCEPTED RISK\nSTK-003 never responded\nKeycloak out of project scope\n8 test cases covered by mock\nResidual: proven at deployment time only" as OIDCRiskAccepted
+state "R003: OIDC Integration\nFORMALLY ACCEPTED RISK\nSTK-003 never responded\nKeycloak out of project scope\nMock-auth in use\nExpiry: per Release Notes\nKNOWN-ISSUE-004\nOwner: Software Architect\n8 TCs covered by mock\nProven at deployment time" as OIDCRiskAccepted
 
 OIDCRiskAccepted --> MockAuthDocumented
 
-state "Mock-Auth Expiry\nDOCUMENTED\nExpiry: 2026-12-31\nOwner: Software Architect\nIf not replaced by expiry:\nauthentication fails" as MockAuthDocumented
+state "Mock-Auth Expiry\nDOCUMENTED\nCanonical home:\nRelease Notes KNOWN-ISSUE-004\nAll artifacts cite this value\nNever copy the date" as MockAuthDocumented
 
-MockAuthDocumented --> DeploymentPending
+MockAuthDocumented --> DeploymentNotPerformed
 
-state "Windows Server Deployment\nNOT PERFORMED\nNo production environment\navailable to project team\nInstallation procedures\ndocumented but unexecuted\nAwaiting Windows Server\nprovisioning" as DeploymentPending
+state "Deployment Verification\nWindows Server (CON-006)\nNOT PERFORMED\nNo production environment\navailable to project\nStated explicitly per\nstakeholder directive" as DeploymentNotPerformed
 
-DeploymentPending --> [*] : Go-live requires:\n1. Windows Server provisioned\n2. Real OIDC client registered\n3. Installation steps executed\n4. Post-install verification
+DeploymentNotPerformed --> [*]
 
 @enduml
 ```
 
-> **Critical deployment notice:** The installation steps below have NOT been executed on a production Windows Server. They are documented procedures verified against the CI test environment. All testing to date used InMemoryDb and mock services. The following conditions must be resolved before go-live:
->
-> | Condition | Status | Action Required | Owner |
-> |---|---|---|---|
-> | Windows Server deployment (CON-006) | **NOT PERFORMED** — no production environment available | Provision Windows Server and execute installation steps below | Infrastructure team (STK-003) |
-> | Real OIDC client registration (CON-004) | **FORMALLY ACCEPTED RISK (R003)** — mock-auth in use | Register OIDC client in Keycloak for production URL before mock-auth expiry | Infrastructure team (STK-003) |
-> | Mock-auth expiry | **DOCUMENTED** — expiry 2026-12-31 | Replace mock-auth with real OIDC client before 2026-12-31 | Software Architect |
-> | NFR-001 page load (3s threshold) | **MEASURED: 0.14s in CI — PASS** | Validate on production server after deployment | Infrastructure team |
-> | NFR-002 clock response (1s threshold) | **MEASURED: 0.003s in CI — PASS** | Validate on production server after deployment | Infrastructure team |
-> | PostgreSQL migrations on production | **NOT RUN** — migrations ready in SCM | Run `dotnet ef database update` on production database | Infrastructure team |
-> | LDAP connectivity from production | **NOT VERIFIED** — implemented and tested in CI | Verify LDAP bind and directory search from production server | Infrastructure team |
+### Operational Parameters
+
+| Parameter | Requirement | Measured Value | Status |
+|---|---|---|---|
+| Page load time (NFR-001) | Under 3 seconds on corporate network | 0.14s (CI test environment) | PASS — production-site validation deferred |
+| Clock in/out response (NFR-002) | Under 1 second | 0.003s (CI test environment) | PASS — production-site validation deferred |
+| Availability (NFR-003) | Monday–Friday 7:00–19:00 | Not measured — single-node deployment | Design meets requirement; production validation deferred |
+| Audit trail (NFR-004) | All news publish/edit/unpublish and category changes audited | Verified in CI — AuditLogger captures author + timestamp | PASS |
+
+### Critical Deployment Notice
+
+> **Deployment on the internal Windows Server (CON-006) has NOT been performed.** No production Windows Server environment is available to the project team. All installation steps below are documented procedures that have NOT been executed on the target platform. They must be completed by the deployment team when the Windows Server environment is provisioned.
 
 ### Installation Prerequisites
 
-The portal runs on a single internal Windows Server. The following must be in place before installation:
-
-| Prerequisite | Details | Owner |
+| Prerequisite | Detail | Status |
 |---|---|---|
-| Windows Server | Internal server accessible from the corporate network (CON-006) | Infrastructure team (STK-003) |
-| .NET 10 Runtime | Required to run the ASP.NET 10 application (CON-001) | Infrastructure team |
-| PostgreSQL 16+ | Database server running on the same Windows Server (CON-003) | Infrastructure team |
-| Keycloak OIDC client | A client must be registered in the existing Keycloak instance with redirect URIs configured for the portal (CON-004). **R003 FORMALLY ACCEPTED RISK** — mock-auth in use with expiry 2026-12-31, owner: Software Architect. Real OIDC client must be registered before go-live. | Infrastructure team |
-| LDAP bind account | An Active Directory service account with read-only LDAP access for querying employee attributes (CON-005, CON-010) | Infrastructure team |
-| Corporate network access | The server must be reachable from all 3 offices via the corporate network (CON-007) | Infrastructure team |
+| .NET 10 SDK | Required on the Windows Server (CON-001) | Must be installed before deployment |
+| PostgreSQL 16+ | Required database (CON-003) | Must be installed and configured before deployment |
+| Keycloak OIDC client | Must be registered for the portal's production URL (CON-004) | **R003 FORMALLY ACCEPTED RISK** — mock-auth in use. Expiry date: per Release Notes KNOWN-ISSUE-004 (canonical home). Owner: Software Architect. |
+| LDAP service account | Must have read access to AD corporate attributes (CON-005) | Must be configured before deployment |
+| Corporate network access | Portal accessible only from corporate network (CON-007) | Network must be configured |
+| Supported browser | Chrome or Edge, current version (CON-008) | No action needed — already available on corporate machines |
 
 ### Installation Steps
 
-1. **Install PostgreSQL** on the Windows Server if not already present
-2. **Create a database** for the portal (e.g., `portal_cuba_corp`)
-3. **Install .NET 10 Runtime** on the Windows Server
-4. **Deploy the application** files to the server (e.g., `C:\inetpub\PortalCubaCorp` or a custom directory)
-5. **Configure the application** by editing `appsettings.json` with the following parameters:
+> **NOTE:** These steps have NOT been executed. They are documented procedures awaiting the Windows Server environment.
 
-| Parameter | Description | Example |
-|---|---|---|
-| `ConnectionStrings:DefaultConnection` | PostgreSQL connection string | `Host=localhost;Database=portal_cuba_corp;Username=portal_user;Password=****` |
-| `Keycloak:Authority` | Keycloak realm URL | `https://keycloak.cubacorp.local/realms/cuba-corp` |
-| `Keycloak:ClientId` | OIDC client ID registered in Keycloak | `portal-cuba-corp` |
-| `Keycloak:ClientSecret` | OIDC client secret | (provided by Infrastructure team) |
-| `Ldap:Host` | Active Directory server hostname | `ad.cubacorp.local` |
-| `Ldap:Port` | LDAP port (389 for non-SSL, 636 for SSL) | `389` |
-| `Ldap:BindDn` | LDAP bind account distinguished name | `CN=portal-readonly,OU=ServiceAccounts,DC=cubacorp,DC=local` |
-| `Ldap:BindPassword` | LDAP bind account password | (provided by Infrastructure team) |
-| `Ldap:SearchBase` | Base DN for employee searches | `DC=cubacorp,DC=local` |
-
-6. **Run database migrations** to create the schema: `dotnet ef database update` (or the equivalent migration command for your deployment process)
-7. **Configure IIS or Kestrel** as the web server to serve the application on the designated port
-8. **Verify the OIDC redirect URI** in Keycloak points to the portal's HTTPS URL
-9. **Test LDAP connectivity** from the server to Active Directory
-10. **Start the application** and verify the login page loads
-
-> **NOTE:** Steps 1–10 have NOT been executed on a production server. They are documented procedures verified against the CI test environment with InMemoryDb and mock services. Execute them when the Windows Server environment is provisioned.
-
-### Post-Installation Verification
-
-| Check | Expected Result |
-|---|---|
-| Navigate to portal URL in Chrome | Keycloak login page appears |
-| Log in with corporate credentials | Main page loads in under 3 seconds (NFR-001 — measured 0.14s in CI, validate on production) |
-| Press Clock In button | Confirmation appears in under 1 second (NFR-002 — measured 0.003s in CI, validate on production) |
-| Search employee directory | Results appear with colleague details |
-| Publish a test news item (HR) | News appears on main page |
-| Export clocking report (HR) | CSV file downloads successfully |
+1. **Install .NET 10 SDK** on the Windows Server (CON-001).
+2. **Install PostgreSQL 16+** (CON-003) and create the `portal_cuba` database.
+3. **Configure connection strings** in `appsettings.json` — PostgreSQL host, LDAP host, Keycloak authority.
+4. **Run EF Core migrations** — `dotnet ef database update` — creates the clockings, news, worker_categories, and audit_log tables.
+5. **Deploy the application** — publish the .NET 10 application to IIS or Kestrel behind a reverse proxy on the Windows Server.
+6. **Register the OIDC client** in Keycloak for the portal's production URL (STK-003 coordination — R003 formally accepted risk; mock-auth expiry per Release Notes KNOWN-ISSUE-004).
+7. **Verify OIDC login** — access the portal URL from a corporate browser, confirm Keycloak redirect and token validation.
+8. **Verify LDAP directory** — search for a known employee, confirm corporate attributes display correctly.
+9. **Verify clocking** — clock in and out, confirm confirmation and history.
+10. **Verify news publishing** — publish a test news item, confirm it appears on the main page with correct category and featured banner.
 
 ### Configuration Reference
 
-#### Database Tables
-
-The portal uses four PostgreSQL tables:
-
-| Table | Purpose | Key Columns |
+| Setting | Location | Description |
 |---|---|---|
-| `clockings` | Employee clock in/out records | id, employee_id, timestamp, type (in/out), idempotency_key |
-| `news_items` | News articles | id, title, body, category, is_featured, status (draft/published/unpublished), author_id, published_at |
-| `worker_categories` | AD user ID to category mapping | ad_user_id, category |
-| `audit_records` | Audit trail for all audited actions | id, entity_type, entity_id, action, author_id, timestamp |
+| PostgreSQL connection | `appsettings.json` — `ConnectionStrings:DefaultConnection` | Host, port, database, username, password for PostgreSQL |
+| LDAP host | `appsettings.json` — `Ldap:Host` | Active Directory server address (CON-005) |
+| LDAP bind DN | `appsettings.json` — `Ldap:BindDn` | Service account DN for read-only AD access |
+| LDAP bind password | `appsettings.json` — `Ldap:BindPassword` | Service account password |
+| LDAP search base | `appsettings.json` — `Ldap:SearchBase` | AD search base for employee queries |
+| Keycloak authority | `appsettings.json` — `Authentication:Authority` | Keycloak server URL (CON-004) |
+| Keycloak client ID | `appsettings.json` — `Authentication:ClientId` | OIDC client ID registered in Keycloak |
+| Keycloak client secret | `appsettings.json` — `Authentication:ClientSecret` | OIDC client secret |
 
-#### Operational Parameters
-
-| Parameter | Value | Source |
-|---|---|---|
-| Operating hours | Monday–Friday 7:00–19:00 | NFR-003 |
-| Page load target | Under 3 seconds on corporate network | NFR-001 |
-| Page load measured (CI) | 0.14 seconds — PASS | CI run 33259873386 |
-| Clock in/out response target | Under 1 second | NFR-002 |
-| Clock response measured (CI) | 0.003 seconds — PASS | CI run 33259873386 |
-| Offline retry window | 5 minutes (clocking only) | AC-005 |
-| Offline retry interval | Every 10 seconds | AC-005 |
-| Concurrent users | ~200 (single server, no scaling needed) | CON-006 |
-| Browser support | Chrome and Edge (current versions) | CON-008 |
-| Mock-auth expiry | 2026-12-31 | R003 — formally accepted risk |
-| Mock-auth owner | Software Architect | R003 — formally accepted risk |
-
-### Monitoring and Maintenance
-
-#### Routine Checks
-
-| Task | Frequency | What to Check |
-|---|---|---|
-| Verify portal is accessible | Daily (before 7:00) | Login page loads, authentication works |
-| Check PostgreSQL service | Daily | Service is running, disk space is adequate |
-| Review audit logs | Weekly | Audit records are being written for news and category changes |
-| Verify LDAP connectivity | Weekly | Directory search returns results from all 3 offices |
-| Check Keycloak client status | Monthly | OIDC client is active, tokens are validating |
-| Review disk space | Monthly | PostgreSQL logs and data have adequate space |
-| Check mock-auth expiry date | Monthly | Ensure real OIDC client is registered before 2026-12-31 |
-
-#### Troubleshooting
+### Troubleshooting
 
 | Symptom | Likely Cause | Resolution |
 |---|---|---|
-| Login page does not appear | Application not running or IIS/Kestrel misconfigured | Check application process, check server logs |
-| Login fails | Keycloak OIDC client misconfigured or Keycloak server down | Verify Keycloak is running, check client redirect URIs. If mock-auth is still in use after 2026-12-31, authentication will fail — replace with real OIDC client immediately |
-| Directory search returns "N/A" for some fields | AD attributes not filled for some employees (R001) | Contact Infrastructure team to update AD attributes |
-| Directory search returns no results | LDAP bind account issue or network problem | Verify LDAP credentials, check network path to AD server |
+| Cannot log in | Keycloak OIDC client not registered or misconfigured | Contact Infrastructure team (STK-003) to verify OIDC client registration. Mock-auth expiry: per Release Notes KNOWN-ISSUE-004. |
+| Directory search returns no results | LDAP bind account lacks read permissions, or AD attributes not populated | Verify LDAP service account permissions, check AD attribute consistency (R001) |
+| Directory shows "N/A" for some fields | AD attributes (job title, extension) not filled for some employees (R001) | Contact Infrastructure team to update AD — portal cannot edit AD data (CON-010) |
+| Clocking not registering | Network connectivity issue or database unreachable | Check PostgreSQL connection, verify corporate network access |
 | Clocking fails after 5 minutes | Network outage lasting more than 5 minutes | Employee should contact HR to record clocking manually |
 | News not appearing on main page | News item may be unpublished or in draft status | HR should check News Management page |
 | CSV export is empty | No clocking data for the selected period | Verify date range, verify employees have clocked in |
 | Page load is slow | PostgreSQL needs maintenance or server resources are low | Run VACUUM ANALYZE on database, check server CPU/memory |
 
-#### Backup
+### Backup
 
 - **PostgreSQL database:** Back up daily using `pg_dump` or PostgreSQL's built-in backup tools. The database contains clockings, news items, worker categories, and audit records — all portal data.
 - **Application configuration:** Back up `appsettings.json` after any configuration change.
