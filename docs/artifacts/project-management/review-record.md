@@ -2,24 +2,24 @@
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | **EVOLVED — Transition Iteration 3 Cycle 1 (Technical Reviewer T3 execution — 2 findings RESOLVED, 3 persisting re-recorded)** |
-| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED — stakeholder sanction REFUSED (T2); T3 technical review complete, 1 Major + 3 Minor persist** |
+| Status | **EVOLVED — Transition Iteration 3 Cycle 1 (Technical Reviewer T3 + Business Reviewer T3 execution)** |
+| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED — stakeholder sanction REFUSED (T2); T3 technical + business review complete, 1 Major + 3 Minor persist** |
 | Iteration | 3 (Cycle 1) |
 | Date | 2026-08-30 |
 | Prior Phase | Transition T2 Cycle 1 — PR sanction REFUSED; 3 binding conditions substantively met but mock-auth date inconsistent across 7 artifacts (3 dates, 2 owners); 3 open Major + 9 open Minor findings; stakeholder directed 3 T3 actions |
 | Technical Lens (Reviewer) T2 | **EXECUTED — T2 Cycle 1.** 0 Critical, 3 Major (RR-F1, CR-F1, TC-F3), 5 Minor. All 16 artifacts evaluated. CI GREEN on main (run 33262804733). 0 open PRs. 9 open issues. Disposition: ACCEPTED WITH CONDITIONS. |
 | Technical Lens (Reviewer) T3 | **EXECUTED — T3 Cycle 1.** 0 Critical, 1 Major persisting (CR-F1), 3 Minor persisting (DM-F2, DC-F1, RR-F2). 2 findings RESOLVED via resolve_artifact_finding (TC-F3 Major, SS-F1 Minor). RR-F1 verified RESOLVED across all artifacts. VIS-F2 verified RESOLVED. All 16 artifacts evaluated. CI GREEN on main (run 33310078920). 0 open PRs. 10 open issues. Disposition: ACCEPTED WITH CONDITIONS. |
 | Business Lens (Business Reviewer) T2 | **EXECUTED — T2 Cycle 1.** 0 Critical, 0 Major, 1 Minor (BR-T2-001). Prior findings RESOLVED. Disposition: APPROVED from business lens. |
+| Business Lens (Business Reviewer) T3 | **EXECUTED — T3 Cycle 1.** 0 Critical, 0 Major, 0 Minor. 3/3 prior BR findings verified RESOLVED (BR-T1-001, BR-T1-002, BR-T2-001). 3 business goals (BG-001..BG-003) assessed as PENDING — post-launch metrics. Release scope, handover materials, business rule documentation all PASS. Disposition: CONDITIONAL (goals pending post-launch, not a defect). |
 | Management Lens (Management Reviewer) T2 | **EXECUTED — T2 Cycle 1.** 0 Critical, 1 Major (MR-T2-002), 1 Minor (MR-T2-001). Prior MR findings RESOLVED. Disposition: CONDITIONAL — T3 required. |
 | Code Reviewer T2 | **EXECUTED — T2 Cycle 1.** 0 Critical, 0 Major, 1 Minor (CR-T2-001). PR #38 APPROVED. CI GREEN. |
 | Code Reviewer T3 | **EXECUTED — T3 Cycle 1.** PR #41 (hotfix/T3-defect-fixes → main) reviewed and APPROVED. CI GREEN (run 33309948614). 0 Critical, 0 Major, 1 Minor/Suggestion (CR-T3-001). Prior finding CR-T2-001 RESOLVED. |
 | T3 Consolidation | Review Coordinator consolidation of T2 cross-lens findings. Open findings verified via API across all 16 artifacts. T3 directives from stakeholder: (1) ONE canonical mock-auth expiry date and owner, (2) Change Request updated to Transition + Issue #40 CCB triage, (3) Development Case unfrozen. |
 | Stakeholder PR Sanction (T1) | **REFUSED** — 3 binding conditions unmet |
 | Stakeholder PR Sanction (T2) | **REFUSED** — binding conditions met but mock-auth date inconsistent across 7 artifacts; 3 T3 directives issued |
-| Stakeholder PR Sanction (T3) | **PENDING** — T3 technical review complete; 1 Major (CR-F1) + 3 Minor persist; stakeholder gate at end of T3 |
+| Stakeholder PR Sanction (T3) | **PENDING** — T3 technical + business review complete; 1 Major (CR-F1) + 3 Minor persist; stakeholder gate at end of T3 |
 | Stakeholder Finding (T3) | **"Nothing else to add for this new iteration"** — no additional directives; team must resolve remaining findings |
-| Evolution | Transition T3 Review Record evolved from T2. Technical Reviewer T3: 2 findings RESOLVED (TC-F3, SS-F1), 3 persisting re-recorded (CR-F1, DC-F1, DM-F2). Canonical mock-auth date verified consistent across all 16 artifacts. |
-
+| Evolution | Transition T3 Review Record evolved from T2. Technical Reviewer T3: 2 findings RESOLVED (TC-F3, SS-F1), 3 persisting re-recorded (CR-F1, DC-F1, DM-F2). Business Reviewer T3: 0 new findings, 3/3 prior resolved, 3 goals PENDING (post-launch). Canonical mock-auth date verified consistent across all 16 artifacts. |
 ## Review Scope and Criteria
 
 ### T3 Technical Reviewer — Review Scope
