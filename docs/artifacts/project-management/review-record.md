@@ -333,12 +333,13 @@ The 3 binding conditions from T1 are ALL MET. CI is GREEN. All 10 FRs are implem
 | DM-F2 (OPEN) | Design Model, Review Record C4 | Persists | Designer action required (3rd iteration) |
 | UCM-F1 (OPEN) | Use-Case Model, Review Record T3 | Persists | System Analyst action required (2nd iteration) |
 | RR-F4 (LEFT OPEN — server error) | Review Record T2 | Persists (API) | Content corrected; resolve_artifact_finding returned InvalidOperationException |
+| VIS-F2-MR (LEFT OPEN — server error) | Vision, Review Record T2 | Persists (API) | Content corrected; resolve_artifact_finding returned InvalidOperationException |
 | Grep-Verify (T4) | STK-001 T3 directive | Derives | 1 literal date outside canonical home (UCM: 2027-01-31) |
+| Stakeholder Finding (T4) | STK-001, T4 Review Coordinator question | Refines | "Nothing new that I haven't already mentioned to the Management Reviewer." — T3 directives remain governing action items |
 | CI Build (main) | scm_get_build_status | Tests | GREEN (run 33310078920) |
 | Open PRs | scm_list_pull_requests | Tests | 0 — all merged |
 | Open Issues | scm_list_issues | Tests | 10 (0 critical, 1 cr:logged, 5 deferred, 4 records) |
-| Stakeholder PR sanction | STK-001, AC-001..AC-005 | Refines | PENDING — T4 gate |
-| Stakeholder Finding (T3) | STK-001, T3 consolidation | Refines | Grep-verify directive executed; count reported: 1 non-canonical date |
+| Stakeholder PR sanction | STK-001, AC-001..AC-005 | Refines | NOT GRANTED — auto-iterate required (T4) |
 | Business Lens Verdict (T3) | BG-001..BG-003, Release Notes, User Documentation, CON-010/012/013, NFR-004 | Refines | CONDITIONAL — 0 new findings, 3/3 prior resolved, 3 goals PENDING (post-launch) |
 | Management Lens Verdict (T3) | PR-01..PR-10, BC-1..BC-3, STK-001 directive | Refines | CONDITIONAL — UCM-F1 new Major, CR-F1 persisting Major |
 | T3 Technical Reviewer Verdict | All 16 artifacts, SCM evidence | Refines | ACCEPTED WITH CONDITIONS — 1 Major + 3 Minor open |
