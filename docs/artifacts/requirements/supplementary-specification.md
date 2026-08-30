@@ -2,12 +2,12 @@
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | **EVOLVED — Transition Iteration 2 Cycle 1 (System Analyst)** |
-| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED — pending stakeholder re-review with T2 evidence** |
-| Iteration | 2 (Cycle 1) |
-| Date | 2026-08-29 |
-| Prior Phase | Construction C4 — IOC CONDITIONAL GO; all NFRs addressed in implementation; SEC-006/SEC-007 added in Construction C3 |
-| Evolution | Construction Iter 1: NFR baseline preserved. Construction Iter 2: CR-010 [DERIVED] marker retired. Construction Iter 3: SEC-006/SEC-007 added via CR-023/CR-024. Transition Iter 1: NFR baseline preserved — no findings or CRs target the Supplementary Specification. Transition Iter 2: NFR-001/NFR-002 load tests executed with measured values — thresholds met. R003 (real OIDC) formally accepted risk. Mock-auth expiry documented (2027-01-31, owner STK-003). All FURPS+ categories remain valid for the delivered system. |
+| Status | **EVOLVED — Transition Iteration 3 Cycle 1 (System Analyst)** |
+| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED — pending stakeholder re-review with T3 evidence** |
+| Iteration | 3 (Cycle 1) |
+| Date | 2026-08-30 |
+| Prior Phase | Transition T2 — PR sanction REFUSED; 3 binding conditions substantively met but mock-auth date inconsistent across 7 artifacts (3 dates, 2 owners); 3 T3 directives issued |
+| Evolution | Construction Iter 1: NFR baseline preserved. Construction Iter 2: CR-010 [DERIVED] marker retired. Construction Iter 3: SEC-006/SEC-007 added via CR-023/CR-024. Transition Iter 1: NFR baseline preserved — no findings or CRs target the Supplementary Specification. Transition Iter 2: NFR-001/NFR-002 load tests executed with measured values — thresholds met. R003 (real OIDC) formally accepted risk. Mock-auth expiry documented. All FURPS+ categories remain valid for the delivered system. Transition Iter 3: Mock-auth expiry date corrected to canonical value 2026-12-31 (owner: Software Architect, established in PR #41 — `MockAuthHandler.ExpiryDate = new(2026, 12, 31)`). This artifact now references the canonical value, never copies it. |
 ## Functionality
 ### Security
 
