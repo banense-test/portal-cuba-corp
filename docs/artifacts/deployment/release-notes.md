@@ -66,7 +66,7 @@ The product's Bill of Materials is the set of lock files and source code in the 
 | Server OS | Windows Server (internal — CON-006) — **NOT YET VERIFIED: no production environment available** |
 | Runtime | .NET 10 SDK |
 | Database | PostgreSQL (CON-003) — run EF Core migrations before first launch — **NOT YET RUN on production server** |
-| External: Keycloak | Already running (CON-004) — OIDC client must be registered for the portal's production URL before go-live. **R003 FORMALLY ACCEPTED RISK** — mock-auth in use, expiry 2026-12-31, owner: Software Architect. |
+| External: Keycloak | Already running (CON-004) — OIDC client must be registered for the portal's production URL before go-live. **R003 FORMALLY ACCEPTED RISK** — mock-auth in use. **Canonical expiry: 2026-12-31** — per Release Notes KNOWN-ISSUE-004 (canonical home). Owner: Software Architect. |
 | External: Active Directory | Already running (CON-005) — LDAP read access configured; ensure service account has read permissions for corporate attributes — **NOT YET VERIFIED from production server** |
 | Browser | Chrome or Edge, current version (CON-008) |
 | Network | Corporate intranet only (CON-007) — no external access |
@@ -75,7 +75,7 @@ The product's Bill of Materials is the set of lock files and source code in the 
 
 ```plantuml
 @startuml
-title Portal Cuba Corp — Final Production Topology (Transition)
+title Portal Cuba Corp — Final Production Topology (Transition T3)
 
 node "Client Browser\n(Chrome / Edge — CON-008)" as CLIENT {
   artifact "Razor Pages\n(server-rendered HTML)" as RP
@@ -88,7 +88,7 @@ node "Windows Server\n(Internal — CON-006)\nNOT YET VERIFIED" as WINSERV {
 }
 
 node "Keycloak Server\n(External — CON-004)" as KCSERV {
-  artifact "Keycloak\nOIDC Provider\n(R003: mock-auth in use\nexpiry: 2026-12-31)" as KC
+  artifact "Keycloak\nOIDC Provider\n(R003: mock-auth in use\nCANONICAL expiry: 2026-12-31\nper Release Notes KNOWN-ISSUE-004)" as KC
 }
 
 node "Active Directory\n(External — CON-005)" as ADSERV {
@@ -114,12 +114,20 @@ note bottom of JS
   No PWA, no service worker.
 end note
 
+note right of KC
+  CANONICAL mock-auth expiry:
+  2026-12-31
+  Owner: Software Architect
+  Home: Release Notes KNOWN-ISSUE-004
+  All other artifacts cite this value.
+end note
+
 @enduml
 ```
 
 ### Installation Steps
 
-1. **Pre-install:** Confirm Keycloak OIDC client is registered for the production URL (STK-003 coordination — R003 formally accepted risk, mock-auth expiry 2026-12-31).
+1. **Pre-install:** Confirm Keycloak OIDC client is registered for the production URL (STK-003 coordination — R003 formally accepted risk, mock-auth canonical expiry 2026-12-31 per Release Notes KNOWN-ISSUE-004).
 2. **Pre-install:** Confirm LDAP service account has read access to Active Directory corporate attributes (CON-005, CON-010).
 3. **Install .NET 10 SDK** on the Windows Server.
 4. **Install PostgreSQL** (CON-003) and create the `portal_cuba` database.
