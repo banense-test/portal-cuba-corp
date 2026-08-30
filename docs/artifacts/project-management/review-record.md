@@ -2,8 +2,8 @@
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | **EVOLVED — Transition Iteration 4 Cycle 1 (Review Coordinator T4 consolidation)** |
-| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED — stakeholder sanction REFUSED (T3, 3rd refusal); 2 Major (UCM-F1 new + CR-F1 persisting) + 3 Minor open** |
+| Status | **EVOLVED — Transition Iteration 4 Cycle 1 (Review Coordinator T4 consolidation — COMPLETE)** |
+| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED — auto-iterate required; 4 Major open (UCM-F1, CR-F1, RR-F4 server-err, VIS-F2-MR server-err) + 2 Minor open (DC-F1, DM-F2)** |
 | Iteration | 4 (Cycle 1) |
 | Date | 2026-08-30 |
 | Prior Phase | Transition T3 Cycle 1 — PR sanction REFUSED (3rd); UCM-F1 new Major (Use-Case Model carries 2027-01-31 + STK-003); CR-F1 persisting Major; 3 Minor persisting; stakeholder directed grep-verify of all artifacts for literal mock-auth dates |
@@ -17,10 +17,12 @@
 | Stakeholder PR Sanction (T2) | **REFUSED** — binding conditions met but mock-auth date inconsistent across 7 artifacts |
 | Stakeholder PR Sanction (T3) | **REFUSED (3rd)** — Use-Case Model still carries 2027-01-31 and names STK-003; canonical value NOT propagated to all artifacts; stakeholder directs grep-verify |
 | Stakeholder Finding (T3) | **"The canonicalization is right and the root-cause analysis is exactly correct — one date, one owner, one home, cited never copied. It just did not reach everywhere. The Use-Case Model still carries 2027-01-31 and names a different owner (STK-003). Close it with a check, not a sweep: grep every artifact for a literal date and prove that only Risk List R003 holds one. Any other occurrence must be a reference. Report the count."** |
+| Stakeholder Finding (T4) | **"Nothing new that I haven't already mentioned to the Management Reviewer."** — No additional directives beyond T3 grep-verify results. The stakeholder confirms the T3 directives remain the governing action items. |
 | Open Defect Issues | **10 open issues** (corrected from prior "7"): 1 cr:logged (#40 — mock-auth date CR, needs CCB triage), 5 cr:deferred-next-iteration (#34, #18, #17, #15, #12), 4 iteration/integration records (#42, #39, #36, #5). 0 critical/high defects. |
 | RR-F2 Resolution | **RESOLVED in T4** — Issue count corrected from "7" to "10" to match SCM evidence (10 open issues: 1 cr:logged, 5 deferred, 4 records). The prior "7" count was stale from T1 and did not reflect issues #40, #42, #39 added during T2/T3. |
 | Grep-Verify Results (T4) | **1 literal date found outside canonical home**: Use-Case Model "Use-Case Specifications" section carries "2027-01-31 (owner: STK-003)" — must be replaced with reference to Risk List R003. All other artifacts (Vision, Supplementary Spec, Test Case, Release Notes, Review Record) reference canonical value or have been corrected. Risk List R003 holds the single canonical literal date: 2026-12-31. |
-| Evolution | Transition T4 Review Record evolved from T3. Review Coordinator T4: (1) Executed stakeholder grep-verify directive — 1 literal date found outside canonical home (UCM-F1 persists); (2) Corrected RR-F2 issue count from 7 to 10; (3) Consolidated all lens findings for T4 milestone verdict. UCM-F1 (Major) persists on Use-Case Model — owned by System Analyst. CR-F1 (Major) persists on Change Request — owned by ChangeControlManager. DC-F1 (Minor) persists on Development Case — owned by ProcessEngineer. DM-F2 (Minor) persists on Design Model — owned by Designer. |
+| T4 Milestone Verdict | **AUTO-ITERATE (requiresIteration: true)** — 0 open Critical, 4 open Major (UCM-F1, CR-F1, RR-F4 server-err, VIS-F2-MR server-err), 2 open Minor (DC-F1, DM-F2). Stakeholder sanction NOT GRANTED. Planned scope incomplete (UCM-F1 blocks canonical-value compliance). T5 iteration required. |
+| Evolution | Transition T4 Review Record evolved from T3. Review Coordinator T4: (1) Executed stakeholder grep-verify directive — 1 literal date found outside canonical home (UCM-F1 persists); (2) Corrected RR-F2 issue count from 7 to 10; (3) Consolidated all lens findings for T4 milestone verdict; (4) Recorded stakeholder T4 answer: "Nothing new that I haven't already mentioned to the Management Reviewer." UCM-F1 (Major) persists on Use-Case Model — owned by System Analyst. CR-F1 (Major) persists on Change Request — owned by ChangeControlManager. RR-F4 (Major) left open due to server error — content corrected. VIS-F2-MR (Major) left open due to server error — content corrected. DC-F1 (Minor) persists on Development Case — owned by ProcessEngineer. DM-F2 (Minor) persists on Design Model — owned by Designer. |
 ## Review Scope and Criteria
 ### T3 Technical Reviewer — Review Scope
 
