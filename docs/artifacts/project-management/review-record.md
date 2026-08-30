@@ -337,7 +337,6 @@ The T2 finding tracker is preserved with T3 verification status appended. Open f
 | RN-F1 / F1 | Release Notes | Management Reviewer | Major | RESOLVED (T2) — Deployment status explicit |
 | BR-T1-001 / F1 | Vision | Business Reviewer | Minor | RESOLVED (T2) — Goal measurement plan documented in Iteration Assessment T2 |
 ## Resolutions and Actions
-
 ### Prior Findings Reconciliation (Reviewer Lens)
 
 | Finding | Artifact | Phase/Iter Emitted | Resolution Status | Action |
@@ -347,7 +346,7 @@ The T2 finding tracker is preserved with T3 verification status appended. Open f
 | F1 (Minor) | Test Case | Elaboration I1 | RESOLVED (Elaboration I2) | TD-NNN entries removed — confirmed |
 | F2 (Minor) | Test Case | Construction I2 | RESOLVED (Construction I3) | UnitTest1.cs placeholder removed — confirmed |
 | F1 (Minor) | Design Model | Construction I2 | RESOLVED (Construction I3) | INT-003 office parameter updated — confirmed |
-| F2 (Minor) | Design Model | Construction I4 | **LEFT OPEN** | C4-1/C4-2 traceability still stale — Designer owns |
+| F2 (Minor) | Design Model | Construction I4 | **OPEN** | C4-1/C4-2 traceability still stale — Designer owns |
 
 ### Prior Findings Reconciliation (Management Reviewer Lens — T2)
 
@@ -357,13 +356,13 @@ The T2 finding tracker is preserved with T3 verification status appended. Open f
 | IA-F3 (Major) | Iteration Assessment | Transition T1 | **RESOLVED (T2)** | All 5 objectives MET with T2 evidence |
 | RN-F1 (Major) | Release Notes | Transition T1 | **RESOLVED (T2)** | Deployment NOT PERFORMED explicitly stated; all 4 directives addressed |
 
-### Open Action Items — Transition Iteration 2 (Updated with T3 Directives)
+### T3 Stakeholder Directives — Consolidated Action Items
 
 | # | Action | Owner | Severity | Blocking? | Status |
 |---|---|---|---|---|---|
 | 1 | NFR-001/NFR-002 load testing with measured values | Test Manager | Major | WAS binding #1 | **MET** — NFR-001: 0.14s PASS, NFR-002: 0.003s PASS |
 | 2 | Convert R003 OIDC to formally accepted risk | Software Architect / PM | Major | WAS binding #2 | **MET** — Risk List updated, code documents accepted risk |
-| 3 | Document mock-auth expiry date and owner | Software Architect | Major | WAS binding #3 | **MET with DEFECT** — Date documented but inconsistent across artifacts (3 distinct values: 2026-11-29, 2026-12-31, 2027-01-31) |
+| 3 | Document mock-auth expiry date and owner | Software Architect | Major | WAS binding #3 | **MET with DEFECT** — Date documented but inconsistent across artifacts (3 distinct values) |
 | 4 | State deployment verification status explicitly in Release Notes | Deployment Manager | Major | WAS MR finding | **MET** — Release Notes explicitly state NOT PERFORMED |
 | 5 | Update Design Model C4-1/C4-2 traceability | Designer | Minor | No | **OPEN** — not in this PR |
 | 6 | Document post-deployment goal verification plan | System Analyst + STK-001 | Minor | No | **ADDRESSED** — plan documented in Iteration Assessment |
@@ -376,11 +375,11 @@ The T2 finding tracker is preserved with T3 verification status appended. Open f
 | 13 | Update Review Record issue count to 9 | Reviewer | Minor | No | **OPEN** — T1 section says 7, SCM shows 9 |
 | 14 | **T3-PROCESS: Cross-artifact consistency protocol** | Process Engineer | Minor | No (evolution cycle) | **OPEN** — Stakeholder: "A canonical value should have one home and be cited from everywhere else, never copied. Consider that for the evolution cycle." |
 
-### Review Effectiveness Report — All Phases (Updated for T2)
+### Review Effectiveness Report — All Phases (Updated for T3)
 
 ```plantuml
 @startuml
-title Review Effectiveness Metrics — All Phases (Inception -> Transition T2)
+title Review Effectiveness Metrics — All Phases (Inception through Transition T3)
 
 skinparam classAttributeIconSize 0
 skinparam classBackgroundColor #F0F4FF
@@ -424,23 +423,44 @@ object "Transition T2 (4 lenses)" as TRA2 {
   Artifacts_Evaluated = 16
   T1_Findings_Verified = 4 Major RESOLVED
   T1_Findings_Remaining = 1 Minor (DM-F2)
-  New_Findings_CR = 1 Minor (CR-T2-001)
-  New_Findings_Reviewer = 3 Major + 5 Minor
-  New_Findings_BR = 1 Minor (BR-T2-001)
-  New_Findings_MR = 1 Major + 1 Minor
-  Total_Open = 3 Major + 6 Minor
+  New_Findings = 3 Major + 8 Minor
+  Total_Open_at_T2 = 3 Major + 9 Minor
   CI = GREEN
   Stakeholder_Sanction = REFUSED
+}
+
+object "Transition T3 (consolidation)" as TRA3 {
+  Reviews = 1 (PR consolidation)
+  Artifacts_Evaluated = 16
+  T2_Open_Major = 4 (RR-F1, CR-F1, TC-F3, MR-T2-002)
+  T2_Open_Minor = 7
+  T3_Directives = 3 (canonical date, CR update, DC unfreeze)
+  CI = GREEN
+  Stakeholder_Sanction = PENDING
 }
 
 INC --> ELA
 ELA --> CON
 CON --> TRA1
 TRA1 --> TRA2
+TRA2 --> TRA3
 
 @enduml
 ```
 
+### Effectiveness Interpretation
+
+| Metric | Inception | Elaboration | Construction | Transition (cumulative) |
+|---|---|---|---|---|
+| Review Coverage | 100% (10/10) | 100% (13/13) | 100% (15/15) | 100% (16/16) |
+| Defect Density (findings/artifact) | 0.30 | 0.38 | 0.80 | 0.44 (T1) → 0.69 (T2) |
+| DRE (review vs test) | 100% | 100% | 83% | N/A — no new test defects in Transition |
+| Rework Effort | Minimal | Minimal | Moderate (2 unresolved) | High (3 iterations, 2 refusals) |
+| Open Findings Trend | 0 → 0 | 0 → 0 | 2 → 0 (C4) | 6 → 11 → 11 (T3 consolidation) |
+
+**Key Finding:** The review process is **effective at defect detection** (100% coverage, 0 Critical findings across all phases) but **losing efficiency in Transition** — the same defect (mock-auth date inconsistency) was detected in T2 but spans 7 artifacts, and the rework to standardize it has required a third iteration. The root cause is structural: no role owns cross-artifact consistency of a single fact. The stakeholder's process observation (T3-PROCESS) addresses this directly.
+
+**Recommendation for Evolution Cycle:** Implement a canonical-value registry — a single home artifact (e.g., Risk List or a dedicated configuration artifact) where any fact that appears in multiple artifacts is declared once. All other artifacts reference the canonical source by ID, never copy the value. This eliminates the class of defect that blocked PR sanction in T2 and T3.
 ## Disposition
 
 ### T2 Cycle 1 — Management Lens Disposition (Product Release Gate)
