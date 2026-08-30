@@ -20,10 +20,10 @@ The product's Bill of Materials is the set of lock files and source code in the 
 
 | Deliverable | Source | Status |
 |---|---|---|
-| .NET 10 Application (CON-001) | SCM repository — main branch | Delivered — CI green (run 33259873386) |
+| .NET 10 Application (CON-001) | SCM repository — main branch | Delivered — CI green (run 33263001739) |
 | Razor Pages Frontend (CON-002) | SCM repository — main branch | Delivered — CI green |
 | PostgreSQL Schema (CON-003) | SCM repository — migrations | Delivered — migrations ready (not run on production server) |
-| OIDC Client Configuration (CON-004) | External — Keycloak (STK-003) | **FORMALLY ACCEPTED RISK (R003)** — real OIDC client registration deferred to deployment; mock-auth in use with expiry 2026-12-31 |
+| OIDC Client Configuration (CON-004) | External — Keycloak (STK-003) | **FORMALLY ACCEPTED RISK (R003)** — real OIDC client registration deferred to deployment; mock-auth in use. **Canonical expiry: 2026-12-31** — see KNOWN-ISSUE-004 (canonical home). Owner: Software Architect. |
 | LDAP Integration (CON-005) | External — Active Directory (STK-003) | Delivered — read-only LDAP access implemented (mock in tests) |
 | Employee Portal Design (CON-011) | docs/inputs/employee-portal-design.html | Delivered — mandatory UI design implemented |
 | User Documentation | User Documentation artifact | Delivered — covers UC-001 through UC-010, Publication-Ready |
