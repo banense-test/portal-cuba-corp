@@ -17,279 +17,41 @@
 | Stakeholder PR Sanction (T3) | **PENDING** — T3 consolidation in progress; open Major findings must be resolved before stakeholder re-review |
 | Evolution | Transition T3 Review Record evolved from T2. Review Coordinator consolidating cross-lens findings for PR milestone gate. Open Major findings block PR sanction. |
 ## Review Scope and Criteria
+### T3 Consolidation — Review Coordinator Archive Verification
 
-### Scope
+| Artifact | Findings Read | Open Critical | Open Major | Open Minor | Archive Status |
+|---|---|---|---|---|---|
+| Review Record | 2 | 0 | 1 (MR-T2-002) | 1 (RR-F2) | EVOLVED T3 |
+| Risk List | 2 | 0 | 1 (F2/RL-F6 — closure gap) | 0 | PENDING CLOSURE |
+| Iteration Plan | 2 | 0 | 0 | 0 | CLEAN |
+| Iteration Assessment | 3 | 0 | 0 | 0 | CLEAN |
+| Vision | 3+ | 0 | 0 | 3 (VIS-F2, BR-T2-001, MR-T2-001) | PENDING FIX |
+| Change Request | 1 | 0 | 1 (CR-F1) | 0 | PENDING UPDATE |
+| Test Case | 3 | 0 | 1 (TC-F3) | 0 | PENDING FIX |
+| Development Case | 1 | 0 | 0 | 1 (DC-F1) | PENDING UPDATE |
+| Supplementary Specification | 1 | 0 | 0 | 1 (SS-F1) | PENDING FIX |
+| Use-Case Model | 0 | 0 | 0 | 0 | CLEAN |
+| Software Architecture Document | 0 | 0 | 0 | 0 | CLEAN |
+| Design Model | 2 | 0 | 0 | 1 (DM-F2) | PENDING FIX |
+| Release Notes | 1 | 0 | 0 | 0 | CLEAN (RESOLVED) |
+| User Documentation | 0 | 0 | 0 | 0 | CLEAN |
+| Test Evaluation Summary | 1 | 0 | 0 | 0 | CLEAN (RESOLVED) |
+| Architectural Proof-of-Concept | 0 | 0 | 0 | 0 | CLEAN |
 
-This review covers the **Product Release (PR) milestone** — the final quality gate of the Transition phase. Per RUP Ch.4 Transition: "Achieve final product baseline as rapidly and cost-effectively as practical." Per the Additional Instructions: "for fixing bugs, implementation and testing are usually enough" — the Reviewer performs abbreviated code review on hotfix PRs, verifying defect reference, test coverage, and CI status.
+**[FINDINGS] read=16, unread=none, open Critical=0, open Major=4 [Review Record#MR-T2-002, Change Request#CR-F1, Test Case#TC-F3, Risk List#F2], open Minor=7 [Design Model#DM-F2, Vision#MR-T2-001, Vision#VIS-F2, Vision#BR-T2-001, Supplementary Specification#SS-F1, Development Case#DC-F1, Review Record#RR-F2]**
 
-**T2 Cycle 1 — Product Acceptance Lens (Reviewer) Scope:**
+### Archive Completeness Verification
 
-| Item | Detail |
+| Requirement | Status |
 |---|---|
-| Artifacts Evaluated | 16 (all project artifacts) |
-| CI Build (main) | GREEN (run 33262804733, 2026-08-29 16:24:02Z) |
-| Open PRs | 0 (all merged — PR #38 APPROVED and merged by Code Reviewer) |
-| Open Issues | 9 (0 Critical/High; 1 cr:logged-not-approved #37; 8 deferred/minor) |
-| Binding Conditions | BC-1 MET (NFR measured), BC-2 MET (R003 accepted), BC-3 MET with defect (date inconsistent), BC-4 MET (deployment deferred) |
-| Evaluation Type | Product Acceptance — exit criteria lens for PR milestone |
+| All Review Records signed and archived | **PARTIAL** — T3 consolidation archived; T2 Review Record complete; finding closure incomplete (4 Major open) |
+| PR milestone review completed with sanctioning authority | **NOT YET** — stakeholder sanction REFUSED (T2); T3 re-review pending |
+| Finding Tracker closure status | **INCOMPLETE** — 4 Major + 7 Minor open; stakeholder requires ALL resolved before sanction |
+| Review Record signed attendance | Documented for T2 (4 lenses executed); T3 consolidation by Review Coordinator |
 
-**T2 Cycle 1 — Management Lens (Management Reviewer) Scope:**
+### Closure Gap: Risk List RL-F6
 
-| Item | Detail |
-|---|---|
-| Artifacts Evaluated | Iteration Assessment, Release Notes, Vision, Risk List, Review Record |
-| CI Build (main) | GREEN (run 33262804733) |
-| Open PRs | 0 |
-| Open Issues | 9 (0 Critical/High) |
-| Binding Conditions | BC-1 MET, BC-2 MET, BC-3 MET-WITH-DEFECT, BC-4 MET |
-| Evaluation Type | Lifecycle Milestone Review — PR exit criteria + Project Acceptance |
-| Prior MR Findings | 3 (RL-F6 Major, IA-F3 Major, RN-F1 Major) — ALL RESOLVED in T2 |
-| New MR Findings | 2 (MR-T2-002 Major: cross-artifact governance gap, MR-T2-001 Minor: Vision date) |
-| Stakeholder Consultation | EXECUTED — sanction REFUSED; T3 directed |
-
-**T2 Cycle 1 — Code Reviewer Scope (preserved):**
-
-| Item | Detail |
-|---|---|
-| PR Reviewed | #38 (hotfix/T2-defect-fixes → main) |
-| Files Changed | 4 (Program.cs, MockAuthHandler.cs, PerformanceTests.cs, PortalCubaCorp.Tests.csproj) |
-| Additions/Deletions | 367 / 1 |
-| CI Build | GREEN (run 33262584358, 2026-08-29 16:18:08Z) |
-| Branch Type | hotfix/* (canonical for Transition per docs/BRANCHING_STRATEGY.md) |
-| Binding Conditions Addressed | BC-1 (NFR-001/002 load testing), BC-3 (mock-auth expiry), BC-2 (R003 accepted risk — artifact-level) |
-
-**T1 Cycle 1 — Full PR Milestone Review Scope (preserved from T1):**
-
-| # | Artifact | Phase | Status | Priority |
-|---|---|---|---|---|
-| 1 | Release Notes | Transition | Draft | PR Required |
-| 2 | User Documentation | Transition | Draft | PR Required |
-| 3 | Design Model | Construction | Approved | PR Expected |
-| 4 | Review Record | Transition | Draft | This artifact |
-| 5 | Risk List | Transition | Draft | PR Expected |
-| 6 | Iteration Plan | Transition | Draft | PR Expected |
-| 7 | Iteration Assessment | Transition | Draft | NOT flagged (PM authors post-review) |
-| 8 | Vision | Transition | Approved | Final state |
-| 9 | Use-Case Model | Transition | Approved | Final state |
-| 10 | Supplementary Specification | Transition | Approved | Final state |
-| 11 | Test Case | Transition | Draft | Final state |
-| 12 | Change Request | Construction | Approved | Final state |
-| 13 | Software Architecture Document | Construction | Approved | Final state |
-| 14 | Test Evaluation Summary | Elaboration | Approved | Final state |
-| 15 | Architectural Proof-of-Concept | Elaboration | Approved | Final state |
-| 16 | Development Case | Elaboration | Approved | Final state |
-
-### SCM Release Evidence (T2 — Reviewer Lens)
-
-| Evidence | Status | Detail |
-|---|---|---|
-| CI Build (main) | ✅ GREEN | Run 33262804733, completed 2026-08-29 16:24:02Z |
-| Open Pull Requests | ✅ 0 | All merged — PR #38 APPROVED by Code Reviewer and merged |
-| Open Critical/High Defects | ✅ 0 | No release-blocking defects |
-| Open Issues (total) | 9 | #39 (T2 release close), #37 (NFR CR — cr:logged, NOT approved), #36 (T1 release close), #34, #18, #17, #15, #12, #5 (all deferred/minor) |
-| R003 OIDC | ACCEPTED | Formally accepted risk per STK-001 directive; 8 TCs covered by mock |
-| Governance Gap | ⚠️ | Issue #37 (NFR performance test CR) is cr:logged but never CCB-approved — work was executed without formal CR approval |
-
-### Product Acceptance Compliance Matrix — T2 Cycle 1 (Reviewer Lens)
-
-```plantuml
-@startuml
-title Product Acceptance Compliance Matrix — Transition T2 Cycle 1
-
-skinparam classAttributeIconSize 0
-skinparam classBackgroundColor #F0F4FF
-skinparam classBorderColor #336699
-skinparam shadowing false
-
-class "Release Notes" as RN {
-  + Deployment status explicit : PASS
-  + NFR measured values : PASS
-  + R003 accepted risk : PASS
-  + Mock-auth expiry : PASS (2026-12-31)
-  + Known defects classified : PASS
-  + Stakeholder-ready : PASS
-  + Verdict : APPROVED
-}
-
-class "Risk List" as RL {
-  + R003 formally accepted : PASS
-  + R004 measured and closed : PASS
-  + R008 closed (3 BCs met) : PASS
-  + R009 deferred explicit : PASS
-  + All risks current : PASS
-  + Verdict : APPROVED
-}
-
-class "Review Record" as RR {
-  + T1 findings resolved : PASS
-  + T2 Code Reviewer lens : PASS
-  + Issue count current : FAIL (stale: 7 vs 9)
-  + Mock-auth date consistent : FAIL (2027-01-31 in CR section)
-  + Verdict : NEEDS REWORK
-}
-
-class "Iteration Assessment" as IA {
-  + Objectives MET/NOT MET : PASS
-  + BC-1 NFR measured : PASS
-  + BC-2 R003 accepted : PASS
-  + BC-3 Mock-auth expiry : PASS
-  + Deployment deferred : PASS
-  + Verdict : APPROVED
-}
-
-class "User Documentation" as UD {
-  + UC coverage (UC-001..UC-010) : PASS
-  + Troubleshooting included : PASS
-  + Operations guide updated : PASS
-  + Publication-ready : PASS
-  + Verdict : APPROVED
-}
-
-class "Test Case" as TC {
-  + 43 TCs (35 PASS, 8 BLOCKED) : PASS
-  + NFR-001 measured 0.14s : PASS
-  + NFR-002 measured 0.003s : PASS
-  + All 5 ACs PASS : PASS
-  + Mock-auth date internal : FAIL (2026-11-29 vs 2026-12-31)
-  + Verdict : NEEDS REWORK
-}
-
-class "Vision" as VIS {
-  + Features match delivered : PASS
-  + Mock-auth date : FAIL (2027-01-31)
-  + Verdict : NEEDS REWORK (Minor)
-}
-
-class "Supplementary Spec" as SS {
-  + NFR baseline valid : PASS
-  + Mock-auth date : FAIL (2027-01-31)
-  + Verdict : NEEDS REWORK (Minor)
-}
-
-class "Change Request" as CR {
-  + Phase current : FAIL (Construction C4)
-  + Issue #37 governance : FAIL (cr:logged, not approved)
-  + Issue #39 documented : FAIL (missing)
-  + Open issues table : FAIL (stale)
-  + Verdict : NEEDS REWORK
-}
-
-class "Development Case" as DC {
-  + Baseline conformance : PASS
-  + Optional triggers : FAIL (PoC PENDING stale)
-  + Status : FAIL (Draft at PR)
-  + Verdict : NEEDS REWORK (Minor)
-}
-
-class "Iteration Plan" as IP {
-  + T2 objectives : PASS
-  + Measured baseline : PASS
-  + Verdict : APPROVED
-}
-
-class "Use-Case Model" as UCM {
-  + All 10 UCs delivered : PASS
-  + Status Approved : PASS
-  + Verdict : APPROVED
-}
-
-class "Design Model" as DM {
-  + Status Approved : PASS
-  + DM-F2 (Code Reviewer) : OPEN (not this lens)
-  + Verdict : APPROVED (this lens)
-}
-
-class "SAD" as SAD {
-  + Status Approved : PASS
-  + Architecture intact : PASS
-  + Verdict : APPROVED
-}
-
-class "Architectural PoC" as PoC {
-  + Status Approved : PASS
-  + PoC results recorded : PASS
-  + Verdict : APPROVED
-}
-
-class "Test Eval Summary" as TES {
-  + Status Approved : PASS
-  + Verdict : APPROVED
-}
-
-RN --> RR : "RN-F1 RESOLVED"
-RL --> RR : "RL-F6 RESOLVED"
-IA --> RR : "IA-F3 RESOLVED"
-TC --> RR : "F3: internal date mismatch"
-VIS --> RR : "F2: date mismatch"
-SS --> RR : "F1: date mismatch"
-CR --> RR : "F1: stale artifact"
-DC --> RR : "F1: stale DC"
-
-@enduml
-```
-
-### PR #38 Compliance Matrix (Code Reviewer — preserved)
-
-```plantuml
-@startuml
-title PR #38 Compliance Matrix — Transition T2 Hotfix Review
-
-skinparam objectBackgroundColor #F0F4FF
-skinparam objectBorderColor #336699
-skinparam shadowing false
-
-object "Branch Type (hotfix/*)" as C1 {
-  Rule = Transition hotfixes target main
-  Result = PASS
-  Evidence = hotfix/T2-defect-fixes -> main
-}
-
-object "CI Build Status" as C2 {
-  Rule = Red build = no review
-  Result = PASS
-  Evidence = GREEN run 33262584358
-}
-
-object "Defect Reference" as C3 {
-  Rule = PR must reference defect/UC
-  Result = PASS
-  Evidence = BR-T1-002, RL-F6, IA-F3, RN-F1
-}
-
-object "Test Coverage" as C4 {
-  Rule = Black-box + white-box coverage
-  Result = PASS
-  Evidence = NFR-001 threshold + 50-iter stress
-}
-
-object "Mock-Auth Expiry" as C5 {
-  Rule = Date + owner documented
-  Result = PASS
-  Evidence = 2027-01-31, STK-003
-}
-
-object "Design Model Conformance" as C6 {
-  Rule = No divergence from Design
-  Result = PASS
-  Evidence = Test-only changes, no prod logic
-}
-
-object "R003 Accepted Risk" as C7 {
-  Rule = Formally accepted with residual
-  Result = PASS
-  Evidence = MockAuthHandler comments + artifacts
-}
-
-C1 --> C2
-C2 --> C3
-C3 --> C4
-C4 --> C5
-C5 --> C6
-C6 --> C7
-
-@enduml
-```
-
+The Risk List finding F2 (RL-F6, Major, Management Reviewer) shows resolution=null in the API despite the Review Record T2 tracker marking it as RESOLVED. This indicates the Management Reviewer documented the resolution in the Review Record narrative but did not call `resolve_artifact_finding` to formally close it in the API. This is a **closure gap** — the finding is counted as open by the system. The Management Reviewer must call `resolve_artifact_finding` on the Risk List to close this finding.
 ## Findings
 ### Consolidated Finding Tracker — Transition T3 Cycle 1 (Review Coordinator Consolidation)
 
