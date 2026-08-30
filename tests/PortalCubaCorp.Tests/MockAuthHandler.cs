@@ -10,11 +10,15 @@ namespace PortalCubaCorp.Tests;
 /// Mock authentication handler for integration and performance tests.
 ///
 /// ═══════════════════════════════════════════════════════════════════════════
-/// MOCK-AUTH EXPIRY — Binding Condition #3 (Stakeholder Sanction T2)
+/// MOCK-AUTH EXPIRY — CANONICAL SOURCE (Binding Condition #3, Stakeholder Sanction T2)
 /// ═══════════════════════════════════════════════════════════════════════════
 ///
-/// Expiry date:  2027-01-31
-/// Owner:        Infrastructure team (STK-003)
+/// THIS FILE IS THE CANONICAL HOME for the mock-auth expiry date.
+/// All other artifacts (Test Case, Vision, Supplementary Specification, etc.)
+/// MUST reference this value — never copy it to another location.
+///
+/// Expiry date:  2026-12-31
+/// Owner:        Software Architect
 /// Created:      2026-08-29 (Transition T2)
 ///
 /// Purpose:
@@ -33,7 +37,7 @@ namespace PortalCubaCorp.Tests;
 ///
 /// Expiry condition:
 ///   If deployment to the internal Windows Server has not occurred by
-///   2027-01-31, this mock must be re-evaluated: either extend the expiry
+///   2026-12-31, this mock must be re-evaluated: either extend the expiry
 ///   with stakeholder approval, or replace the mock with real OIDC
 ///   integration tests against a staging Keycloak instance.
 ///
@@ -51,9 +55,10 @@ public class MockAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
     public const string TestEmployeeId = "test-emp-001";
 
     /// <summary>
-    /// MOCK-AUTH EXPIRY: 2027-01-31 — Owner: STK-003 (Infrastructure team)
+    /// MOCK-AUTH EXPIRY (CANONICAL): 2026-12-31 — Owner: Software Architect
+    /// This is the single canonical value. All other artifacts reference this.
     /// </summary>
-    public static readonly DateTime ExpiryDate = new(2027, 1, 31);
+    public static readonly DateTime ExpiryDate = new(2026, 12, 31);
 
     public MockAuthHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
