@@ -843,24 +843,29 @@ All TC-015 through TC-043 retain their prior verdicts (PASS or BLOCKED-by-R003).
 | TA-T2-NFR001 | NFR-001, TC-011 | Derives | **MEASURED: 0.14s** (threshold 3s) — PASS. CI run 33259873386. |
 | TA-T2-NFR002 | NFR-002, TC-012 | Derives | **MEASURED: 0.003s** (threshold 1s) — PASS. CI run 33259873386. |
 | TA-T2-R003 | R003, STK-003, CON-004 | Derives | TC-013, TC-014, TC-029, TC-030 (FORMALLY ACCEPTED RISK — proven at deployment) |
-| TA-T2-MOCK | Mock-auth expiry | Derives | TD-011, TD-012 (Expiry: 2026-12-31, Owner: Software Architect) |
+| TA-T2-MOCK | Mock-auth expiry | Derives | TD-011, TD-012 (Expiry: 2026-12-31, Owner: Software Architect — canonical value) |
 | TA-T2-REG | All 35 PASS TCs | Derives | Regression CLEAN (Transition I2) — build 33259873386 |
 | TA-T2-DEFECTS | 5 open defect issues | Derives | All minor/deferred — 0 Critical/High/Major unresolved |
+| TA-T3-TCF3 | TC-F3, Review Record | Derives | TC-F3 RESOLVED — mock-auth date canonicalized to 2026-12-31, owner Software Architect across all Test Case sections |
+| TA-T3-REG | All 35 PASS TCs | Derives | Regression CLEAN (Transition I3) — build 33263001739 |
+| TA-T3-DEFECTS | 6 open defect issues | Derives | All minor/deferred except #37 (major, cr:logged) — 0 Critical/High |
 | R003 | STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-029, TC-030 (FORMALLY ACCEPTED RISK — proven at deployment) |
+| Issue #37 | NFR-001, NFR-002, CR #37 | Derives | PerformanceTests.cs (cr:logged — requires CCB triage) |
 | Issue #34 | C4-F1, Design Model | Derives | TC-032 (deferred — documentation only) |
 | Issue #18 | TC-021, idempotency | Derives | DefectRegressionTests.cs (deferred — test-only) |
 | Issue #17 | TC-001, DTO | Derives | ClockingService.cs (deferred — dead code) |
 | Issue #15 | Naming convention | Derives | feature/C1-presentation (deferred — naming only) |
 | Issue #12 | TC-016, CSV export | Derives | ClockingService.cs (deferred — edge case) |
-| CI Build (main) | CON-001, CON-003 | DependsOn | GitHub Actions run 33259873386 |
-| AC-001 | FR-001, FR-002 | Derives | TC-001, TC-002, TC-003 (PASS — T2 regression verified) |
-| AC-002 | FR-005, FR-006, FR-007 | Derives | TC-008, TC-009, TC-010 (PASS — T2 regression verified) |
+| CI Build (main) | CON-001, CON-003 | DependsOn | GitHub Actions run 33263001739 |
+| AC-001 | FR-001, FR-002 | Derives | TC-001, TC-002, TC-003 (PASS — T3 regression verified) |
+| AC-002 | FR-005, FR-006, FR-007 | Derives | TC-008, TC-009, TC-010 (PASS — T3 regression verified) |
 | AC-003 | FR-009 | Derives | TC-006, TC-007 (PASS functional — service-layer latency at deployment) |
 | AC-004 | FR-001 | Derives | TC-001, TC-002 (PASS automated — manual UAT for adoption metric) |
-| AC-005 | CON-002, CR-011 | Derives | TC-003, TC-004, TC-021 (PASS — service + JS verified, T2 regression verified) |
+| AC-005 | CON-002, CR-011 | Derives | TC-003, TC-004, TC-021 (PASS — service + JS verified, T3 regression verified) |
 | QLL-001 | BR-T1-002, STK-001 | Derives | Future projects — binding condition governance |
 | QLL-002 | R003, mock-auth | Derives | Future projects — mock expiry tracking |
 | QLL-003 | NFR-001, NFR-002 | Derives | Future projects — measured NFR reporting |
 | QLL-004 | R003, STK-003 | Derives | Future projects — accepted risk protocol |
 | QLL-005 | NFR-001, NFR-002, CON-006 | Derives | Future projects — performance testing strategy |
 | QLL-006 | CON-006, Release Notes | Derives | Future projects — explicit deployment status documentation |
+| QLL-007 | TC-F3, RR-F1 | Derives | Future projects — cross-artifact canonical-value protocol: one home, everyone references |
