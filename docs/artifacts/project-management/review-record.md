@@ -931,7 +931,6 @@ end note
 @enduml
 ```
 ## Traceability
-
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
 | Review Record (T3) | All 16 artifacts, SCM evidence | Refines | PR milestone disposition |
@@ -948,5 +947,14 @@ end note
 | Stakeholder PR sanction | STK-001, AC-001..AC-005 | Refines | PENDING — T3 gate |
 | Stakeholder Finding (T3) | STK-001, T3 consolidation | Refines | "Nothing else to add" — no additional directives |
 | Business Lens Verdict (T2) | BG-001..BG-003, Release Notes, User Documentation | Refines | APPROVED — all findings resolved |
+| Business Lens Verdict (T3) | BG-001..BG-003, Release Notes, User Documentation, CON-010/012/013, NFR-004 | Refines | CONDITIONAL — 0 new findings, 3/3 prior resolved, 3 goals PENDING (post-launch) |
 | Management Lens Verdict (T2) | PR-01..PR-10, BC-1..BC-3, STK-001 directive | Refines | CONDITIONAL — all findings resolved in T3 by PM |
 | T3 Technical Reviewer Verdict | All 16 artifacts, SCM evidence | Refines | ACCEPTED WITH CONDITIONS — 1 Major + 3 Minor open |
+| T3 Business Reviewer Verdict | BG-001..BG-003, FR-001..FR-010, Release Notes, User Documentation | Refines | CONDITIONAL — scope/handover/rules PASS, goals PENDING post-launch |
+| BR-T1-001 (RESOLVED) | Vision, Business Reviewer T1 | Resolved by | Vision goal measurement plan documented (T2) |
+| BR-T1-002 (RESOLVED) | Review Record, Business Reviewer T1 | Resolved by | Binding conditions all MET (T2) |
+| BR-T2-001 (RESOLVED) | Vision, Business Reviewer T2 | Resolved by | Vision mock-auth date corrected (T3) |
+| BL-001 (Lesson) | BG-001..BG-003 | Derives | Post-launch measurement plan for outcome-based business goals |
+| BL-002 (Lesson) | DC §4 classification | Derives | Business reviewer role when BM INACTIVE — goal/scope/handover audit |
+| BL-003 (Lesson) | RR-F1, STK-001 T3 directive | Derives | Cross-artifact canonical-value protocol |
+| BL-004 (Lesson) | STK-001 T1/T2 directives | Derives | Binding conditions require measured evidence, not assertions |
