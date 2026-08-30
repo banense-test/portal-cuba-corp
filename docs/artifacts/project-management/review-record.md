@@ -321,24 +321,26 @@ The 3 binding conditions from T1 are ALL MET. CI is GREEN. All 10 FRs are implem
 ## Traceability
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| Review Record (T3) | All 16 artifacts, SCM evidence | Refines | PR milestone disposition |
+| Review Record (T4) | All 16 artifacts, SCM evidence, grep-verify results | Refines | PR milestone disposition |
 | TC-F3 (RESOLVED) | Test Case, Review Record T2 | Resolved by | resolve_artifact_finding (T3) |
 | SS-F1 (RESOLVED) | Supplementary Specification, Review Record T2 | Resolved by | resolve_artifact_finding (T3) |
 | RR-F1 (RESOLVED) | Review Record T2, Risk List R003 | Resolved by | Canonical date 2026-12-31 verified across all artifacts |
-| CR-F1 (OPEN) | Change Request, Review Record T2 | Persists | ChangeControlManager action required |
-| DC-F1 (OPEN) | Development Case, Review Record T2 | Persists | ProcessEngineer action required |
-| DM-F2 (OPEN) | Design Model, Review Record C4 | Persists | Designer action required |
-| RR-F2 (OPEN) | Review Record T1 | Persists | Reviewer self-correction required |
+| RR-F2 (RESOLVED) | Review Record T1 | Resolved by | Issue count corrected from 7 to 10 (T4) |
+| CR-F1 (OPEN) | Change Request, Review Record T2 | Persists | ChangeControlManager action required (3rd iteration) |
+| DC-F1 (OPEN) | Development Case, Review Record T2 | Persists | ProcessEngineer action required (3rd iteration) |
+| DM-F2 (OPEN) | Design Model, Review Record C4 | Persists | Designer action required (3rd iteration) |
+| UCM-F1 (OPEN) | Use-Case Model, Review Record T3 | Persists | System Analyst action required (2nd iteration) |
+| RR-F4 (LEFT OPEN — server error) | Review Record T2 | Persists (API) | Content corrected; resolve_artifact_finding returned InvalidOperationException |
+| Grep-Verify (T4) | STK-001 T3 directive | Derives | 1 literal date outside canonical home (UCM: 2027-01-31) |
 | CI Build (main) | scm_get_build_status | Tests | GREEN (run 33310078920) |
 | Open PRs | scm_list_pull_requests | Tests | 0 — all merged |
 | Open Issues | scm_list_issues | Tests | 10 (0 critical, 1 cr:logged, 5 deferred, 4 records) |
-| Stakeholder PR sanction | STK-001, AC-001..AC-005 | Refines | PENDING — T3 gate |
-| Stakeholder Finding (T3) | STK-001, T3 consolidation | Refines | "Nothing else to add" — no additional directives |
-| Business Lens Verdict (T2) | BG-001..BG-003, Release Notes, User Documentation | Refines | APPROVED — all findings resolved |
+| Stakeholder PR sanction | STK-001, AC-001..AC-005 | Refines | PENDING — T4 gate |
+| Stakeholder Finding (T3) | STK-001, T3 consolidation | Refines | Grep-verify directive executed; count reported: 1 non-canonical date |
 | Business Lens Verdict (T3) | BG-001..BG-003, Release Notes, User Documentation, CON-010/012/013, NFR-004 | Refines | CONDITIONAL — 0 new findings, 3/3 prior resolved, 3 goals PENDING (post-launch) |
-| Management Lens Verdict (T2) | PR-01..PR-10, BC-1..BC-3, STK-001 directive | Refines | CONDITIONAL — all findings resolved in T3 by PM |
+| Management Lens Verdict (T3) | PR-01..PR-10, BC-1..BC-3, STK-001 directive | Refines | CONDITIONAL — UCM-F1 new Major, CR-F1 persisting Major |
 | T3 Technical Reviewer Verdict | All 16 artifacts, SCM evidence | Refines | ACCEPTED WITH CONDITIONS — 1 Major + 3 Minor open |
-| T3 Business Reviewer Verdict | BG-001..BG-003, FR-001..FR-010, Release Notes, User Documentation | Refines | CONDITIONAL — scope/handover/rules PASS, goals PENDING post-launch |
+| T3 Business Reviewer Verdict | BG-001..BG-003, FR-001..FR-010, Release Notes, User Documentation | Refines | CONDITIONAL — scope/handover/rules PASS, goals PENDING (post-launch) |
 | BR-T1-001 (RESOLVED) | Vision, Business Reviewer T1 | Resolved by | Vision goal measurement plan documented (T2) |
 | BR-T1-002 (RESOLVED) | Review Record, Business Reviewer T1 | Resolved by | Binding conditions all MET (T2) |
 | BR-T2-001 (RESOLVED) | Vision, Business Reviewer T2 | Resolved by | Vision mock-auth date corrected (T3) |
@@ -346,3 +348,4 @@ The 3 binding conditions from T1 are ALL MET. CI is GREEN. All 10 FRs are implem
 | BL-002 (Lesson) | DC §4 classification | Derives | Business reviewer role when BM INACTIVE — goal/scope/handover audit |
 | BL-003 (Lesson) | RR-F1, STK-001 T3 directive | Derives | Cross-artifact canonical-value protocol |
 | BL-004 (Lesson) | STK-001 T1/T2 directives | Derives | Binding conditions require measured evidence, not assertions |
+| BL-005 (Lesson) | UCM-F1, STK-001 T3 grep-verify | Derives | Canonical value must be verified by grep, not assumed propagated |
