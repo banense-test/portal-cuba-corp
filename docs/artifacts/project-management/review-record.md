@@ -22,7 +22,6 @@
 | Grep-Verify Results (T4) | **1 literal date found outside canonical home**: Use-Case Model "Use-Case Specifications" section carries "2027-01-31 (owner: STK-003)" — must be replaced with reference to Risk List R003. All other artifacts (Vision, Supplementary Spec, Test Case, Release Notes, Review Record) reference canonical value or have been corrected. Risk List R003 holds the single canonical literal date: 2026-12-31. |
 | Evolution | Transition T4 Review Record evolved from T3. Review Coordinator T4: (1) Executed stakeholder grep-verify directive — 1 literal date found outside canonical home (UCM-F1 persists); (2) Corrected RR-F2 issue count from 7 to 10; (3) Consolidated all lens findings for T4 milestone verdict. UCM-F1 (Major) persists on Use-Case Model — owned by System Analyst. CR-F1 (Major) persists on Change Request — owned by ChangeControlManager. DC-F1 (Minor) persists on Development Case — owned by ProcessEngineer. DM-F2 (Minor) persists on Design Model — owned by Designer. |
 ## Review Scope and Criteria
-
 ### T3 Technical Reviewer — Review Scope
 
 | Dimension | Value |
@@ -33,32 +32,32 @@
 | Lifecycle Point | Exit Criteria (PR milestone) — "Do the artifacts collectively satisfy the conditions for phase transition?" |
 | Checklist | Product Acceptance per artifact type: Deployment Plan completeness, Release Notes stakeholder-readiness, End-User Support Material coverage, final-state consistency, no Draft artifacts at release |
 | SCM Evidence | CI build status, open issues, open PRs |
-| Prior Findings | Reconciled via S_RECONCILE — 2 resolved (TC-F3, SS-F1), 2 left open (CR-F1, DC-F1) |
+| Prior Findings | Reconciled via S_RECONCILE_PRIOR — 2 resolved (TC-F3, SS-F1), 2 left open (CR-F1, DC-F1) |
 
-### T3 Consolidation — Review Coordinator Archive Verification (Updated)
+### T4 Review Coordinator — Grep-Verify Archive Verification (Updated)
 
-| Artifact | Findings Read | Open Critical | Open Major | Open Minor | T3 Status |
+| Artifact | Findings Read | Open Critical | Open Major | Open Minor | T4 Status |
 |---|---|---|---|---|---|
-| Review Record | 2 | 0 | 0 | 1 (RR-F2) | EVOLVED T3 |
+| Review Record | 2 | 0 | 0 (RR-F4 server-error, content corrected) | 0 (RR-F2 RESOLVED T4) | EVOLVED T4 |
 | Risk List | 2 | 0 | 0 | 0 | CLEAN (RL-F6 resolved) |
 | Iteration Plan | 2 | 0 | 0 | 0 | CLEAN |
 | Iteration Assessment | 3 | 0 | 0 | 0 | CLEAN |
 | Vision | 3+ | 0 | 0 | 0 | CLEAN (all mock-auth findings resolved) |
-| Change Request | 1 | 0 | 1 (CR-F1) | 0 | PENDING UPDATE |
+| Change Request | 1 | 0 | 1 (CR-F1) | 0 | PENDING UPDATE (3rd iter) |
 | Test Case | 3 | 0 | 0 | 0 | CLEAN (TC-F3 RESOLVED) |
-| Development Case | 1 | 0 | 0 | 1 (DC-F1) | PENDING UPDATE |
+| Development Case | 1 | 0 | 0 | 1 (DC-F1) | PENDING UPDATE (3rd iter) |
 | Supplementary Specification | 1 | 0 | 0 | 0 | CLEAN (SS-F1 RESOLVED) |
-| Use-Case Model | 0 | 0 | 0 | 0 | CLEAN |
+| Use-Case Model | 1 | 0 | 1 (UCM-F1) | 0 | PENDING FIX (2nd iter) |
 | Software Architecture Document | 0 | 0 | 0 | 0 | CLEAN |
-| Design Model | 2 | 0 | 0 | 1 (DM-F2) | PENDING FIX |
+| Design Model | 2 | 0 | 0 | 1 (DM-F2) | PENDING FIX (3rd iter) |
 | Release Notes | 1 | 0 | 0 | 0 | CLEAN (RESOLVED) |
 | User Documentation | 0 | 0 | 0 | 0 | CLEAN |
 | Test Evaluation Summary | 1 | 0 | 0 | 0 | CLEAN (RESOLVED) |
 | Architectural Proof-of-Concept | 0 | 0 | 0 | 0 | CLEAN |
 
-**[FINDINGS] read=16, unread=none, open Critical=0, open Major=1 [Change Request#CR-F1], open Minor=3 [Design Model#DM-F2, Development Case#DC-F1, Review Record#RR-F2]**
+**[FINDINGS] read=16, unread=none, open Critical=0, open Major=2 [Change Request#CR-F1, Use-Case Model#UCM-F1], open Minor=2 [Design Model#DM-F2, Development Case#DC-F1]. Note: RR-F4 (Major) left open due to server InvalidOperationException — artifact content shows corrections in place.**
 
-### SCM Release Evidence (T3)
+### SCM Release Evidence (T4)
 
 | Evidence | Source | Status |
 |---|---|---|
@@ -66,8 +65,7 @@
 | Open PRs | scm_list_pull_requests | 0 — all work merged |
 | Open Issues | scm_list_issues | 10 — 1 cr:logged (#40), 5 cr:deferred-next-iteration (#34, #18, #17, #15, #12), 4 iteration/integration records (#42, #39, #36, #5) |
 | Open Critical/High Defects | scm_list_issues | 0 |
-| Stakeholder PR sanction | STK-001, AC-001..AC-005 | PENDING — T3 gate |
-
+| Stakeholder PR sanction | STK-001, AC-001..AC-005 | PENDING — T4 gate |
 ## Findings
 ### Consolidated Finding Tracker — Transition T4 Cycle 1 (All Lenses)
 
