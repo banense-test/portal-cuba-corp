@@ -675,7 +675,7 @@ All TC-015 through TC-043 retain their prior verdicts (PASS or BLOCKED-by-R003).
 - TD-013 (200 LDAP entries) is available for performance testing (TC-011 page load composite).
 - TD-017 (1000 clocking records) is new for Transition I2 — supports TC-012 (NFR-002 clock response under load). Specified in CR #37.
 - TD-009 (private attributes) verifies CON-012 (corporate data only) — MockLdapGateway returns all fields, DirectoryService filters to corporate only.
-- TD-011/TD-012 (OIDC mock tokens) simulate authentication but do not test real OIDC integration (R003 — FORMALLY ACCEPTED RISK). Mock-auth expiry: 2026-11-29, owner STK-003.
+- TD-011/TD-012 (OIDC mock tokens) simulate authentication but do not test real OIDC integration (R003 — FORMALLY ACCEPTED RISK). Mock-auth expiry: 2026-12-31, owner Software Architect (canonical value — referenced from all sections).
 ## Traceability
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
