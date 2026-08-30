@@ -316,13 +316,13 @@ Deployment --> [*]
 | KNOWN-ISSUE-001 | R001, CON-010 | Derives | STK-003 (Infrastructure team) |
 | KNOWN-ISSUE-002 | R003, CON-004 | Derives | STK-003 (Infrastructure team) — FORMALLY ACCEPTED RISK |
 | KNOWN-ISSUE-003 | NFR-001, NFR-002 | Derives | CI test environment measurement (run 33259873386) |
-| KNOWN-ISSUE-004 | R003, mock-auth expiry (2026-12-31) | Derives | Software Architect (owner) |
+| KNOWN-ISSUE-004 | R003, STK-001 binding condition #3, T3 canonical directive | Derives | **CANONICAL HOME** — Mock-auth expiry 2026-12-31, Owner: Software Architect. All other artifacts cite this value. |
 | KNOWN-ISSUE-005 | Change Request artifact (deferred CRs) | Derives | Post-release backlog |
 | KNOWN-ISSUE-006 | CON-006, R009, STK-001 directive | Derives | Deployment-time activities (Windows Server not available) |
 | NFR-001 Measurement | NFR-001, CI run 33259873386 | Tests | 0.14s measured — PASS (threshold 3s) |
 | NFR-002 Measurement | NFR-002, CI run 33259873386 | Tests | 0.003s measured — PASS (threshold 1s) |
 | R003 (OIDC) | CON-004, STK-003, STK-001 directive | Derives | FORMALLY ACCEPTED — 8 tests covered by mock, residual stated |
-| Mock-Auth Expiry | R003, STK-001 binding condition #3 | Derives | 2026-12-31, Owner: Software Architect |
+| Mock-Auth Expiry (CANONICAL) | R003, STK-001 binding condition #3, T3 canonical directive | Derives | **2026-12-31, Owner: Software Architect — CANONICAL HOME: Release Notes KNOWN-ISSUE-004** |
 | Deployment Status | CON-006, R009, STK-001 directive | Derives | NOT PERFORMED — explicitly stated per stakeholder |
 | Deployment Topology | SAD Deployment View, CON-006, CON-007 | Refines | Installation Steps |
 | BOM (inline) | SCM repository (lock files, source) | Realizes | SCM Release (S4) |
@@ -330,15 +330,17 @@ Deployment --> [*]
 | Acceptance Test Flow | AC-001..AC-005, NFR-001..NFR-004 | Refines | Gate 1, Gate 2 results |
 | Binding Condition 1 (NFR) | NFR-001, NFR-002, STK-001 directive | Derives | CI measurement — MEASURED, values reported |
 | Binding Condition 2 (OIDC) | R003, CON-004, STK-001 directive | Derives | FORMALLY ACCEPTED RISK — CLOSED |
-| Binding Condition 3 (Mock-Auth) | R003, STK-001 directive | Derives | Expiry 2026-12-31, Owner: Software Architect — DOCUMENTED |
+| Binding Condition 3 (Mock-Auth) | R003, STK-001 directive, T3 canonical directive | Derives | Expiry 2026-12-31, Owner: Software Architect — CANONICAL HOME: Release Notes KNOWN-ISSUE-004 |
 | Deployment Directive | CON-006, STK-001 directive | Derives | NOT PERFORMED — EXPLICITLY STATED |
 | RN-F1 (Major — RESOLVED) | Review Record, STK-001 directives | Derives | All 4 directives addressed in Release Notes |
+| T3 Canonical Date Directive | STK-001 T3 directive, RR-F1 | Derives | ONE canonical date (2026-12-31), ONE owner (Software Architect), ONE home (Release Notes KNOWN-ISSUE-004) |
 | LESSON-001 | R003, STK-003 | Derives | Future project dependency protocols |
-| LESSON-002 | Mock-auth, R003 | Derives | Mock expiry tracking — date and owner documented |
+| LESSON-002 | Mock-auth, R003 | Derives | Mock expiry tracking — canonical date and owner documented in Release Notes KNOWN-ISSUE-004 |
 | LESSON-003 | AC-004, AC-005, BETA-002 | Derives | Beta program design |
 | LESSON-004 | R001, CON-010, BETA-003 | Derives | AD data quality audit |
 | LESSON-005 | Two-gate acceptance | Derives | Acceptance process design |
 | LESSON-006 | NFR-001, NFR-002 | Derives | CI measurement executed; production-site validation deferred |
 | LESSON-007 | CON-006, R009 | Derives | Deployment environment unavailability must be stated explicitly, not implied |
+| LESSON-008 | RR-F1, STK-001 T3 directive | Derives | Cross-artifact canonical-value protocol: one home, everyone references — never copy |
 | Training Status | User Documentation, STK-001, STK-003, STK-004 | Refines | Go-live readiness |
 | Final BOM Summary | SCM repository, CON-001..CON-005, CON-011 | Realizes | SCM Release (S4) |
