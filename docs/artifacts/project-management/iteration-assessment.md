@@ -2,211 +2,228 @@
 
 | Field | Value |
 |---|---|
-| Phase | Transition |
-| Status | Active — Transition Iter 3 Close-Out Assessment (T3 → T4 auto-iterate) |
-| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED — stakeholder sanction REFUSED (3rd); T4 required** |
-| Iteration | 3 (Cycle 1) |
+| Phase | Inception |
+| Status | **EVOLVED — Inception Iteration 1, Cycle 2 (LCO sanctioned)** |
+| Milestone Target | Lifecycle Objectives (LCO) — **ACHIEVED — stakeholder sanction GRANTED (Yes); 0 open findings** |
+| Iteration | 1 (Cycle 2) |
 | Date | 2026-08-30 |
 | Author | Project Manager (Project Management Discipline) |
-| Prior Iteration | Transition Iter 2 — PR sanction REFUSED (2nd); binding conditions substantively met; mock-auth date inconsistent across 7 artifacts; 4 open Major findings |
-| Review Coordinator Verdict (T3) | PR: iteration REQUIRED (scope incomplete) |
-| Stakeholder PR Sanction (T1) | **REFUSED** — 3 binding conditions unmet |
-| Stakeholder PR Sanction (T2) | **REFUSED** — binding conditions met; mock-auth date inconsistent (3 dates, 2 owners); 3 stakeholder directives for T3 |
-| Stakeholder PR Sanction (T3) | **REFUSED (3rd)** — canonicalization correct but incomplete: UCM still carries 2027-01-31 + STK-003; CR-F1 and DC-F1 persist (owned by CCM and PE, not PM); stakeholder directed grep-verify of all artifacts for literal mock-auth dates |
-| Evolution | T3 Assessment evolved from T2. RR-F1 RESOLVED — canonical mock-auth date established (2026-12-31, Software Architect, Risk List R003). MR-T2-002 RESOLVED — cross-artifact canonical-value protocol defined. RL-F6 CLOSED. TC-F3 RESOLVED. SS-F1 RESOLVED. NEW finding UCM-F1 (Major): Use-Case Model still carries 2027-01-31 + STK-003 — owned by System Analyst, NOT PM. CR-F1 persists — owned by Change Control Manager. DC-F1 persists — owned by Process Engineer. DM-F2 persists — owned by Designer. All 3 binding conditions remain MET. |
+| Prior Phase | Cycle 1 completed through Transition T4; Cycle 2 re-enters at Inception with accumulated artifacts |
+| Review Coordinator Verdict | No milestone review ran this iteration — LCO sanction via stakeholder questionnaire (iteration 2: "Yes") |
+| Stakeholder LCO Sanction | **GRANTED** — "Yes" to accepting project scope and objectives; "Let's go to elaboration" |
+| Open Findings at LCO | 0 Critical, 0 Major, 0 Minor, 0 Info — all 3 findings from iteration 1 resolved |
 
 ## Iteration Objectives Reached
 
 | # | Objective | Status | Evidence |
 |---|---|---|---|
-| 1 | Deploy to Production | **NOT MET** | Deployment on Windows Server (CON-006) NOT PERFORMED — no environment available. Explicitly stated in Release Notes per STK-001 directive. CI is GREEN on main (run 33310220124). Code is deployment-ready but unverified on target infrastructure. |
-| 2 | User Acceptance | **NOT MET (4th refusal)** | PR sanction REFUSED (3rd refusal) in T3. Canonicalization of mock-auth date was correct (2026-12-31, Risk List R003) but did not reach all artifacts — UCM-F1 (Major): Use-Case Model still carries 2027-01-31 + STK-003. CR-F1 (Major) persists: Change Request frozen at Construction C4. DC-F1 (Minor) persists: Development Case frozen at Elaboration. Stakeholder directed: "grep every artifact for a literal date and prove that only Risk List R003 holds one." |
-| 3 | Training Completion | **MET** | User Documentation is publication-ready (Business Reviewer T3: scope/handover/rules PASS). Training material covers all 10 FRs. No findings against User Documentation in T3. |
-| 4 | Support Establishment | **PARTIAL** | Release Notes explicitly document deployment status (NOT PERFORMED — no environment) per STK-001 directive. R003 (OIDC) formally accepted as risk with residual stated. Support procedures documented but not validated against live deployment. |
+| 1 | Define Project Scope | **MET** | Vision (STK-001..STK-004, FR-001..FR-010, NFR-001..NFR-004, BG-001..BG-003, CON-001..CON-013, AC-001..AC-005) — 10 functional requirements, 4 NFRs, 13 constraints, 5 acceptance criteria. Use-Case Model carries UC-001..UC-010. Supplementary Specification carries NFR-001..NFR-004. Scope exclusions explicitly listed. |
+| 2 | Identify Critical Risks | **MET** | Risk List established with R001 (AD LDAP attribute inconsistency, P=3 I=3, Significant) and R002 (digital clocking adoption, P=3 I=2, Moderate). Both classified with strategy (Accept), mitigation, and contingency. Additional risks R003..R012 identified across Cycle 1 and carried forward. |
+| 3 | Tailor Development Process | **MET** | Development Case tailored for Portal Cuba Corp — 25 roles per IARI baseline, 16 core artifacts, 6 optional artifacts. ID convention declared (TC-NNN canonical). Process improvement notes from Cycle 1 incorporated. |
+| 4 | Establish Feasibility | **MET** | Tech stack confirmed (.NET 10 REST API, Razor Pages, PostgreSQL, Keycloak OIDC, AD LDAP, internal Windows Server). AC-005 offline clocking approach clarified by stakeholder: localStorage retry for clocking POST up to 5 minutes, server accepts client timestamp with idempotency key. No SPA, no service worker — CON-002 stands. LCO milestone sanctioned by STK-001. |
 
 ```plantuml
 @startuml
-title Transition T3 Close-Out: Critical Chain Assessment
-|Project Manager|
+title Inception Iteration 1 (Cycle 2) — Objective Assessment
+
+|Define Project Scope|
 start
-:Read Review Record (T3 findings);
-:Read Test Evaluation Summary;
-:Read existing IA, RL, IP;
-:scm_get_build_status(main);
-note right: CI GREEN — run 33310220124
-:Assess 4 planned objectives;
-note right
-  Deploy: NOT MET (no env)
-  User Acceptance: NOT MET (4th refusal)
-  Training: MET (User Docs ready)
-  Support: PARTIAL (Release Notes ready)
-end note
-:Assess findings ownership;
-note right
-  UCM-F1 → System Analyst
-  CR-F1 → Change Control Mgr
-  RR-F4 → Reviewer
-  VIS-F2-MR → System Analyst
-  DC-F1 → Process Engineer
-  DM-F2 → Designer
-end note
-:Evolve Risk List (R011 status);
-:Evolve Iteration Plan (T4 scope);
-:Evolve Iteration Assessment (T3 close-out);
+:Scope defined via 10 FRs, 4 NFRs, 13 constraints;
+:Vision + Use-Case Model + Supplementary Spec produced;
+|Identify Critical Risks|
+:R001 (AD LDAP) + R002 (adoption) identified;
+:Risk List established with classification;
+|Tailor Development Process|
+:Development Case tailored for Portal Cuba Corp;
+:25 roles, 16 core artifacts, 6 optional;
+|Establish Feasibility|
+:Tech stack confirmed (.NET 10, Razor Pages, PostgreSQL);
+:Keycloak OIDC + AD LDAP integration validated;
+:AC-005 offline clocking approach clarified by stakeholder;
+:LCO milestone sanctioned by STK-001 (Yes);
 stop
 @enduml
 ```
 
 ## Adherence to Plan
 
-| Plan Item | Committed | Actual | Variance |
+| Plan Element | Committed | Actual | Variance |
 |---|---|---|---|
-| T3-1: Canonical mock-auth date | 2026-12-31 in Risk List R003 | Established in R003; propagated to Vision, SS, TC, Release Notes, Review Record | **Partial** — UCM still carries 2027-01-31 + STK-003 (UCM-F1 Major) |
-| T3-2: Change Request to Transition | CR artifact updated for Transition; Issue #37 CCB triage | NOT PERFORMED — CR-F1 persists (owned by Change Control Manager) | **Not met** — directed to owner, not PM artifact |
-| T3-3: Development Case unfrozen | DC updated from Elaboration to current phase | NOT PERFORMED — DC-F1 persists (owned by Process Engineer) | **Not met** — directed to owner, not PM artifact |
-| T3-4: Cross-artifact consistency | All artifacts cite R003, never copy date | 5 of 7 artifacts corrected; UCM and 1 other not verified | **Partial** — UCM-F1 open |
-| Token budget | Sized from T2 measured baseline (reduced scope) | 4,753,260 tokens spent | Within box |
-| Agent time | T2 baseline: ~20 min | 1h 59m 45s | Exceeded — review + correction cycles across artifacts |
-| CI build | GREEN on main | GREEN (run 33310220124) | Met |
+| Artifacts produced | 16 (cumulative from Cycle 1) | 16 | None — all artifacts carried forward |
+| Agent invocations | — | 11 | Within expected range for Inception |
+| Token spend | — | 0 [ASSUMPTION — fresh cycle start; no measured spend recorded this iteration] | N/A — first iteration of new cycle |
+| Agent elapsed time | — | 0:00:01.3 | Minimal — Inception is lightweight in Cycle 2 (artifacts exist) |
+| Human queue time | — | 0:00:00 | No waiting — stakeholder responded in-session |
+| Avg quality score | — | 9.0 | Exceeds threshold |
+| User interactions | — | 0 | No additional user input needed this iteration |
+| LCO milestone | Target: end of Inception | **ACHIEVED** | Stakeholder sanctioned "Yes" in iteration 2 |
 
-**Root cause of variance:** The canonical-value protocol was correctly defined and propagated to PM-owned artifacts (Risk List, Iteration Plan, Iteration Assessment) and to artifacts the PM could influence (Vision, Supplementary Spec, Test Case, Release Notes, Review Record). However, the Use-Case Model — owned by the System Analyst — was not checked and still carries the stale date (2027-01-31) and wrong owner (STK-003). The PM did not own and could not fix that artifact. Additionally, CR-F1 (Change Request) and DC-F1 (Development Case) are owned by the Change Control Manager and Process Engineer respectively — the PM directed these in T2 and T3 but the owners did not execute.
+### Cross-Iteration Roadmap
+
+```plantuml
+@startgantt
+[Inception I1] lasts 1 days
+[Inception I2] lasts 1 days
+[LCO Gate] lasts 1 days
+[Inception I2] happens at [Inception I1]'s end
+[LCO Gate] happens at [Inception I2]'s end
+[Elaboration I1] lasts 1 days
+[Elaboration I2] lasts 1 days
+[LCA Gate] lasts 1 days
+[Elaboration I1] happens at [LCO Gate]'s end
+[Elaboration I2] happens at [Elaboration I1]'s end
+[LCA Gate] happens at [Elaboration I2]'s end
+[Construction I1] lasts 1 days
+[Construction I2] lasts 1 days
+[IOC Gate] lasts 1 days
+[Construction I1] happens at [LCA Gate]'s end
+[Construction I2] happens at [Construction I1]'s end
+[IOC Gate] happens at [Construction I2]'s end
+[Transition I1] lasts 1 days
+[PR Gate] lasts 1 days
+[Transition I1] happens at [IOC Gate]'s end
+[PR Gate] happens at [Transition I1]'s end
+@endgantt
+```
+
+**Roadmap notes:** Cycle 2 reuses the 6-iteration profile validated in Cycle 1 (2 Inception, 2 Elaboration, 2 Construction, 1 Transition = 7 total). LCO is now ACHIEVED. The coarse roadmap carries forward from Cycle 1's measured baseline. Fine-grained planning for Elaboration I1 is the next iteration's scope.
 
 ## Use Cases and Scenarios Implemented
 
-| Use Case | ID | Status | Notes |
-|---|---|---|---|
-| Clock In and Clock Out | UC-001 / FR-001 | Implemented | CI GREEN; NFR-002 measured 0.003s PASS |
-| View Own Clocking History | UC-002 / FR-002 | Implemented | CI GREEN |
-| View All Employee Clockings | UC-003 / FR-003 | Implemented | CI GREEN |
-| Export Monthly Clocking Report | UC-004 / FR-004 | Implemented | CI GREEN |
-| Publish News | UC-005 / FR-005 | Implemented | CI GREEN; audit trail verified |
-| Edit Published News | UC-006 / FR-006 | Implemented | CI GREEN; audit trail verified |
-| Unpublish News | UC-007 / FR-007 | Implemented | CI GREEN; no hard-delete enforced |
-| Read and Filter News | UC-008 / FR-008 | Implemented | CI GREEN |
-| Search Employee Directory | UC-009 / FR-009 | Implemented | CI GREEN; LDAP read-only |
-| Manage Worker Category | UC-010 / FR-010 | Implemented | CI GREEN; AD user id → category only |
+No use cases were implemented this iteration — Inception phase. All 10 use cases (UC-001..UC-010) remain defined in the Use-Case Model from Cycle 1. Implementation status from Cycle 1 carries forward:
 
-All 10 FRs remain implemented and CI-green. No functional regressions in T3. T3 was a correction/consolidation iteration — no new functionality added.
+| UC ID | Name | Status |
+|---|---|---|
+| UC-001 | Clock In and Clock Out | Implemented (Cycle 1) |
+| UC-002 | View Own Clocking History | Implemented (Cycle 1) |
+| UC-003 | View All Employee Clockings | Implemented (Cycle 1) |
+| UC-004 | Export Monthly Clocking Report | Implemented (Cycle 1) |
+| UC-005 | Publish News | Implemented (Cycle 1) |
+| UC-006 | Edit Published News | Implemented (Cycle 1) |
+| UC-007 | Unpublish News | Implemented (Cycle 1) |
+| UC-008 | Read and Filter News | Implemented (Cycle 1) |
+| UC-009 | Search Employee Directory | Implemented (Cycle 1) |
+| UC-010 | Manage Worker Category | Implemented (Cycle 1) |
 
 ## Results Relative to Evaluation Criteria
 
-| Criterion | Status | Evidence |
-|---|---|---|
-| EC-1: Canonical mock-auth date established | **MET** | 2026-12-31, owner Software Architect, home Risk List R003 — established in T3 |
-| EC-2: All artifacts cite R003 (never copy date) | **NOT MET** | UCM-F1 (Major): Use-Case Model still carries 2027-01-31 + STK-003. Stakeholder directed grep-verify. |
-| EC-3: Change Request brought to Transition | **NOT MET** | CR-F1 (Major) persists — owned by Change Control Manager, not PM |
-| EC-4: Development Case unfrozen | **NOT MET** | DC-F1 (Minor) persists — owned by Process Engineer, not PM |
-| EC-5: CI GREEN on main | **MET** | Run 33310220124, completed 2026-08-30 11:58:44Z |
-| EC-6: PR stakeholder sanction | **NOT MET** | 3rd refusal — UCM-F1 + CR-F1 + DC-F1 remain open |
-| EC-7: Deployment verified on Windows Server | **NOT MET** | No environment available — explicitly declared in Release Notes per STK-001 directive |
-| EC-8: Training material ready | **MET** | User Documentation publication-ready (Business Reviewer T3 PASS) |
-| BC-1: NFR-001/NFR-002 load testing | **MET (T2)** | NFR-001: 0.14s vs 3s PASS; NFR-002: 0.003s vs 1s PASS |
-| BC-2: Real OIDC integration | **MET (T2)** | R003 formally accepted risk — 8 TCs covered by mock, proven at deployment |
-| BC-3: Mock-auth expiry documented | **MET (T3)** | Canonicalized: 2026-12-31, owner Software Architect, home Risk List R003 |
+| Criterion | Target | Result | Evidence |
+|---|---|---|---|
+| EC-1: Project scope defined | 10 FRs, 4 NFRs, 13 constraints documented | **MET** | Vision, Use-Case Model, Supplementary Specification all produced and approved |
+| EC-2: Critical risks identified | R001 + R002 classified with mitigation | **MET** | Risk List carries R001 (Significant) and R002 (Moderate) with strategy, mitigation, contingency |
+| EC-3: Development process tailored | Development Case adapted for project | **MET** | Development Case tailored — 25 roles, 16 core artifacts, ID conventions declared |
+| EC-4: Feasibility established | Tech stack validated, LCO sanctioned | **MET** | Stakeholder clarified AC-005 offline approach; LCO sanctioned "Yes" |
+| EC-5: Findings resolved | 0 open findings at LCO | **MET** | All 3 findings from iteration 1 resolved (FEAT-NNN→REQ-NNN, TD-NNN→TC-NNN, sanction unblocked) |
+| EC-6: Artifact quality | Avg quality ≥ 8.0 | **MET** | Avg quality 9.0 across 16 artifacts |
 
 ```plantuml
 @startuml
-title T3 Iteration Assessment — Evaluation Criteria Results
-class "Evaluation Criteria" as EC {
-  == Results Relative to Evaluation Criteria ==
-  EC-1: Canonical mock-auth date → MET (2026-12-31, R003)
-  EC-2: All artifacts cite R003 → NOT MET (UCM-F1: UCM carries 2027-01-31)
-  EC-3: Change Request to Transition → NOT MET (CR-F1 open, CCM owns)
-  EC-4: Development Case unfrozen → NOT MET (DC-F1 open, PE owns)
-  EC-5: CI GREEN on main → MET (run 33310220124)
-  EC-6: PR sanction → NOT MET (3rd refusal)
-  EC-7: Deployment verified → NOT MET (no env, declared in Release Notes)
-  EC-8: Training material ready → MET (User Documentation publication-ready)
+title Iteration Assessment Metrics — Inception I1 Cycle 2
+class AssessmentMetrics {
+  + artifactsProduced : int = 16
+  + agentInvocations : int = 11
+  + userInteractions : int = 0
+  + tokenSpend : int = 0
+  + avgQualityScore : float = 9.0
+  + agentTime : Duration = 0:00:01.3
+  + humanQueueTime : Duration = 0:00:00
+  + milestoneVerdict : String = "LCO sanctioned (Yes)"
+  + openFindings : int = 0
 }
 
-class "Metrics" as M {
-  == Measurement Goals ==
-  Token spend: 4,753,260
-    goal: budget tracking for T3
-  Agent time: 1h 59m 45s
-    goal: iteration cost baseline
-  Artifacts: 16
-    goal: scope coverage
-  Agent runs: 10
-    goal: parallelism assessment
-  Avg quality: 9.8
-    goal: quality trend monitoring
-  CI build: GREEN (33310220124)
-    goal: deployment readiness
-  Open Major: 4
-    goal: gate readiness assessment
-  Open Minor: 2
-    goal: residual risk tracking
+class Objective {
+  + id : String
+  + description : String
+  + status : String
+  + evidence : String
 }
 
-EC -- M
+class MetricGoal {
+  + metric : String
+  + goal : String
+  + decision : String
+}
+
+AssessmentMetrics "1" *-- "many" Objective
+AssessmentMetrics "1" *-- "many" MetricGoal
+
+note right of Objective
+  OBJ-1: Define Project Scope — MET
+  OBJ-2: Identify Critical Risks — MET
+  OBJ-3: Tailor Development Process — MET
+  OBJ-4: Establish Feasibility — MET
+end note
+
+note right of MetricGoal
+  Artifact count (16): confirms scope coverage
+  Quality score (9.0): validates artifact quality
+  Agent time (1.3s): Inception is lightweight
+  Token spend (0): fresh cycle, no measured spend
+end note
 @enduml
 ```
 
+### Measurement Goals
+
+| Metric | Value | Decision Enabled | Goal |
+|---|---|---|---|
+| Artifacts produced (16) | 16 | Confirms all Inception deliverables exist | Evaluate: scope coverage complete |
+| Avg quality score (9.0) | 9.0 | Confirms artifacts meet quality bar | Evaluate: artifact quality sufficient for LCO |
+| Agent elapsed time (1.3s) | 0:00:01.3 | Confirms Inception is lightweight in Cycle 2 | Monitor: iteration efficiency |
+| Token spend (0) | 0 [ASSUMPTION] | No measured spend this iteration — fresh cycle | Predict: Elaboration budget will be sized from Cycle 1 measured baseline |
+| Open findings (0) | 0 | Confirms LCO exit criteria met | Evaluate: milestone readiness |
+
 ## Test Results
 
-| Test Area | Result | Evidence |
-|---|---|---|
-| CI Build (main) | GREEN | Run 33310220124, completed 2026-08-30 11:58:44Z |
-| NFR-001 Page Load | PASS | 0.14s vs 3s threshold (measured T2) |
-| NFR-002 Clock Response | PASS | 0.003s vs 1s threshold (measured T2) |
-| Functional Tests (10 FRs) | PASS | All 10 FRs implemented, CI GREEN |
-| OIDC Integration | ACCEPTED RISK | R003: 8 TCs covered by mock, proven at deployment |
-| Deployment Verification | NOT PERFORMED | No Windows Server environment available — declared in Release Notes |
-
-**Test Evaluation Summary** is stale at Elaboration phase — not updated for Transition. This is a known gap; the Test Manager did not produce a Transition-phase Test Evaluation Summary. Test evidence for T3 is drawn from CI build status and the NFR measurements recorded in T2.
+No test execution this iteration — Inception phase. Test Evaluation Summary from Cycle 1 Elaboration carries forward with all test results validated in Cycle 1 (NFR-001: 0.14s vs 3s PASS; NFR-002: 0.003s vs 1s PASS). Test Cases TC-001..TC-010 remain defined.
 
 ## External Changes
 
-| Change | Impact | Status |
+| Change | Source | Impact |
 |---|---|---|
-| STK-001 T3 directive: grep-verify all artifacts for literal mock-auth dates | New Major finding UCM-F1: Use-Case Model carries 2027-01-31 + STK-003 | **OPEN** — System Analyst must fix UCM; PM must verify grep results |
-| STK-001 T3 process observation: canonical value must be verified by grep, not assumed propagated | Process improvement: cross-artifact consistency verification protocol | **RECORDED** — lesson learned BL-005 |
-| No new external dependencies or scope changes | — | — |
+| AC-005 offline clocking clarification | Stakeholder answer (System Analyst question) | localStorage retry for clocking POST up to 5 min; server accepts client timestamp with idempotency key; no SPA/service worker; CON-002 stands. Incorporated into requirements and architecture. |
+| LCO sanction | Stakeholder questionnaire (iteration 2) | "Yes" — project scope and objectives accepted; "Let's go to elaboration" — advance to Elaboration phase |
+| Cycle 2 initiation | Process reset | Project re-enters at Inception with 16 accumulated artifacts from Cycle 1; all prior work preserved |
 
 ## Rework Required
 
-| Finding | Severity | Owner | Rework Action | Status |
-|---|---|---|---|---|
-| UCM-F1 | Major | System Analyst | Replace 2027-01-31 with reference to Risk List R003; replace STK-003 with Software Architect as owner | **OPEN — T4** |
-| CR-F1 | Major | Change Control Manager | Update Change Request artifact from Construction C4 to Transition; take Issue #37 through CCB triage | **OPEN — T4** |
-| RR-F4 | Major | Reviewer | Review Record internal consistency (server error) | **OPEN — T4** |
-| VIS-F2-MR | Major | System Analyst | Vision server error / internal consistency | **OPEN — T4** |
-| DC-F1 | Minor | Process Engineer | Unfreeze Development Case from Elaboration; update to current phase | **OPEN — T4** |
-| DM-F2 | Minor | Designer | Update Design Model C4-1/C4-2 traceability | **OPEN — T4** |
+| Item | Source | Status | Owner |
+|---|---|---|---|
+| FEAT-NNN prefix in Vision | Iteration 1 finding (Info) | **RESOLVED** — replaced with REQ-NNN | System Analyst |
+| TD-NNN prefix in Test Eval Summary | Iteration 1 finding (Info) | **RESOLVED** — replaced with TC-NNN; declared in Development Case | Test Manager / Process Engineer |
+| Stakeholder sanction refusal | Iteration 1 finding | **RESOLVED** — unblocked after all findings fixed; "Yes" in iteration 2 | Stakeholder |
 
-**PM-owned rework:** None remaining. All PM-owned findings (RR-F1, MR-T2-002, RL-F6, TC-F3, SS-F1) were RESOLVED in T3. The 6 open findings are owned by other roles (System Analyst, Change Control Manager, Reviewer, Process Engineer, Designer).
+No rework remains for Inception. All findings resolved. LCO sanctioned.
 
-**T4 scope adjustments:**
-1. System Analyst must fix UCM-F1: grep Use-Case Model for literal date 2027-01-31, replace with reference to Risk List R003, correct owner from STK-003 to Software Architect.
-2. Change Control Manager must fix CR-F1: update Change Request artifact to Transition, triage Issue #37 through CCB.
-3. Process Engineer must fix DC-F1: unfreeze Development Case.
-4. Reviewer must fix RR-F4: Review Record internal consistency.
-5. System Analyst must fix VIS-F2-MR: Vision internal consistency.
-6. Designer must fix DM-F2: Design Model traceability update.
-7. PM to perform grep-verify across all 16 artifacts and report count of literal date occurrences vs references — per STK-001 T3 directive.
+## Lessons Learned
+
+| # | Lesson | Source | Applicability |
+|---|---|---|---|
+| LL-1 | Stakeholder demands all findings resolved — even minor — before sanction | Cycle 1 + Cycle 2 iteration 1 refusal | All future iterations: zero open findings before milestone gate |
+| LL-2 | ID convention enforcement is critical — non-standard prefixes (FEAT-NNN, TD-NNN) caused findings | Cycle 2 iteration 1 findings | All roles: use canonical ID prefixes from Development Case |
+| LL-3 | AC-005 offline requirement needed stakeholder clarification to avoid architectural misinterpretation | System Analyst question + stakeholder answer | Requirements analysis: escalate ambiguous acceptance criteria early |
+| LL-4 | Cycle 2 reuses Cycle 1 artifacts — no regeneration needed when scope is unchanged | Cycle 2 Inception observation | Future cycles: preserve valid artifacts, evolve only where findings demand |
+
+## Next Iteration Adjustments
+
+| Adjustment | Rationale | Target |
+|---|---|---|
+| Advance to Elaboration phase | LCO sanctioned by stakeholder ("Let's go to elaboration") | Elaboration I1 (Cycle 2) |
+| Size Elaboration budget from Cycle 1 measured baseline | Cycle 1 Elaboration: 2 iters, 20.87M tokens, 1.0h agent time, 21 runs | Iteration Plan for Elaboration I1 |
+| Carry forward all 16 artifacts | No scope change in Cycle 2 — artifacts from Cycle 1 remain valid | All disciplines |
+| Monitor R001 (AD LDAP) in Elaboration | Highest-magnitude risk; PoC validated in Cycle 1 | Software Architect |
+| Close any remaining GitHub Issues / PRs | Stakeholder directive: "close all PRs, Github Issues, and findings if any remain" | All roles |
 
 ## Traceability
 
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
-| T3 Assessment | Iteration Plan T3, Review Record T3 | Derives | PR milestone review (T4) |
-| EC-1 (canonical date) | RR-F1, STK-001 T2 directive | Derives | Risk List R003, R011 |
-| EC-2 (propagation) | UCM-F1, STK-001 T3 directive | Derives | T4 grep-verify |
-| EC-3 (CR to Transition) | CR-F1, STK-001 T2 directive | Derives | Change Request (T4) |
-| EC-4 (DC unfrozen) | DC-F1, STK-001 T2 directive | Derives | Development Case (T4) |
-| EC-5 (CI GREEN) | scm_get_build_status | Tests | All source files on main |
-| EC-6 (PR sanction) | STK-001, AC-001..AC-005 | Refines | PR milestone (T4 gate) |
-| EC-7 (deployment) | CON-006, CON-007 | Derives | Release Notes (explicit status) |
-| EC-8 (training) | User Documentation | Derives | Business Reviewer T3 PASS |
-| BC-1 (NFR testing) | NFR-001, NFR-002 | Derives | CLOSED — measured 0.14s / 0.003s |
-| BC-2 (OIDC) | CON-004, R003 | Derives | CLOSED — formally accepted risk |
-| BC-3 (mock-auth expiry) | STK-001 binding condition #3 | Refines | MET — 2026-12-31, Risk List R003 |
-| BG-001 measurement | BG-001, BR-T1-001 | Derives | Post-deployment HR time audit |
-| BG-002 measurement | BG-002, BR-T1-001 | Derives | Post-deployment Excel usage audit |
-| BG-003 measurement | BG-003, BR-T1-001 | Derives | Monthly adoption tracking |
-| CI build (33310220124) | scm_get_build_status | Tests | All source files on main — GREEN |
-| Stakeholder PR sanction (T3) | STK-001, AC-001..AC-005 | Refines | REFUSED (3rd) — T4 iteration required; grep-verify directive issued |
-| T4 Directive 1 | STK-001 T3 answer | Derives | Grep-verify all artifacts for literal mock-auth dates — PM to execute |
-| T4 Directive 2 | STK-001 T3 answer | Derives | UCM-F1 fix — System Analyst to execute |
-| Process observation | STK-001 T2/T3 answers | Derives | Cross-artifact canonical-value protocol + grep verification — BL-005 |
+| OBJ-1 (Scope) | FR-001..FR-010, NFR-001..NFR-004, CON-001..CON-013 | Refines | Vision, Use-Case Model, Supplementary Specification |
+| OBJ-2 (Risks) | R001, R002, BG-001..BG-003 | Derives | Risk List |
+| OBJ-3 (Process) | Development Case | Derives | Development Case (tailored) |
+| OBJ-4 (Feasibility) | CON-001..CON-013, AC-001..AC-005, STK-001 LCO sanction | Refines | LCO milestone (ACHIEVED) |
+| EC-1..EC-6 | Iteration Plan evaluation criteria | Derives | This assessment |
+| LCO sanction | STK-001 questionnaire (iteration 2) | Refines | Elaboration phase entry |
+| AC-005 clarification | STK-001 answer to System Analyst | Derives | Supplementary Specification, Architecture |
+| LL-1..LL-4 | Cycle 1 + Cycle 2 observations | Derives | All future iterations |
+| Metrics (artifacts=16, quality=9.0) | Iteration facts (system-assembled) | Tests | LCO exit criteria |
