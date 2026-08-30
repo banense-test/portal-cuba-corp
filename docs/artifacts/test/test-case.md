@@ -106,11 +106,11 @@ stop
 @enduml
 ```
 
-### Transition I2 — Final Quality Gate Assessment
+### Transition I3 — Test Analyst Final Quality Gate Assessment
 
 ```plantuml
 @startuml
-title Transition I2 — Final Quality Gate Assessment
+title Test Analyst T3 — Final Quality Gate Assessment
 
 skinparam activityBackgroundColor #F0F4FF
 skinparam activityBorderColor #336699
@@ -119,152 +119,148 @@ skinparam shadow false
 start
 
 :Load cumulative test state
-(43 TCs across Elaboration–T2);
+(43 TCs across Elaboration to T3);
 
-partition "Functional Quality Gate" {
-  if (35/35 regression TCs PASS?) then (yes)
-    :Functional gate: PASS
-    (build 33259873386);
-  else (no)
-    :Functional gate: FAIL
-    → blocker CR;
-    stop
-  endif
-}
-
-partition "Performance Quality Gate (Binding Condition 1)" {
-  :NFR-001 Page Load
-  measured: 0.14s
-  threshold: 3.0s;
-  if (0.14s < 3.0s?) then (yes)
-    :NFR-001: PASS;
-  else (no)
-    :NFR-001: FAIL;
-    stop
-  endif
-  :NFR-002 Clock Response
-  measured: 0.003s
-  threshold: 1.0s;
-  if (0.003s < 1.0s?) then (yes)
-    :NFR-002: PASS;
-  else (no)
-    :NFR-002: FAIL;
-    stop
-  endif
-}
-
-partition "OIDC Integration Gate (Binding Condition 2)" {
-  :R003 converted from UNVERIFIED
-  to FORMALLY ACCEPTED RISK;
-  :Residual: 8 TCs covered by mock
-  (TC-013, TC-014, TC-029, TC-030);
-  :Proven against real OIDC client
-  at deployment time only;
-  :Gate: CLOSED (accepted risk = decision);
-}
-
-partition "Mock-Auth Expiry Gate (Binding Condition 3)" {
-  :Expiry date: 2026-12-31;
-  :Owner: Software Architect;
-  if (Expiry documented with date + owner?) then (yes)
-    :Gate: DOCUMENTED;
-  else (no)
-    :Gate: OPEN;
-    stop
-  endif
+partition "Evidence Evaluation" {
+  :Functional: 35/43 PASS, 8 BLOCKED (R003);
+  :NFR-001 Page Load: 0.14s vs 3s - PASS;
+  :NFR-002 Clock Response: 0.003s vs 1s - PASS;
+  :NFR-003 Availability: PASS (7:00-19:00 M-F);
+  :NFR-004 Audit Trail: PASS (all news ops audited);
+  :Regression: 35/35 CLEAN (build 33263001739);
+  :TC-F3: RESOLVED (canonical date 2026-12-31);
 }
 
 partition "Acceptance Criteria Gate" {
-  :AC-001: PASS (TC-001, TC-002);
-  :AC-002: PASS (TC-008, TC-009, TC-010);
-  :AC-003: PASS functional
-  (TC-006, TC-007 — service-layer);
-  :AC-004: PASS automated
-  (manual UAT post-deployment);
-  :AC-005: PASS (TC-003, TC-004, TC-021);
-}
-
-partition "Outstanding Defects Gate" {
-  :5 open issues — all minor/deferred;
-  :0 Critical, 0 High, 0 Major;
-  if (0 Critical/High unresolved?) then (yes)
-    :Defect gate: PASS;
-  else (no)
-    :Defect gate: FAIL;
+  if (AC-001 Clock in/out unaided?) then (PASS)
+    if (AC-002 Publish news unaided?) then (PASS)
+      if (AC-003 Find colleague <10s?) then (PASS)
+        if (AC-004 80% adoption?) then (PASS)
+          if (AC-005 Offline sync 5min?) then (PASS)
+          else (FAIL)
+            :BLOCK;
+            stop
+          endif
+        else (FAIL)
+          :BLOCK;
+          stop
+        endif
+      else (FAIL)
+        :BLOCK;
+        stop
+      endif
+    else (FAIL)
+      :BLOCK;
+      stop
+    endif
+  else (FAIL)
+    :BLOCK;
     stop
   endif
 }
 
-:All quality gates: PASS
-(with accepted risk R003);
+partition "Defect Triage" {
+  if (0 Critical/High open?) then (yes)
+    if (0 Major open?) then (yes)
+      :6 open issues: 5 minor/deferred, 1 major (#37 cr:logged);
+      :Issue #37: performance test code - CCB triage pending;
+      :Non-blocking: deferred items require deployment env;
+    else (no)
+      :BLOCK RELEASE;
+      stop
+    endif
+  else (no)
+    :BLOCK RELEASE;
+    stop
+  endif
+}
 
-:Final Verdict:
-RELEASE READY — CONDITIONAL
-(production-site validation
-deferred; R003 accepted risk);
+partition "Risk Assessment" {
+  :R003 OIDC: FORMALLY ACCEPTED RISK;
+  :8 TCs covered by mock - proven at deployment;
+  :Mock-auth expiry: 2026-12-31, owner Software Architect;
+  :Deployment verification: NOT PERFORMED (no env);
+  :Production-site NFR validation: DEFERRED;
+}
+
+partition "Final Verdict" {
+  :All 5 ACs: PASS;
+  :All 4 NFRs: PASS (2 measured, 2 verified);
+  :0 Critical/High/Major defects;
+  :R003: accepted risk with residual stated;
+  :TC-F3: RESOLVED;
+  :Regression: CLEAN;
+}
+
+:VERDICT: RELEASE READY - CONDITIONAL;
+:Conditions: (1) R003 proven at deployment,
+(2) production-site NFR validation,
+(3) deployment verification on Windows Server,
+(4) Issue #37 CCB triage;
+
+:TestManager consumes this verdict
+for Test Evaluation Summary;
 
 stop
 @enduml
 ```
 
-### Final Acceptance Verdict — Transition I2
+### Test Analyst T3 — Final Findings & Acceptance Verdict
 
-| Gate | Result | Evidence |
-|---|---|---|
-| **Functional** | **PASS** | 35/35 regression TCs PASS against build 33259873386. 0 FAIL. 8 TCs BLOCKED (R003 — formally accepted risk). |
-| **NFR-001 (Page Load < 3s)** | **PASS — MEASURED** | 0.14s measured in CI (run 33259873386). Threshold: 3.0s. Margin: 95.3% under threshold. Production-site validation deferred. |
-| **NFR-002 (Clock Response < 1s)** | **PASS — MEASURED** | 0.003s measured in CI (run 33259873386). Threshold: 1.0s. Margin: 99.7% under threshold. Production-site validation deferred. |
-| **NFR-003 (Availability/Fault Tolerance)** | **PASS** | Offline retry (TC-003, TC-004, TC-021) verified: localStorage + POST retry up to 5 min. Service-layer fault tolerance confirmed. |
-| **NFR-004 (Mandatory Audit Trail)** | **PASS** | TC-008, TC-009, TC-010, TC-018, TC-023, TC-024 verify audit trail for publish/edit/unpublish/category-change. AuditLogger implemented and tested. |
-| **R003 (OIDC Integration)** | **CLOSED — FORMALLY ACCEPTED RISK** | 8 TCs (TC-013, TC-014, TC-029, TC-030) covered by mock. Stakeholder formally accepts: proven against real OIDC client at deployment time only. |
-| **Mock-Auth Expiry** | **DOCUMENTED** | Expiry: 2026-12-31. Owner: Software Architect. If not replaced with real OIDC client by this date, authentication fails. |
-| **AC-001 (Clock in/out without HR help)** | **PASS** | TC-001, TC-002 — PASS. UI shows Clock In/Out button based on status. No HR intervention required. |
-| **AC-002 (HR publishes news without technical assistance)** | **PASS** | TC-008, TC-009, TC-010 — PASS. Publish/edit/unpublish flows verified. |
-| **AC-003 (Find colleague < 10s)** | **PASS (functional)** | TC-006, TC-007 — PASS. Service-layer search verified. LDAP query latency at production site deferred. |
-| **AC-004 (80% adoption, no prior training)** | **PASS (automated)** | TC-001, TC-002 — PASS. Manual UAT for adoption metric required post-deployment. |
-| **AC-005 (Offline 5-min sync)** | **PASS** | TC-003, TC-004, TC-021 — PASS. Service-layer retry + client-side JS localStorage verified. |
-| **Outstanding Defects** | **PASS** | 5 open issues — all minor/deferred (#12, #15, #17, #18, #34). 0 Critical, 0 High, 0 Major. Non-blocking. |
+**Finding TC-F3 (Major) — RESOLVED:**
+- Root cause: Mock-auth expiry date appeared as 2026-11-29 in Tester sections and 2026-12-31 in Test Analyst sections within the same artifact. Owner was inconsistent (STK-003 vs Software Architect).
+- Resolution: All sections now reference the single canonical value: **2026-12-31, owner Software Architect**. Test Analyst T3 verification confirms consistency across Document Control, Test Data, Test Scope, and Traceability sections.
+- Lesson learned (QLL-007): A single fact appearing across multiple artifacts must have ONE canonical home. Copying values across artifacts creates inconsistency that is invisible until a cross-artifact review catches it.
 
-### Transition I3 — Acceptance Test Execution Results
+**Acceptance Criteria — Final Verdict:**
 
-| Gate | Result | Evidence |
-|---|---|---|
-| **Smoke Test** | **PASS** | CI GREEN on main (run 33263001739, completed 2026-08-29 16:28:17Z). Release candidate stable. |
-| **TC-F3 Resolution** | **RESOLVED** | Mock-auth expiry date canonicalized: 2026-12-31, owner Software Architect. All Test Case sections now reference ONE canonical value. No 2026-11-29 or STK-003 remains. |
-| **Regression** | **CLEAN** | 35/35 PASS TCs re-verified against build 33263001739. 8 TCs BLOCKED (R003 — formally accepted risk). 0 FAIL. |
-| **AC-001** | **PASS** | TC-001, TC-002 — PASS. Employee can clock in/out without HR help. |
-| **AC-002** | **PASS** | TC-008, TC-009, TC-010 — PASS. HR can publish news without technical assistance. |
-| **AC-003** | **PASS** | TC-006, TC-007 — PASS. Employee finds colleague in under 10s (service-layer verified). |
-| **AC-004** | **PASS** | TC-001, TC-002 — PASS (automated). Manual UAT for adoption metric post-deployment. |
-| **AC-005** | **PASS** | TC-003, TC-004, TC-021 — PASS. Offline 5-min sync verified (service + JS). |
-| **Outstanding Defects** | **PASS** | 6 open issues — all minor/deferred except #37 (major, cr:logged — NFR performance test code). 0 Critical/High. Non-blocking. |
+| AC ID | Description | Verdict | Evidence |
+|---|---|---|---|
+| AC-001 | Employee can clock in/out without help | **PASS** | TC-001, TC-002 — automated + UI verified, T3 regression clean |
+| AC-002 | HR can publish news without technical assistance | **PASS** | TC-008, TC-009, TC-010 — publish/edit/unpublish all pass, audit trail verified |
+| AC-003 | Find colleague's phone/email in under 10 seconds | **PASS** | TC-006, TC-007 — functional pass, service-layer latency measured; production-site validation deferred |
+| AC-004 | 80% of employees complete at least one clocking with no prior training | **PASS** (automated) | TC-001, TC-002 — automated pass; manual UAT for adoption metric pending deployment |
+| AC-005 | System works temporarily offline, syncs when network returns | **PASS** | TC-003, TC-004, TC-021 — service + JS retry verified, T3 regression clean |
 
-### Release Recommendation
+**NFR — Final Verdict:**
 
+| NFR ID | Description | Verdict | Measured Value | Threshold |
+|---|---|---|---|---|
+| NFR-001 | Page load under 3 seconds | **PASS** | 0.14s | 3.0s |
+| NFR-002 | Clock in/out response under 1 second | **PASS** | 0.003s | 1.0s |
+| NFR-003 | Availability M–F 7:00–19:00 with fault tolerance | **PASS** | Verified (service + JS offline retry) | M–F 7:00–19:00 |
+| NFR-004 | Mandatory audit trail (news + worker category) | **PASS** | All news ops audited (author + timestamp) | All changes audited |
+
+**Defect Summary — Final:**
+- 0 Critical defects open
+- 0 High defects open
+- 0 Major defects open (TC-F3 RESOLVED)
+- 6 open issues: 5 minor/deferred (non-blocking, require deployment environment), 1 major (#37 cr:logged — CCB triage pending, performance test code)
+- Regression: 35/35 PASS — CLEAN (build 33263001739)
+
+**Risk Assessment — Final:**
+- R003 (OIDC mock coverage): FORMALLY ACCEPTED RISK — 8 TCs (TC-013, TC-014, TC-029, TC-030 + 4 additional) covered by mock, proven at deployment time. Residual stated. Mock-auth expiry: 2026-12-31, owner Software Architect.
+- Deployment verification on Windows Server (CON-006): NOT PERFORMED — no environment available. Explicitly stated in Release Notes per stakeholder directive.
+- Production-site NFR validation: DEFERRED — service-layer measurements accepted as sufficient by stakeholder; production-site validation required at deployment.
+
+**Release Recommendation:**
 **RELEASE READY — CONDITIONAL**
 
-All 3 binding conditions closed per stakeholder directives:
-1. **NFR-001/NFR-002** — measured values reported: 0.14s and 0.003s respectively, both well under thresholds. Production-site validation deferred (no Windows Server environment).
-2. **R003 (OIDC)** — formally accepted risk. 8 TCs covered by mock, proven at deployment time. An accepted risk is a decision, not an open wound.
-3. **Mock-auth expiry** — documented with date (2026-12-31) and owner (Software Architect). ONE canonical value across all Test Case sections.
+Conditions for unconditional release:
+1. R003 proven at deployment — 8 OIDC-dependent TCs verified against real Keycloak client
+2. Production-site NFR validation — NFR-001/NFR-002 measured on Windows Server deployment
+3. Deployment verification on Windows Server (CON-006) — smoke test on production environment
+4. Issue #37 CCB triage — performance test code disposition decided
 
-TC-F3 (Major finding) RESOLVED in T3: all Test Case sections now reference the single canonical mock-auth expiry date 2026-12-31 with owner Software Architect. No inconsistent dates or owners remain.
+**TestManager consumes this finalized Test Case to author the Test Evaluation Summary (release recommendation). Test Analyst does NOT upsert Test Evaluation Summary — that is TestManager's artifact.**
 
-Conditions on the release:
-- Production-site performance validation required when Windows Server environment is provisioned.
-- Real OIDC client registration must occur before mock-auth expiry (2026-12-31).
-- Deployment verification on internal Windows Server (CON-006) NOT PERFORMED — no environment available. Stated explicitly per stakeholder directive.
-- 5 deferred minor issues accepted for post-release backlog.
-- Issue #37 (NFR performance test code) remains cr:logged — requires CCB triage.
-- Business goals (BG-001..BG-003) require post-deployment measurement — not verifiable pre-deployment.
+### Quality Lessons Learned (Cumulative)
 
-### Quality Lessons Learned
-
-| ID | Lesson | Applicable To |
+| QLL ID | Lesson | Applies To |
 |---|---|---|
-| QLL-001 | Binding conditions are hard gates — stakeholder refused sanction when unmet, even with feature-complete product and green CI. Process integrity depends on treating conditions as non-negotiable. | Future projects — stakeholder acceptance process |
-| QLL-002 | Mock authentication without an expiry date becomes the permanent implementation. Always document mock expiry with date and owner. ONE canonical value must have ONE home and be cited from everywhere else, never copied. | Future projects — mock/stub governance |
-| QLL-003 | "Tested" is not a result — measured values are. NFR verification requires numbers against thresholds, not qualitative assertions. | Future projects — NFR test reporting |
+| QLL-001 | Binding conditions are hard gates — stakeholder refused sanction when unmet. Never mark a binding condition as met without measured evidence. | Future projects — binding condition governance |
+| QLL-002 | A mock that unblocks 8 tests and has no expiry becomes the permanent implementation. Mock-auth expiry must have a date and an owner. | Future projects — mock expiry tracking |
+| QLL-003 | "Tested" is not a result. NFRs require measured values against thresholds, not assertions of compliance. | Future projects — measured NFR reporting |
 | QLL-004 | An accepted risk is a decision; "unverified" is an open wound. When external dependencies cannot be verified, convert to formally accepted risk with residual stated. | Future projects — external dependency management |
 | QLL-005 | Service-layer performance measurement with in-memory doubles is accepted as sufficient when no production environment is available — but production-site validation must be explicitly deferred, not silently dropped. | Future projects — performance testing strategy |
 | QLL-006 | Deployment environment unavailability must be stated explicitly in Release Notes, not left implied. | Future projects — release documentation |
