@@ -2,12 +2,12 @@
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | **EVOLVED — Transition Iteration 2 Cycle 1 (System Analyst)** |
-| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED — pending stakeholder re-review with T2 evidence** |
-| Iteration | 2 (Cycle 1) |
-| Date | 2026-08-29 |
-| Prior Phase | Transition T1 — PR sanction REFUSED; 3 binding conditions unmet; stakeholder directed specific remediation |
-| Evolution | Inception: Vision created with problem statement, stakeholder analysis, features, constraints. Transition Iter 1: Vision finalized to reflect delivered product. All 10 features (FR-001 through FR-010) implemented. 4 CCB-approved CRs incorporated (CR-010 IsFeatured, CR-011 idempotency key, CR-023 antiforgery, CR-024 server-side identity). Deferred items documented for future releases. Transition Iter 2: Binding conditions resolved — NFR-001/NFR-002 load tests executed with measured values; R003 (real OIDC) formally accepted risk with residual stated; mock-auth expiry documented (2027-01-31, owner STK-003); deployment verification explicitly excluded (no environment). Vision finalized to reflect delivered product. |
+| Status | **EVOLVED — Transition Iteration 3 Cycle 1 (System Analyst)** |
+| Milestone Target | Product Release (PR) — **NOT YET ACHIEVED — pending stakeholder re-review with T3 evidence** |
+| Iteration | 3 (Cycle 1) |
+| Date | 2026-08-30 |
+| Prior Phase | Transition T2 — PR sanction REFUSED; 3 binding conditions substantively met but mock-auth date inconsistent across 7 artifacts (3 dates, 2 owners); 3 T3 directives issued |
+| Evolution | Inception: Vision created with problem statement, stakeholder analysis, features, constraints. Transition Iter 1: Vision finalized to reflect delivered product. All 10 features (FR-001 through FR-010) implemented. 4 CCB-approved CRs incorporated (CR-010 IsFeatured, CR-011 idempotency key, CR-023 antiforgery, CR-024 server-side identity). Deferred items documented for future releases. Transition Iter 2: Binding conditions resolved — NFR-001/NFR-002 load tests executed with measured values; R003 (real OIDC) formally accepted risk with residual stated; mock-auth expiry documented; deployment verification explicitly excluded (no environment). Transition Iter 3: Mock-auth expiry date corrected to canonical value 2026-12-31 (owner: Software Architect, established in PR #41 — `MockAuthHandler.ExpiryDate = new(2026, 12, 31)`). All references now cite the canonical value, never copy it. Binding conditions section updated to reflect T2 resolution. |
 ## Problem Statement
 
 Cuba Corp (200 employees, 3 offices) manages three core HR processes with fragmented, manual tools:
