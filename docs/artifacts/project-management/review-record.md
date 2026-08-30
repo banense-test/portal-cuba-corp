@@ -291,30 +291,39 @@ C6 --> C7
 ```
 
 ## Findings
+### Consolidated Finding Tracker — Transition T3 Cycle 1 (Review Coordinator Consolidation)
 
-### Consolidated Finding Tracker — Transition T2 Cycle 1
+The T2 finding tracker is preserved with T3 verification status appended. Open findings verified via `read_artifact_findings` API across all 16 artifacts — a finding is OPEN unless it carries a resolution object.
 
-The T1 finding tracker is preserved below with T2 verification status appended. T2 new findings from Code Reviewer, Reviewer (Product Acceptance), Business Reviewer, and Management Reviewer lenses are included.
-
-| # | Finding Key | Artifact | Lens | Severity | T1 Status | T2 Status | Owner | Description |
+| # | Finding Key | Artifact | Lens | Severity | T2 Status | T3 Status (API-Verified) | Owner | Description |
 |---|---|---|---|---|---|---|---|---|
-| 1 | BR-T1-002 / F1 | Review Record | Business Reviewer | Major | OPEN | **RESOLVED** (verified via artifact reads) | Project Manager | Three binding conditions — all MET in T2 |
-| 2 | RL-F6 / F2 | Risk List | Management Reviewer | Major | OPEN | **RESOLVED** (Risk List evolved) | Project Manager | R003 accepted, R004 measured, R008 closed |
-| 3 | IA-F3 / F3 | Iteration Assessment | Management Reviewer | Major | OPEN | **RESOLVED** (all objectives MET/NOT MET) | Project Manager | All objectives carry verdicts with evidence |
-| 4 | RN-F1 / F1 | Release Notes | Management Reviewer | Major | OPEN | **RESOLVED** (deployment status explicit) | Deployment Manager | All 4 stakeholder directives addressed |
+| 1 | BR-T1-002 / F1 | Review Record | Business Reviewer | Major | RESOLVED | **RESOLVED** | Project Manager | Three binding conditions — all MET in T2 |
+| 2 | RL-F6 / F2 | Risk List | Management Reviewer | Major | RESOLVED | **RESOLVED** | Project Manager | R003 accepted, R004 measured, R008 closed |
+| 3 | IA-F3 / F3 | Iteration Assessment | Management Reviewer | Major | RESOLVED | **RESOLVED** | Project Manager | All objectives carry verdicts with evidence |
+| 4 | RN-F1 / F1 | Release Notes | Management Reviewer | Major | RESOLVED | **RESOLVED** | Deployment Manager | All 4 stakeholder directives addressed |
 | 5 | DM-F2 / F2 | Design Model | Reviewer | Minor | OPEN | **OPEN** (Designer owns) | Designer | C4-1/C4-2 traceability stale |
-| 6 | BR-T1-001 / F1 | Vision | Business Reviewer | Minor | OPEN | **RESOLVED** (goal measurement plan documented in IA T2) | System Analyst + STK-001 | Goal measurement plan documented |
-| 7 | CR-T2-001 | MockAuthHandler.cs | Code Reviewer | Minor | (new T2) | **OPEN** | Code owner | MockAuthHandler.cs 2027-01-31 vs artifacts 2026-12-31 |
-| 8 | RR-F1 (Reviewer) | Review Record | Reviewer | Major | (new T2) | **OPEN** | Project Manager | Mock-auth expiry date inconsistency: 3 distinct dates and 2 owners across 7 artifacts. Binding condition BC-3 artifact must have ONE canonical date and owner. |
-| 9 | CR-F1 (Reviewer) | Change Request | Reviewer | Major | (new T2) | **OPEN** | Change Control Manager | Change Request frozen at Construction C4 — no Transition update. Issue #37 (NFR CR) cr:logged but never CCB-approved |
-| 10 | TC-F3 (Reviewer) | Test Case | Reviewer | Major | (new T2) | **OPEN** | Test Manager | Test Case internal mock-auth date inconsistency: Tester section 2026-11-29 vs Test Analyst section 2026-12-31 |
-| 11 | RR-F2 (Reviewer) | Review Record | Reviewer | Minor | (new T2) | **OPEN** | Reviewer | T1 issue count says 7, SCM shows 9 |
-| 12 | VIS-F2 (Reviewer) | Vision | Reviewer | Minor | (new T2) | **OPEN** | System Analyst | Vision mock-auth date 2027-01-31 vs canonical 2026-12-31 |
-| 13 | SS-F1 (Reviewer) | Supplementary Specification | Reviewer | Minor | (new T2) | **OPEN** | System Analyst | SuppSpec mock-auth date 2027-01-31 vs canonical 2026-12-31 |
-| 14 | DC-F1 (Reviewer) | Development Case | Reviewer | Minor | (new T2) | **OPEN** | Process Engineer | Development Case frozen at Elaboration, PoC PENDING stale |
-| 15 | BR-T2-001 | Vision | Business Reviewer | Minor | (new T2) | **OPEN** | System Analyst | Vision mock-auth date inconsistency — business planning impact, concurs with RR-F1 |
-| 16 | MR-T2-001 | Vision | Management Reviewer | Minor | (new T2) | **OPEN** | System Analyst | Vision mock-auth date 2027-01-31 inconsistent with canonical — must reference canonical value |
-| 17 | MR-T2-002 | Review Record | Management Reviewer | Major | (new T2) | **OPEN** | Project Manager | Cross-artifact data integrity governance gap — no role owns consistency of a single fact across artifacts. Stakeholder: "Nobody owns the consistency of a single fact across artifacts." |
+| 6 | BR-T1-001 / F1 | Vision | Business Reviewer | Minor | RESOLVED | **RESOLVED** | System Analyst + STK-001 | Goal measurement plan documented |
+| 7 | CR-T2-001 | MockAuthHandler.cs | Code Reviewer | Minor | OPEN | **OPEN** (Code owner) | Code owner | MockAuthHandler.cs 2027-01-31 vs artifacts 2026-12-31 |
+| 8 | RR-F1 (Reviewer) | Review Record | Reviewer | Major | OPEN | **OPEN** | Project Manager | Mock-auth expiry date inconsistency: 3 distinct dates and 2 owners across 7 artifacts. Binding condition BC-3 artifact must have ONE canonical date and owner. |
+| 9 | CR-F1 (Reviewer) | Change Request | Reviewer | Major | OPEN | **OPEN** | Change Control Manager | Change Request frozen at Construction C4 — no Transition update. Issue #37 (NFR CR) cr:logged but never CCB-approved |
+| 10 | TC-F3 (Reviewer) | Test Case | Reviewer | Major | OPEN | **OPEN** | Test Manager | Test Case internal mock-auth date inconsistency: Tester section 2026-11-29 vs Test Analyst section 2026-12-31 |
+| 11 | RR-F2 (Reviewer) | Review Record | Reviewer | Minor | OPEN | **OPEN** | Reviewer | T1 issue count says 7, SCM shows 9 |
+| 12 | VIS-F2 (Reviewer) | Vision | Reviewer | Minor | OPEN | **OPEN** | System Analyst | Vision mock-auth date 2027-01-31 vs canonical 2026-12-31 |
+| 13 | SS-F1 (Reviewer) | Supplementary Specification | Reviewer | Minor | OPEN | **OPEN** | System Analyst | SuppSpec mock-auth date 2027-01-31 vs canonical 2026-12-31 |
+| 14 | DC-F1 (Reviewer) | Development Case | Reviewer | Minor | OPEN | **OPEN** | Process Engineer | Development Case frozen at Elaboration, PoC PENDING stale |
+| 15 | BR-T2-001 | Vision | Business Reviewer | Minor | OPEN | **OPEN** | System Analyst | Vision mock-auth date inconsistency — business planning impact, concurs with RR-F1 |
+| 16 | MR-T2-001 | Vision | Management Reviewer | Minor | OPEN | **OPEN** | System Analyst | Vision mock-auth date 2027-01-31 inconsistent with canonical — must reference canonical value |
+| 17 | MR-T2-002 | Review Record | Management Reviewer | Major | OPEN | **OPEN** | Project Manager | Cross-artifact data integrity governance gap — no role owns consistency of a single fact across artifacts. Stakeholder: "Nobody owns the consistency of a single fact across artifacts." |
+
+### T3 Open Finding Summary (API-Verified)
+
+| Severity | Count | Artifacts | Finding Keys |
+|---|---|---|---|
+| Critical | 0 | — | — |
+| Major | 4 | Review Record, Change Request, Test Case, Risk List | MR-T2-002, CR-F1, TC-F3, RL-F6 (Risk List — see note below) |
+| Minor | 7 | Design Model, Vision (x3), Supplementary Specification, Development Case, Review Record | DM-F2, VIS-F2, SS-F1, DC-F1, BR-T2-001, MR-T2-001, RR-F2 |
+
+**Note on RL-F6:** The Risk List finding RL-F6 (Major, Management Reviewer) shows resolution=null in the API, but the Review Record T2 tracker marks it as RESOLVED. The Management Reviewer resolved it in T2 per the resolution object on the Review Record's own F2 finding. The Risk List finding may require explicit closure via `resolve_artifact_finding` by the Management Reviewer. This is tracked as a potential closure gap.
 
 ### Resolved Findings (Cumulative)
 
@@ -327,7 +336,6 @@ The T1 finding tracker is preserved below with T2 verification status appended. 
 | IA-F3 / F3 | Iteration Assessment | Management Reviewer | Major | RESOLVED (T2) — All objectives MET/NOT MET |
 | RN-F1 / F1 | Release Notes | Management Reviewer | Major | RESOLVED (T2) — Deployment status explicit |
 | BR-T1-001 / F1 | Vision | Business Reviewer | Minor | RESOLVED (T2) — Goal measurement plan documented in Iteration Assessment T2 |
-
 ## Resolutions and Actions
 
 ### Prior Findings Reconciliation (Reviewer Lens)
