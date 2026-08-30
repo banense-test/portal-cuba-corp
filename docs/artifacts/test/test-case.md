@@ -15,6 +15,97 @@
 | Test Environment | .NET 10 test project (xUnit); InMemoryDb; MockLdapGateway; OIDC mock tokens; 35 TCs no external deps; 8 TCs require OIDC (R003 — FORMALLY ACCEPTED RISK). Performance tests (TC-011, TC-012) measured in CI: NFR-001=0.14s, NFR-002=0.003s. Production-site validation deferred (no Windows Server environment). Mock-auth expiry: 2026-12-31, owner Software Architect (canonical value — all sections reference this single value). |
 | TC-F3 Resolution | **RESOLVED** — Finding TC-F3 (Major, Reviewer): Test Case internal mock-auth date inconsistency (Tester section 2026-11-29 vs Test Analyst section 2026-12-31). Root cause: Tester section in Document Control Evolution and Test Data TD-011/TD-012 notes used non-canonical date 2026-11-29 and owner STK-003. Fix: all sections now reference the single canonical value 2026-12-31, owner Software Architect. No other date or owner appears anywhere in the Test Case. |
 ## Test Scope
+### Transition I3 — Acceptance Test Execution & Mock-Auth Date Resolution
+
+```plantuml
+@startuml
+title Transition T3 — Acceptance Test Execution & Mock-Auth Date Resolution Flow
+
+skinparam activityBackgroundColor #F0F4FF
+skinparam activityBorderColor #336699
+skinparam shadow false
+
+start
+
+:Load T3 Test State
+(43 TCs: 35 PASS, 8 BLOCKED R003);
+
+partition "S2: Smoke Test" {
+  if (CI GREEN on main?) then (yes — run 33263001739)
+    :Smoke: PASS;
+  else (no)
+    :Smoke: FAIL → blocker CR;
+    stop
+  endif
+}
+
+partition "S3: Acceptance Testing — TC-F3 Resolution" {
+  :Read Review Record finding TC-F3;
+  :Identify canonical value:
+  2026-12-31, owner Software Architect;
+  
+  :Scan Test Case for non-canonical dates;
+  
+  if (Document Control has 2026-11-29?) then (yes)
+    :Fix Document Control:
+    replace 2026-11-29 → 2026-12-31
+    replace STK-003 → Software Architect;
+  else (no)
+    :Document Control: clean;
+  endif
+  
+  if (Test Data has 2026-11-29?) then (yes)
+    :Fix Test Data:
+    TD-011/TD-012 notes → 2026-12-31
+    owner → Software Architect;
+  else (no)
+    :Test Data: clean;
+  endif
+  
+  if (Test Scope has 2026-11-29?) then (no — already 2026-12-31)
+    :Test Scope: clean;
+  else (yes)
+    :Fix Test Scope;
+  endif
+  
+  if (Traceability has 2026-11-29?) then (no — already 2026-12-31)
+    :Traceability: clean;
+  else (yes)
+    :Fix Traceability;
+  endif
+}
+
+partition "S3: Regression Verification" {
+  :35/35 PASS TCs re-verified
+  against build 33263001739;
+  :8 TCs BLOCKED (R003 — accepted risk);
+  :Regression: CLEAN;
+}
+
+partition "S3: Acceptance Criteria" {
+  :AC-001: PASS (TC-001, TC-002);
+  :AC-002: PASS (TC-008, TC-009, TC-010);
+  :AC-003: PASS (TC-006, TC-007);
+  :AC-004: PASS (TC-001, TC-002);
+  :AC-005: PASS (TC-003, TC-004, TC-021);
+}
+
+partition "S4: Defect Review" {
+  :6 open issues — all minor/deferred
+  except #37 (major, cr:logged);
+  :0 Critical/High defects;
+  :TC-F3 RESOLVED —
+  one canonical date across Test Case;
+}
+
+:TC-F3: RESOLVED;
+:All sections consistent:
+2026-12-31, Software Architect;
+
+stop
+@enduml
+```
+
 ### Transition I2 — Final Quality Gate Assessment
 
 ```plantuml
@@ -23,7 +114,7 @@ title Transition I2 — Final Quality Gate Assessment
 
 skinparam activityBackgroundColor #F0F4FF
 skinparam activityBorderColor #336699
-skinparam shadowing false
+skinparam shadow false
 
 start
 
@@ -134,6 +225,20 @@ stop
 | **AC-005 (Offline 5-min sync)** | **PASS** | TC-003, TC-004, TC-021 — PASS. Service-layer retry + client-side JS localStorage verified. |
 | **Outstanding Defects** | **PASS** | 5 open issues — all minor/deferred (#12, #15, #17, #18, #34). 0 Critical, 0 High, 0 Major. Non-blocking. |
 
+### Transition I3 — Acceptance Test Execution Results
+
+| Gate | Result | Evidence |
+|---|---|---|
+| **Smoke Test** | **PASS** | CI GREEN on main (run 33263001739, completed 2026-08-29 16:28:17Z). Release candidate stable. |
+| **TC-F3 Resolution** | **RESOLVED** | Mock-auth expiry date canonicalized: 2026-12-31, owner Software Architect. All Test Case sections now reference ONE canonical value. No 2026-11-29 or STK-003 remains. |
+| **Regression** | **CLEAN** | 35/35 PASS TCs re-verified against build 33263001739. 8 TCs BLOCKED (R003 — formally accepted risk). 0 FAIL. |
+| **AC-001** | **PASS** | TC-001, TC-002 — PASS. Employee can clock in/out without HR help. |
+| **AC-002** | **PASS** | TC-008, TC-009, TC-010 — PASS. HR can publish news without technical assistance. |
+| **AC-003** | **PASS** | TC-006, TC-007 — PASS. Employee finds colleague in under 10s (service-layer verified). |
+| **AC-004** | **PASS** | TC-001, TC-002 — PASS (automated). Manual UAT for adoption metric post-deployment. |
+| **AC-005** | **PASS** | TC-003, TC-004, TC-021 — PASS. Offline 5-min sync verified (service + JS). |
+| **Outstanding Defects** | **PASS** | 6 open issues — all minor/deferred except #37 (major, cr:logged — NFR performance test code). 0 Critical/High. Non-blocking. |
+
 ### Release Recommendation
 
 **RELEASE READY — CONDITIONAL**
@@ -141,13 +246,16 @@ stop
 All 3 binding conditions closed per stakeholder directives:
 1. **NFR-001/NFR-002** — measured values reported: 0.14s and 0.003s respectively, both well under thresholds. Production-site validation deferred (no Windows Server environment).
 2. **R003 (OIDC)** — formally accepted risk. 8 TCs covered by mock, proven at deployment time. An accepted risk is a decision, not an open wound.
-3. **Mock-auth expiry** — documented with date (2026-12-31) and owner (Software Architect).
+3. **Mock-auth expiry** — documented with date (2026-12-31) and owner (Software Architect). ONE canonical value across all Test Case sections.
+
+TC-F3 (Major finding) RESOLVED in T3: all Test Case sections now reference the single canonical mock-auth expiry date 2026-12-31 with owner Software Architect. No inconsistent dates or owners remain.
 
 Conditions on the release:
 - Production-site performance validation required when Windows Server environment is provisioned.
 - Real OIDC client registration must occur before mock-auth expiry (2026-12-31).
 - Deployment verification on internal Windows Server (CON-006) NOT PERFORMED — no environment available. Stated explicitly per stakeholder directive.
 - 5 deferred minor issues accepted for post-release backlog.
+- Issue #37 (NFR performance test code) remains cr:logged — requires CCB triage.
 - Business goals (BG-001..BG-003) require post-deployment measurement — not verifiable pre-deployment.
 
 ### Quality Lessons Learned
@@ -155,11 +263,12 @@ Conditions on the release:
 | ID | Lesson | Applicable To |
 |---|---|---|
 | QLL-001 | Binding conditions are hard gates — stakeholder refused sanction when unmet, even with feature-complete product and green CI. Process integrity depends on treating conditions as non-negotiable. | Future projects — stakeholder acceptance process |
-| QLL-002 | Mock authentication without an expiry date becomes the permanent implementation. Always document mock expiry with date and owner. | Future projects — mock/stub governance |
+| QLL-002 | Mock authentication without an expiry date becomes the permanent implementation. Always document mock expiry with date and owner. ONE canonical value must have ONE home and be cited from everywhere else, never copied. | Future projects — mock/stub governance |
 | QLL-003 | "Tested" is not a result — measured values are. NFR verification requires numbers against thresholds, not qualitative assertions. | Future projects — NFR test reporting |
 | QLL-004 | An accepted risk is a decision; "unverified" is an open wound. When external dependencies cannot be verified, convert to formally accepted risk with residual stated. | Future projects — external dependency management |
 | QLL-005 | Service-layer performance measurement with in-memory doubles is accepted as sufficient when no production environment is available — but production-site validation must be explicitly deferred, not silently dropped. | Future projects — performance testing strategy |
 | QLL-006 | Deployment environment unavailability must be stated explicitly in Release Notes, not left implied. | Future projects — release documentation |
+| QLL-007 | A single fact appearing across multiple artifacts must have ONE canonical home. Copying values across artifacts creates inconsistency that is invisible until a cross-artifact review catches it. The Test Case had 2026-11-29 in the Tester section and 2026-12-31 in the Test Analyst section — same artifact, two values. | Future projects — cross-artifact data integrity |
 ## Test Case Catalog
 ### TC-001: Clock In — Main Flow (Happy Path)
 
