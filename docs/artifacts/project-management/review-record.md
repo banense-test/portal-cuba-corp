@@ -128,7 +128,6 @@ Stakeholder directed: "Close it with a check, not a sweep: grep every artifact f
 | DC-F1 | Minor | Development Case | T2 (3rd iter) | ProcessEngineer | **OPEN** — frozen at Elaboration |
 | RR-F2 | Minor | Review Record | T1 | Review Coordinator | **RESOLVED in T4** — issue count corrected |
 ## Resolutions and Actions
-
 ### Prior Findings Reconciliation (Reviewer Lens)
 
 | Finding | Artifact | Phase/Iter Emitted | Resolution Status | Action |
@@ -138,38 +137,41 @@ Stakeholder directed: "Close it with a check, not a sweep: grep every artifact f
 | F1 (Minor) | Test Case | Elaboration I1 | RESOLVED (Elaboration I2) | TD-NNN entries removed — confirmed |
 | F2 (Minor) | Test Case | Construction I2 | RESOLVED (Construction I3) | UnitTest1.cs placeholder removed — confirmed |
 | F1 (Minor) | Design Model | Construction I2 | RESOLVED (Construction I3) | INT-003 office parameter updated — confirmed |
-| F2 (Minor) | Design Model | Construction I4 | **OPEN (2nd iteration)** | C4-1/C4-2 traceability still stale — Designer owns |
+| F2 (Minor) | Design Model | Construction I4 | **OPEN (3rd iteration)** | C4-1/C4-2 traceability still stale — Designer owns |
 | TC-F3 (Major) | Test Case | Transition T2 | **RESOLVED (T3)** | All sections reference canonical 2026-12-31 — resolve_artifact_finding executed |
 | SS-F1 (Minor) | Supplementary Specification | Transition T2 | **RESOLVED (T3)** | Mock-auth date corrected to canonical 2026-12-31 — resolve_artifact_finding executed |
 | RR-F1 (Major) | Review Record | Transition T2 | **RESOLVED (T3)** | Canonical date established across all 16 artifacts — verified by reading each |
+| RR-F2 (Minor) | Review Record | Transition T1 | **RESOLVED (T4)** | Issue count corrected from 7 to 10 in Document Control |
 | VIS-F2 (Minor) | Vision | Transition T2 | **RESOLVED (T3)** | Vision mock-auth date corrected to canonical 2026-12-31 |
-| CR-F1 (Major) | Change Request | Transition T2 | **OPEN (2nd iteration)** | Still frozen at Construction C4 — ChangeControlManager must update |
-| DC-F1 (Minor) | Development Case | Transition T2 | **OPEN (2nd iteration)** | Still frozen at Elaboration — ProcessEngineer must update |
+| CR-F1 (Major) | Change Request | Transition T2 | **OPEN (3rd iteration)** | Still frozen at Construction C4 — ChangeControlManager must update |
+| DC-F1 (Minor) | Development Case | Transition T2 | **OPEN (3rd iteration)** | Still frozen at Elaboration — ProcessEngineer must update |
 
-### T3 Stakeholder Directives — Consolidated Action Items (Updated)
+### T4 Stakeholder Directives — Consolidated Action Items (Updated)
 
 | # | Action | Owner | Severity | Blocking? | Status |
 |---|---|---|---|---|---|
 | 1 | NFR-001/NFR-002 load testing with measured values | Test Manager | Major | WAS binding #1 | **MET** — NFR-001: 0.14s PASS, NFR-002: 0.003s PASS |
 | 2 | Convert R003 OIDC to formally accepted risk | Software Architect / PM | Major | WAS binding #2 | **MET** — Risk List updated, code documents accepted risk |
-| 3 | Document mock-auth expiry date and owner | Software Architect | Major | WAS binding #3 | **MET** — Canonical date 2026-12-31 established across all artifacts |
+| 3 | Document mock-auth expiry date and owner | Software Architect | Major | WAS binding #3 | **MET** — Canonical date 2026-12-31 established; grep-verify shows 1 remaining non-canonical date (UCM) |
 | 4 | State deployment verification status explicitly in Release Notes | Deployment Manager | Major | WAS MR finding | **MET** — Release Notes explicitly state NOT PERFORMED |
-| 5 | Update Design Model C4-1/C4-2 traceability | Designer | Minor | No | **OPEN (2nd iteration)** — not updated in T3 |
+| 5 | Update Design Model C4-1/C4-2 traceability | Designer | Minor | No | **OPEN (3rd iteration)** — not updated in T3 or T4 |
 | 6 | Document post-deployment goal verification plan | System Analyst + STK-001 | Minor | No | **ADDRESSED** — plan documented in Iteration Assessment |
-| 7 | **T3-1: Establish ONE canonical mock-auth expiry date and owner** | Project Manager | Major | WAS blocking | **RESOLVED** — 2026-12-31, owner Software Architect, home Risk List R003. All artifacts verified consistent. |
-| 8 | **T3-2: Update Change Request artifact to Transition phase** | Change Control Manager | Major | YES — blocks PR sanction | **OPEN (2nd iteration)** — frozen at Construction C4; must reflect 10 open issues, #40 CCB triage. |
-| 9 | **T3-3: Unfreeze Development Case** | Process Engineer | Minor | No | **OPEN (2nd iteration)** — stale at Elaboration with obsolete PoC status |
+| 7 | **T3-1: Establish ONE canonical mock-auth expiry date and owner** | Project Manager | Major | WAS blocking | **RESOLVED** — 2026-12-31, owner Software Architect, home Risk List R003. |
+| 8 | **T3-2: Update Change Request artifact to Transition phase** | Change Control Manager | Major | YES — blocks PR sanction | **OPEN (3rd iteration)** — frozen at Construction C4; must reflect 10 open issues, #40 CCB triage. |
+| 9 | **T3-3: Unfreeze Development Case** | Process Engineer | Minor | No | **OPEN (3rd iteration)** — stale at Elaboration with obsolete PoC status |
 | 10 | Correct Test Case internal mock-auth date inconsistency | Test Manager | Major | No | **RESOLVED (T3)** — all sections consistent with canonical 2026-12-31 |
 | 11 | Correct Vision mock-auth date | System Analyst | Minor | No | **RESOLVED (T3)** — Vision corrected to canonical 2026-12-31 |
 | 12 | Correct Supplementary Specification mock-auth date | System Analyst | Minor | No | **RESOLVED (T3)** — SuppSpec corrected to canonical 2026-12-31 |
-| 13 | Update Review Record issue count | Reviewer | Minor | No | **OPEN** — T1 section says 7, SCM shows 10 |
+| 13 | Update Review Record issue count | Review Coordinator | Minor | No | **RESOLVED (T4)** — issue count corrected from 7 to 10 |
 | 14 | **T3-PROCESS: Cross-artifact consistency protocol** | Process Engineer | Minor | No (evolution cycle) | **RESOLVED** — canonical-value protocol established: one home (Risk List R003), referenced everywhere, never copied |
+| 15 | **T4-GREP: Grep every artifact for literal mock-auth date** | Review Coordinator | Major | YES — blocks PR sanction | **EXECUTED (T4)** — 1 literal date found outside canonical home (Use-Case Model: 2027-01-31). UCM-F1 persists. |
+| 16 | **T4-UCM: Fix Use-Case Model mock-auth date** | System Analyst | Major | YES — blocks PR sanction | **OPEN** — UCM must replace 2027-01-31 + STK-003 with reference to Risk List R003 |
 
-### Review Effectiveness Report — All Phases (Updated for T3)
+### Review Effectiveness Report — All Phases (Updated for T4)
 
 ```plantuml
 @startuml
-title Review Effectiveness Metrics — All Phases (Inception through Transition T3)
+title Review Effectiveness Metrics — All Phases (Inception through Transition T4)
 
 skinparam classAttributeIconSize 0
 skinparam classBackgroundColor #F0F4FF
@@ -217,7 +219,7 @@ object "Transition T2 (4 lenses)" as TRA2 {
   Stakeholder_Sanction = REFUSED
 }
 
-object "Transition T3 (Reviewer)" as TRA3 {
+object "Transition T3 (4 lenses)" as TRA3 {
   Artifacts_Evaluated = 16
   Findings_Resolved = 2 (TC-F3 Major, SS-F1 Minor)
   Findings_Persisting = 3 (CR-F1 Major, DC-F1 Minor, DM-F2 Minor)
@@ -225,6 +227,15 @@ object "Transition T3 (Reviewer)" as TRA3 {
   CI = GREEN (run 33310078920)
   Open_PRs = 0
   Open_Issues = 10
+  Stakeholder_Sanction = REFUSED (3rd)
+}
+
+object "Transition T4 (Review Coordinator)" as TRA4 {
+  Grep_Verify_Executed = YES
+  Literal_Dates_Outside_R003 = 1 (UCM)
+  Findings_Resolved = 1 (RR-F2 Minor)
+  Findings_Persisting = 5 (UCM-F1 Major, CR-F1 Major, RR-F4 Major-server-err, DM-F2 Minor, DC-F1 Minor)
+  CI = GREEN (run 33310078920)
   Stakeholder_Sanction = PENDING
 }
 
@@ -233,6 +244,7 @@ ELA --> CON
 CON --> TRA1
 TRA1 --> TRA2
 TRA2 --> TRA3
+TRA3 --> TRA4
 
 @enduml
 ```
@@ -242,13 +254,12 @@ TRA2 --> TRA3
 | Metric | Inception | Elaboration | Construction | Transition (cumulative) |
 |---|---|---|---|---|
 | Review Coverage | 100% (10/10) | 100% (13/13) | 100% (15/15) | 100% (16/16) |
-| Defect Density (findings/artifact) | 0.30 | 0.38 | 0.80 | 0.44 (T1) → 0.69 (T2) → 0.25 (T3) |
+| Defect Density (findings/artifact) | 0.30 | 0.38 | 0.80 | 0.44 (T1) → 0.69 (T2) → 0.25 (T3) → 0.31 (T4) |
 | DRE (review vs test) | 100% | 100% | 83% | N/A — no new test defects in Transition |
-| Rework Effort | Minimal | Minimal | Moderate (2 unresolved) | High (3 iterations, 2 refusals) |
-| Open Findings Trend | 0 → 0 | 0 → 0 | 2 → 0 (C4) | 6 → 11 → 4 (T3 Reviewer lens) |
+| Rework Effort | Minimal | Minimal | Moderate (2 unresolved) | High (4 iterations, 3 refusals) |
+| Open Findings Trend | 0 → 0 | 0 → 0 | 2 → 0 (C4) | 6 → 11 → 4 (T3) → 5 (T4) |
 
-**Key Finding:** T3 resolved 7 of 11 open findings (2 via resolve_artifact_finding, 5 verified resolved by other roles). The mock-auth canonical date issue that blocked PR sanction in T2 is now fully resolved — all 16 artifacts reference the canonical value 2026-12-31. The remaining 4 open findings (1 Major, 3 Minor) are all owned by other roles (ChangeControlManager, ProcessEngineer, Designer) and represent the last barriers to PR sanction.
-
+**Key Finding:** T4 executed the stakeholder's grep-verify directive and found 1 literal date outside the canonical home (Use-Case Model: 2027-01-31, owner STK-003). RR-F2 (Minor) was resolved — issue count corrected from 7 to 10. The remaining 5 open findings are: UCM-F1 (Major, System Analyst), CR-F1 (Major, ChangeControlManager), RR-F4 (Major, server error — content corrected), DM-F2 (Minor, Designer), DC-F1 (Minor, ProcessEngineer). The canonical-value protocol is working — only 1 artifact remains non-compliant, down from 7 in T2.
 ## Disposition
 ### T3 Cycle 1 — Management Reviewer Product Acceptance Disposition
 
