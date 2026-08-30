@@ -2,15 +2,15 @@
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | **Publication-Ready** — Final quality pass complete (Transition Iter 2, Cycle 1) |
+| Status | **Publication-Ready** — Final quality pass complete (Transition Iteration 3, Cycle 1) |
 | Milestone Target | End-of-Transition (PRD) — **NOT YET ACHIEVED** |
-| Iteration | 2 (Cycle 1) |
-| Date | 2026-08-29 |
-| Prior Phase | Transition Iteration 1 — Publication-Ready; zero findings on User Documentation |
+| Iteration | 3 (Cycle 1) |
+| Date | 2026-08-30 |
+| Prior Phase | Transition Iteration 2 — Publication-Ready; zero findings on User Documentation |
 | Author | Technical Writer (Deployment Discipline) |
 | Audience | Employees (STK-004), HR Administrators (STK-001), Infrastructure team (STK-003) |
 | Coverage | Install + Operate + Use + Maintain for final release build (UC-001 through UC-010) |
-| Transition Evolution | Iteration 1: Final quality pass — all content verified against final system behavior. Iteration 2: Operations Guide updated with deployment readiness status — mock-auth expiry (2026-12-31), R003 OIDC formally accepted risk, Windows Server deployment NOT PERFORMED, NFR measured values from CI. Deployment readiness state machine diagram added. All other sections PRESERVED — no behavioral changes. |
+| Transition Evolution | Iteration 1: Final quality pass — all content verified against final system behavior. Iteration 2: Operations Guide updated with deployment readiness status — mock-auth expiry, R003 OIDC formally accepted risk, Windows Server deployment NOT PERFORMED, NFR measured values from CI. Deployment readiness state machine diagram added. Iteration 3: Mock-auth expiry date references updated to cite canonical home (Release Notes KNOWN-ISSUE-004) per stakeholder T3 directive — "one home, everyone references it, never copy." All diagrams and prose updated. CI build reference updated to run 33263001739. |
 | Styleguide | Terminological contract: "Clock In/Out" (not "punch" or "check-in"), "News item" (not "article" or "post"), "Worker category" (not "employee type" or "classification"), "Directory" (not "phonebook" or "address book"), "Unpublish" (not "hide" or "remove"). Active voice. Task-oriented headings. |
 ## Overview
 
