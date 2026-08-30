@@ -584,469 +584,54 @@ TRA2 --> TRA3
 **Key Finding:** T3 resolved 7 of 11 open findings (2 via resolve_artifact_finding, 5 verified resolved by other roles). The mock-auth canonical date issue that blocked PR sanction in T2 is now fully resolved — all 16 artifacts reference the canonical value 2026-12-31. The remaining 4 open findings (1 Major, 3 Minor) are all owned by other roles (ChangeControlManager, ProcessEngineer, Designer) and represent the last barriers to PR sanction.
 
 ## Disposition
-### T3 Cycle 1 — Technical Reviewer Product Acceptance Disposition
+### T3 Cycle 1 — Management Reviewer Product Acceptance Disposition
 
-**ACCEPTED WITH CONDITIONS — 1 MAJOR + 3 MINOR OPEN — STAKEHOLDER SANCTION PENDING**
+**CONDITIONAL — 2 MAJOR + 3 MINOR OPEN — STAKEHOLDER SANCTION REFUSED (3rd time)**
 
-The Technical Reviewer's T3 evaluation of all 16 project artifacts, combined with SCM release evidence, yields the following disposition:
+The Management Reviewer's T3 evaluation of the PR milestone criteria, combined with the stakeholder's 3rd refusal, yields the following disposition:
 
-**PR Compliance Assessment (T3 Technical Reviewer):**
+**Stakeholder Sanction: REFUSED**
 
-```plantuml
-@startuml
-title PR Compliance Assessment — Transition T3 (Technical Reviewer)
+The stakeholder refused PR sanction for the third time, identifying that the Use-Case Model Closure Notes still carry the non-canonical mock-auth expiry date 2027-01-31 with owner STK-003, instead of the canonical value 2026-12-31 (owner: Software Architect, home: Risk List R003). The stakeholder directed: "Close it with a check, not a sweep: grep every artifact for a literal date and prove that only Risk List R003 holds one. Any other occurrence must be a reference. Report the count."
 
-skinparam classAttributeIconSize 0
-skinparam classBackgroundColor #F0F4FF
-skinparam classBorderColor #336699
-skinparam shadowing false
+**PR Compliance Summary (Management Reviewer T3):**
 
-object "PR-01: User Acceptance (AC-001..AC-005)" as PR01 {
-  AC-001 Clock in/out = PASS
-  AC-002 HR publish news = PASS
-  AC-003 Find colleague < 10s = PASS
-  AC-004 80% adoption = PENDING (post-deployment)
-  AC-005 Offline 5-min sync = PASS
-  Verdict = PARTIALLY MET
-}
-
-object "PR-02: Deployment Success" as PR02 {
-  Status = NOT PERFORMED
-  Reason = No Windows Server env (CON-006)
-  StakeholderAccepted = YES
-  Verdict = DEFERRED
-}
-
-object "PR-03: Training and Documentation" as PR03 {
-  UserDocumentation = Publication-ready
-  Verdict = MET
-}
-
-object "PR-04: Support Transition" as PR04 {
-  Status = NOT DOCUMENTED
-  Verdict = NOT MET
-}
-
-object "PR-05: BC-1 NFR Load Testing" as PR05 {
-  NFR-001 = 0.14s vs 3s = PASS
-  NFR-002 = 0.003s vs 1s = PASS
-  Verdict = MET
-}
-
-object "PR-06: BC-2 R003 OIDC Accepted Risk" as PR06 {
-  Status = FORMALLY ACCEPTED
-  Residual = 8 TCs covered by mock
-  Verdict = MET
-}
-
-object "PR-07: BC-3 Mock-Auth Expiry" as PR07 {
-  T3_Code = RESOLVED (PR #41 APPROVED)
-  T3_Artifacts = RESOLVED (all 16 consistent)
-  Verdict = MET
-}
-
-object "PR-08: CI Build Status" as PR08 {
-  Main = GREEN (run 33310078920)
-  Open_PRs = 0
-  Verdict = MET
-}
-
-object "PR-09: Open Defects" as PR09 {
-  Critical = 0
-  Major = 1 (CR-F1)
-  Minor = 3 (DM-F2, DC-F1, RR-F2)
-  Suggestion = 1 (CR-T3-001)
-  Verdict = NOT MET (1 Major open)
-}
-
-object "PR-10: Stakeholder Sanction" as PR10 {
-  T1 = REFUSED (binding conditions unmet)
-  T2 = REFUSED (date inconsistency)
-  T3 = PENDING
-  Verdict = PENDING
-}
-
-PR01 --> PR10
-PR02 --> PR10
-PR03 --> PR10
-PR04 --> PR10
-PR05 --> PR10
-PR06 --> PR10
-PR07 --> PR10
-PR08 --> PR10
-PR09 --> PR10
-
-@enduml
-```
-
-### T3 Cycle 1 — Business Reviewer Product Acceptance Disposition
-
-**CONDITIONAL — 0 CRITICAL, 0 MAJOR, 0 MINOR FROM BUSINESS LENS — 3 BUSINESS GOALS PENDING (POST-LAUNCH)**
-
-The Business Reviewer's T3 evaluation assesses business goal achievement, release scope completeness, operational handover materials, and business rule documentation sync. Business Modeling is INACTIVE (isBusinessProcessLed=false — system-requirements-led project, no BUC model produced or required).
-
-**Business Goal Achievement Matrix (T3):**
-
-```plantuml
-@startuml
-title Portal Cuba Corp — Business Goal Achievement Matrix (Transition T3)
-
-skinparam rectangle {
-  BackgroundColor<<pass>> #C8E6C9
-  BackgroundColor<<pending>> #FFF9C4
-  BackgroundColor<<fail>> #FFCDD2
-  BorderColor #455A64
-  RoundCorner 10
-}
-skinparam note {
-  BackgroundColor #FAFAFA
-  BorderColor #BDBDBD
-}
-
-rectangle "BG-001: Reduce HR time 50%" as BG1 <<pending>>
-rectangle "BG-002: Eliminate 100% Excel" as BG2 <<pending>>
-rectangle "BG-003: 80% adoption in 3 months" as BG3 <<pending>>
-
-note right of BG1
-  **Realized by:** UC-001..UC-004, UC-009
-  **Status:** PENDING
-  **Reason:** System feature-complete
-  but NOT DEPLOYED.
-  Post-launch metric — requires
-  production HR time measurement
-  before/after comparison.
-end note
-
-note right of BG2
-  **Realized by:** UC-001..UC-004, UC-009
-  **Status:** PENDING
-  **Reason:** System replaces Excel
-  clocking + PDF directory, but
-  production elimination requires
-  post-deployment observation.
-end note
-
-note right of BG3
-  **Realized by:** UC-001, UC-002, UC-008, UC-009
-  **Status:** PENDING
-  **Reason:** Adoption rate requires
-  post-launch usage analytics.
-  3-month window starts at go-live.
-end note
-
-rectangle "Release Scope Completeness" as RSC <<pass>>
-rectangle "User Documentation Coverage" as UDC <<pass>>
-rectangle "Business Rule Doc Sync" as BRD <<pass>>
-rectangle "Handover Materials Audit" as HMA <<pass>>
-
-note bottom of RSC
-  All 10 FRs (FR-001..FR-010) reflected
-  in Release Notes. Deployment status
-  explicitly NOT PERFORMED. NFR values
-  reported. R003 accepted risk documented.
-end note
-
-note bottom of UDC
-  Covers Employee (STK-004) + HR Admin
-  (STK-001) + Infra (STK-003).
-  UC-001..UC-010 documented.
-  Publication-ready. Styleguide compliant.
-end note
-
-note bottom of BRD
-  CON-013 (no hard delete) documented.
-  CON-012 (corporate data only) documented.
-  NFR-004 (audit trail) documented.
-  CON-010 (AD read-only) documented.
-end note
-
-note bottom of HMA
-  Release Notes: comprehensive
-  User Documentation: publication-ready
-  Business goals: deferred to post-launch
-  No new Critical/Major from business lens
-end note
-
-@enduml
-```
-
-**Business Lens Compliance Matrix (T3):**
-
-```plantuml
-@startuml
-title Business Reviewer T3 — Compliance Matrix
-
-skinparam class {
-  BackgroundColor #FAFAFA
-  BorderColor #455A64
-}
-
-class "1. Release Scope (all 10 FRs)" as C1 {
-  **PASS**
-  All 10 FRs in Release Notes
-}
-
-class "2. Deployment Status (CON-006)" as C2 {
-  **PASS**
-  NOT PERFORMED — explicit
-}
-
-class "3. NFR Measured Values" as C3 {
-  **PASS**
-  NFR-001: 0.14s vs 3s
-  NFR-002: 0.003s vs 1s
-}
-
-class "4. R003 OIDC Accepted Risk" as C4 {
-  **PASS**
-  Residual: 8 TCs mock-covered
-}
-
-class "5. Mock-Auth Canonical Date" as C5 {
-  **PASS**
-  RN KNOWN-ISSUE-004 = home
-  2026-12-31 / SW Architect
-}
-
-class "6. User Doc Actor Coverage" as C6 {
-  **PASS**
-  Employee + HR Admin + Infra
-  UC-001..UC-010
-}
-
-class "7. Business Rules in User Docs" as C7 {
-  **PASS**
-  CON-010, CON-012, CON-013
-  NFR-004 audit trail
-}
-
-class "8. BG-001 HR Time -50%" as C8 {
-  **PENDING**
-  Post-launch metric
-  Requires prod measurement
-}
-
-class "9. BG-002 Excel -100%" as C9 {
-  **PENDING**
-  Post-launch observation
-  System built, not deployed
-}
-
-class "10. BG-003 80% Adoption" as C10 {
-  **PENDING**
-  3-month window at go-live
-  Requires usage analytics
-}
-
-class "11. Prior BR Findings" as C11 {
-  **PASS**
-  3/3 RESOLVED
-  BR-T1-001, BR-T1-002, BR-T2-001
-}
-
-C1 --> C2 : Scope
-C2 --> C3 : NFRs
-C3 --> C4 : Risk
-C4 --> C5 : Mock-auth
-C5 --> C6 : Handover
-C6 --> C7 : Rules
-C7 --> C8 : Goals
-C8 --> C9
-C9 --> C10
-C10 --> C11 : Reconciliation
-
-note as N1
-  **PR Milestone Business Verdict: CONDITIONAL**
-  7 PASS criteria (scope, handover, rules, reconciliation)
-  3 PENDING criteria (BG-001, BG-002, BG-003 — post-launch metrics)
-  0 Critical, 0 Major, 0 Minor from business lens this iteration
-  All prior BR findings RESOLVED
-  Business goals are inherently post-deployment;
-  PENDING is the correct status, not a failure
-end note
-
-C11 ..> N1
-
-@enduml
-```
-
-**Business Lens T3 Assessment Summary:**
-
-| # | Criterion | Verdict | Evidence |
+| # | Criterion | Status | Evidence |
 |---|---|---|---|
-| 1 | Release Scope Completeness (all 10 FRs in Release Notes) | **PASS** | Release Notes covers FR-001..FR-010; deployment status explicit; NFR values reported; R003 accepted risk documented |
-| 2 | Deployment Status Explicit (CON-006) | **PASS** | Release Notes states "NOT PERFORMED — no environment available" per stakeholder directive |
-| 3 | NFR Measured Values Reported | **PASS** | NFR-001: 0.14s vs 3s threshold; NFR-002: 0.003s vs 1s threshold — both PASS |
-| 4 | R003 OIDC Accepted Risk Documented | **PASS** | Formally accepted risk with residual: 8 TCs covered by mock, proven at deployment |
-| 5 | Mock-Auth Expiry Canonical (one home) | **PASS** | Release Notes KNOWN-ISSUE-004 = canonical home; 2026-12-31; owner: Software Architect; all artifacts reference, none copy |
-| 6 | User Documentation Covers All Actors | **PASS** | Employee (STK-004), HR Admin (STK-001), Infrastructure (STK-003); UC-001..UC-010; publication-ready |
-| 7 | Business Rules in User-Facing Docs | **PASS** | CON-010 (AD read-only), CON-012 (corporate data only), CON-013 (no hard delete), NFR-004 (audit trail) all documented |
-| 8 | BG-001: Reduce HR management time by 50% | **PENDING** | System feature-complete (UC-001..UC-004, UC-009 replace manual processes) but NOT DEPLOYED — post-launch metric |
-| 9 | BG-002: Eliminate 100% of Excel usage | **PENDING** | System replaces Excel clocking + PDF directory but production elimination requires post-deployment observation |
-| 10 | BG-003: 80% employee adoption within 3 months | **PENDING** | Adoption rate requires post-launch usage analytics; 3-month window starts at go-live |
-| 11 | Prior BR Findings Reconciled | **PASS** | 3/3 RESOLVED: BR-T1-001 (Vision goal measurement plan), BR-T1-002 (binding conditions), BR-T2-001 (Vision mock-auth date) |
-| 12 | Business Rule Audit Trail Sync (NFR-004) | **PASS** | Audit trail for news publish/edit/unpublish and worker category changes documented in User Documentation |
+| PR-01 | User Acceptance (AC-001..AC-005) | PARTIALLY MET | 4/5 pass; AC-004 pending post-deployment |
+| PR-02 | Deployment Success | DEFERRED | Not performed — no Windows Server env; stakeholder-accepted deferral |
+| PR-03 | Training & Documentation | MET | User Documentation publication-ready |
+| PR-04 | Support Transition | NOT MET | No support transition plan documented |
+| PR-05 | BC-1 NFR Load Testing | MET | NFR-001: 0.14s vs 3s PASS; NFR-002: 0.003s vs 1s PASS |
+| PR-06 | BC-2 R003 OIDC Accepted Risk | MET | Formally accepted; 8 TCs covered by mock; residual stated |
+| PR-07 | BC-3 Mock-Auth Expiry | PARTIALLY MET | Canonical date 2026-12-31 established in Risk List R003; BUT Use-Case Model still carries 2027-01-31 with owner STK-003 |
+| PR-08 | CI Build Status | MET | GREEN on main (run 33310078920); 0 open PRs |
+| PR-09 | Open Defects | NOT MET | 0 Critical, 2 Major (CR-F1, UCM-F1), 3 Minor (DM-F2, DC-F1, RR-F2) |
+| PR-10 | Stakeholder Sanction | NOT MET | REFUSED (3rd time) — UCM mock-auth date not propagated |
 
-**Business Lens Verdict: CONDITIONAL**
+**Verdict: CONDITIONAL — T4 iteration required**
 
-The business lens verdict is CONDITIONAL (not APPROVED as in T2) because the three business goals (BG-001, BG-002, BG-003) are inherently post-launch metrics that cannot be verified until the system is deployed to production. This is NOT a defect — it is the correct status for goals that measure post-deployment outcomes. The system is feature-complete (all 10 FRs implemented), handover materials are comprehensive, and all prior BR findings are resolved. The CONDITIONAL verdict reflects that business value verification is deferred to the post-launch period, not that the system is deficient.
+The 3 binding conditions from T1 are ALL MET. CI is GREEN. All 10 FRs are implemented. However:
 
-**Business Goal Measurement Plan (Post-Launch):**
+1. **UCM-F1 (Major, NEW):** Use-Case Model Closure Notes carry 2027-01-31 and owner STK-003. The canonical-value protocol established in T3 did not reach the Use-Case Model. The stakeholder's grep-verify directive must be executed: every artifact must be checked for literal dates, and only Risk List R003 may hold one.
 
-| Goal | Measurement Method | Timeline | Owner |
-|---|---|---|---|
-| BG-001 (50% HR time reduction) | Compare HR administrative time before/after portal deployment (time-and-motion study or HR self-reporting) | 3 months post-go-live | HR Director (STK-001) |
-| BG-002 (100% Excel elimination) | Audit remaining Excel-based clocking/directory processes; confirm zero active Excel sheets for portal-covered processes | 3 months post-go-live | HR Director (STK-001) |
-| BG-003 (80% adoption) | Portal usage analytics: count unique employees with ≥1 clocking action per month; target 160/200 | 3 months post-go-live | HR Director (STK-001) |
+2. **CR-F1 (Major, PERSISTING):** Change Request artifact frozen at Construction C4. Not updated for Transition. Issue #40 not CCB-triaged. This is the 2nd iteration this finding has been open. Owned by Change Control Manager.
 
-**Lessons Learned (Business Modeling Discipline):**
+3. **DC-F1 (Minor, PERSISTING):** Development Case frozen at Elaboration. Obsolete PoC status. 2nd iteration. Owned by Process Engineer.
 
-| # | Lesson | Source | Applicability |
-|---|---|---|---|
-| BL-001 | Business goals that measure post-launch outcomes (adoption rates, efficiency gains) cannot be verified at the PR milestone — they require a post-deployment measurement plan with timeline and owner | BG-001..BG-003 | All projects with outcome-based business goals |
-| BL-002 | When Business Modeling is INACTIVE (system-requirements-led project), the business reviewer's role shifts to goal-achievement verification, scope completeness audit, and handover material assessment — not BUC/realization review | DC §4 classification | Projects with isBusinessProcessLed=false |
-| BL-003 | Cross-artifact consistency of a single fact (mock-auth expiry date) required a canonical-value protocol — one home artifact, all others reference, never copy. This governance pattern should be applied to any fact appearing in multiple artifacts | RR-F1, STK-001 T3 directive | All multi-artifact projects |
-| BL-004 | Stakeholder binding conditions are not decorative — they must be met with measured evidence, not assertions. "Tested" is not a result; two measurements are | STK-001 T1/T2 directives | All stakeholder-gated milestones |
+4. **DM-F2 (Minor, PERSISTING):** Design Model C4-1/C4-2 traceability stale. 2nd iteration. Owned by Designer.
 
-### Cross-Lens Consolidation (T3 Updated)
+5. **RR-F2 (Minor, PERSISTING):** Review Record internal inconsistency (issue count). Owned by Reviewer.
 
-| Lens | T2 Verdict | T3 Status | Open Findings |
-|---|---|---|---|
-| Technical (Reviewer) | ACCEPTED WITH CONDITIONS | **T3 EXECUTED — 2 RESOLVED, 3 persisting** | CR-F1 (Major), DM-F2 (Minor), DC-F1 (Minor), RR-F2 (Minor) |
-| Business (Business Reviewer) | APPROVED | **T3 EXECUTED — 0 new findings, 3/3 prior resolved, 3 goals PENDING (post-launch)** | None from business lens |
-| Management (Management Reviewer) | CONDITIONAL — T3 required | All resolved by PM in T3 | None |
-| Code Reviewer | APPROVED (PR #38, T2) | T3 EXECUTED — PR #41 APPROVED. CR-T2-001 RESOLVED. | CR-T3-001 (Suggestion, non-blocking) |
+**T4 Required Actions:**
+1. Grep every artifact for literal mock-auth date (2026-12-31, 2027-01-31, 2026-11-29). Only Risk List R003 may hold a literal date. All others must reference "Risk List R003". Report the count.
+2. Update Use-Case Model Closure Notes to reference canonical value from Risk List R003.
+3. Update Change Request artifact to Transition phase.
+4. Unfreeze Development Case to Transition phase.
+5. Update Design Model C4-1/C4-2 traceability status.
+6. Correct Review Record issue count.
 
-### Consolidated Disposition
-
-**ACCEPTED WITH CONDITIONS — T3 TECHNICAL REVIEW COMPLETE — 1 MAJOR FINDING BLOCKS PR SANCTION**
-
-- 0 open Critical findings across all 16 artifacts
-- 1 open Major finding (CR-F1) — Change Request frozen at Construction C4 — blocks PR sanction
-- 3 open Minor findings (DM-F2, DC-F1, RR-F2) — stakeholder requires ALL findings resolved
-- 1 Suggestion (CR-T3-001) — non-blocking
-- CI GREEN on main (run 33310078920, 2026-08-30 11:55:22Z)
-- 0 open PRs — all work merged
-- 10 open issues — 0 critical/high, 1 cr:logged (#40), 5 cr:deferred, 4 iteration records
-- All 10 FRs implemented, all binding conditions met
-- Canonical mock-auth date 2026-12-31 verified consistent across ALL 16 artifacts
-- **T3 Technical Reviewer work complete:** 2 findings RESOLVED via resolve_artifact_finding (TC-F3, SS-F1). 5 findings verified resolved by other roles (RR-F1, VIS-F2, BR-T2-001, MR-T2-001, MR-T2-002). 3 findings re-recorded as persisting (CR-F1, DC-F1, DM-F2).
-- **T3 Business Reviewer work complete:** 0 new findings emitted. 3/3 prior BR findings verified RESOLVED. 3 business goals (BG-001..BG-003) assessed as PENDING — post-launch metrics requiring post-deployment measurement. Release scope, handover materials, and business rule documentation all PASS. Business lens verdict: CONDITIONAL (goals pending post-launch, not a defect).
-- **Blocking condition:** 1 open Major finding must be resolved by its owner:
-  1. **CR-F1:** Change Request artifact updated to Transition; Issue #40 through CCB triage — **owned by Change Control Manager**
-- **Non-blocking but required by stakeholder (ALL findings must be resolved):**
-  2. **DC-F1:** Development Case unfrozen from Elaboration — **owned by Process Engineer**
-  3. **DM-F2:** Design Model C4-1/C4-2 traceability updated — **owned by Designer**
-  4. **RR-F2:** Review Record T1 issue count corrected — **owned by Reviewer (self-correction)**
-- **T3 directives from stakeholder (binding):**
-  1. One canonical mock-auth expiry date and owner — **RESOLVED** — 2026-12-31, owner Software Architect, home Risk List R003
-  2. Change Request artifact brought up to Transition; Issue #40 through CCB triage — **OPEN** — ChangeControlManager must act
-  3. Development Case unfrozen from Elaboration — **OPEN** — ProcessEngineer must act
-- **Process observation (stakeholder):** Cross-artifact consistency protocol — **RESOLVED** — canonical-value protocol established
-- Stakeholder re-review required after remaining findings are resolved
-
-### T3 Review Close-Out Sequence
-
-```plantuml
-@startuml
-title Transition T3 Review Close-Out — Final Review Sequence to PR Milestone
-
-skinparam activityBackgroundColor #F0F4FF
-skinparam activityBorderColor #336699
-skinparam shadowing false
-
-start
-
-:Verify T3 directives status:
-  1. Canonical mock-auth expiry date: RESOLVED
-  2. Change Request updated to Transition: OPEN
-  3. Development Case unfrozen: OPEN;
-
-if (All 3 T3 directives met?) then (YES)
-  :Schedule Product Release PR Milestone Review;
-  :Distribute agenda and evaluation criteria
-   to all lens participants 48h advance;
-  
-  :Execute PR Milestone Review
-   (Technical Reviewer + Business BR + Management MR);
-  
-  :Consolidate cross-lens findings;
-  :Verify finding closure across all 16 artifacts;
-  
-  if (0 open Critical and 0 open Major?) then (YES)
-    if (Stakeholder sanction GRANTED?) then (YES)
-      :Record PR milestone SANCTIONED;
-      :Archive all Review Records;
-      :Project close-out complete;
-      stop
-    else (NO)
-      :Record stakeholder refusal;
-      :Auto-iterate with stakeholder directives;
-      stop
-    endif
-  else (NO)
-    :Record open findings as blocking;
-    :Auto-iterate to resolve;
-    stop
-  endif
-else (NO — 2 of 3 directives OPEN)
-  :T3 directives not yet met;
-  :CR-F1: ChangeControlManager must update CR;
-  :DC-F1: ProcessEngineer must unfreeze DC;
-  :DM-F2: Designer must update Design Model;
-  :Auto-iterate;
-  stop
-endif
-
-@enduml
-```
-
-### Finding Lifecycle — Cross-Artifact Consistency Protocol
-
-```plantuml
-@startuml
-title Finding Lifecycle — Cross-Artifact Consistency Protocol
-
-skinparam stateBackgroundColor #F0F4FF
-skinparam stateBorderColor #336699
-skinparam shadowing false
-
-[*] --> Open : Finding emitted by lens
-
-Open --> Assigned : Owner designated
-Assigned --> InProgress : Owner begins rework
-
-InProgress --> Resolved : Owner confirms fix
-Resolved --> Verified : Review Coordinator verifies
-Verified --> Closed : Resolution confirmed via API
-
-Resolved --> Reopened : Verification fails
-Reopened --> Assigned : New owner or same owner
-
-Open --> Deferred : Stakeholder defers with rationale
-Deferred --> Closed : Phase close-out with documented rationale
-
-note right of Verified
-  **Canonical-Value Protocol (T3)**
-  A fact appearing in multiple artifacts
-  is declared ONCE in a home artifact
-  and REFERENCED everywhere else.
-  Home: Risk List R003 (mock-auth expiry)
-  References: all other artifacts cite
-  the home artifact, never copy the value.
-end note
-
-note right of Closed
-  Closure requires:
-  1. resolve_artifact_finding called
-  2. Resolution object populated
-  3. Review Record narrative updated
-end note
-
-[*] --> Closed : Finding resolved + verified
-
-@enduml
-```
+**Stakeholder acceptance: REFUSED — "The canonicalization is right and the root-cause analysis is exactly correct — one date, one owner, one home, cited never copied. It just did not reach everywhere. The Use-Case Model still carries 2027-01-31 and names a different owner (STK-003). Close it with a check, not a sweep: grep every artifact for a literal date and prove that only Risk List R003 holds one. Any other occurrence must be a reference. Report the count."**
 ## Traceability
 | Element | Traces From | Link Type | Traces To |
 |---|---|---|---|
