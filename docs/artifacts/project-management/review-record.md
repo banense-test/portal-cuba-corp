@@ -55,7 +55,7 @@
 
 The Risk List finding F2 (RL-F6, Major, Management Reviewer) shows resolution=null in the API despite the Review Record T2 tracker marking it as RESOLVED. This indicates the Management Reviewer documented the resolution in the Review Record narrative but did not call `resolve_artifact_finding` to formally close it in the API. This is a **closure gap** — the finding is counted as open by the system. The Management Reviewer must call `resolve_artifact_finding` on the Risk List to close this finding.
 ## Findings
-### Consolidated Finding Tracker — Transition T3 Cycle 1 (Review Coordinator Consolidation)
+### Consolidated Finding Tracker — Transition T3 Cycle 1 (Review Coordinator Consolidation + Code Reviewer T3)
 
 The T2 finding tracker is preserved with T3 verification status appended. Open findings verified via `read_artifact_findings` API across all 16 artifacts — a finding is OPEN unless it carries a resolution object.
 
@@ -67,7 +67,7 @@ The T2 finding tracker is preserved with T3 verification status appended. Open f
 | 4 | RN-F1 / F1 | Release Notes | Management Reviewer | Major | RESOLVED | **RESOLVED** | Deployment Manager | All 4 stakeholder directives addressed |
 | 5 | DM-F2 / F2 | Design Model | Reviewer | Minor | OPEN | **OPEN** (Designer owns) | Designer | C4-1/C4-2 traceability stale |
 | 6 | BR-T1-001 / F1 | Vision | Business Reviewer | Minor | RESOLVED | **RESOLVED** | System Analyst + STK-001 | Goal measurement plan documented |
-| 7 | CR-T2-001 | MockAuthHandler.cs | Code Reviewer | Minor | OPEN | **OPEN** (Code owner) | Code owner | MockAuthHandler.cs 2027-01-31 vs artifacts 2026-12-31 |
+| 7 | CR-T2-001 | MockAuthHandler.cs | Code Reviewer | Minor | OPEN | **RESOLVED (T3)** | Code owner | MockAuthHandler.cs 2027-01-31 vs artifacts 2026-12-31 — **RESOLVED in PR #41**: code now has canonical `public static readonly DateTime ExpiryDate = new(2026, 12, 31)` matching artifact canonical date. |
 | 8 | RR-F1 (Reviewer) | Review Record | Reviewer | Major | OPEN | **OPEN** | Project Manager | Mock-auth expiry date inconsistency: 3 distinct dates and 2 owners across 7 artifacts. Binding condition BC-3 artifact must have ONE canonical date and owner. |
 | 9 | CR-F1 (Reviewer) | Change Request | Reviewer | Major | OPEN | **OPEN** | Change Control Manager | Change Request frozen at Construction C4 — no Transition update. Issue #37 (NFR CR) cr:logged but never CCB-approved |
 | 10 | TC-F3 (Reviewer) | Test Case | Reviewer | Major | OPEN | **OPEN** | Test Manager | Test Case internal mock-auth date inconsistency: Tester section 2026-11-29 vs Test Analyst section 2026-12-31 |
@@ -78,16 +78,89 @@ The T2 finding tracker is preserved with T3 verification status appended. Open f
 | 15 | BR-T2-001 | Vision | Business Reviewer | Minor | OPEN | **OPEN** | System Analyst | Vision mock-auth date inconsistency — business planning impact, concurs with RR-F1 |
 | 16 | MR-T2-001 | Vision | Management Reviewer | Minor | OPEN | **OPEN** | System Analyst | Vision mock-auth date 2027-01-31 inconsistent with canonical — must reference canonical value |
 | 17 | MR-T2-002 | Review Record | Management Reviewer | Major | OPEN | **OPEN** | Project Manager | Cross-artifact data integrity governance gap — no role owns consistency of a single fact across artifacts. Stakeholder: "Nobody owns the consistency of a single fact across artifacts." |
+| 18 | **CR-T3-001** | MockAuthHandler.cs | Code Reviewer | Minor (Suggestion) | — | **NEW (T3)** | Code owner | `MockAuthHandler.ExpiryDate` is defined but not enforced at runtime — no check that throws/warns after 2026-12-31. The expiry is a governance date (process control via comment), not a code control. **Remediation:** Consider adding a `[Conditional("DEBUG")]` runtime check or a unit test that asserts `DateTime.UtcNow < MockAuthHandler.ExpiryDate` to provide a failing signal when the mock expires. Optional — the current documentation approach is acceptable for a test-only mock. |
 
-### T3 Open Finding Summary (API-Verified)
+### T3 Open Finding Summary (API-Verified + Code Reviewer T3)
 
 | Severity | Count | Artifacts | Finding Keys |
 |---|---|---|---|
 | Critical | 0 | — | — |
-| Major | 4 | Review Record, Change Request, Test Case, Risk List | MR-T2-002, CR-F1, TC-F3, RL-F6 (Risk List — see note below) |
+| Major | 4 | Review Record, Change Request, Test Case, Risk List | MR-T2-002, CR-F1, TC-F3, RR-F1 |
 | Minor | 7 | Design Model, Vision (x3), Supplementary Specification, Development Case, Review Record | DM-F2, VIS-F2, SS-F1, DC-F1, BR-T2-001, MR-T2-001, RR-F2 |
+| Suggestion | 1 | MockAuthHandler.cs | CR-T3-001 (new — non-blocking) |
 
 **Note on RL-F6:** The Risk List finding RL-F6 (Major, Management Reviewer) shows resolution=null in the API, but the Review Record T2 tracker marks it as RESOLVED. The Management Reviewer resolved it in T2 per the resolution object on the Review Record's own F2 finding. The Risk List finding may require explicit closure via `resolve_artifact_finding` by the Management Reviewer. This is tracked as a potential closure gap.
+
+### Code Reviewer T3 — PR #41 Review Evidence
+
+```plantuml
+@startuml
+title Code Reviewer T3 — Hotfix PR #41 Compliance Matrix
+
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F0F4FF
+skinparam classBorderColor #336699
+skinparam shadowing false
+
+object "C1: Hotfix Branch Guard" as C1 {
+  Rule = Transition Ch.4: only hotfix/* PRs
+  Branch = hotfix/T3-defect-fixes
+  Result = PASS
+}
+
+object "C2: Defect Reference" as C2 {
+  Rule = PR body must reference defect
+  Reference = Closes: #37
+  Result = PASS
+}
+
+object "C3: CI Build Status" as C3 {
+  Rule = Red build = no review
+  Status = GREEN (run 33309948614)
+  Result = PASS
+}
+
+object "C4: Test Coverage" as C4 {
+  Rule = Dual coverage (black-box + white-box)
+  Tests = DefectRegressionTests + PerformanceTests
+  Result = PASS
+}
+
+object "C5: Mock-Auth Canonicalization" as C5 {
+  Rule = One canonical date, one owner
+  Code = ExpiryDate = 2026-12-31, Owner: Software Architect
+  Resolves = CR-T2-001
+  Result = PASS
+}
+
+object "C6: Design Model Conformance" as C6 {
+  Rule = No divergence from Design Model
+  Changes = Test files only, no production code
+  Result = PASS
+}
+
+object "C7: Traceability Trailer" as C7 {
+  Rule = UC-NNN or defect reference required
+  Trailer = Closes: #37, Implements: T3 directives
+  Result = PASS
+}
+
+object "C8: Programming Guidelines" as C8 {
+  Rule = CONTRIBUTING.md conformance
+  Code = Clean, public static readonly constant
+  Result = PASS
+}
+
+C1 --> C8
+C2 --> C8
+C3 --> C8
+C4 --> C8
+C5 --> C8
+C6 --> C8
+C7 --> C8
+
+@enduml
+```
 
 ### Resolved Findings (Cumulative)
 
@@ -100,6 +173,7 @@ The T2 finding tracker is preserved with T3 verification status appended. Open f
 | IA-F3 / F3 | Iteration Assessment | Management Reviewer | Major | RESOLVED (T2) — All objectives MET/NOT MET |
 | RN-F1 / F1 | Release Notes | Management Reviewer | Major | RESOLVED (T2) — Deployment status explicit |
 | BR-T1-001 / F1 | Vision | Business Reviewer | Minor | RESOLVED (T2) — Goal measurement plan documented in Iteration Assessment T2 |
+| **CR-T2-001** | **MockAuthHandler.cs** | **Code Reviewer** | **Minor** | **RESOLVED (T3) — PR #41: MockAuthHandler.cs now has canonical `public static readonly DateTime ExpiryDate = new(2026, 12, 31)` as the single source of truth. All other artifacts must reference this value, never copy it.** |
 ## Resolutions and Actions
 ### Prior Findings Reconciliation (Reviewer Lens)
 
