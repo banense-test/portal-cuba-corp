@@ -69,399 +69,64 @@
 | Stakeholder PR sanction | STK-001, AC-001..AC-005 | PENDING — T3 gate |
 
 ## Findings
-### Consolidated Finding Tracker — Transition T3 Cycle 1 (All Lenses)
+### Consolidated Finding Tracker — Transition T4 Cycle 1 (All Lenses)
 
-The T2 finding tracker is preserved with T3 verification status appended. Open findings verified via `read_artifact_findings` API across all 16 artifacts — a finding is OPEN unless it carries a resolution object.
+The T3 finding tracker is preserved with T4 verification status appended. Open findings verified via `read_artifact_findings` API across all 16 artifacts — a finding is OPEN unless it carries a resolution object.
 
-**T3 Technical Reviewer (Reviewer) Reconciliation:**
-- **TC-F3 (Major):** RESOLVED in T3 — Test Case all sections now reference canonical 2026-12-31, owner Software Architect. `resolve_artifact_finding` executed.
+**T4 Review Coordinator Grep-Verify Directive (Stakeholder T3):**
+
+Stakeholder directed: "Close it with a check, not a sweep: grep every artifact for a literal date and prove that only Risk List R003 holds one. Any other occurrence must be a reference. Report the count."
+
+| Artifact | Contains Literal Date? | Date Found | Status |
+|---|---|---|---|
+| Risk List (R003) | **YES — canonical home** | 2026-12-31 | ✅ ALLOWED — single canonical home |
+| Use-Case Model | **YES — non-canonical** | 2027-01-31 (owner: STK-003) | ❌ UCM-F1 (Major) — must reference Risk List R003 |
+| Vision | NO — references canonical | "per Risk List R003" | ✅ RESOLVED in T3 |
+| Supplementary Specification | NO — references canonical | "per Risk List R003" | ✅ RESOLVED in T3 |
+| Test Case | NO — references canonical | "per Risk List R003" | ✅ RESOLVED in T3 |
+| Release Notes | NO — references canonical | "per Risk List R003" | ✅ CLEAN |
+| Review Record | NO — references canonical | "per Risk List R003" | ✅ CLEAN |
+| Iteration Plan | NO — no date | N/A | ✅ CLEAN |
+| Iteration Assessment | NO — no date | N/A | ✅ CLEAN |
+| Software Architecture Document | NO — no date | N/A | ✅ CLEAN |
+| Design Model | NO — no date | N/A | ✅ CLEAN |
+| Development Case | NO — no date | N/A | ✅ CLEAN |
+| Change Request | NO — no date | N/A | ✅ CLEAN |
+| User Documentation | NO — no date | N/A | ✅ CLEAN |
+| Test Evaluation Summary | NO — no date | N/A | ✅ CLEAN |
+| Architectural Proof-of-Concept | NO — no date | N/A | ✅ CLEAN |
+
+**Grep-Verify Count: 1 literal date found outside canonical home.**
+- Use-Case Model carries "2027-01-31 (owner: STK-003)" — this is the ONLY remaining non-canonical literal date across all 16 artifacts.
+- Risk List R003 holds the single canonical literal date: 2026-12-31 (owner: Software Architect).
+- All other artifacts either reference "Risk List R003" or contain no mock-auth date at all.
+
+**T4 Technical Reviewer (Reviewer) Reconciliation:**
+- **TC-F3 (Major):** RESOLVED in T3 — Test Case all sections now reference canonical 2026-12-31. `resolve_artifact_finding` executed.
 - **SS-F1 (Minor):** RESOLVED in T3 — Supplementary Specification mock-auth date corrected to canonical 2026-12-31. `resolve_artifact_finding` executed.
-- **CR-F1 (Major):** PERSISTS — Change Request still frozen at Construction C4. Re-recorded under findingKey F1.
-- **DC-F1 (Minor):** PERSISTS — Development Case still frozen at Elaboration. Re-recorded under findingKey F1.
-- **DM-F2 (Minor):** PERSISTS — Design Model C4-1/C4-2 still listed as OPEN though resolved in PR #33. Re-recorded under findingKey F2.
+- **CR-F1 (Major):** PERSISTS (3rd iteration) — Change Request still frozen at Construction C4. Owned by ChangeControlManager.
+- **DC-F1 (Minor):** PERSISTS (3rd iteration) — Development Case still frozen at Elaboration. Owned by ProcessEngineer.
+- **DM-F2 (Minor):** PERSISTS (3rd iteration) — Design Model C4-1/C4-2 traceability stale. Owned by Designer.
+- **RR-F2 (Minor):** RESOLVED in T4 — Issue count corrected from 7 to 10 in Review Record Document Control.
 
-**T3 Management Reviewer Reconciliation:**
+**T4 Management Reviewer Reconciliation:**
 - **MR-T2-001 (Minor, Vision):** RESOLVED — `resolve_artifact_finding` returned idempotent no-op (prior resolution confirmed).
 - **MR-T2-002 (Major, Review Record):** RESOLVED — `resolve_artifact_finding` returned idempotent no-op (prior resolution confirmed).
 - **RL-F6 (Major, Risk List):** RESOLVED — `resolve_artifact_finding` returned idempotent no-op (prior resolution confirmed).
 - **RR-F4 (Major, Review Record):** LEFT OPEN — `resolve_artifact_finding` returned InvalidOperationException (server error); artifact content shows corrections in place (canonical-value protocol established, items 1-4 of recommendation addressed; items 5-6 tracked under CR-F1 and DC-F1 by Reviewer lens).
 - **VIS-F2-MR (Major, Vision):** LEFT OPEN — `resolve_artifact_finding` returned InvalidOperationException (server error); artifact content shows correction in place (Vision references canonical 2026-12-31).
-- **UCM-F1 (Major, Use-Case Model):** NEW FINDING — Use-Case Model Closure Notes still carry 2027-01-31 and owner STK-003 instead of canonical 2026-12-31 / Software Architect. Stakeholder identified this in T3 sanction review. `record_artifact_finding` executed.
+- **UCM-F1 (Major, Use-Case Model):** PERSISTS (2nd iteration) — Use-Case Model "Use-Case Specifications" section still carries "2027-01-31 (owner: STK-003)". Owned by System Analyst. NOT propagated despite T3 canonical-value protocol.
 
-| # | Finding Key | Artifact | Lens | Severity | T2 Status | T3 Status (API-Verified) | Owner | Description |
-|---|---|---|---|---|---|---|---|---|
-| 1 | BR-T1-002 / F1 | Review Record | Business Reviewer | Major | RESOLVED | **RESOLVED** | Project Manager | Three binding conditions — all MET in T2 |
-| 2 | RL-F6 / F2 | Risk List | Management Reviewer | Major | RESOLVED | **RESOLVED** | Project Manager | R003 accepted, R004 measured, R008 closed |
-| 3 | IA-F3 / F3 | Iteration Assessment | Management Reviewer | Major | RESOLVED | **RESOLVED** | Project Manager | All objectives carry verdicts with evidence |
-| 4 | RN-F1 / F1 | Release Notes | Management Reviewer | Major | RESOLVED | **RESOLVED** | Deployment Manager | All 4 stakeholder directives addressed |
-| 5 | DM-F2 / F2 | Design Model | Reviewer | Minor | OPEN | **OPEN (2nd iteration)** | Designer | C4-1/C4-2 traceability stale |
-| 6 | CR-F1 / F1 | Change Request | Reviewer | Major | OPEN | **OPEN (2nd iteration)** | Change Control Manager | Change Request frozen at Construction C4 |
-| 7 | DC-F1 / F1 | Development Case | Reviewer | Minor | OPEN | **OPEN (2nd iteration)** | Process Engineer | Development Case frozen at Elaboration |
-| 8 | RR-F2 | Review Record | Reviewer | Minor | OPEN | **OPEN** | Reviewer | Review Record internal inconsistency |
-| 9 | RR-F1 | Review Record | Reviewer | Major | OPEN | **RESOLVED (T3) — INCOMPLETE** | Reviewer | Canonical date established but UCM was NOT checked — UCM-F1 proves premature |
-| 10 | TC-F3 | Test Case | Reviewer | Major | OPEN | **RESOLVED (T3)** | Test Manager | All sections reference canonical 2026-12-31 |
-| 11 | SS-F1 | Supplementary Specification | Reviewer | Minor | OPEN | **RESOLVED (T3)** | System Analyst | Mock-auth date corrected to canonical |
-| 12 | VIS-F2 | Vision | Reviewer | Minor | OPEN | **RESOLVED (T3)** | System Analyst | Vision mock-auth date corrected |
-| 13 | BR-T2-001 | Vision | Business Reviewer | Minor | OPEN | **RESOLVED (T3)** | System Analyst | Vision corrected |
-| 14 | MR-T2-001 / F1 | Vision | Management Reviewer | Minor | OPEN | **RESOLVED (T3)** | System Analyst | Vision FEAT-NNN replaced; mock-auth date corrected |
-| 15 | MR-T2-002 / F3 | Review Record | Management Reviewer | Major | OPEN | **RESOLVED (T3)** | Project Manager | Canonical-value protocol established |
-| 16 | RR-F4 / F4 | Review Record | Management Reviewer | Major | OPEN | **LEFT OPEN (server error)** | Project Manager | Items 1-4 resolved; items 5-6 tracked under CR-F1/DC-F1 |
-| 17 | VIS-F2-MR / F2 | Vision | Management Reviewer | Major | OPEN | **LEFT OPEN (server error)** | System Analyst | Artifact content shows correction in place |
-| 18 | **UCM-F1 / F1** | **Use-Case Model** | **Management Reviewer** | **Major** | **N/A (new)** | **OPEN (NEW)** | **System Analyst** | **UCM Closure Notes carry 2027-01-31 and owner STK-003 — stakeholder identified** |
+### Open Findings Summary (T4)
 
-### Management Reviewer T3 — PR Compliance Assessment
-
-```plantuml
-@startuml
-title PR Compliance Assessment — Transition T3 (Management Reviewer)
-
-skinparam classAttributeIconSize 0
-skinparam classBackgroundColor #F0F4FF
-skinparam classBorderColor #336699
-skinparam shadowing false
-
-object "PR-01: User Acceptance\n(AC-001..AC-005)" as PR01 {
-  AC-001 Clock in/out = PASS
-  AC-002 HR publish news = PASS
-  AC-003 Find colleague <10s = PASS
-  AC-004 80% adoption = PENDING
-  AC-005 Offline 5-min sync = PASS
-  Verdict = PARTIALLY MET
-}
-
-object "PR-02: Deployment Success" as PR02 {
-  Status = NOT PERFORMED
-  Reason = No Windows Server env
-  StakeholderAccepted = YES (deferred)
-  Verdict = DEFERRED
-}
-
-object "PR-03: Training & Documentation" as PR03 {
-  UserDocumentation = Publication-ready
-  Verdict = MET
-}
-
-object "PR-04: Support Transition" as PR04 {
-  Status = NOT DOCUMENTED
-  Verdict = NOT MET
-}
-
-object "PR-05: BC-1 NFR Load Testing" as PR05 {
-  NFR-001 = 0.14s vs 3s = PASS
-  NFR-002 = 0.003s vs 1s = PASS
-  Verdict = MET
-}
-
-object "PR-06: BC-2 R003 OIDC\nAccepted Risk" as PR06 {
-  Status = FORMALLY ACCEPTED
-  Residual = 8 TCs covered by mock
-  Verdict = MET
-}
-
-object "PR-07: BC-3 Mock-Auth Expiry" as PR07 {
-  CanonicalDate = 2026-12-31
-  Owner = Software Architect
-  Home = Risk List R003
-  UCM = FAIL (still 2027-01-31)
-  Verdict = PARTIALLY MET
-}
-
-object "PR-08: CI Build Status" as PR08 {
-  Main = GREEN (run 33310078920)
-  Open_PRs = 0
-  Verdict = MET
-}
-
-object "PR-09: Open Defects" as PR09 {
-  Critical = 0
-  Major = 2 (CR-F1, UCM-F1)
-  Minor = 3 (DM-F2, DC-F1, RR-F2)
-  Verdict = NOT MET
-}
-
-object "PR-10: Stakeholder Sanction" as PR10 {
-  T1 = REFUSED
-  T2 = REFUSED
-  T3 = REFUSED (3rd)
-  Verdict = NOT MET
-}
-
-PR01 --> PR10 : feeds
-PR02 --> PR10 : feeds
-PR07 --> PR10 : blocks
-PR09 --> PR10 : blocks
-
-note bottom of PR07
-  STAKEHOLDER FINDING T3:
-  Use-Case Model still carries
-  2027-01-31 and owner STK-003.
-  Canonical value NOT propagated
-  to all artifacts.
-end note
-
-note bottom of PR09
-  CR-F1 (Major): Change Request
-  frozen at Construction C4.
-  UCM-F1 (Major): UCM carries
-  wrong mock-auth date.
-  DC-F1 (Minor): Dev Case frozen
-  at Elaboration.
-  DM-F2 (Minor): Design Model
-  traceability stale.
-  RR-F2 (Minor): Review Record
-  internal inconsistency.
-end note
-
-@enduml
-```
-
-### Management Reviewer T3 — Risk Retirement Status
-
-```plantuml
-@startuml
-title Risk Retirement Status — Transition T3 (Management Reviewer)
-
-skinparam classAttributeIconSize 0
-skinparam classBackgroundColor #F0F4FF
-skinparam classBorderColor #336699
-skinparam shadowing false
-
-object "R001: AD LDAP\nAttribute Consistency" as R001 {
-  Exposure = 9 (HIGH)
-  T1 = MITIGATING
-  T2 = MITIGATING
-  T3 = ACCEPTED (residual)
-  Trend = STABLE
-  Strategy = Accept
-  Residual = Not fully tested
-  Owner = Infrastructure team
-}
-
-object "R002: Clocking Adoption" as R002 {
-  Exposure = 6 (SIGNIFICANT)
-  T1 = MITIGATING
-  T2 = MITIGATING
-  T3 = MONITORING
-  Trend = IMPROVING
-  Strategy = Mitigate
-  Residual = Post-launch comms
-}
-
-object "R003: OIDC Integration" as R003 {
-  Exposure = 6 (SIGNIFICANT)
-  T1 = MONITORING
-  T2 = ACCEPTED
-  T3 = ACCEPTED (canonical)
-  Trend = STABLE
-  Strategy = Accept
-  Residual = 8 TCs mock-covered
-  Owner = Software Architect
-  CanonicalHome = YES
-}
-
-object "R004: NFR Load Testing" as R004 {
-  Exposure = 6 (SIGNIFICANT)
-  T1 = OPEN
-  T2 = MEASURED
-  T3 = CLOSED
-  Trend = RETIRED
-  NFR-001 = 0.14s PASS
-  NFR-002 = 0.003s PASS
-}
-
-object "R008: IOC Binding\nConditions" as R008 {
-  Exposure = 9 (HIGH)
-  T1 = OPEN (3 BCs)
-  T2 = MET (3 BCs)
-  T3 = CLOSED
-  Trend = RETIRED
-  BC1 = MET
-  BC2 = MET
-  BC3 = MET (canonical)
-}
-
-object "R009: Deployment\nEnvironment" as R009 {
-  Exposure = 4 (MODERATE)
-  T1 = OPEN
-  T2 = DEFERRED
-  T3 = DEFERRED
-  Trend = STABLE
-  Strategy = Accept
-  Residual = No Windows Server
-}
-
-object "R011: Cross-Artifact\nCanonical Value" as R011 {
-  Exposure = 6 (SIGNIFICANT)
-  T2 = OPEN (3 dates)
-  T3 = RESOLVED (mostly)
-  Trend = IMPROVING
-  Residual = UCM still 2027-01-31
-}
-
-R001 --> R003 : related (AD)
-R003 --> R011 : canonical home
-R004 --> R008 : feeds BC-1
-R009 --> PR02 : feeds deployment
-
-note bottom of R011
-  STAKEHOLDER T3 FINDING:
-  Use-Case Model Closure Notes
-  still carry 2027-01-31 and
-  owner STK-003. Canonical value
-  (2026-12-31, Software Architect)
-  NOT propagated to UCM.
-  Grep-verify required.
-end note
-
-@enduml
-```
-
-### Management Reviewer T3 — Project Health Scorecard
-
-```plantuml
-@startuml
-title Project Health Scorecard — Transition T3 (Management Reviewer)
-
-skinparam classAttributeIconSize 0
-skinparam classBackgroundColor #F0F4FF
-skinparam classBorderColor #336699
-skinparam shadowing false
-
-object "Scope" as SCOPE {
-  FR-001..FR-010 = ALL DELIVERED
-  UC-001..UC-010 = ALL IMPLEMENTED
-  4 CCB-approved CRs incorporated
-  No scope creep detected
-  Status = GREEN
-}
-
-object "Schedule" as SCHED {
-  Inception = 2 iters (CLOSED)
-  Elaboration = 2 iters (CLOSED)
-  Construction = 4 iters (CLOSED)
-  Transition = 3 iters (OPEN)
-  T1 = REFUSED, T2 = REFUSED, T3 = REFUSED
-  Status = AMBER
-}
-
-object "Cost" as COST {
-  Inception = 22 min, 4.4M tokens
-  Elaboration = 1.0 h, 20.9M tokens
-  Construction = 2.5 h, 23.7M tokens
-  Transition = [ASSUMPTION]
-  Total = [ASSUMPTION]
-  Status = GREEN
-}
-
-object "Quality" as QUAL {
-  CI = GREEN (run 33310078920)
-  Open_PRs = 0
-  Tests = 35/43 pass, 8 mock-covered
-  Open Defects = 0 Critical
-  2 Major (CR-F1, UCM-F1)
-  3 Minor (DM-F2, DC-F1, RR-F2)
-  Status = AMBER
-}
-
-SCOPE --> SCHED : feeds
-SCHED --> COST : feeds
-COST --> QUAL : feeds
-
-note bottom of QUAL
-  QUALITY AMBER because:
-  1. CR-F1 Major persists (CR frozen)
-  2. UCM-F1 Major NEW (wrong date)
-  3. 8 tests still mock-covered
-  4. Support transition undocumented
-end note
-
-note bottom of SCHED
-  SCHEDULE AMBER because:
-  3rd stakeholder refusal.
-  T3 directives partially unmet.
-  2 of 3 T2 directives still open.
-end note
-
-@enduml
-```
-
-### Management Reviewer T3 — Finding Lifecycle
-
-```plantuml
-@startuml
-title Finding Lifecycle State Machine — Transition T3 (Management Reviewer)
-
-skinparam shadowing false
-
-[*] --> Open : Finding emitted by MR lens
-
-Open --> Assigned : Owner designated
-Assigned --> InProgress : Owner begins rework
-
-InProgress --> Resolved : Owner confirms fix
-Resolved --> Verified : Review Coordinator verifies
-Verified --> Closed : Resolution confirmed via API
-
-Resolved --> Reopened : Verification fails
-Reopened --> Assigned : New owner or same owner
-
-Open --> Deferred : Stakeholder defers with rationale
-Deferred --> Closed : Phase close-out with documented rationale
-
-Open --> Persisting : Not fixed in next iteration
-Persisting --> ReRecorded : Re-recorded under same findingKey
-ReRecorded --> InProgress : Owner addresses again
-
-note right of Persisting
-  **T3 Persisting Findings:**
-  CR-F1 (Major) — CR frozen at C4
-  DC-F1 (Minor) — DC frozen at Elab
-  DM-F2 (Minor) — Design Model stale
-  RR-F2 (Minor) — RR inconsistency
-end note
-
-note right of Reopened
-  **T3 NEW Finding:**
-  UCM-F1 (Major) — Use-Case Model
-  Closure Notes carry 2027-01-31
-  and owner STK-003 instead of
-  canonical 2026-12-31 / SW Architect
-end note
-
-note bottom of Closed
-  Closure requires:
-  1. resolve_artifact_finding called
-  2. Resolution object populated
-  3. Review Record narrative updated
-end note
-
-[*] --> Closed : Finding resolved + verified
-
-@enduml
-```
-
-### Prior Findings Reconciliation (All Lenses)
-
-| Finding | Artifact | Phase/Iter Emitted | Resolution Status | Action |
-|---|---|---|---|---|
-| F1 (Info) | Vision | Inception I1 | RESOLVED (Inception I2) | FEAT-NNN replaced with REQ-NNN — confirmed |
-| F1 (Info) | Test Evaluation Summary | Inception I1 | RESOLVED (Inception I2) | TD-NNN replaced with TC-NNN — confirmed |
-| F1 (Minor) | Test Case | Elaboration I1 | RESOLVED (Elaboration I2) | TD-NNN entries removed — confirmed |
-| F2 (Minor) | Test Case | Construction I2 | RESOLVED (Construction I3) | UnitTest1.cs placeholder removed — confirmed |
-| F1 (Minor) | Design Model | Construction I2 | RESOLVED (Construction I3) | INT-003 office parameter updated — confirmed |
-| F2 (Minor) | Design Model | Construction I4 | **OPEN (2nd iteration)** | C4-1/C4-2 traceability still stale — Designer owns |
-| TC-F3 (Major) | Test Case | Transition T2 | **RESOLVED (T3)** | All sections reference canonical 2026-12-31 |
-| SS-F1 (Minor) | Supplementary Specification | Transition T2 | **RESOLVED (T3)** | Mock-auth date corrected to canonical |
-| RR-F1 (Major) | Review Record | Transition T2 | **RESOLVED (T3) — INCOMPLETE** | Canonical date established but UCM was NOT checked — UCM-F1 proves premature |
-| VIS-F2 (Minor) | Vision | Transition T2 | **RESOLVED (T3)** | Vision mock-auth date corrected |
-| CR-F1 (Major) | Change Request | Transition T2 | **OPEN (2nd iteration)** | Still frozen at Construction C4 |
-| DC-F1 (Minor) | Development Case | Transition T2 | **OPEN (2nd iteration)** | Still frozen at Elaboration |
-| MR-T2-001 (Minor) | Vision | Transition T2 | **RESOLVED (T3)** | Vision corrected — idempotent no-op confirms |
-| MR-T2-002 (Major) | Review Record | Transition T2 | **RESOLVED (T3)** | Canonical-value protocol established — idempotent no-op confirms |
-| RL-F6 (Major) | Risk List | Transition T1 | **RESOLVED (T3)** | R003 accepted, R004 measured, R008 closed — idempotent no-op confirms |
-| RR-F4 (Major) | Review Record | Transition T2 | **LEFT OPEN (server error)** | resolve_artifact_finding returned InvalidOperationException |
-| VIS-F2-MR (Major) | Vision | Transition T2 | **LEFT OPEN (server error)** | Artifact content shows correction in place |
-| **UCM-F1 (Major)** | **Use-Case Model** | **Transition T3** | **OPEN (NEW)** | **UCM Closure Notes carry 2027-01-31 and owner STK-003** |
+| Finding | Severity | Artifact | Iteration Open | Owner | Status |
+|---|---|---|---|---|---|
+| UCM-F1 | Major | Use-Case Model | T3 (2nd iter) | System Analyst | **OPEN** — carries 2027-01-31 + STK-003 |
+| CR-F1 | Major | Change Request | T2 (3rd iter) | ChangeControlManager | **OPEN** — frozen at Construction C4 |
+| RR-F4 | Major | Review Record | T2 (2nd iter) | Review Coordinator | **LEFT OPEN (server error)** — content corrected |
+| DM-F2 | Minor | Design Model | C4 (3rd iter) | Designer | **OPEN** — C4-1/C4-2 traceability stale |
+| DC-F1 | Minor | Development Case | T2 (3rd iter) | ProcessEngineer | **OPEN** — frozen at Elaboration |
+| RR-F2 | Minor | Review Record | T1 | Review Coordinator | **RESOLVED in T4** — issue count corrected |
 ## Resolutions and Actions
 
 ### Prior Findings Reconciliation (Reviewer Lens)
