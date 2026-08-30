@@ -2,15 +2,16 @@
 | Field | Value |
 |---|---|
 | Phase | Transition |
-| Status | **Evolved — Transition Iteration 2 Cycle 1** — binding conditions addressed per stakeholder directive |
-| Milestone Target | End of Transition (PR) — **NOT YET ACHIEVED — pending stakeholder re-review** |
-| Iteration | 2 (Cycle 1) |
-| Date | 2026-08-29 |
+| Status | **Evolved — Transition Iteration 3 Cycle 1** — canonical mock-auth expiry date established as Release Notes KNOWN-ISSUE-004; all other artifacts must cite this value |
+| Milestone Target | End of Transition (PR) — **NOT YET ACHIEVED — pending stakeholder re-review after T3 finding resolution** |
+| Iteration | 3 (Cycle 1) |
+| Date | 2026-08-30 |
 | Author | Deployment Manager (Deployment Discipline) — primary; Technical Writer (Deployment Discipline) — end-user phrasing contributor |
-| Prior Phase | Transition Iteration 1 — Release Notes drafted; beta program completed; 3 binding conditions OPEN; stakeholder PR sanction REFUSED |
-| CI Build | main: GREEN (run 33259873386, 2026-08-29 15:18:05Z) |
+| Prior Phase | Transition Iteration 2 — Release Notes evolved; binding conditions addressed; mock-auth date 2026-12-31 documented but inconsistent across 7 artifacts (3 dates, 2 owners); stakeholder PR sanction REFUSED |
+| CI Build | main: GREEN (run 33263001739, 2026-08-29 16:28:17Z) |
 | Deployment Mode | Custom-built, single Windows Server (CON-006) |
-| Finding RN-F1 (Major) | **RESOLVED** — All 4 stakeholder directives addressed: (1) NFR-001/NFR-002 measured values reported; (2) R003 OIDC formally accepted risk with residual stated; (3) Mock-auth expiry date and owner documented; (4) Deployment verification on Windows Server explicitly stated as NOT PERFORMED. |
+| Finding RN-F1 (Major) | **RESOLVED** (T2) — All 4 stakeholder directives addressed: (1) NFR-001/NFR-002 measured values reported; (2) R003 OIDC formally accepted risk with residual stated; (3) Mock-auth expiry date and owner documented; (4) Deployment verification on Windows Server explicitly stated as NOT PERFORMED. |
+| T3 Directive — Canonical Mock-Auth Date | **ESTABLISHED** — Per stakeholder T3 directive: ONE canonical mock-auth expiry date (2026-12-31) and ONE owner (Software Architect) established in this artifact at KNOWN-ISSUE-004. All other artifacts (Vision, Supplementary Specification, Test Case, Review Record, Risk List, MockAuthHandler.cs) MUST reference this value from Release Notes KNOWN-ISSUE-004 — never copy it. |
 | Technical Writer Review | End-user phrasing audited for styleguide compliance: "Clock In/Out" (not "punch"/"check-in"), "News item" (not "article"/"post"), "Worker category" (not "employee type"), "Directory" (not "phonebook"), "Unpublish" (not "hide"/"remove"). All known issues, features, and upgrade notes use consistent terminology with User Documentation. No internal ticket IDs exposed to end users. |
 ## About This Release
 ### Bill of Materials (Inline)
