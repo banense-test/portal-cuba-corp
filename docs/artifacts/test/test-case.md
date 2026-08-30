@@ -845,6 +845,8 @@ All TC-015 through TC-043 retain their prior verdicts (PASS or BLOCKED-by-R003).
 | TA-T3-TCF3 | TC-F3, Review Record | Derives | TC-F3 RESOLVED — mock-auth date canonicalized to 2026-12-31, owner Software Architect across all Test Case sections |
 | TA-T3-REG | All 35 PASS TCs | Derives | Regression CLEAN (Transition I3) — build 33263001739 |
 | TA-T3-DEFECTS | 6 open defect issues | Derives | All minor/deferred except #37 (major, cr:logged) — 0 Critical/High |
+| TA-T3-FINAL | TC-F3, NFR-001, NFR-002, R003, AC-001..AC-005 | Derives | **Test Analyst T3 Final Quality Gate Assessment — RELEASE READY CONDITIONAL** (all ACs PASS, all NFRs PASS, 0 Critical/High/Major defects, R003 accepted risk, TC-F3 resolved, regression CLEAN build 33263001739) |
+| TA-T3-VERDICT | All 43 TCs, 5 ACs, 4 NFRs | Derives | TestManager consumes for Test Evaluation Summary — conditions: (1) R003 at deployment, (2) production NFR validation, (3) Windows Server deployment verification, (4) Issue #37 CCB triage |
 | R003 | STK-003, CON-004 | DependsOn | TC-013, TC-014, TC-029, TC-030 (FORMALLY ACCEPTED RISK — proven at deployment) |
 | Issue #37 | NFR-001, NFR-002, CR #37 | Derives | PerformanceTests.cs (cr:logged — requires CCB triage) |
 | Issue #34 | C4-F1, Design Model | Derives | TC-032 (deferred — documentation only) |
